@@ -126,7 +126,6 @@
             transition: all 0.3s ease;
             text-decoration: none;
             color: inherit;
-            display: block;
         }
         
         .tool-card:hover {
@@ -211,50 +210,6 @@
             padding: 25px;
             border: 1px solid rgba(255, 204, 0, 0.3);
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        }
-        
-        .color-legend {
-            background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 204, 0, 0.2);
-        }
-        
-        .legend-title {
-            color: #ffcc00;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .legend-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 8px;
-            border-radius: 4px;
-            background: rgba(255, 204, 0, 0.05);
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 15px;
-            border-radius: 3px;
-            flex-shrink: 0;
-        }
-        
-        .legend-label {
-            font-size: 0.85em;
-            color: #b8a982;
-            font-weight: 500;
         }
         
         .projects-grid {
@@ -405,19 +360,6 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            
-            .legend-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 8px;
-            }
-            
-            .legend-item {
-                padding: 4px 6px;
-            }
-            
-            .legend-label {
-                font-size: 0.8em;
-            }
         }
     </style>
 </head>
@@ -431,12 +373,12 @@
         <div class="tools-section">
             <div class="section-title">Creative Tools</div>
             <div class="tools-grid">
-                <a href="reddit_audio_template.html" class="tool-card">
+                <a href="reddit_template.html" class="tool-card">
                     <h3>Reddit Post Generator</h3>
                     <p>Create perfectly formatted Reddit posts for your audio content with live preview and copy functionality.</p>
                     <span class="tool-badge">Template</span>
                 </a>
-                <a href="literotica_template.html" class="tool-card">
+                <a href="index.html" class="tool-card">
                     <h3>Literotica Post Generator</h3>
                     <p>Generate HTML-formatted posts for Literotica with contributor management and CSV integration.</p>
                     <span class="tool-badge">Template</span>
@@ -446,52 +388,6 @@
         
         <div class="projects-container">
             <div class="section-title">Current Projects</div>
-            
-            <div class="color-legend">
-                <div class="legend-title">Project Phase Colors</div>
-                <div class="legend-grid">
-                    <div class="legend-item">
-                        <div class="legend-color phase-idea"></div>
-                        <span class="legend-label">Idea</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-research"></div>
-                        <span class="legend-label">Research</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-writing"></div>
-                        <span class="legend-label">Writing</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-feedback"></div>
-                        <span class="legend-label">Feedback</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-casting"></div>
-                        <span class="legend-label">Casting</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-production"></div>
-                        <span class="legend-label">Production</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-post-production"></div>
-                        <span class="legend-label">Post Production</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-posting"></div>
-                        <span class="legend-label">Posting</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-posted"></div>
-                        <span class="legend-label">Posted</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-on-hold"></div>
-                        <span class="legend-label">On-Hold</span>
-                    </div>
-                </div>
-            </div>
             
             <div class="controls">
                 <button class="load-button" onclick="loadProjects()">Load Current Projects</button>
@@ -786,3 +682,68 @@
                     ">
                 </div>
             `;
+            
+            document.getElementById('csvFile').addEventListener('change', handleFileUpload);
+        }
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvText = e.target.result;
+                    const lines = csvText.split('\n').filter(line => line.trim());
+                    
+                    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    projectsData = [];
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = parseCSVLine(lines[i]);
+                        if (values.length >= headers.length && values[1]) {
+                            const project = {};
+                            headers.forEach((header, index) => {
+                                project[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
+                            });
+                            projectsData.push(project);
+                        }
+                    }
+                    
+                    filteredProjects = [...projectsData];
+                    populateOwnerFilter();
+                    displayProjects();
+                    updateStats();
+                    showMessage(`Loaded ${projectsData.length} projects from file!`, 'success');
+                    
+                } catch (error) {
+                    showMessage(`Error parsing file: ${error.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('projectMessage');
+            messageDiv.style.display = 'block';
+            
+            let className = '';
+            switch(type) {
+                case 'success': className = 'success-message'; break;
+                case 'error': className = 'error-message'; break;
+                case 'warning': className = 'warning-message'; break;
+                case 'loading': className = 'success-message'; break;
+            }
+            
+            messageDiv.className = `message ${className}`;
+            messageDiv.textContent = message;
+            
+            if (type === 'success' || type === 'loading') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
