@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Literotica Audio Post Template</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a0f 0%, #2d2a1f 50%, #1a1a0f 100%);
+            background-attachment: fixed;
+            color: #e6d4a8;
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 204, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 165, 0, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .navigation-header {
+            background: linear-gradient(145deg, #2d2a1f 0%, #3d3626 50%, #2d2a1f 100%);
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.4),
+                0 0 20px rgba(255, 204, 0, 0.1),
+                inset 0 1px 0 rgba(255, 204, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navigation-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffcc00, transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .nav-title {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffcc00, #ff9500, #ffcc00);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: goldShimmer 4s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
+            margin: 0;
+        }
+
+        @keyframes goldShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .back-button {
+            padding: 12px 24px;
+            background: linear-gradient(145deg, #46d160, #2da44e);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(145deg, #52e06a, #238636);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(70, 209, 96, 0.5);
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .editor-panel, .preview-panel {
+            background: linear-gradient(145deg, #2d2a1f 0%, #3d3626 50%, #2d2a1f 100%);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.4),
+                0 0 20px rgba(255, 204, 0, 0.1),
+                inset 0 1px 0 rgba(255, 204, 0, 0.2);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .editor-panel::before, .preview-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffcc00, transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        .panel-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffcc00, #ff9500, #ffcc00);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: goldShimmer 4s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
+        }
+        
+        .section-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffcc00;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+            border-image: linear-gradient(90deg, transparent, #ffcc00, #ff9500, #ffcc00, transparent) 1;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
+        }
+        
+        .section-header:first-child {
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: bold;
+            color: #ffcc00;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
+            border: 2px solid rgba(255, 204, 0, 0.3);
+            border-radius: 6px;
+            color: #e6d4a8;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        .form-select option {
+            background: #ffffff;
+            color: #000000;
+            padding: 8px;
+        }
+        
+        .form-input option {
+            background: #ffffff;
+            color: #000000;
+            padding: 8px;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #ffcc00;
+            box-shadow: 
+                0 0 0 3px rgba(255, 204, 0, 0.2),
+                0 0 20px rgba(255, 204, 0, 0.3);
+            background: linear-gradient(145deg, #2d2a1f, #3d3626);
+        }
+        
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .load-button {
+            padding: 12px 24px;
+            background: linear-gradient(145deg, #46d160, #2da44e);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .load-button:hover {
+            background: linear-gradient(145deg, #52e06a, #238636);
+            transform: translateY(-2px);
+        }
+        
+        .copy-button {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(145deg, #ffcc00, #ff9500);
+            color: #1a1a0f;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 15px rgba(255, 204, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .copy-button:hover {
+            background: linear-gradient(145deg, #ffd700, #ffaa00);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(255, 204, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .attribute-group {
+            background: linear-gradient(145deg, #2d2a1f, #3d3626);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffcc00;
+            margin-bottom: 15px;
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.2),
+                0 0 20px rgba(255, 204, 0, 0.1);
+        }
+        
+        .readonly-section {
+            background: linear-gradient(145deg, #2d2a1f, #3d3626);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #46d160;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .readonly-section-title {
+            font-weight: bold;
+            color: #46d160;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px rgba(70, 209, 96, 0.3);
+        }
+        
+        .readonly-field {
+            color: #b8a982;
+            font-style: italic;
+            font-size: 13px;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+            background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255, 204, 0, 0.1);
+        }
+        
+        .preview-section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffcc00;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 204, 0, 0.3);
+            padding-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+        
+        .post-preview-html {
+            background: linear-gradient(145deg, #2d2a1f, #3d3626);
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .post-preview-html img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .post-preview-html strong {
+            color: #e6d4a8;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.2);
+        }
+        
+        .post-preview-html a {
+            color: #ffcc00;
+            text-decoration: none;
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+        }
+        
+        .post-preview {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            background: linear-gradient(145deg, #2d2a1f, #3d3626);
+            padding: 20px;
+            border-radius: 8px;
+            color: #e6d4a8;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .success-message {
+            background-color: #46d160;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .error-message { background: #dc3545; color: white; }
+        .success-message-csv { background: #46d160; color: white; }
+        .warning-message { background: #ff9500; color: #1a1a0f; }
+        
+        @media (max-width: 1000px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 10px;
+            }
+
+            .navigation-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <div class="navigation-header">
+        <h1 class="nav-title">Literotica Audio Post Template</h1>
+        <a href="index.html" class="back-button">← Back to Dashboard</a>
+    </div>
+
+    <div class="main-container">
+        <!-- EDITOR PANEL -->
+        <div class="editor-panel">
+            <div class="panel-title">Create Literotica Audio Post</div>
+            
+            <!-- USERNAME SECTION -->
+            <div class="section-header">Username</div>
+            
+            <div class="form-group">
+                <button class="load-button" onclick="loadContributors()">Load Contributors from CSV</button>
+                <div id="csvMessage" class="message"></div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Select Username</label>
+                <select id="usernameSelect" class="form-select">
+                    <option value="">Load contributors first...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Header Image URL</label>
+                <input type="text" id="headerImageUrl" class="form-input" placeholder="Banner image will auto-populate">
+            </div>
+            
+            <!-- TITLE SECTION -->
+            <div class="section-header">Title Section</div>
+            
+            <div class="form-group">
+                <label class="form-label">Gender Tag</label>
+                <select id="genderTag" class="form-select">
+                    <option value="">Select Gender Tag</option>
+                    <option value="M4F">M4F</option>
+                    <option value="F4M">F4M</option>
+                    <option value="M4M">M4M</option>
+                    <option value="F4F">F4F</option>
+                    <option value="M4A">M4A</option>
+                    <option value="F4A">F4A</option>
+                    <option value="A4M">A4M</option>
+                    <option value="A4F">A4F</option>
+                    <option value="A4A">A4A</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Audio Title</label>
+                <input type="text" id="audioTitle" class="form-input" placeholder="Enter audio title">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Short Description</label>
+                <input type="text" id="shortDescription" class="form-input" placeholder="Brief description">
+            </div>
+            
+            <!-- TAGS SECTION -->
+            <div class="section-header">Tags</div>
+            
+            <div class="form-group">
+                <label class="form-label">Full Tags (will be wrapped in [ ])</label>
+                <textarea id="fullTags" class="form-textarea" placeholder="Enter tags separated by commas"></textarea>
+                <small style="color: #888; font-size: 12px;">Enter tags separated by commas. They will automatically be wrapped in square brackets.</small>
+            </div>
+            
+            <!-- CONTENT SECTION -->
+            <div class="section-header">Content Section</div>
+            
+            <div class="form-group">
+                <label class="form-label">Long Description</label>
+                <textarea id="longDescription" class="form-textarea" style="min-height: 120px;" placeholder="Detailed description of your audio content"></textarea>
+            </div>
+            
+            <!-- ATTRIBUTES SECTION -->
+            <div class="section-header">Attributes</div>
+            
+            <div id="attributesContainer">
+                <div class="attribute-group" data-attribute-index="0">
+                    <div class="form-group">
+                        <label class="form-label">Attribute 1 - Reason</label>
+                        <select class="form-input attribute-reason" data-index="0">
+                            <option value="">Select Reason</option>
+                            <option value="Written by">Written by</option>
+                            <option value="Voiced by">Voiced by</option>
+                            <option value="Produced by">Produced by</option>
+                            <option value="Edited by">Edited by</option>
+                            <option value="Music by">Music by</option>
+                            <option value="Script by">Script by</option>
+                            <option value="Directed by">Directed by</option>
+                            <option value="Sound effects by">Sound effects by</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attribute 1 - Person Name</label>
+                        <select class="form-input attribute-name" data-index="0">
+                            <option value="">Load contributors first...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attribute 1 - URL</label>
+                        <input type="text" class="form-input attribute-url" placeholder="Will auto-populate from CSV" data-index="0">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button type="button" onclick="addAttribute()" style="padding: 8px 16px; background-color: #46d160; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">+ Add Attribute</button>
+                <button type="button" onclick="removeAttributeField()" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">- Remove Last Attribute</button>
+            </div>
+            
+            <!-- COPYRIGHT SECTION -->
+            <div class="section-header">Copyright</div>
+            
+            <div class="form-group">
+                <label class="form-label">Copyright Year</label>
+                <input type="text" id="copyrightYear" class="form-input" placeholder="2025" value="2025">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Copyright Holders</label>
+                <input type="text" id="copyrightHolders" class="form-input" placeholder="Name & Name">
+            </div>
+            
+            <!-- 18+ DISCLAIMER -->
+            <div class="readonly-section">
+                <div class="readonly-section-title">18+ Disclaimer (Auto-included)</div>
+                <div class="readonly-field">
+                    All content is created for Adults (18+) and is written and performed by Adults (18+). All acts depicted are erotic roleplay only and are fully consensual.
+                </div>
+            </div>
+            
+            <!-- COPYRIGHT NOTICE -->
+            <div class="readonly-section">
+                <div class="readonly-section-title">Copyright Notice (Auto-generated)</div>
+                <div class="readonly-field" id="copyrightPreview">
+                    Copyright 2025 [Copyright Holders]. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission.
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="copy-button" onclick="copyPostToClipboard()">
+                    Copy Post HTML
+                </button>
+            </div>
+            
+            <div id="successMessage" class="success-message">
+                Content copied to clipboard!
+            </div>
+        </div>
+        
+        <!-- PREVIEW PANEL -->
+        <div class="preview-panel">
+            <div class="panel-title">Live Preview</div>
+            
+            <!-- Formatted Preview -->
+            <div class="preview-section">
+                <div class="preview-section-title">Formatted Preview</div>
+                <div class="post-preview-html" id="postPreviewFormatted">
+                    <!-- Formatted post content preview will appear here -->
+                </div>
+            </div>
+            
+            <!-- Raw HTML Preview -->
+            <div class="preview-section">
+                <div class="preview-section-title">Raw HTML Code</div>
+                <div class="post-preview" id="postPreview">
+                    <!-- Raw HTML preview will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let contributorsData = [];
+        let attributeCount = 1;
+        
+        // Load contributors from CSV
+        async function loadContributors() {
+            const csvUrl = 'https://docs.google.com/spreadsheets/d/1sq4hZ3yAOTVbBUnvdBCHwai_jZY3i2RRG5DoxIczQjc/export?format=csv&gid=296264981';
+            
+            try {
+                showMessage('Loading contributors...', 'loading');
+                
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch CSV');
+                }
+                
+                const csvText = await response.text();
+                const lines = csvText.split('\n').filter(line => line.trim());
+                
+                if (lines.length < 2) {
+                    throw new Error('CSV appears to be empty');
+                }
+                
+                // Parse CSV
+                contributorsData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+                    if (values.length >= 3 && values[0]) {
+                        contributorsData.push({
+                            username: values[0],      // User Name (Column A)
+                            profileUrl: values[1],    // Profile URL (Column B) 
+                            bannerUrl: values[2]      // Banner URL (Column C)
+                        });
+                    }
+                }
+                
+                if (contributorsData.length > 0) {
+                    populateDropdowns();
+                    showMessage(`Loaded ${contributorsData.length} contributors!`, 'success');
+                } else {
+                    throw new Error('No valid contributor data found');
+                }
+                
+            } catch (error) {
+                showMessage(`Error loading contributors: ${error.message}`, 'error');
+                showManualUpload();
+            }
+        }
+        
+        function showManualUpload() {
+            const messageDiv = document.getElementById('csvMessage');
+            messageDiv.innerHTML = `
+                <div style="margin-top: 10px;">
+                    <p style="color: #ffcc00; margin-bottom: 10px;">Manual CSV Upload:</p>
+                    <input type="file" id="csvFile" accept=".csv" style="
+                        padding: 8px;
+                        background: linear-gradient(145deg, #ffcc00, #ff9500);
+                        color: #1a1a0f;
+                        border: none;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        cursor: pointer;
+                    ">
+                </div>
+            `;
+            
+            document.getElementById('csvFile').addEventListener('change', handleFileUpload);
+        }
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvText = e.target.result;
+                    const lines = csvText.split('\n').filter(line => line.trim());
+                    
+                    contributorsData = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+                        if (values.length >= 3 && values[0]) {
+                            contributorsData.push({
+                                username: values[0],
+                                profileUrl: values[1] || '',
+                                bannerUrl: values[2] || ''
+                            });
+                        }
+                    }
+                    
+                    populateDropdowns();
+                    showMessage(`Loaded ${contributorsData.length} contributors from file!`, 'success');
+                    
+                } catch (error) {
+                    showMessage(`Error parsing file: ${error.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function populateDropdowns() {
+            // Populate main username dropdown
+            const usernameSelect = document.getElementById('usernameSelect');
+            let options = '<option value="">Select username...</option>';
+            
+            contributorsData.forEach((contributor, index) => {
+                options += `<option value="${index}">${contributor.username}</option>`;
+            });
+            
+            usernameSelect.innerHTML = options;
+            usernameSelect.addEventListener('change', handleUsernameChange);
+            
+            // Populate attribute name dropdowns
+            document.querySelectorAll('.attribute-name').forEach(dropdown => {
+                dropdown.innerHTML = options;
+                dropdown.addEventListener('change', handleAttributeNameChange);
+            });
+        }
+        
+        function handleUsernameChange() {
+            const selectedIndex = document.getElementById('usernameSelect').value;
+            if (selectedIndex !== '') {
+                const contributor = contributorsData[selectedIndex];
+                document.getElementById('headerImageUrl').value = contributor.bannerUrl;
+                updatePreviews();
+            }
+        }
+        
+        function handleAttributeNameChange(event) {
+            const selectedIndex = event.target.value;
+            const attributeIndex = event.target.getAttribute('data-index');
+            
+            if (selectedIndex !== '') {
+                const contributor = contributorsData[selectedIndex];
+                const urlInput = document.querySelector(`.attribute-url[data-index="${attributeIndex}"]`);
+                if (urlInput) {
+                    urlInput.value = contributor.profileUrl;
+                    updatePreviews();
+                }
+            }
+        }
+        
+        function addAttribute() {
+            const container = document.getElementById('attributesContainer');
+            const newGroup = document.createElement('div');
+            newGroup.className = 'attribute-group';
+            newGroup.setAttribute('data-attribute-index', attributeCount);
+            
+            let options = '<option value="">Select person...</option>';
+            contributorsData.forEach((contributor, index) => {
+                options += `<option value="${index}">${contributor.username}</option>`;
+            });
+            
+            newGroup.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Attribute ${attributeCount + 1} - Reason</label>
+                    <select class="form-input attribute-reason" data-index="${attributeCount}">
+                        <option value="">Select Reason</option>
+                        <option value="Written by">Written by</option>
+                        <option value="Voiced by">Voiced by</option>
+                        <option value="Produced by">Produced by</option>
+                        <option value="Edited by">Edited by</option>
+                        <option value="Music by">Music by</option>
+                        <option value="Script by">Script by</option>
+                        <option value="Directed by">Directed by</option>
+                        <option value="Sound effects by">Sound effects by</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Attribute ${attributeCount + 1} - Person Name</label>
+                    <select class="form-input attribute-name" data-index="${attributeCount}">
+                        ${options}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Attribute ${attributeCount + 1} - URL</label>
+                    <input type="text" class="form-input attribute-url" placeholder="Will auto-populate from CSV" data-index="${attributeCount}">
+                </div>
+            `;
+            
+            container.appendChild(newGroup);
+            attributeCount++;
+            
+            // Add event listeners
+            const newNameDropdown = newGroup.querySelector('.attribute-name');
+            newNameDropdown.addEventListener('change', handleAttributeNameChange);
+            
+            const newInputs = newGroup.querySelectorAll('.form-input, .form-select');
+            newInputs.forEach(input => {
+                input.addEventListener('input', updatePreviews);
+                input.addEventListener('change', updatePreviews);
+            });
+            
+            updatePreviews();
+        }
+        
+        function removeAttributeField() {
+            if (attributeCount > 1) {
+                const container = document.getElementById('attributesContainer');
+                const lastAttribute = container.querySelector(`[data-attribute-index="${attributeCount - 1}"]`);
+                if (lastAttribute) {
+                    container.removeChild(lastAttribute);
+                    attributeCount--;
+                    updatePreviews();
+                }
+            }
+        }
+        
+        function updatePreviews() {
+            updateFormattedPreview();
+            updateRawPreview();
+            updateCopyrightPreview();
+        }
+        
+        function updateFormattedPreview() {
+            const headerImageUrl = document.getElementById('headerImageUrl').value;
+            const genderTag = document.getElementById('genderTag').value;
+            const audioTitle = document.getElementById('audioTitle').value || '[Audio Title]';
+            const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
+            const fullTags = document.getElementById('fullTags').value.trim();
+            const longDesc = document.getElementById('longDescription').value || '[Long description]';
+            const copyrightYear = document.getElementById('copyrightYear').value || '2025';
+            const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
+            
+            // Get attributes
+            let attributesHTML = '';
+            document.querySelectorAll('.attribute-reason').forEach((reasonSelect, i) => {
+                const reason = reasonSelect.value;
+                const nameSelect = document.querySelector(`.attribute-name[data-index="${i}"]`);
+                const urlInput = document.querySelector(`.attribute-url[data-index="${i}"]`);
+                
+                if (reason && nameSelect && nameSelect.value !== '') {
+                    const contributorIndex = nameSelect.value;
+                    const contributor = contributorsData[contributorIndex];
+                    const url = urlInput ? urlInput.value : contributor.profileUrl;
+                    
+                    if (url) {
+                        attributesHTML += `${reason}: <a href='${url}' target='_blank'>${contributor.username}</a><br>`;
+                    } else {
+                        attributesHTML += `${reason}: ${contributor.username}<br>`;
+                    }
+                }
+            });
+            
+            // Build formatted HTML
+            let html = '';
+            
+            if (headerImageUrl) {
+                html += `<a href='${headerImageUrl}'><img src='${headerImageUrl}' alt='Header Image' style='width:100%;'></a><br><br>`;
+            }
+            
+            let titleText = '';
+            if (genderTag) titleText += `(${genderTag}) `;
+            titleText += audioTitle;
+            if (shortDesc) titleText += ` - ${shortDesc}`;
+            
+            html += `<strong>${titleText}</strong><br><br>`;
+            
+            if (fullTags) {
+                const tagArray = fullTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                let tagsText = 'Full Tags: ';
+                if (genderTag) tagsText += `[${genderTag}] `;
+                tagsText += audioTitle ? `${audioTitle} ` : '';
+                tagsText += tagArray.map(tag => `[${tag}]`).join(' ');
+                html += `${tagsText}<br><br>`;
+            }
+            
+            html += `${longDesc.replace(/\n/g, '<br>')}<br><br>`;
+            
+            if (attributesHTML) {
+                html += `${attributesHTML}<br>`;
+            }
+            
+            html += `⚠️All content is created for Adults (18+) and is written and performed by Adults (18+). All acts depicted are erotic roleplay only and are fully consensual.⚠️<br><br>`;
+            
+            html += `Copyright ${copyrightYear} ${copyrightHolders}. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission from ${copyrightHolders}`;
+            
+            document.getElementById('postPreviewFormatted').innerHTML = html;
+        }
+        
+        function updateRawPreview() {
+            const headerImageUrl = document.getElementById('headerImageUrl').value;
+            const genderTag = document.getElementById('genderTag').value;
+            const audioTitle = document.getElementById('audioTitle').value || '[Audio Title]';
+            const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
+            const fullTags = document.getElementById('fullTags').value.trim();
+            const longDesc = document.getElementById('longDescription').value || '[Long description]';
+            const copyrightYear = document.getElementById('copyrightYear').value || '2025';
+            const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
+            
+            // Get attributes
+            let attributesText = '';
+            document.querySelectorAll('.attribute-reason').forEach((reasonSelect, i) => {
+                const reason = reasonSelect.value;
+                const nameSelect = document.querySelector(`.attribute-name[data-index="${i}"]`);
+                const urlInput = document.querySelector(`.attribute-url[data-index="${i}"]`);
+                
+                if (reason && nameSelect && nameSelect.value !== '') {
+                    const contributorIndex = nameSelect.value;
+                    const contributor = contributorsData[contributorIndex];
+                    const url = urlInput ? urlInput.value : contributor.profileUrl;
+                    
+                    if (url) {
+                        attributesText += `${reason}: <a href='${url}' target='_blank'>${contributor.username}</a>\n`;
+                    } else {
+                        attributesText += `${reason}: ${contributor.username}\n`;
+                    }
+                }
+            });
+            
+            // Build raw HTML
+            let rawHTML = '';
+            
+            if (headerImageUrl) {
+                rawHTML += `<a href='${headerImageUrl}'><img src='${headerImageUrl}' alt='Header Image' style='width:100%;'></a>\n\n`;
+            }
+            
+            let titleText = '';
+            if (genderTag) titleText += `(${genderTag}) `;
+            titleText += audioTitle;
+            if (shortDesc) titleText += ` - ${shortDesc}`;
+            
+            rawHTML += `<b>${titleText}</b>\n\n`;
+            
+            if (fullTags) {
+                const tagArray = fullTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                let tagsText = 'Full Tags: ';
+                if (genderTag) tagsText += `[${genderTag}] `;
+                tagsText += audioTitle ? `${audioTitle} ` : '';
+                tagsText += tagArray.map(tag => `[${tag}]`).join(' ');
+                rawHTML += `${tagsText}\n\n`;
+            }
+            
+            rawHTML += `${longDesc}\n\n`;
+            
+            if (attributesText) {
+                rawHTML += `${attributesText}\n`;
+            }
+            
+            rawHTML += `⚠️All content is created for Adults (18+) and is written and performed by Adults (18+). All acts depicted are erotic roleplay only and are fully consensual.⚠️\n\n`;
+            
+            rawHTML += `Copyright ${copyrightYear} ${copyrightHolders}. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission from ${copyrightHolders}`;
+            
+            document.getElementById('postPreview').textContent = rawHTML;
+        }
+        
+        function updateCopyrightPreview() {
+            const copyrightYear = document.getElementById('copyrightYear').value || '2025';
+            const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
+            document.getElementById('copyrightPreview').textContent = 
+                `Copyright ${copyrightYear} ${copyrightHolders}. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission from ${copyrightHolders}`;
+        }
+        
+        function copyPostToClipboard() {
+            const rawHTML = document.getElementById('postPreview').textContent;
+            
+            navigator.clipboard.writeText(rawHTML).then(function() {
+                showSuccessMessage('Post HTML copied to clipboard!');
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            });
+        }
+        
+        function showSuccessMessage(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 3000);
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('csvMessage');
+            messageDiv.style.display = 'block';
+            
+            let className = '';
+            switch(type) {
+                case 'success': className = 'success-message-csv'; break;
+                case 'error': className = 'error-message'; break;
+                case 'warning': className = 'warning-message'; break;
+                case 'loading': className = 'success-message-csv'; break;
+            }
+            
+            messageDiv.className = `message ${className}`;
+            messageDiv.textContent = message;
+            
+            if (type === 'success' || type === 'loading') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Add event listeners when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current year as default
+            const currentYear = new Date().getFullYear();
+            document.getElementById('copyrightYear').value = currentYear;
+            
+            const inputs = document.querySelectorAll('.form-input, .form-textarea, .form-select');
+            inputs.forEach(input => {
+                input.addEventListener('input', updatePreviews);
+                input.addEventListener('change', updatePreviews);
+            });
+            updatePreviews();
+        });
+    </script>
+</body>
+</html>

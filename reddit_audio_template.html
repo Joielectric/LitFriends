@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Reddit Audio Post Template</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cinzel', serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: radial-gradient(circle at center, #0b0a08 40%, #000 100%);
+      color: #e6d977;
+      line-height: 1.6;
+    }
+
+    .main-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .editor-panel, .preview-panel {
+      background: linear-gradient(145deg, #1c1a14, #2b261d);
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 0 15px rgba(255, 204, 0, 0.25);
+      border: 1px solid rgba(255, 204, 0, 0.3);
+    }
+
+    .navigation-header {
+      background: linear-gradient(145deg, #1c1a14, #2b261d);
+      border-radius: 10px;
+      padding: 15px 25px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 204, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-title {
+      font-size: 1.8em;
+      font-family: 'UnifrakturCook', cursive;
+      color: #ffcc00;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+      margin: 0;
+    }
+
+    .back-button {
+      padding: 10px 20px;
+      background: linear-gradient(145deg, #46d160, #2da44e);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .back-button:hover {
+      background: linear-gradient(145deg, #52e06a, #238636);
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(70, 209, 96, 0.5);
+    }
+
+    .panel-title {
+      font-size: 1.6em;
+      font-family: 'UnifrakturCook', cursive;
+      color: #ffcc00;
+      margin-bottom: 20px;
+      text-align: center;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+    }
+
+    .section-header {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ffcc00;
+      margin: 25px 0 15px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid rgba(255, 204, 0, 0.5);
+      text-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: bold;
+      color: #f6e07a;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea, .tag-select {
+      width: 100%;
+      padding: 10px;
+      background-color: #0f0e0c;
+      border: 2px solid #3c341f;
+      border-radius: 4px;
+      color: #e6d977;
+      font-family: inherit;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus, .form-textarea:focus, .tag-select:focus {
+      outline: none;
+      border-color: #ffcc00;
+      box-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+    }
+
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .tag-select {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .copy-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .copy-button {
+      flex: 1;
+      padding: 15px;
+      background: radial-gradient(circle, #ffcc00, #e6b800);
+      color: black;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+    }
+
+    .copy-button:hover {
+      background: radial-gradient(circle, #ffee66, #e6c300);
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
+    }
+
+    .copy-button.secondary {
+      background: radial-gradient(circle, #b6ff00, #6bb300);
+      color: #0b0a08;
+    }
+
+    .copy-button.secondary:hover {
+      background: radial-gradient(circle, #d4ff66, #88cc33);
+      box-shadow: 0 0 15px rgba(182, 255, 0, 0.7);
+    }
+
+    .success-message {
+      background: linear-gradient(145deg, #88cc33, #4a751a);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+      text-align: center;
+      text-shadow: 0 0 5px rgba(0,0,0,0.6);
+    }
+
+    /* Preview Styles */
+    .preview-section {
+      margin-bottom: 30px;
+      background: #0f0e0c;
+      padding: 20px;
+      border-radius: 6px;
+      border: 1px solid #3c341f;
+      box-shadow: inset 0 0 10px rgba(255, 204, 0, 0.1);
+    }
+
+    .preview-section-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ffcc00;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #3c341f;
+      padding-bottom: 8px;
+      text-shadow: 0 0 6px rgba(255, 204, 0, 0.5);
+    }
+
+    .title-preview {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #ffee88;
+      margin-bottom: 15px;
+      word-break: break-word;
+      padding: 15px;
+      background: #1c1a14;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+    }
+
+    .post-preview {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      background: linear-gradient(145deg, #1c1a14, #2b261d);
+      padding: 20px;
+      border-radius: 8px;
+      color: #e6d977;
+      border: 1px solid rgba(255, 204, 0, 0.2);
+      box-shadow: inset 0 2px 15px rgba(0,0,0,0.5);
+    }
+
+    .audio-link-group {
+      background: linear-gradient(145deg, #1c1a14, #2b261d);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #ffcc00;
+      margin-bottom: 15px;
+      box-shadow: 
+        0 4px 15px rgba(0,0,0,0.4),
+        0 0 20px rgba(255, 204, 0, 0.15);
+    }
+
+    .readonly-section {
+      background: linear-gradient(145deg, #1c1a14, #2b261d);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #b6ff00;
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px rgba(182, 255, 0, 0.2);
+    }
+
+    .readonly-section-title {
+      font-weight: bold;
+      color: #b6ff00;
+      margin-bottom: 8px;
+      text-shadow: 0 0 8px rgba(182, 255, 0, 0.5);
+    }
+
+    .readonly-field {
+      color: #d4c988;
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    .usage-tips {
+      margin-top: 20px;
+      padding: 15px;
+      background: #0f0e0c;
+      border-radius: 6px;
+      border: 1px solid #3c341f;
+      color: #aaa46e;
+    }
+
+    @media (max-width: 1000px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 10px;
+      }
+
+      .copy-buttons {
+        flex-direction: column;
+      }
+
+      .navigation-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <div class="navigation-header">
+        <h1 class="nav-title">Reddit Audio Post Template</h1>
+        <a href="index.html" class="back-button">← Back to Dashboard</a>
+    </div>
+
+    <div class="main-container">
+        <!-- EDITOR PANEL -->
+        <div class="editor-panel">
+            <div class="panel-title">Reddit Audio Post</div>
+            
+            <!-- TITLE SECTION -->
+            <div class="section-header">Title Section</div>
+            
+            <div class="form-group">
+                <label class="form-label">Gender Tag</label>
+                <select id="genderTag" class="tag-select">
+                    <option value="">Select Gender Tag</option>
+                    <option value="M4F">M4F</option>
+                    <option value="F4M">F4M</option>
+                    <option value="M4M">M4M</option>
+                    <option value="F4F">F4F</option>
+                    <option value="MF4A">MF4A</option>
+                    <option value="M4A">M4A</option>
+                    <option value="F4A">F4A</option>
+                    <option value="A4M">A4M</option>
+                    <option value="A4F">A4F</option>
+                    <option value="A4A">A4A</option>
+                    <option value="MM4F">MM4F</option>
+                    <option value="FF4M">FF4M</option>
+                    <option value="MMM4F">MMM4F</option>
+                    <option value="FFF4M">FFF4M</option>
+                    <option value="MM4A">MM4A</option>
+                    <option value="FF4A">FF4A</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Audio Title</label>
+                <input type="text" id="audioTitle" class="form-input" placeholder="Enter your audio title here">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tags (separated by commas - automatically wrapped in [ ])</label>
+                <textarea id="tags" class="form-textarea" placeholder="Enter your tags here, separated by commas"></textarea>
+                <small style="color: #888; font-size: 12px;">Enter tags separated by commas. They will automatically be wrapped in square brackets.</small>
+            </div>
+            
+            <!-- POST CONTENT SECTION -->
+            <div class="section-header">Post Content Section</div>
+            
+            <div class="form-group">
+                <label class="form-label">Short Description (Bold Title)</label>
+                <input type="text" id="shortDescription" class="form-input" placeholder="Enter the title/short description (will appear in bold)">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Long Description</label>
+                <textarea id="longDescription" class="form-textarea" style="min-height: 120px;" placeholder="Detailed description of your audio content, plot, characters, scenarios, etc."></textarea>
+            </div>
+            
+            <div class="section-header">Audio Links</div>
+            
+            <div id="audioLinksContainer">
+                <div class="audio-link-group" data-link-index="0">
+                    <div class="form-group">
+                        <label class="form-label">Audio Link 1 - URL</label>
+                        <input type="text" class="form-input audio-url" placeholder="https://your-audio-link.com" data-index="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Audio Link 1 - Display Text</label>
+                        <input type="text" class="form-input audio-text" placeholder="Listen Here" data-index="0">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button type="button" onclick="addAudioLink()" style="padding: 8px 16px; background-color: #46d160; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">+ Add Audio Link</button>
+                <button type="button" onclick="removeAudioLink()" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">- Remove Last Link</button>
+            </div>
+            
+            <div class="readonly-section">
+                <div class="readonly-section-title">18+ Disclaimer (Auto-included)</div>
+                <div class="readonly-field">
+                    This content is intended for mature audiences (18+) only. Please ensure you are of legal age in your jurisdiction before engaging with this material.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Credits</label>
+                <textarea id="credits" class="form-textarea" placeholder="**Collaborators:** [Names/Handles]
+**Writers:** [Writer credits]
+**Music:** [Music credits]
+**Production:** [Production credits]
+**Voice Acting:** [VA credits]
+**Special Thanks:** [Additional credits]"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Creator Name (for Copyright)</label>
+                <input type="text" id="creatorName" class="form-input" placeholder="Your name or handle for copyright notice">
+            </div>
+            
+            <div class="readonly-section">
+                <div class="readonly-section-title">Copyright Notice (Auto-generated)</div>
+                <div class="readonly-field" id="copyrightPreview">
+                    © 2025 YourName. All rights reserved. Do not repost, redistribute, or train models on this work without permission.
+                </div>
+            </div>
+            
+            <div class="copy-buttons">
+                <button class="copy-button" onclick="copyTitleToClipboard()">
+                    Copy Title
+                </button>
+                <button class="copy-button secondary" onclick="copyPostToClipboard()">
+                    Copy Post
+                </button>
+            </div>
+            
+            <div id="successMessage" class="success-message">
+                Content copied to clipboard!
+            </div>
+        </div>
+        
+        <!-- PREVIEW PANEL -->
+        <div class="preview-panel">
+            <div class="panel-title">Live Preview</div>
+            
+            <!-- Title Preview -->
+            <div class="preview-section">
+                <div class="preview-section-title">Reddit Title Preview</div>
+                <div class="title-preview" id="titlePreview">
+                    [Gender Tag] Audio Title [Tags]
+                </div>
+            </div>
+            
+            <!-- Post Preview -->
+            <div class="preview-section">
+                <div class="preview-section-title">Reddit Post Preview</div>
+                <div class="post-preview" id="postPreview">
+                    <!-- Post content preview will appear here -->
+                </div>
+            </div>
+            
+            <div class="usage-tips">
+                <strong style="color: #ff4500;">Usage Instructions:</strong>
+                <ul>
+                    <li><strong>Step 1:</strong> Fill out all the form fields</li>
+                    <li><strong>Step 2:</strong> Copy the title and paste as your Reddit post title</li>
+                    <li><strong>Step 3:</strong> Copy the post content and paste in Reddit</li>
+                    <li><strong>Multiple Users:</strong> Template can be easily customized for different creators</li>
+                    <li><strong>Clean Format:</strong> Simple, streamlined output without extra formatting</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Live preview update function
+        function updatePreviews() {
+            updateTitlePreview();
+            updatePostPreview();
+            updateCopyrightPreview();
+        }
+        
+        function updateTitlePreview() {
+            const genderTag = document.getElementById('genderTag').value;
+            const title = document.getElementById('audioTitle').value;
+            const tags = document.getElementById('tags').value.trim();
+            
+            // Build the title preview
+            let titlePreview = '';
+            if (genderTag) {
+                titlePreview += `[${genderTag}] `;
+            }
+            if (title) {
+                titlePreview += title;
+            } else {
+                titlePreview += 'Audio Title';
+            }
+            
+            // Add tags if they exist
+            if(tags) {
+                titlePreview += ' ';
+                const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                const formattedTags = tagArray.map(tag => `[${tag}]`).join(' ');
+                titlePreview += formattedTags;
+            }
+            
+            document.getElementById('titlePreview').textContent = titlePreview;
+        }
+        
+        function updatePostPreview() {
+            const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
+            const longDesc = document.getElementById('longDescription').value || '[Long description will appear here]';
+            const credits = document.getElementById('credits').value || '[Credits will appear here]';
+            const creatorName = document.getElementById('creatorName').value || 'YourName';
+            
+            // Get audio links
+            const audioUrls = document.querySelectorAll('.audio-url');
+            const audioTexts = document.querySelectorAll('.audio-text');
+            let audioLinksSection = '';
+            
+            let hasValidLinks = false;
+            for (let i = 0; i < audioUrls.length; i++) {
+                const url = audioUrls[i].value.trim();
+                const text = audioTexts[i].value.trim();
+                if (url) {
+                    hasValidLinks = true;
+                    const displayText = text || 'Audio Link';
+                    audioLinksSection += `[${displayText}](${url})\n\n`;
+                }
+            }
+            
+            // Build preview using your specified format
+            let preview = `**${shortDesc}**\n\n`;
+            preview += `${longDesc}\n\n`;
+
+            if (hasValidLinks) {
+                preview += audioLinksSection.trim() + '\n\n';
+            }
+
+            preview += `**18+ Disclaimer:** This content is intended for mature audiences (18+) only. Please ensure you are of legal age in your jurisdiction before engaging with this material.\n\n`;
+            preview += `${credits}\n\n`;
+            preview += `*© 2025 ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.*`;
+            
+            document.getElementById('postPreview').textContent = preview;
+        }
+        
+        function updateCopyrightPreview() {
+            const creatorName = document.getElementById('creatorName').value || 'YourName';
+            document.getElementById('copyrightPreview').textContent = 
+                `© 2025 ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.`;
+        }
+        
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.form-input, .form-textarea, .tag-select');
+            inputs.forEach(input => {
+                input.addEventListener('input', updatePreviews);
+                input.addEventListener('change', updatePreviews);
+            });
+            updatePreviews();
+        });
+        
+        // Audio links management
+        let audioLinkCount = 1;
+        
+        function addAudioLink() {
+            const container = document.getElementById('audioLinksContainer');
+            const newLinkGroup = document.createElement('div');
+            newLinkGroup.className = 'audio-link-group';
+            newLinkGroup.setAttribute('data-link-index', audioLinkCount);
+            
+            newLinkGroup.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Audio Link ${audioLinkCount + 1} - URL</label>
+                    <input type="text" class="form-input audio-url" placeholder="https://your-audio-link.com" data-index="${audioLinkCount}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Audio Link ${audioLinkCount + 1} - Display Text</label>
+                    <input type="text" class="form-input audio-text" placeholder="Listen Here" data-index="${audioLinkCount}">
+                </div>
+            `;
+            
+            container.appendChild(newLinkGroup);
+            audioLinkCount++;
+            
+            // Add event listeners to new inputs
+            const newInputs = newLinkGroup.querySelectorAll('.form-input');
+            newInputs.forEach(input => {
+                input.addEventListener('input', updatePreviews);
+            });
+            
+            updatePreviews();
+        }
+        
+        function removeAudioLink() {
+            if (audioLinkCount > 1) {
+                const container = document.getElementById('audioLinksContainer');
+                const lastLink = container.querySelector(`[data-link-index="${audioLinkCount - 1}"]`);
+                if (lastLink) {
+                    container.removeChild(lastLink);
+                    audioLinkCount--;
+                    updatePreviews();
+                }
+            }
+        }
+        
+        // Copy title to clipboard
+        function copyTitleToClipboard() {
+            const genderTag = document.getElementById('genderTag').value;
+            const title = document.getElementById('audioTitle').value || 'Audio Title';
+            const tags = document.getElementById('tags').value.trim();
+            
+            // Build the Reddit title
+            let redditTitle = '';
+            if (genderTag) {
+                redditTitle += `[${genderTag}] `;
+            }
+            redditTitle += title;
+            
+            // Add tags if they exist
+            if(tags) {
+                const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                const formattedTags = tagArray.map(tag => `[${tag}]`).join(' ');
+                redditTitle += ` ${formattedTags}`;
+            }
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(redditTitle).then(function() {
+                showSuccessMessage('Title copied to clipboard! Ready to paste as Reddit title.');
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            });
+        }
+        
+        // Copy post content to clipboard
+        function copyPostToClipboard() {
+            const shortDesc = document.getElementById('shortDescription').value || 'Short Description';
+            const longDesc = document.getElementById('longDescription').value || 'Long description content';
+            const credits = document.getElementById('credits').value || 'Credits information';
+            const creatorName = document.getElementById('creatorName').value || 'YourName';
+            
+            // Get audio links
+            const audioUrls = document.querySelectorAll('.audio-url');
+            const audioTexts = document.querySelectorAll('.audio-text');
+            let audioLinksMarkdown = '';
+            
+            let hasValidLinks = false;
+            for (let i = 0; i < audioUrls.length; i++) {
+                const url = audioUrls[i].value.trim();
+                const text = audioTexts[i].value.trim();
+                if (url) {
+                    hasValidLinks = true;
+                    const displayText = text || 'Audio Link';
+                    audioLinksMarkdown += `# **[${displayText}](${url})**\n\n`;
+                }
+            }
+            
+            // Build simplified format post
+            let markdown = `**${shortDesc}**\n\n`;
+            markdown += `${longDesc}\n\n`;
+            
+            if (hasValidLinks) {
+                markdown += `---\n\n`;
+                markdown += audioLinksMarkdown.trim() + '\n\n';
+                markdown += `---\n\n`;
+            }
+            
+            markdown += `**18+ Disclaimer:** This content is intended for mature audiences (18+) only. Please ensure you are of legal age in your jurisdiction before engaging with this material.\n\n`;
+            markdown += `${credits}\n\n`;
+            markdown += `*© 2025 ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.*`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(markdown).then(function() {
+                showSuccessMessage('Post content copied to clipboard! Ready to paste in Reddit.');
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            });
+        }
+        
+        function showSuccessMessage(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
