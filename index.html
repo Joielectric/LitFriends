@@ -213,7 +213,7 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
         
-        .color-legend {
+        .phase-filters {
             background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
             border-radius: 8px;
             padding: 20px;
@@ -221,7 +221,7 @@
             border: 1px solid rgba(255, 204, 0, 0.2);
         }
         
-        .legend-title {
+        .filters-title {
             color: #ffcc00;
             font-weight: bold;
             font-size: 1.1em;
@@ -229,32 +229,48 @@
             text-align: center;
         }
         
-        .legend-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+        .phase-filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
         }
         
-        .legend-item {
+        .phase-filter-btn {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 5px 8px;
-            border-radius: 4px;
-            background: rgba(255, 204, 0, 0.05);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            background: rgba(255, 204, 0, 0.1);
+            color: #e6d4a8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+            user-select: none;
         }
         
-        .legend-color {
-            width: 20px;
-            height: 15px;
+        .phase-filter-btn:hover {
+            background: rgba(255, 204, 0, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.15);
+        }
+        
+        .phase-filter-btn.active {
+            border-color: #ffcc00;
+            background: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+        }
+        
+        .phase-filter-btn .phase-color {
+            width: 16px;
+            height: 12px;
             border-radius: 3px;
             flex-shrink: 0;
-        }
-        
-        .legend-label {
-            font-size: 0.85em;
-            color: #b8a982;
-            font-weight: 500;
         }
         
         .projects-grid {
@@ -406,17 +422,13 @@
                 align-items: stretch;
             }
             
-            .legend-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 8px;
+            .phase-filter-buttons {
+                gap: 6px;
             }
             
-            .legend-item {
-                padding: 4px 6px;
-            }
-            
-            .legend-label {
-                font-size: 0.8em;
+            .phase-filter-btn {
+                padding: 6px 12px;
+                font-size: 0.85em;
             }
         }
     </style>
@@ -447,48 +459,51 @@
         <div class="projects-container">
             <div class="section-title">Current Projects</div>
             
-            <div class="color-legend">
-                <div class="legend-title">Project Phase Colors</div>
-                <div class="legend-grid">
-                    <div class="legend-item">
-                        <div class="legend-color phase-idea"></div>
-                        <span class="legend-label">Idea</span>
+            <div class="phase-filters">
+                <div class="filters-title">Filter by Project Phase</div>
+                <div class="phase-filter-buttons">
+                    <div class="phase-filter-btn active" data-phase="" onclick="filterByPhase('')">
+                        <span>All Phases</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-research"></div>
-                        <span class="legend-label">Research</span>
+                    <div class="phase-filter-btn" data-phase="Idea" onclick="filterByPhase('Idea')">
+                        <div class="phase-color phase-idea"></div>
+                        <span>Idea</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-writing"></div>
-                        <span class="legend-label">Writing</span>
+                    <div class="phase-filter-btn" data-phase="Research" onclick="filterByPhase('Research')">
+                        <div class="phase-color phase-research"></div>
+                        <span>Research</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-feedback"></div>
-                        <span class="legend-label">Feedback</span>
+                    <div class="phase-filter-btn" data-phase="Writing" onclick="filterByPhase('Writing')">
+                        <div class="phase-color phase-writing"></div>
+                        <span>Writing</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-casting"></div>
-                        <span class="legend-label">Casting</span>
+                    <div class="phase-filter-btn" data-phase="Feedback" onclick="filterByPhase('Feedback')">
+                        <div class="phase-color phase-feedback"></div>
+                        <span>Feedback</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-production"></div>
-                        <span class="legend-label">Production</span>
+                    <div class="phase-filter-btn" data-phase="Casting" onclick="filterByPhase('Casting')">
+                        <div class="phase-color phase-casting"></div>
+                        <span>Casting</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-post-production"></div>
-                        <span class="legend-label">Post Production</span>
+                    <div class="phase-filter-btn" data-phase="Production" onclick="filterByPhase('Production')">
+                        <div class="phase-color phase-production"></div>
+                        <span>Production</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-posting"></div>
-                        <span class="legend-label">Posting</span>
+                    <div class="phase-filter-btn" data-phase="Post Production" onclick="filterByPhase('Post Production')">
+                        <div class="phase-color phase-post-production"></div>
+                        <span>Post Production</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-posted"></div>
-                        <span class="legend-label">Posted</span>
+                    <div class="phase-filter-btn" data-phase="Posting" onclick="filterByPhase('Posting')">
+                        <div class="phase-color phase-posting"></div>
+                        <span>Posting</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color phase-on-hold"></div>
-                        <span class="legend-label">On-Hold</span>
+                    <div class="phase-filter-btn" data-phase="Posted" onclick="filterByPhase('Posted')">
+                        <div class="phase-color phase-posted"></div>
+                        <span>Posted</span>
+                    </div>
+                    <div class="phase-filter-btn" data-phase="On-Hold" onclick="filterByPhase('On-Hold')">
+                        <div class="phase-color phase-on-hold"></div>
+                        <span>On-Hold</span>
                     </div>
                 </div>
             </div>
@@ -503,23 +518,6 @@
                         <option value="phase">Project Phase</option>
                         <option value="owner">Current Owner</option>
                         <option value="date">Original Date</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label style="color: #ffcc00; font-weight: bold;">Filter by Phase:</label>
-                    <select id="phaseFilter" class="filter-select" onchange="filterProjects()">
-                        <option value="">All Phases</option>
-                        <option value="Idea">Idea</option>
-                        <option value="Research">Research</option>
-                        <option value="Writing">Writing</option>
-                        <option value="Feedback">Feedback</option>
-                        <option value="Casting">Casting</option>
-                        <option value="Production">Production</option>
-                        <option value="Post Production">Post Production</option>
-                        <option value="Posting">Posting</option>
-                        <option value="Posted">Posted</option>
-                        <option value="On-Hold">On-Hold</option>
                     </select>
                 </div>
                 
@@ -561,6 +559,7 @@
     <script>
         let projectsData = [];
         let filteredProjects = [];
+        let currentPhaseFilter = '';
         
         async function loadProjects() {
             const csvUrl = 'https://docs.google.com/spreadsheets/d/1sq4hZ3yAOTVbBUnvdBCHwai_jZY3i2RRG5DoxIczQjc/export?format=csv&gid=0';
@@ -642,6 +641,19 @@
             });
             
             ownerFilter.innerHTML = options;
+        }
+        
+        function filterByPhase(phase) {
+            currentPhaseFilter = phase;
+            
+            // Update button active states
+            document.querySelectorAll('.phase-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-phase="${phase}"]`).classList.add('active');
+            
+            // Apply all filters
+            filterProjects();
         }
         
         function displayProjects() {
@@ -748,11 +760,10 @@
         }
         
         function filterProjects() {
-            const phaseFilter = document.getElementById('phaseFilter').value;
             const ownerFilter = document.getElementById('ownerFilter').value;
             
             filteredProjects = projectsData.filter(project => {
-                const matchesPhase = !phaseFilter || project['Project Phase'] === phaseFilter;
+                const matchesPhase = !currentPhaseFilter || project['Project Phase'] === currentPhaseFilter;
                 const matchesOwner = !ownerFilter || project['Current Owner'] === ownerFilter;
                 return matchesPhase && matchesOwner;
             });
@@ -785,7 +796,8 @@
                         cursor: pointer;
                     ">
                 </div>
-            `;		
+            `;
+			
             document.getElementById('csvFile').addEventListener('change', handleFileUpload);
         }
         
@@ -849,4 +861,4 @@
         }
     </script>
 </body>
-</html>		
+</html>    
