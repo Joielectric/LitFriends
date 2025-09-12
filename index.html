@@ -126,6 +126,7 @@
             transition: all 0.3s ease;
             text-decoration: none;
             color: inherit;
+            display: block;
         }
         
         .tool-card:hover {
@@ -210,6 +211,50 @@
             padding: 25px;
             border: 1px solid rgba(255, 204, 0, 0.3);
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        
+        .color-legend {
+            background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+        }
+        
+        .legend-title {
+            color: #ffcc00;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            background: rgba(255, 204, 0, 0.05);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 15px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        .legend-label {
+            font-size: 0.85em;
+            color: #b8a982;
+            font-weight: 500;
         }
         
         .projects-grid {
@@ -360,6 +405,19 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+            
+            .legend-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 8px;
+            }
+            
+            .legend-item {
+                padding: 4px 6px;
+            }
+            
+            .legend-label {
+                font-size: 0.8em;
+            }
         }
     </style>
 </head>
@@ -388,6 +446,52 @@
         
         <div class="projects-container">
             <div class="section-title">Current Projects</div>
+            
+            <div class="color-legend">
+                <div class="legend-title">Project Phase Colors</div>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="legend-color phase-idea"></div>
+                        <span class="legend-label">Idea</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-research"></div>
+                        <span class="legend-label">Research</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-writing"></div>
+                        <span class="legend-label">Writing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-feedback"></div>
+                        <span class="legend-label">Feedback</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-casting"></div>
+                        <span class="legend-label">Casting</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-production"></div>
+                        <span class="legend-label">Production</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-post-production"></div>
+                        <span class="legend-label">Post Production</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-posting"></div>
+                        <span class="legend-label">Posting</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-posted"></div>
+                        <span class="legend-label">Posted</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color phase-on-hold"></div>
+                        <span class="legend-label">On-Hold</span>
+                    </div>
+                </div>
+            </div>
             
             <div class="controls">
                 <button class="load-button" onclick="loadProjects()">Load Current Projects</button>
@@ -682,7 +786,7 @@
                     ">
                 </div>
             `;
-            
+			
             document.getElementById('csvFile').addEventListener('change', handleFileUpload);
         }
         
@@ -746,4 +850,4 @@
         }
     </script>
 </body>
-</html>
+</html>		
