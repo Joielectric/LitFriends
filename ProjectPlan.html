@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lit Friends — Production Project Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0c0a;
+    --bg-card: #161410;
+    --bg-card-hover: #1c1916;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.14);
+    --text-primary: #f0ebe3;
+    --text-secondary: #8a8070;
+    --text-muted: #5a5248;
+    --gold: #c9973a;
+    --gold-light: #e8b96a;
+    --gold-dim: rgba(201,151,58,0.15);
+    --purple: #8b7fd4;
+    --purple-dim: rgba(139,127,212,0.15);
+    --teal: #4ab89a;
+    --teal-dim: rgba(74,184,154,0.15);
+    --coral: #d4714a;
+    --coral-dim: rgba(212,113,74,0.15);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Noise texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .main-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 6vw, 58px);
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .main-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .header-rule {
+    width: 48px;
+    height: 1px;
+    background: var(--gold);
+    margin: 2rem auto 0;
+    opacity: 0.5;
+  }
+
+  /* ── Timeline bar ── */
+  .timeline-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    margin-bottom: 2.5rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    height: 6px;
+  }
+
+  .tl-seg { height: 100%; transition: opacity 0.2s; }
+  .tl-seg-1 { background: var(--gold); }
+  .tl-seg-2 { background: var(--purple); }
+  .tl-seg-3 { background: var(--teal); }
+  .tl-seg-4 { background: var(--coral); }
+
+  /* ── Phase grid ── */
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .phase-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    user-select: none;
+  }
+
+  .phase-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+
+  .phase-card.active { transform: translateY(0); }
+  .phase-card.active[data-phase="1"] { border-color: rgba(201,151,58,0.5); background: rgba(201,151,58,0.05); }
+  .phase-card.active[data-phase="2"] { border-color: rgba(139,127,212,0.5); background: rgba(139,127,212,0.05); }
+  .phase-card.active[data-phase="3"] { border-color: rgba(74,184,154,0.5); background: rgba(74,184,154,0.05); }
+  .phase-card.active[data-phase="4"] { border-color: rgba(212,113,74,0.5); background: rgba(212,113,74,0.05); }
+
+  .phase-accent { height: 3px; }
+  .pa-1 { background: var(--gold); }
+  .pa-2 { background: var(--purple); }
+  .pa-3 { background: var(--teal); }
+  .pa-4 { background: var(--coral); }
+
+  .phase-body { padding: 16px; }
+
+  .phase-week {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .pw-1 { color: var(--gold); }
+  .pw-2 { color: var(--purple); }
+  .pw-3 { color: var(--teal); }
+  .pw-4 { color: var(--coral); }
+
+  .phase-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .phase-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* ── Detail panel ── */
+  .detail-wrap {
+    position: relative;
+    min-height: 280px;
+  }
+
+  .detail-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    display: none;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .detail-panel.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-badge {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .db-1 { background: var(--gold-dim); color: var(--gold-light); }
+  .db-2 { background: var(--purple-dim); color: var(--purple); }
+  .db-3 { background: var(--teal-dim); color: var(--teal); }
+  .db-4 { background: var(--coral-dim); color: var(--coral); }
+
+  .detail-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .tasks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 2.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 560px) {
+    .tasks-grid { grid-template-columns: 1fr; }
+    .phases { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .task-group h4 {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .task-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .td-1 { background: var(--gold); }
+  .td-2 { background: var(--purple); }
+  .td-3 { background: var(--teal); }
+  .td-4 { background: var(--coral); }
+
+  .deliverable {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .del-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .del-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 4rem;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .footer-text span {
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  /* ── Hint ── */
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <p class="eyebrow">Lit Friends Collective</p>
+    <h1 class="main-title">Audio Production<br><em>Project Plan</em></h1>
+    <p class="subtitle">A 4-week collaborative framework for writers, voice actors, editors, and sound designers.</p>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="timeline-bar">
+    <div class="tl-seg tl-seg-1"></div>
+    <div class="tl-seg tl-seg-2"></div>
+    <div class="tl-seg tl-seg-3"></div>
+    <div class="tl-seg tl-seg-4"></div>
+  </div>
+
+  <div class="phases">
+    <div class="phase-card active" data-phase="1" onclick="showPhase(1)">
+      <div class="phase-accent pa-1"></div>
+      <div class="phase-body">
+        <p class="phase-week pw-1">Week 1</p>
+        <p class="phase-name">Scoping &amp; Vision</p>
+        <p class="phase-desc">Choose the project and define its boundaries</p>
+      </div>
+    </div>
+    <div class="phase-card" data-phase="2" onclick="showPhase(2)">
+      <div class="phase-accent pa-2"></div>
+      <div class="phase-body">
+        <p class="phase-week pw-2">Week 2</p>
+        <p class="phase-name">Casting &amp; Recording</p>
+        <p class="phase-desc">Assign roles and capture all performances</p>
+      </div>
+    </div>
+    <div class="phase-card" data-phase="3" onclick="showPhase(3)">
+      <div class="phase-accent pa-3"></div>
+      <div class="phase-body">
+        <p class="phase-week pw-3">Week 3</p>
+        <p class="phase-name">Editing</p>
+        <p class="phase-desc">Clean, arrange, and sync all audio</p>
+      </div>
+    </div>
+    <div class="phase-card" data-phase="4" onclick="showPhase(4)">
+      <div class="phase-accent pa-4"></div>
+      <div class="phase-body">
+        <p class="phase-week pw-4">Week 4</p>
+        <p class="phase-name">Post-Production</p>
+        <p class="phase-desc">Polish, master, and publish the final piece</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-wrap">
+
+    <div id="detail-1" class="detail-panel visible">
+      <div class="detail-top">
+        <span class="detail-badge db-1">Week 1</span>
+        <p class="detail-title">Scoping &amp; Vision</p>
+      </div>
+      <div class="tasks-grid">
+        <div class="task-group">
+          <h4>Creative</h4>
+          <div class="task-item"><div class="task-dot td-1"></div>Pitch and vote on the project concept</div>
+          <div class="task-item"><div class="task-dot td-1"></div>Define tone, genre, and target runtime</div>
+          <div class="task-item"><div class="task-dot td-1"></div>Identify all characters and voice roles needed</div>
+          <div class="task-item"><div class="task-dot td-1"></div>Finalize the script or narrative outline</div>
+        </div>
+        <div class="task-group">
+          <h4>Logistics</h4>
+          <div class="task-item"><div class="task-dot td-1"></div>Set the full project timeline and milestones</div>
+          <div class="task-item"><div class="task-dot td-1"></div>Confirm team availability and capacity</div>
+          <div class="task-item"><div class="task-dot td-1"></div>Create shared folder and file naming conventions</div>
+          <div class="task-item"><div class="task-dot td-1"></div>Agree on delivery platform and audio format</div>
+        </div>
+      </div>
+      <div class="deliverable">
+        <span class="del-label">Deliverable</span>
+        <span class="del-value">Approved script + project brief shared with all collaborators</span>
+      </div>
+    </div>
+
+    <div id="detail-2" class="detail-panel">
+      <div class="detail-top">
+        <span class="detail-badge db-2">Week 2</span>
+        <p class="detail-title">Casting &amp; Recording</p>
+      </div>
+      <div class="tasks-grid">
+        <div class="task-group">
+          <h4>Casting</h4>
+          <div class="task-item"><div class="task-dot td-2"></div>Match voice actors to roles based on fit and availability</div>
+          <div class="task-item"><div class="task-dot td-2"></div>Send out character briefs and script sections</div>
+          <div class="task-item"><div class="task-dot td-2"></div>Confirm audio specs (sample rate, format, mic proximity)</div>
+        </div>
+        <div class="task-group">
+          <h4>Recording</h4>
+          <div class="task-item"><div class="task-dot td-2"></div>VAs record and submit raw takes by mid-week</div>
+          <div class="task-item"><div class="task-dot td-2"></div>Review submissions and flag retakes needed</div>
+          <div class="task-item"><div class="task-dot td-2"></div>Collect retakes and confirm all parts received</div>
+          <div class="task-item"><div class="task-dot td-2"></div>Hand off all audio files to the editor</div>
+        </div>
+      </div>
+      <div class="deliverable">
+        <span class="del-label">Deliverable</span>
+        <span class="del-value">All approved raw recordings submitted and organized in the shared folder</span>
+      </div>
+    </div>
+
+    <div id="detail-3" class="detail-panel">
+      <div class="detail-top">
+        <span class="detail-badge db-3">Week 3</span>
+        <p class="detail-title">Editing</p>
+      </div>
+      <div class="tasks-grid">
+        <div class="task-group">
+          <h4>Cleanup</h4>
+          <div class="task-item"><div class="task-dot td-3"></div>Noise reduction and breath trimming on all tracks</div>
+          <div class="task-item"><div class="task-dot td-3"></div>Normalize levels across all voice files</div>
+          <div class="task-item"><div class="task-dot td-3"></div>Remove false starts, long pauses, and artifacts</div>
+        </div>
+        <div class="task-group">
+          <h4>Assembly</h4>
+          <div class="task-item"><div class="task-dot td-3"></div>Arrange all tracks in the project timeline</div>
+          <div class="task-item"><div class="task-dot td-3"></div>Sync dialogue, pacing, and emotional beats</div>
+          <div class="task-item"><div class="task-dot td-3"></div>Layer in placeholder SFX and ambient beds</div>
+          <div class="task-item"><div class="task-dot td-3"></div>Share rough cut for team review and notes</div>
+        </div>
+      </div>
+      <div class="deliverable">
+        <span class="del-label">Deliverable</span>
+        <span class="del-value">Approved rough cut handed off to post-production</span>
+      </div>
+    </div>
+
+    <div id="detail-4" class="detail-panel">
+      <div class="detail-top">
+        <span class="detail-badge db-4">Week 4</span>
+        <p class="detail-title">Post-Production</p>
+      </div>
+      <div class="tasks-grid">
+        <div class="task-group">
+          <h4>Finishing</h4>
+          <div class="task-item"><div class="task-dot td-4"></div>Mix all elements — voice, music, and SFX</div>
+          <div class="task-item"><div class="task-dot td-4"></div>EQ, compression, and spatial treatment per track</div>
+          <div class="task-item"><div class="task-dot td-4"></div>Master to target loudness (-16 LUFS for streaming)</div>
+          <div class="task-item"><div class="task-dot td-4"></div>Export final file in all required formats</div>
+        </div>
+        <div class="task-group">
+          <h4>Publishing</h4>
+          <div class="task-item"><div class="task-dot td-4"></div>Write title, description, and tags for platforms</div>
+          <div class="task-item"><div class="task-dot td-4"></div>Create cover art or post visual if needed</div>
+          <div class="task-item"><div class="task-dot td-4"></div>Upload and schedule the release</div>
+          <div class="task-item"><div class="task-dot td-4"></div>Share to community channels and credit all collaborators</div>
+        </div>
+      </div>
+      <div class="deliverable">
+        <span class="del-label">Deliverable</span>
+        <span class="del-value">Published audio — live, credited, and shared with Lit Friends</span>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="hint">Click a phase card to view its tasks &amp; deliverable</p>
+
+  <footer class="footer">
+    <p class="footer-text"><span>✦</span> &nbsp;Lit Friends Collective &nbsp;<span>✦</span></p>
+  </footer>
+
+</div>
+
+<script>
+  function showPhase(n) {
+    document.querySelectorAll('.phase-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('visible'));
+    document.querySelector('[data-phase="' + n + '"]').classList.add('active');
+    document.getElementById('detail-' + n).classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
