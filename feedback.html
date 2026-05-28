@@ -31,61 +31,93 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
   font-weight: 400;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.75;
   min-height: 100vh;
   overflow-x: hidden;
 }
 body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
+  content: "";
+  position: fixed; inset: 0;
   background:
     radial-gradient(ellipse 70% 40% at 50% 0%, rgba(91,141,232,0.07) 0%, transparent 70%),
     radial-gradient(ellipse 50% 50% at 90% 90%, rgba(30,20,50,0.4) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
+  pointer-events: none; z-index: 0;
 }
-.site-banner { width: 100%; display: block; position: relative; z-index: 1; line-height: 0; }
-.site-banner img { width: 100%; height: auto; display: block; max-height: 260px; object-fit: cover; object-position: center center; }
-.page-wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 1.5rem 6rem; }
-.page-intro { text-align: center; padding: 3.5rem 1rem 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; animation: fadeUp 0.55s ease both 0.05s; }
-.intro-eyebrow { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.4em; color: var(--silver); font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 1rem; }
-.page-intro h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 300; color: var(--silver-hi); line-height: 1.15; margin-bottom: 0.5rem; }
+
+/* === BANNER FRAME === */
+.banner-frame {
+  position: relative; z-index: 1;
+  padding: 1rem;
+  background: var(--surface);
+  border-bottom: 2px solid var(--electric-dim);
+}
+.banner-frame::before {
+  content: "";
+  position: absolute; inset: 6px;
+  border: 1px solid rgba(91,141,232,0.25);
+  pointer-events: none; z-index: 2;
+}
+.banner-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 240px;
+  object-fit: contain;
+  object-position: center center;
+}
+
+/* === LAYOUT === */
+.page-wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 1rem 5rem; }
+
+/* === INTRO === */
+.page-intro { text-align: center; padding: 2.5rem 1rem 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+.intro-eyebrow { font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: 0.4em; color: var(--silver); font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 0.8rem; }
+.page-intro h1 { font-family: "Cormorant Garamond", serif; font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 300; color: var(--silver-hi); line-height: 1.15; margin-bottom: 0.4rem; }
 .page-intro h1 em { font-style: italic; color: var(--electric); }
-.intro-script { font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--text-mid); margin-bottom: 1.4rem; display: block; }
-.divider { display: flex; align-items: center; gap: 0.8rem; justify-content: center; margin: 1.5rem 0; }
-.divider span { flex: 1; max-width: 100px; height: 1px; background: var(--border-mid); }
+.intro-script { font-family: "Dancing Script", cursive; font-size: 1.2rem; color: var(--text-mid); margin-bottom: 1rem; display: block; }
+.divider { display: flex; align-items: center; gap: 0.8rem; justify-content: center; margin: 1.2rem 0; }
+.divider span { flex: 1; max-width: 80px; height: 1px; background: var(--border-mid); }
 .divider i { width: 5px; height: 5px; background: var(--electric-dim); transform: rotate(45deg); display: inline-block; }
-.intro-text { font-size: 0.95rem; color: var(--text-mid); max-width: 500px; margin: 0 auto; line-height: 1.85; }
-.prize-banner { border: 1px solid var(--border-mid); border-top: 2px solid var(--electric-dim); background: rgba(91,141,232,0.05); border-radius: var(--radius); padding: 1.8rem 2rem; margin-bottom: 3rem; animation: fadeUp 0.55s ease both 0.1s; }
-.prize-header { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.35em; color: var(--electric); text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.7rem; }
-.prize-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
-.prize-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; }
-.prize-tier { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.3em; color: var(--electric); text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
-.prize-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 400; color: var(--silver-hi); margin-bottom: 0.25rem; }
+.intro-text { font-size: 0.92rem; color: var(--text-mid); max-width: 480px; margin: 0 auto; line-height: 1.85; }
+
+/* === PRIZE BANNER === */
+.prize-banner { border: 1px solid var(--border-mid); border-top: 2px solid var(--electric-dim); background: rgba(91,141,232,0.05); border-radius: var(--radius); padding: 1.5rem 1.2rem; margin-bottom: 2rem; }
+.prize-header { font-family: "Cinzel", serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.35em; color: var(--electric); text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.7rem; }
+.prize-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
+.prize-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; }
+.prize-tier { font-family: "Cinzel", serif; font-size: 0.58rem; letter-spacing: 0.3em; color: var(--electric); text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
+.prize-card h3 { font-family: "Cormorant Garamond", serif; font-size: 1.1rem; font-weight: 400; color: var(--silver-hi); margin-bottom: 0.2rem; }
 .prize-card p { font-size: 0.82rem; color: var(--text-mid); line-height: 1.6; }
-.prize-dates { font-size: 0.82rem; color: var(--text); border-top: 1px solid var(--border); padding-top: 0.9rem; display: flex; gap: 2rem; flex-wrap: wrap; }
+.prize-dates { font-size: 0.84rem; color: var(--text); border-top: 1px solid var(--border); padding-top: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; }
 .prize-dates strong { color: var(--silver-hi); font-weight: 600; }
+.announce-platforms { margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-mid); }
+.announce-platforms span { color: var(--electric); font-weight: 500; }
+
+/* === AGE GATE === */
+.age-gate-warning { display: none; background: rgba(192,57,74,0.1); border: 1px solid var(--danger); border-radius: var(--radius); padding: 1.5rem 1.2rem; text-align: center; margin-top: 1rem; }
+.age-gate-warning p { color: #e87a88; font-size: 0.9rem; }
+.age-gate-warning strong { display: block; font-size: 1.1rem; color: #f0a0a8; font-family: "Cinzel", serif; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
 .form-body { display: none; }
 .form-body.revealed { display: block; }
-.age-gate-warning { display: none; background: rgba(192,57,74,0.1); border: 1px solid var(--danger); border-radius: var(--radius); padding: 1.5rem 1.8rem; text-align: center; margin-top: 1rem; }
-.age-gate-warning p { color: #e87a88; font-size: 0.9rem; }
-.age-gate-warning strong { display: block; font-size: 1.15rem; color: #f0a0a8; font-family: 'Cinzel', serif; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
-.form-section { margin-bottom: 3.2rem; animation: fadeUp 0.55s ease both 0.15s; }
-.section-label { font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.3em; color: var(--silver-hi); text-transform: uppercase; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; padding-left: 0.8rem; border-left: 2px solid var(--electric); }
-.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border-mid); }
-.field { margin-bottom: 1.8rem; }
-label.field-label { display: block; font-size: 0.92rem; font-weight: 500; color: var(--silver); margin-bottom: 0.5rem; letter-spacing: 0.02em; }
+
+/* === FORM SECTIONS === */
+.form-section { margin-bottom: 2.8rem; }
+.section-label { font-family: "Cinzel", serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.28em; color: var(--silver-hi); text-transform: uppercase; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.8rem; padding-left: 0.8rem; border-left: 2px solid var(--electric); }
+.section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+.field { margin-bottom: 1.6rem; }
+label.field-label { display: block; font-size: 0.95rem; font-weight: 500; color: var(--silver); margin-bottom: 0.5rem; letter-spacing: 0.01em; line-height: 1.4; }
 label.field-label .req { color: var(--electric); font-weight: 400; margin-left: 3px; }
 .field-hint { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.5rem; font-style: italic; }
+
+/* === INPUTS === */
 input[type="text"], input[type="email"], select, textarea {
   width: 100%; background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text); font-family: 'Raleway', sans-serif; font-weight: 400;
-  font-size: 0.9rem; padding: 0.72rem 1rem; border-radius: var(--radius);
+  color: var(--text); font-family: "Raleway", sans-serif; font-weight: 400;
+  font-size: 1rem; padding: 0.8rem 1rem; border-radius: var(--radius);
   outline: none; transition: border-color 0.2s, box-shadow 0.2s;
   -webkit-appearance: none; appearance: none; line-height: 1.6;
 }
@@ -97,93 +129,140 @@ select {
   background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; cursor: pointer;
 }
 select option { background: var(--surface-2); color: var(--text); }
-.radio-group, .yn-group { display: flex; flex-direction: column; gap: 0.6rem; }
-.radio-group.inline, .yn-group.inline { flex-direction: row; flex-wrap: wrap; gap: 0.7rem; }
+
+/* === RADIO / CHECKBOX === */
+.radio-group { display: flex; flex-direction: column; gap: 0.6rem; }
+.radio-group.inline { flex-direction: row; flex-wrap: wrap; gap: 0.6rem; }
 .radio-item, .check-item {
-  display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem;
+  display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 1rem;
   border: 1px solid var(--border); background: var(--surface-2); cursor: pointer;
   border-radius: var(--radius); transition: border-color 0.18s, background 0.18s; user-select: none;
+  min-height: 48px;
 }
 .radio-item:hover, .check-item:hover { border-color: var(--border-mid); background: var(--surface-3); }
 .radio-item input[type="radio"], .check-item input[type="checkbox"] {
-  width: 14px; height: 14px; border: 1px solid var(--electric-dim); background: transparent;
+  width: 18px; height: 18px; border: 1px solid var(--electric-dim); background: transparent;
   appearance: none; -webkit-appearance: none; flex-shrink: 0; cursor: pointer; position: relative; padding: 0; margin: 0;
 }
 .radio-item input[type="radio"] { border-radius: 50%; }
-.radio-item input[type="radio"]:checked { background: var(--electric-dim); border-color: var(--electric); box-shadow: inset 0 0 0 3px var(--bg); }
+.radio-item input[type="radio"]:checked { background: var(--electric-dim); border-color: var(--electric); box-shadow: inset 0 0 0 4px var(--bg); }
 .check-item input[type="checkbox"]:checked { background: var(--electric-dim); border-color: var(--electric); }
-.check-item input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 3px; top: 1px; width: 5px; height: 8px; border: 1.5px solid var(--bg); border-top: none; border-left: none; transform: rotate(40deg); }
+.check-item input[type="checkbox"]:checked::after { content: ""; position: absolute; left: 4px; top: 2px; width: 6px; height: 9px; border: 2px solid var(--bg); border-top: none; border-left: none; transform: rotate(40deg); }
 .radio-item.danger-option { border-color: rgba(192,57,74,0.3); }
 .radio-item.danger-option:hover { border-color: rgba(192,57,74,0.6); background: rgba(192,57,74,0.06); }
 .radio-item.danger-option input[type="radio"]:checked { background: var(--danger); border-color: #e05060; }
-.radio-item span, .check-item span { font-size: 0.88rem; color: var(--text); line-height: 1.4; }
-.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.55rem; }
+.radio-item span, .check-item span { font-size: 0.92rem; color: var(--text); line-height: 1.4; }
+.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.5rem; }
+
+/* === SCALE === */
 .scale-group { display: flex; gap: 0.5rem; flex-wrap: nowrap; }
 .scale-group input[type="radio"] { display: none; }
 .scale-group label {
-  width: 58px; height: 52px; display: flex; align-items: center; justify-content: center;
+  flex: 1; min-width: 0; height: 54px; display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--border); background: var(--surface-2); color: var(--text-mid);
-  font-size: 1rem; font-weight: 500; cursor: pointer; border-radius: var(--radius);
+  font-size: 1.05rem; font-weight: 500; cursor: pointer; border-radius: var(--radius);
   transition: all 0.15s; user-select: none;
 }
 .scale-group label:hover { border-color: var(--border-mid); color: var(--text); background: var(--surface-3); }
 .scale-group input[type="radio"]:checked + label { background: var(--electric-dim); border-color: var(--electric); color: var(--silver-hi); }
 .scale-ends { display: flex; justify-content: space-between; margin-top: 0.4rem; }
 .scale-ends span { font-size: 0.72rem; color: var(--text-dim); font-style: italic; }
+
+/* === STARS === */
 .star-group { display: flex; gap: 0.15rem; flex-direction: row-reverse; justify-content: flex-end; }
 .star-group input { display: none; }
-.star-group label { font-size: 1.7rem; color: var(--text-dim); cursor: pointer; margin: 0; padding: 0 2px; transition: color 0.12s, transform 0.08s; user-select: none; line-height: 1; }
-.star-group label::before { content: '\2736'; display: block; }
+.star-group label { font-size: 2rem; color: var(--text-dim); cursor: pointer; margin: 0; padding: 0 3px; transition: color 0.12s; user-select: none; line-height: 1; min-height: 48px; display: flex; align-items: center; }
+.star-group label::before { content: "✦"; }
 .star-group input:checked ~ label, .star-group label:hover, .star-group label:hover ~ label { color: var(--silver); }
-.star-group label:active { transform: scale(0.88); }
-.grid-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.grid-table th { padding: 0.6rem 0.4rem; text-align: center; color: var(--text-mid); font-weight: 500; font-size: 0.78rem; border-bottom: 1px solid var(--border); letter-spacing: 0.04em; }
+
+/* === GRID TABLE - mobile friendly === */
+.grid-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.grid-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 340px; }
+.grid-table th { padding: 0.6rem 0.5rem; text-align: center; color: var(--text-mid); font-weight: 500; font-size: 0.78rem; border-bottom: 1px solid var(--border); }
 .grid-table th:first-child { text-align: left; }
-.grid-table td { padding: 0.55rem 0.4rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
-.grid-table td:first-child { text-align: left; color: var(--text); font-size: 0.85rem; padding-left: 0; min-width: 160px; }
+.grid-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+.grid-table td:first-child { text-align: left; color: var(--text); padding-left: 0; }
 .grid-table tr:last-child td { border-bottom: none; }
-.grid-table input[type="radio"] { width: 16px; height: 16px; border: 1px solid var(--electric-dim); background: transparent; appearance: none; -webkit-appearance: none; border-radius: 50%; cursor: pointer; position: relative; flex-shrink: 0; transition: all 0.15s; }
-.grid-table input[type="radio"]:checked { background: var(--electric-dim); border-color: var(--electric); box-shadow: inset 0 0 0 3px var(--bg); }
-.tone-track { position: relative; padding: 0.5rem 0; }
-input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 1px; background: var(--border-mid); outline: none; cursor: pointer; }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--silver); border-radius: 0; transform: rotate(45deg); cursor: pointer; }
-input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: var(--silver); border-radius: 0; border: none; cursor: pointer; }
-.tone-labels { display: flex; justify-content: space-between; margin-top: 0.5rem; }
-.tone-labels span { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.05em; font-family: 'Cinzel', serif; }
-.tone-value { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; font-style: italic; color: var(--silver); margin-top: 0.4rem; min-height: 1.4em; }
-.contest-fields { display: none; border: 1px solid var(--border); border-top: 2px solid var(--electric-dim); background: rgba(91,141,232,0.04); border-radius: var(--radius); padding: 1.5rem 1.8rem; margin-top: 1.2rem; }
+.grid-table input[type="radio"] { width: 20px; height: 20px; border: 1px solid var(--electric-dim); background: transparent; appearance: none; -webkit-appearance: none; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.15s; }
+.grid-table input[type="radio"]:checked { background: var(--electric-dim); border-color: var(--electric); box-shadow: inset 0 0 0 4px var(--bg); }
+
+/* === TONE SLIDER === */
+.tone-track { padding: 0.5rem 0; }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: var(--border-mid); outline: none; cursor: pointer; border-radius: 2px; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--silver); border-radius: 0; transform: rotate(45deg); cursor: pointer; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--silver); border-radius: 0; border: none; cursor: pointer; }
+.tone-labels { display: flex; justify-content: space-between; margin-top: 0.6rem; }
+.tone-labels span { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.05em; font-family: "Cinzel", serif; }
+.tone-value { text-align: center; font-family: "Cormorant Garamond", serif; font-size: 1rem; font-style: italic; color: var(--silver); margin-top: 0.4rem; }
+
+/* === CONTEST FIELDS === */
+.contest-fields { display: none; border: 1px solid var(--border); border-top: 2px solid var(--electric-dim); background: rgba(91,141,232,0.04); border-radius: var(--radius); padding: 1.3rem 1.2rem; margin-top: 1rem; }
 .contest-fields.visible { display: block; }
-.comfort-note { border: 1px solid rgba(180,195,225,0.15); border-left: 3px solid var(--text-dim); background: var(--surface-2); border-radius: var(--radius); padding: 1.2rem 1.5rem; margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-mid); line-height: 1.8; }
-.comfort-note strong { display: block; font-size: 0.72rem; font-family: 'Cinzel', serif; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.6rem; }
+.comfort-note { border: 1px solid rgba(180,195,225,0.15); border-left: 3px solid var(--text-dim); background: var(--surface-2); border-radius: var(--radius); padding: 1.1rem 1.2rem; margin-top: 1.4rem; font-size: 0.82rem; color: var(--text-mid); line-height: 1.8; }
+.comfort-note strong { display: block; font-size: 0.68rem; font-family: "Cinzel", serif; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem; }
 .comfort-note ul { list-style: none; margin: 0.5rem 0; padding: 0; }
 .comfort-note ul li { padding-left: 1rem; position: relative; margin-bottom: 0.15rem; }
-.comfort-note ul li::before { content: '\2014'; position: absolute; left: 0; color: var(--text-dim); }
-.comfort-reserve { margin-top: 0.6rem; font-style: italic; font-size: 0.8rem; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 0.6rem; }
-.submit-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 3rem; padding-top: 3rem; border-top: 1px solid var(--border); }
-.submit-note { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.9rem; color: var(--text-dim); text-align: center; max-width: 400px; line-height: 1.85; }
-button[type="submit"] { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--silver); background: transparent; border: 1px solid var(--electric-dim); padding: 1rem 3.5rem; cursor: pointer; transition: background 0.25s, color 0.25s, border-color 0.25s; position: relative; overflow: hidden; border-radius: var(--radius); }
-button[type="submit"]::before { content: ''; position: absolute; inset: 0; background: var(--electric-dim); transform: scaleX(0); transform-origin: left; transition: transform 0.28s ease; z-index: 0; }
+.comfort-note ul li::before { content: "4"; position: absolute; left: 0; color: var(--text-dim); }
+.comfort-reserve { margin-top: 0.6rem; font-style: italic; font-size: 0.79rem; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 0.6rem; }
+
+/* === SUBMIT === */
+.submit-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 2.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
+.submit-note { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 0.92rem; color: var(--text-dim); text-align: center; max-width: 400px; line-height: 1.85; }
+button[type="submit"] {
+  font-family: "Cinzel", serif; font-size: 0.7rem; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--silver); background: transparent; border: 1px solid var(--electric-dim);
+  padding: 1.1rem 3rem; cursor: pointer; transition: background 0.25s, color 0.25s, border-color 0.25s;
+  position: relative; overflow: hidden; border-radius: var(--radius); width: 100%; max-width: 320px;
+  min-height: 54px;
+}
+button[type="submit"]::before { content: ""; position: absolute; inset: 0; background: var(--electric-dim); transform: scaleX(0); transform-origin: left; transition: transform 0.28s ease; z-index: 0; }
 button[type="submit"]:hover::before { transform: scaleX(1); }
 button[type="submit"]:hover { color: var(--silver-hi); border-color: var(--electric); }
-button[type="submit"]:active { transform: scale(0.98); }
 button[type="submit"] span { position: relative; z-index: 1; }
 button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; }
-.thankyou { display: none; text-align: center; padding: 5rem 2rem; }
+
+/* === THANK YOU === */
+.thankyou { display: none; text-align: center; padding: 5rem 1.5rem; }
 .thankyou.active { display: block; }
 #feedback-form.hidden { display: none; }
-.thankyou-glyph { font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: var(--electric); display: block; margin-bottom: 1.5rem; }
-.thankyou h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 300; color: var(--silver-hi); margin-bottom: 1rem; }
-.thankyou p { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--text-mid); font-size: 1.05rem; line-height: 1.9; max-width: 460px; margin: 0 auto; }
-footer { text-align: center; padding: 2rem 0 3rem; border-top: 1px solid var(--border); margin-top: 4rem; }
-footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; font-family: 'Cinzel', serif; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.thankyou-glyph { font-family: "Dancing Script", cursive; font-size: 2.5rem; color: var(--electric); display: block; margin-bottom: 1.5rem; }
+.thankyou h2 { font-family: "Cormorant Garamond", serif; font-size: clamp(2rem, 6vw, 2.6rem); font-weight: 300; color: var(--silver-hi); margin-bottom: 1rem; }
+.thankyou p { font-family: "Cormorant Garamond", serif; font-style: italic; color: var(--text-mid); font-size: 1.05rem; line-height: 1.9; max-width: 440px; margin: 0 auto; }
+
+/* === FOOTER === */
+footer { text-align: center; padding: 2rem 1rem 3rem; border-top: 1px solid var(--border); margin-top: 3rem; }
+footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; font-family: "Cinzel", serif; }
+
+/* === MOBILE === */
+@media (max-width: 480px) {
+  body { font-size: 15px; }
+  .page-wrap { padding: 0 0.85rem 4rem; }
+  .prize-grid { grid-template-columns: 1fr; }
+  .check-grid { grid-template-columns: 1fr; }
+  .radio-group.inline { flex-direction: column; }
+  .scale-group { gap: 0.35rem; }
+  .scale-group label { height: 50px; font-size: 1.1rem; }
+  .prize-banner { padding: 1.2rem 1rem; }
+  .form-section { margin-bottom: 2.2rem; }
+  .section-label { font-size: 0.62rem; letter-spacing: 0.2em; }
+  .banner-frame { padding: 0.6rem; }
+}
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.page-intro { animation: fadeUp 0.5s ease both 0.05s; }
+.prize-banner { animation: fadeUp 0.5s ease both 0.1s; }
 </style>
 </head>
 <body>
-<div class="site-banner">
+
+<!-- Banner with frame -->
+<div class="banner-frame">
   <img src="./JOIElectric5BannerSide.png" alt="JOI Electric Erotic Audio">
 </div>
+
 <div class="page-wrap">
+
+  <!-- Intro -->
   <div class="page-intro">
     <span class="intro-eyebrow">Listener Feedback</span>
     <h1>Tell me <em>everything.</em></h1>
@@ -192,12 +271,13 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
     <p class="intro-text">Every honest submission is read personally. Every entry goes in the draw.</p>
   </div>
 
-  <div class="prize-banner" id="prize-banner" style="display:none">
+  <!-- Prize banner - always visible -->
+  <div class="prize-banner" id="prize-banner">
     <div class="prize-header">Contest Prizes</div>
     <div class="prize-grid">
       <div class="prize-card">
         <span class="prize-tier">Grand Prize</span>
-        <h3>Custom Audio — 10 to 20 min</h3>
+        <h3>Custom Audio &mdash; 10 to 20 min</h3>
         <p>A full-length audio built around your scenario from scratch.</p>
       </div>
       <div class="prize-card">
@@ -213,12 +293,15 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
     </div>
     <div class="prize-dates">
       <span><strong>Contest closes:</strong> July 31, 2026</span>
-      <span><strong>Winners announced:</strong> no later than August 15, 2026 &mdash; watch the Discord</span>
+      <span><strong>Winners announced:</strong> no later than August 15, 2026</span>
+      <div class="announce-platforms">Winners will be announced on <span>Bluesky</span>, <span>Reddit</span>, and <span>Literotica</span></div>
     </div>
   </div>
 
+  <!-- FORM -->
   <form id="feedback-form" action="https://formspree.io/f/mkoeyrdd" method="POST">
 
+    <!-- Age gate - always visible -->
     <div class="form-section">
       <div class="section-label">Before We Begin</div>
       <div class="field">
@@ -240,13 +323,15 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       </div>
     </div>
 
+    <!-- Everything below hidden until age confirmed -->
     <div class="form-body" id="form-body">
+
     <div class="form-section">
       <div class="section-label">The Recording</div>
       <div class="field">
         <label class="field-label" for="platform">Where did you find it?</label>
         <select id="platform" name="platform">
-          <option value="">— Select one —</option>
+          <option value="">&mdash; Select one &mdash;</option>
           <option>Literotica</option>
           <option>Audiochan</option>
           <option>Bluesky</option>
@@ -274,11 +359,11 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       <div class="field">
         <label class="field-label">Overall performance impression</label>
         <div class="star-group" role="radiogroup" aria-label="Rate overall performance">
-          <input type="radio" name="star_performance" id="s5" value="5"><label for="s5" title="5 stars"></label>
-          <input type="radio" name="star_performance" id="s4" value="4"><label for="s4" title="4 stars"></label>
-          <input type="radio" name="star_performance" id="s3" value="3"><label for="s3" title="3 stars"></label>
-          <input type="radio" name="star_performance" id="s2" value="2"><label for="s2" title="2 stars"></label>
-          <input type="radio" name="star_performance" id="s1" value="1"><label for="s1" title="1 star"></label>
+          <input type="radio" name="star_performance" id="s5" value="5"><label for="s5"></label>
+          <input type="radio" name="star_performance" id="s4" value="4"><label for="s4"></label>
+          <input type="radio" name="star_performance" id="s3" value="3"><label for="s3"></label>
+          <input type="radio" name="star_performance" id="s2" value="2"><label for="s2"></label>
+          <input type="radio" name="star_performance" id="s1" value="1"><label for="s1"></label>
         </div>
       </div>
       <div class="field">
@@ -294,7 +379,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       <div class="section-label">Content Feedback</div>
       <div class="field">
         <label class="field-label" for="liked_most">What did you like most? <span class="req">*</span></label>
-        <textarea id="liked_most" name="liked_most" placeholder="A moment, a line, an energy shift — whatever hit for you." required></textarea>
+        <textarea id="liked_most" name="liked_most" placeholder="A moment, a line, an energy shift &mdash; whatever hit for you." required></textarea>
       </div>
       <div class="field">
         <label class="field-label" for="could_improve">What could be improved?</label>
@@ -302,7 +387,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       </div>
       <div class="field">
         <label class="field-label">How was the pacing?</label>
-        <div class="radio-group inline">
+        <div class="radio-group">
           <label class="radio-item"><input type="radio" name="pacing" value="Too slow"><span>Too slow</span></label>
           <label class="radio-item"><input type="radio" name="pacing" value="Just right"><span>Just right</span></label>
           <label class="radio-item"><input type="radio" name="pacing" value="Too fast"><span>Too fast</span></label>
@@ -310,7 +395,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       </div>
       <div class="field">
         <label class="field-label" for="narrative">Thoughts on the narrative structure or story pacing?</label>
-        <textarea id="narrative" name="narrative" placeholder="Did it build too fast or too slow? Was there a beat that really landed — or one where you wanted something different?"></textarea>
+        <textarea id="narrative" name="narrative" placeholder="Did it build too fast or too slow? Was there a beat that really landed &mdash; or one where you wanted something different?"></textarea>
       </div>
     </div>
 
@@ -318,15 +403,11 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       <div class="section-label">Performance and Immersion</div>
       <div class="field">
         <label class="field-label">Voice and immersion breakdown <span class="req">*</span></label>
-        <div style="overflow-x: auto;">
+        <div class="grid-table-wrap">
           <table class="grid-table">
             <thead>
               <tr>
-                <th></th>
-                <th>Poor</th>
-                <th>Fair</th>
-                <th>Good</th>
-                <th>Excellent</th>
+                <th></th><th>Poor</th><th>Fair</th><th>Good</th><th>Excellent</th>
               </tr>
             </thead>
             <tbody>
@@ -338,7 +419,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
                 <td><input type="radio" name="grid_voice" value="Excellent"></td>
               </tr>
               <tr>
-                <td>Sound effects / background audio</td>
+                <td>Sound effects / audio</td>
                 <td><input type="radio" name="grid_sfx" value="Poor" required></td>
                 <td><input type="radio" name="grid_sfx" value="Fair"></td>
                 <td><input type="radio" name="grid_sfx" value="Good"></td>
@@ -409,7 +490,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       <div class="section-label">Contest Entry</div>
       <div class="field">
         <label class="field-label">Would you like to enter the contest for a free custom audio?</label>
-        <div class="radio-group inline">
+        <div class="radio-group">
           <label class="radio-item">
             <input type="radio" name="contest_enter" value="Yes" id="contest-yes">
             <span>Yes, enter me!</span>
@@ -422,7 +503,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       </div>
       <div class="contest-fields" id="contest-fields">
         <div class="field">
-          <label class="field-label" for="winner_name">Preferred name or nickname for the custom audio</label>
+          <label class="field-label" for="winner_name">Preferred name or nickname</label>
           <p class="field-hint">What name should I use if you win?</p>
           <input type="text" id="winner_name" name="winner_name" placeholder="Whatever you'd like to be called">
         </div>
@@ -440,8 +521,8 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
             <li>Bestiality</li>
             <li>Extreme gore or non-consensual violence</li>
           </ul>
-          I'm happy to work with most kinks &mdash; gentle MDom, rough, praise, degradation, and more &mdash; but I reserve the right to decline or modify any request.
-          <p class="comfort-reserve">I reserve the right to negotiate and will reach out before producing anything I need to adjust.</p>
+          I am happy to work with most kinks &mdash; gentle MDom, rough, praise, degradation, and more &mdash; but I reserve the right to decline or modify any request.
+          <p class="comfort-reserve">I will reach out before producing anything I need to adjust.</p>
         </div>
       </div>
     </div>
@@ -450,7 +531,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
     <input type="hidden" name="_subject" value="Listener Feedback — JOI Electric">
 
     <div class="submit-wrap">
-      <p class="submit-note">Submissions are confidential and read personally.<br>Winners announced by August 15, 2026.</p>
+      <p class="submit-note">Submissions are confidential and read personally.<br>Winners announced by August 15, 2026 on Bluesky, Reddit &amp; Literotica.</p>
       <button type="submit"><span>Submit &amp; Enter</span></button>
     </div>
 
@@ -460,7 +541,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
   <div class="thankyou" id="thankyou">
     <span class="thankyou-glyph">Received.</span>
     <h2>You're entered.</h2>
-    <p>I have your words and I'll hold them carefully.<br>Watch the Discord for the winner announcement &mdash; no later than August 15th.</p>
+    <p>I have your words and I'll hold them carefully.<br>Watch Bluesky, Reddit, and Literotica for the winner announcement &mdash; no later than August 15th.</p>
   </div>
 
   <footer>
@@ -469,76 +550,71 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 </div>
 
 <script>
-const toneSlider = document.getElementById('tone-slider');
-const toneDisplay = document.getElementById('tone-display');
-const toneMap = [
-  [0,15,'Very tender'],[16,32,'Mostly tender'],[33,45,'Warm and gentle'],
-  [46,54,'Balanced'],[55,67,'Edged with authority'],[68,84,'Mostly dominant'],[85,100,'Fully commanding']
+var toneSlider = document.getElementById("tone-slider");
+var toneDisplay = document.getElementById("tone-display");
+var toneMap = [
+  [0,15,"Very tender"],[16,32,"Mostly tender"],[33,45,"Warm and gentle"],
+  [46,54,"Balanced"],[55,67,"Edged with authority"],[68,84,"Mostly dominant"],[85,100,"Fully commanding"]
 ];
 function updateTone(v) {
-  const val = parseInt(v);
-  const match = toneMap.find(function(t){ return val >= t[0] && val <= t[1]; });
-  toneDisplay.textContent = match ? match[2] : 'Balanced';
+  var val = parseInt(v);
+  var match = toneMap.find(function(t){ return val >= t[0] && val <= t[1]; });
+  toneDisplay.textContent = match ? match[2] : "Balanced";
 }
-toneSlider.addEventListener('input', function(e){ updateTone(e.target.value); });
+toneSlider.addEventListener("input", function(e){ updateTone(e.target.value); });
 updateTone(toneSlider.value);
 
-document.querySelectorAll('input[name="age_confirm"]').forEach(function(el){
-  el.addEventListener('change', function(){
-    const warn = document.getElementById('age-warning');
-    const body = document.getElementById('form-body');
-    const prize = document.getElementById('prize-banner');
-    if (this.value === 'under18') {
-      warn.style.display = 'block';
-      body.classList.remove('revealed');
-      prize.style.display = 'none';
+document.querySelectorAll("input[name=age_confirm]").forEach(function(el){
+  el.addEventListener("change", function(){
+    var warn = document.getElementById("age-warning");
+    var body = document.getElementById("form-body");
+    if (this.value === "under18") {
+      warn.style.display = "block";
+      body.classList.remove("revealed");
     } else {
-      warn.style.display = 'none';
-      body.classList.add('revealed');
-      prize.style.display = 'block';
-      setTimeout(function(){ body.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+      warn.style.display = "none";
+      body.classList.add("revealed");
+      setTimeout(function(){ body.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
     }
   });
 });
 
-document.querySelectorAll('input[name="contest_enter"]').forEach(function(el){
-  el.addEventListener('change', function(){
-    var fields = document.getElementById('contest-fields');
-    var contactInput = document.getElementById('contact_info');
-    if (this.value === 'Yes') {
-      fields.classList.add('visible');
+document.querySelectorAll("input[name=contest_enter]").forEach(function(el){
+  el.addEventListener("change", function(){
+    var fields = document.getElementById("contest-fields");
+    var contactInput = document.getElementById("contact_info");
+    if (this.value === "Yes") {
+      fields.classList.add("visible");
       contactInput.required = true;
     } else {
-      fields.classList.remove('visible');
+      fields.classList.remove("visible");
       contactInput.required = false;
     }
   });
 });
 
-var form = document.getElementById('feedback-form');
-var thankYou = document.getElementById('thankyou');
-form.addEventListener('submit', async function(e){
+var form = document.getElementById("feedback-form");
+var thankYou = document.getElementById("thankyou");
+form.addEventListener("submit", async function(e){
   e.preventDefault();
-  var btn = form.querySelector('button[type="submit"]');
+  var btn = form.querySelector("button[type=submit]");
   btn.disabled = true;
-  btn.querySelector('span').textContent = 'Sending\u2026';
+  btn.querySelector("span").textContent = "Sending…";
   try {
-    var res = await fetch(form.getAttribute('action'), {
-      method: 'POST',
-      body: new FormData(form),
-      headers: { Accept: 'application/json' }
+    var res = await fetch(form.getAttribute("action"), {
+      method: "POST", body: new FormData(form), headers: { Accept: "application/json" }
     });
     if (res.ok) {
-      form.classList.add('hidden');
-      thankYou.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      form.classList.add("hidden");
+      thankYou.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       btn.disabled = false;
-      btn.querySelector('span').textContent = 'Try again';
+      btn.querySelector("span").textContent = "Try again";
     }
   } catch(err) {
     btn.disabled = false;
-    btn.querySelector('span').textContent = 'Try again';
+    btn.querySelector("span").textContent = "Try again";
   }
 });
 </script>
