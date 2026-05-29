@@ -1,0 +1,11 @@
+{
+  "name": "Consenting Adults",
+  "short_name": "CA",
+  "icons": [
+    { "src": "CA_ICON.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060306",
+  "theme_color": "#060306"
+}
