@@ -606,18 +606,15 @@ form.addEventListener("submit", async function(e){
     var res = await fetch(form.getAttribute("action"), {
       method: "POST", body: new FormData(form)
     });
-    console.log("FormTorch response status:", res.status, res.statusText);
-    if (res.ok || res.status === 302 || res.type === "opaqueredirect" || res.type === "opaque") {
+    if (res.ok) {
       form.classList.add("hidden");
       thankYou.classList.add("active");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      console.log("FormTorch error body:", await res.text());
       btn.disabled = false;
       btn.querySelector("span").textContent = "Try again";
     }
   } catch(err) {
-    console.log("FormTorch fetch error:", err);
     btn.disabled = false;
     btn.querySelector("span").textContent = "Try again";
   }
