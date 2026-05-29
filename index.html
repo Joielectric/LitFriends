@@ -255,6 +255,52 @@
     .artist-card.soon .artist-name { color: var(--text-dim); }
     .artist-card.soon .artist-role { color: var(--text-dim); }
 
+    /* === SPLASH === */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.8s ease;
+    }
+
+    #splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #splash video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #splash-skip {
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.5rem 1.2rem;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.25s, border-color 0.25s;
+      z-index: 101;
+    }
+
+    #splash-skip:hover {
+      color: rgba(255,255,255,0.85);
+      border-color: rgba(255,255,255,0.5);
+    }
+
     /* === FOOTER === */
     footer {
       text-align: center;
@@ -270,6 +316,12 @@
   </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <video id="splash-video" src="CA1.mp4" autoplay muted playsinline></video>
+  <div id="splash-skip">Skip &#8594;</div>
+</div>
 
 <canvas id="stars"></canvas>
 <div class="bg-glow"></div>
@@ -326,6 +378,22 @@
 </footer>
 
 <script>
+  // Splash screen
+  (function(){
+    var splash = document.getElementById("splash");
+    var video = document.getElementById("splash-video");
+    var skip = document.getElementById("splash-skip");
+
+    function dismiss(){
+      splash.classList.add("fade-out");
+      setTimeout(function(){ splash.style.display = "none"; }, 800);
+    }
+
+    video.addEventListener("ended", dismiss);
+    skip.addEventListener("click", function(e){ e.stopPropagation(); dismiss(); });
+    splash.addEventListener("click", dismiss);
+  })();
+
   // Starfield
   (function(){
     var canvas = document.getElementById("stars");
