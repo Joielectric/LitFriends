@@ -300,7 +300,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
   </div>
 
   <!-- FORM -->
-  <form id="feedback-form" action="https://formtorch.com/f/2n7q2gb1m1" method="POST">
+  <form id="feedback-form" action="https://api.web3forms.com/submit" method="POST">
 
     <!-- Age gate - always visible -->
     <div class="form-section">
@@ -528,8 +528,9 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       </div>
     </div>
 
-    <input type="text" name="_gotcha" style="display:none">
-    <input type="hidden" name="_subject" value="Listener Feedback — JOI Electric">
+    <input type="hidden" name="access_key" value="c7cb9123-de27-46e4-b479-84b9c69451ce">
+    <input type="hidden" name="subject" value="Listener Feedback — JOI Electric">
+    <input type="text" name="botcheck" style="display:none">
 
     <div class="submit-wrap">
       <p class="submit-note">Submissions are confidential and read personally.<br>Winners announced by August 15, 2026 on Bluesky, Reddit &amp; Literotica.</p>
@@ -603,9 +604,7 @@ form.addEventListener("submit", async function(e){
   btn.querySelector("span").textContent = "Sending…";
   try {
     var res = await fetch(form.getAttribute("action"), {
-      method: "POST",
-      body: new URLSearchParams(new FormData(form)),
-      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      method: "POST", body: new FormData(form)
     });
     console.log("FormTorch response status:", res.status, res.statusText);
     if (res.ok || res.status === 302 || res.type === "opaqueredirect" || res.type === "opaque") {
