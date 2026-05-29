@@ -69,6 +69,20 @@
     .hero {
       text-align: center;
       padding: 5rem 1rem 3.5rem;
+      position: relative;
+      background: url('CA_Header.png') center center / cover no-repeat;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(6,3,6,0.45) 0%, rgba(6,3,6,0.15) 100%);
+      pointer-events: none;
     }
 
     .hero-eyebrow {
