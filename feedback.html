@@ -47,25 +47,25 @@ body::before {
   pointer-events: none; z-index: 0;
 }
 
+/* === BREADCRUMB === */
+.breadcrumb-nav { position: relative; z-index: 10; padding: 1.2rem 1.5rem 0; display: flex; align-items: center; gap: 0.6rem; font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: 0.32em; text-transform: uppercase; }
+.breadcrumb-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
+.breadcrumb-nav a:hover { color: var(--electric); }
+.bc-sep { color: var(--text-dim); }
+.bc-current { color: var(--silver); }
+
 /* === BANNER FRAME === */
 .banner-frame {
   position: relative; z-index: 1;
-  padding: 1rem;
   background: var(--surface);
   border-bottom: 2px solid var(--electric-dim);
-}
-.banner-frame::before {
-  content: "";
-  position: absolute; inset: 6px;
-  border: 1px solid rgba(91,141,232,0.25);
-  pointer-events: none; z-index: 2;
 }
 .banner-frame img {
   width: 100%;
   height: auto;
   display: block;
-  max-height: 240px;
-  object-fit: contain;
+  max-height: 280px;
+  object-fit: cover;
   object-position: center center;
 }
 
@@ -255,10 +255,10 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 </head>
 <body>
 
-<nav style="position:relative;z-index:10;padding:1.2rem 1.5rem 0;display:flex;align-items:center;gap:0.6rem;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.32em;text-transform:uppercase;">
-  <a href="joi-electric.html" style="color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:0.5rem;transition:color 0.25s;" onmouseover="this.style.color='#e8634f'" onmouseout="this.style.color='var(--text-dim)'">&#8592; JOI Electric</a>
-  <span style="color:var(--border-mid);">/</span>
-  <span style="color:var(--text-dim);opacity:0.5;">Feedback</span>
+<nav class="breadcrumb-nav">
+  <a href="joi-electric.html">&#8592; JOI Electric</a>
+  <span class="bc-sep">/</span>
+  <span class="bc-current">Feedback</span>
 </nav>
 
 <!-- Banner with frame -->

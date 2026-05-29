@@ -53,22 +53,15 @@
     /* === BANNER === */
     .banner-frame {
       position: relative; z-index: 1;
-      padding: 1rem;
       background: var(--surface);
       border-bottom: 2px solid var(--electric-dim);
-    }
-    .banner-frame::before {
-      content: "";
-      position: absolute; inset: 6px;
-      border: 1px solid rgba(91,141,232,0.25);
-      pointer-events: none; z-index: 2;
     }
     .banner-frame img {
       width: 100%;
       height: auto;
       display: block;
-      max-height: 240px;
-      object-fit: contain;
+      max-height: 280px;
+      object-fit: cover;
       object-position: center center;
     }
 
