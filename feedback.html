@@ -603,7 +603,9 @@ form.addEventListener("submit", async function(e){
   btn.querySelector("span").textContent = "Sending…";
   try {
     var res = await fetch(form.getAttribute("action"), {
-      method: "POST", body: new FormData(form)
+      method: "POST",
+      body: new URLSearchParams(new FormData(form)),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
     });
     console.log("FormTorch response status:", res.status, res.statusText);
     if (res.ok || res.status === 302 || res.type === "opaqueredirect" || res.type === "opaque") {
