@@ -255,6 +255,136 @@
     .artist-card.soon .artist-name { color: var(--text-dim); }
     .artist-card.soon .artist-role { color: var(--text-dim); }
 
+    /* === AGE GATE === */
+    #age-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      background: rgba(0,0,0,0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    #age-gate.active { display: flex; }
+
+    .age-gate-box {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-top: 2px solid var(--coral);
+      max-width: 440px;
+      width: 90%;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .age-gate-box::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px solid var(--border);
+      pointer-events: none;
+    }
+
+    .age-gate-diamond {
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--border-mid);
+      transform: rotate(45deg);
+      margin: 0 auto 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-2);
+    }
+
+    .age-gate-diamond span {
+      display: block;
+      transform: rotate(-45deg);
+      font-family: "Cinzel", serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--coral);
+      letter-spacing: 0.05em;
+    }
+
+    .age-gate-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    .age-gate-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.9rem;
+      font-weight: 300;
+      color: var(--text);
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .age-gate-text {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1rem;
+      color: var(--text-mid);
+      line-height: 1.85;
+      margin-bottom: 2rem;
+    }
+
+    .age-gate-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .age-btn {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 0.85rem 1.6rem;
+      border-radius: 2px;
+      cursor: pointer;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.25s, border-color 0.25s;
+      background: transparent;
+    }
+
+    .age-btn::before {
+      content: "";
+      position: absolute; inset: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.28s ease;
+      z-index: 0;
+    }
+
+    .age-btn span { position: relative; z-index: 1; }
+
+    .age-btn-yes {
+      color: var(--text);
+      border-color: var(--border-mid);
+    }
+
+    .age-btn-yes::before { background: var(--crimson); }
+    .age-btn-yes:hover { border-color: var(--coral); color: #fff; }
+    .age-btn-yes:hover::before { transform: scaleX(1); }
+
+    .age-btn-no {
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+
+    .age-btn-no:hover { color: var(--text-mid); border-color: var(--border-mid); }
+
     /* === SPLASH === */
     #splash {
       position: fixed;
@@ -361,6 +491,20 @@
   </div>
 </div>
 
+<!-- AGE GATE -->
+<div id="age-gate">
+  <div class="age-gate-box">
+    <div class="age-gate-diamond"><span>18+</span></div>
+    <span class="age-gate-eyebrow">Adults Only</span>
+    <h2 class="age-gate-title">Are you 18 or older?</h2>
+    <p class="age-gate-text">This site contains adult content intended for mature audiences only. You must be 18 years of age or older to enter.</p>
+    <div class="age-gate-buttons">
+      <button class="age-btn age-btn-yes" id="age-yes"><span>Yes, I am 18+</span></button>
+      <button class="age-btn age-btn-no" id="age-no"><span>No, exit</span></button>
+    </div>
+  </div>
+</div>
+
 <canvas id="stars"></canvas>
 <div class="bg-glow"></div>
 
@@ -416,20 +560,38 @@
 </footer>
 
 <script>
-  // Splash screen
+  // Splash + Age Gate
   (function(){
-    var splash = document.getElementById("splash");
-    var video = document.getElementById("splash-video");
-    var skip = document.getElementById("splash-skip");
+    var splash    = document.getElementById("splash");
+    var video     = document.getElementById("splash-video");
+    var skip      = document.getElementById("splash-skip");
+    var ageGate   = document.getElementById("age-gate");
+    var ageYes    = document.getElementById("age-yes");
+    var ageNo     = document.getElementById("age-no");
 
-    function dismiss(){
-      splash.classList.add("fade-out");
-      setTimeout(function(){ splash.style.display = "none"; }, 800);
+    function showAgeGate(){
+      splash.style.display = "none";
+      ageGate.classList.add("active");
     }
 
-    video.addEventListener("ended", dismiss);
-    skip.addEventListener("click", function(e){ e.stopPropagation(); dismiss(); });
-    splash.addEventListener("click", dismiss);
+    function dismissSplash(){
+      splash.classList.add("fade-out");
+      setTimeout(showAgeGate, 800);
+    }
+
+    video.addEventListener("ended", dismissSplash);
+    skip.addEventListener("click", function(e){ e.stopPropagation(); dismissSplash(); });
+    splash.addEventListener("click", dismissSplash);
+
+    ageYes.addEventListener("click", function(){
+      ageGate.style.opacity = "0";
+      ageGate.style.transition = "opacity 0.5s";
+      setTimeout(function(){ ageGate.style.display = "none"; }, 500);
+    });
+
+    ageNo.addEventListener("click", function(){
+      window.location.href = "https://www.google.com";
+    });
   })();
 
   // Starfield
