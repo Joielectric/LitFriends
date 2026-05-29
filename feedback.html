@@ -603,7 +603,7 @@ form.addEventListener("submit", async function(e){
   btn.querySelector("span").textContent = "Sending…";
   try {
     var res = await fetch(form.getAttribute("action"), {
-      method: "POST", body: new FormData(form), headers: { Accept: "application/json" }
+      method: "POST", body: new FormData(form)
     });
     if (res.ok) {
       form.classList.add("hidden");
