@@ -569,6 +569,12 @@
     var ageYes    = document.getElementById("age-yes");
     var ageNo     = document.getElementById("age-no");
 
+    // If already verified this session, skip everything
+    if(sessionStorage.getItem("ca_verified") === "true"){
+      splash.style.display = "none";
+      return;
+    }
+
     function showAgeGate(){
       splash.style.display = "none";
       ageGate.classList.add("active");
@@ -584,6 +590,7 @@
     splash.addEventListener("click", dismissSplash);
 
     ageYes.addEventListener("click", function(){
+      sessionStorage.setItem("ca_verified", "true");
       ageGate.style.opacity = "0";
       ageGate.style.transition = "opacity 0.5s";
       setTimeout(function(){ ageGate.style.display = "none"; }, 500);
