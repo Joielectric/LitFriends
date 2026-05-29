@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOI Electric — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060306;
+      --surface: #110810;
+      --surface-2: #1a0d18;
+      --crimson: #c0394a;
+      --coral: #e8634f;
+      --rose: #e8758a;
+      --amber: #e89060;
+      --glow-soft: rgba(232, 99, 79, 0.12);
+      --glow-mid: rgba(192, 57, 74, 0.25);
+      --text: #f0ddd5;
+      --text-mid: #c4a09a;
+      --text-dim: #8a6068;
+      --border: rgba(232, 99, 79, 0.15);
+      --border-mid: rgba(232, 99, 79, 0.28);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Cormorant Garamond", serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(140, 30, 50, 0.35) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(200, 60, 50, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 80% 70%, rgba(180, 50, 90, 0.10) 0%, transparent 60%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+
+    /* === NAV === */
+    nav {
+      padding: 1.8rem 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-back {
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: color 0.25s;
+    }
+
+    .nav-back:hover { color: var(--coral); }
+    .nav-back::before { content: "←"; font-size: 0.9rem; }
+
+    .nav-site {
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.25s;
+    }
+
+    .nav-site:hover { color: var(--rose); }
+
+    /* === HERO === */
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem 2.5rem;
+    }
+
+    .hero-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.5em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero h1 {
+      font-family: "Cinzel", serif;
+      font-size: clamp(2.4rem, 8vw, 4.5rem);
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      background: linear-gradient(150deg, #f0c8b8 0%, var(--coral) 40%, var(--rose) 70%, #c87090 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 35px rgba(232, 99, 79, 0.4));
+      margin-bottom: 0.9rem;
+    }
+
+    .hero-role {
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.45em;
+      color: var(--rose);
+      text-transform: uppercase;
+      margin-bottom: 1.6rem;
+    }
+
+    .hero-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      max-width: 260px;
+    }
+
+    .hero-divider span { flex: 1; height: 1px; background: var(--border); }
+    .hero-divider i { width: 4px; height: 4px; background: var(--coral); transform: rotate(45deg); display: inline-block; opacity: 0.7; }
+
+    /* === SECTION === */
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.38em;
+      color: var(--rose);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    /* === BIO === */
+    .bio {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--coral);
+      border-radius: 4px;
+      padding: 1.8rem 2rem;
+    }
+
+    .bio p {
+      font-size: 1.05rem;
+      color: var(--text-mid);
+      line-height: 2;
+      font-weight: 300;
+    }
+
+    .bio p + p { margin-top: 1rem; }
+
+    /* === PLATFORM LINKS === */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .platform-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--text-mid);
+      transition: border-color 0.3s, box-shadow 0.3s, color 0.3s;
+    }
+
+    .platform-link:hover {
+      border-color: var(--coral);
+      box-shadow: 0 0 20px rgba(232, 99, 79, 0.15);
+      color: var(--text);
+    }
+
+    .platform-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 3px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--coral);
+      flex-shrink: 0;
+      letter-spacing: 0.05em;
+    }
+
+    .platform-info { flex: 1; min-width: 0; }
+
+    .platform-name {
+      font-family: "Cinzel", serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .platform-desc {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .platform-arrow {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    .platform-link:hover .platform-arrow {
+      color: var(--coral);
+      transform: translateX(3px);
+    }
+
+    /* === FEEDBACK CTA === */
+    .feedback-cta {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-top: 2px solid var(--crimson);
+      border-radius: 4px;
+      padding: 2rem 2rem;
+      text-align: center;
+    }
+
+    .feedback-cta h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.9rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+
+    .feedback-cta p {
+      font-size: 0.92rem;
+      color: var(--text-mid);
+      font-style: italic;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-feedback {
+      display: inline-block;
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border-mid);
+      padding: 0.85rem 2rem;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .btn-feedback::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--crimson);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.28s ease;
+      z-index: 0;
+    }
+
+    .btn-feedback:hover { border-color: var(--crimson); color: #fff; }
+    .btn-feedback:hover::before { transform: scaleX(1); }
+    .btn-feedback span { position: relative; z-index: 1; }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.35em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="bg-glow"></div>
+
+<div class="page">
+
+  <nav>
+    <a class="nav-back" href="index.html">Consenting Adults</a>
+    <a class="nav-site" href="index.html">CA</a>
+  </nav>
+
+  <section class="hero">
+    <span class="hero-eyebrow">Artist Profile</span>
+    <h1>JOI Electric</h1>
+    <div class="hero-role">Voice Artist &amp; Storyteller</div>
+    <div class="hero-divider"><span></span><i></i><span></span></div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">About</div>
+    <div class="bio">
+      <p>Most of my projects are collaborative, created alongside other amazing artists and storytellers. The work is richer for it — every voice, every perspective shapes something none of us could make alone.</p>
+      <p>Visit me on Literotica and explore the Lists section for a more complete view of my works, including everything I've been a part of.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Find Me</div>
+    <div class="platforms">
+
+      <a class="platform-link" href="https://www.literotica.com/authors/JOI_Electric" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIT</div>
+        <div class="platform-info">
+          <span class="platform-name">Literotica</span>
+          <span class="platform-desc">Stories &amp; audio works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.literotica.com/authors/JOI_Electric#lists" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIST</div>
+        <div class="platform-info">
+          <span class="platform-name">Lit Lists</span>
+          <span class="platform-desc">Full collaborative works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://bsky.app/profile/joielectric.bsky.social" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">BSK</div>
+        <div class="platform-info">
+          <span class="platform-name">Bluesky</span>
+          <span class="platform-desc">Updates &amp; announcements</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.reddit.com/user/JOI_Electric/" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">RDT</div>
+        <div class="platform-info">
+          <span class="platform-name">Reddit</span>
+          <span class="platform-desc">Community &amp; discussion</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Listener Feedback</div>
+    <div class="feedback-cta">
+      <h3>Share Your Thoughts</h3>
+      <p>Your feedback shapes what comes next. Every honest submission is read personally — and every unique entry goes in the drawing.</p>
+      <a class="btn-feedback" href="feedback.html"><span>Leave Feedback &amp; Enter the Contest</span></a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  JOI Electric &mdash; Consenting Adults &mdash; 18+ only
+</footer>
+
+<script>
+  (function(){
+    var canvas = document.getElementById("stars");
+    var ctx = canvas.getContext("2d");
+    var stars = [];
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function init(){
+      stars = [];
+      for(var i = 0; i < 180; i++){
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.1 + 0.2,
+          o: Math.random() * 0.5 + 0.1,
+          speed: Math.random() * 0.015 + 0.005
+        });
+      }
+    }
+
+    function draw(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      stars.forEach(function(s){
+        s.o += s.speed;
+        if(s.o > 0.7) s.speed = -Math.abs(s.speed);
+        if(s.o < 0.1) s.speed = Math.abs(s.speed);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(240, 200, 180, " + s.o + ")";
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+
+    resize();
+    init();
+    draw();
+    window.addEventListener("resize", function(){ resize(); init(); });
+  })();
+</script>
+</body>
+</html>
