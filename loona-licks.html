@@ -9,21 +9,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #080b14;
-      --surface: #0d1020;
-      --surface-2: #121526;
-      --surface-3: #181c2e;
-      --border: rgba(180,195,225,0.13);
-      --border-mid: rgba(180,195,225,0.28);
-      --border-hi: rgba(180,195,225,0.55);
-      --text: #dde4f0;
-      --text-mid: #8d9ab5;
-      --text-dim: #3d4560;
-      --silver: #c4cfe0;
-      --silver-hi: #eaf0fa;
-      --electric: #5b8de8;
-      --electric-dim: #2a4880;
-      --danger: #c0394a;
+      --bg: #060a07;
+      --surface: #0b1009;
+      --surface-2: #111a0e;
+      --surface-3: #172015;
+      --border: rgba(160, 100, 90, 0.18);
+      --border-mid: rgba(180, 110, 100, 0.35);
+      --border-hi: rgba(200, 130, 110, 0.55);
+      --text: #f0e4d4;
+      --text-mid: #b89880;
+      --text-dim: #6a4a40;
+      --silver: #d4c0a8;
+      --silver-hi: #f5ede0;
+      --rose: #c84060;
+      --rose-dim: #6b1a2a;
+      --rose-soft: #d4788a;
+      --gold: #c9a050;
+      --gold-dim: #7a5a20;
+      --green: #3a6a3a;
+      --green-dim: #1e3a1e;
       --radius: 2px;
     }
 
@@ -45,8 +49,9 @@
       content: "";
       position: fixed; inset: 0;
       background:
-        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(91,141,232,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 50% at 90% 90%, rgba(30,20,50,0.4) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 30, 20, 0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 60% at 10% 100%, rgba(30, 60, 20, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 90% 80%, rgba(100, 20, 30, 0.15) 0%, transparent 60%);
       pointer-events: none; z-index: 0;
     }
 
@@ -58,7 +63,7 @@
       position: relative; z-index: 1;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-bottom: 2px solid var(--electric-dim);
+      border-bottom: 2px solid var(--rose-dim);
       margin-bottom: 0.5rem;
     }
     .banner-frame img {
@@ -71,9 +76,19 @@
     }
 
     /* === BREADCRUMB === */
-    .breadcrumb-nav { position: relative; z-index: 10; padding: 1.2rem 0 0; display: flex; align-items: center; gap: 0.6rem; font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: 0.32em; text-transform: uppercase; }
+    .breadcrumb-nav {
+      position: relative; z-index: 10;
+      padding: 1.2rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+    }
     .breadcrumb-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
-    .breadcrumb-nav a:hover { color: var(--electric); }
+    .breadcrumb-nav a:hover { color: var(--rose-soft); }
     .bc-sep { color: var(--text-dim); }
     .bc-current { color: var(--silver); }
 
@@ -108,7 +123,7 @@
     .intro-script {
       font-family: "Dancing Script", cursive;
       font-size: 1.2rem;
-      color: var(--text-mid);
+      color: var(--rose-soft);
       margin-bottom: 1rem;
       display: block;
     }
@@ -121,10 +136,12 @@
       justify-content: center;
     }
     .divider span { flex: 1; max-width: 80px; height: 1px; background: var(--border-mid); }
-    .divider i { width: 5px; height: 5px; background: var(--electric-dim); transform: rotate(45deg); display: inline-block; }
+    .divider i { width: 5px; height: 5px; background: var(--rose-dim); transform: rotate(45deg); display: inline-block; }
 
     .intro-text {
-      font-size: 0.92rem;
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: 1.1rem;
       color: var(--text-mid);
       max-width: 480px;
       margin: 0 auto;
@@ -146,7 +163,7 @@
       gap: 0.8rem;
       margin-bottom: 1.4rem;
       padding-left: 0.8rem;
-      border-left: 2px solid var(--electric);
+      border-left: 2px solid var(--rose);
     }
     .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
 
@@ -166,21 +183,21 @@
 
     .bio p + p { margin-top: 0.9rem; }
 
-    .bio .bio-quote {
+    .bio-quote {
       font-family: "Cormorant Garamond", serif;
       font-style: italic;
-      font-size: 1.1rem;
+      font-size: 1.08rem;
       color: var(--silver);
-      border-left: 2px solid var(--electric-dim);
+      border-left: 2px solid var(--rose-dim);
       padding-left: 1rem;
       margin-top: 1.2rem;
-      line-height: 1.85;
+      line-height: 1.9;
     }
 
-    .bio .bio-sign {
+    .bio-sign {
       font-family: "Dancing Script", cursive;
-      font-size: 1.1rem;
-      color: var(--electric);
+      font-size: 1.2rem;
+      color: var(--rose-soft);
       display: block;
       margin-top: 1rem;
     }
@@ -206,8 +223,8 @@
     }
 
     .platform-link:hover {
-      border-color: var(--electric);
-      box-shadow: 0 0 18px rgba(91,141,232,0.15);
+      border-color: var(--rose);
+      box-shadow: 0 0 18px rgba(200, 64, 96, 0.15);
       color: var(--text);
     }
 
@@ -223,7 +240,7 @@
       font-family: "Cinzel", serif;
       font-size: 0.6rem;
       font-weight: 600;
-      color: var(--electric);
+      color: var(--rose-soft);
       flex-shrink: 0;
       letter-spacing: 0.05em;
     }
@@ -249,7 +266,7 @@
     }
 
     .platform-link:hover .platform-arrow {
-      color: var(--electric);
+      color: var(--rose);
       transform: translateX(3px);
     }
 
@@ -284,7 +301,7 @@
   <div class="page-intro">
     <span class="intro-eyebrow">Artist Profile</span>
     <h1>Loona Licks</h1>
-    <span class="intro-script">Voice Artist &amp; Storyteller</span>
+    <span class="intro-script">Audio Erotica</span>
     <div class="divider"><span></span><i></i><span></span></div>
     <p class="intro-text">Let me whisper in your ear while we play pretend.</p>
   </div>
@@ -292,11 +309,13 @@
   <div class="section">
     <div class="section-label">About</div>
     <div class="bio">
-      <p>Loona Licks is an intimately collaborative voice artist who brings fantasy to life through sound. Known for her warmth, creativity, and genuine love of the craft, she thrives on connection — with her audience and with the incredible artists she creates alongside.</p>
-      <p>Her work spans a wide range of desires and stories, always shaped by one simple question: <em>what do you want to hear?</em> She's constantly cooking up new projects, pushing into new territory, and inviting listeners along for every delicious moment.</p>
+      <p>Loona Licks is a voice artist and audio erotica creator with a gift for intimacy, imagination, and genuine connection. Warm, playful, and endlessly creative, she brings fantasy to life through sound — always shaped by one delicious question: <em>what do you want to hear?</em></p>
+      <p>Deeply collaborative by nature, Loona thrives when talented people come together to make something special. With exciting new projects always in the works, she invites you to stay close, stay curious, and let her know exactly what you're craving.</p>
       <div class="bio-quote">
-        "Life is crazy; sex makes it better."<br>
-        Who would you like me to be? What do you want to hear?
+        "Thank you all so very much for your kind and encouraging words.<br>
+        I absolutely love hearing all of your delicious desires."<br><br>
+        Who would you like me to be? What do you want to hear?<br>
+        Life is crazy — sex makes it better.
       </div>
       <span class="bio-sign">— Loona Licks</span>
     </div>
