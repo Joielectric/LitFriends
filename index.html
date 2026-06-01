@@ -256,6 +256,19 @@
       line-height: 1.75;
     }
 
+    .artist-initials-img {
+      padding: 0;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .artist-initials-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     /* === COMING SOON CARD === */
     .artist-card.soon {
       opacity: 0.4;
@@ -540,7 +553,7 @@
 
       <a class="artist-card" href="profiles/joi-electric.html">
         <div class="artist-card-top">
-          <div class="artist-initials">JE</div>
+          <div class="artist-initials artist-initials-img"><img src="images/JOI_Icon.png" alt="JOI Electric"></div>
           <span class="artist-arrow">&#8594;</span>
         </div>
         <div class="artist-name">JOI Electric</div>
