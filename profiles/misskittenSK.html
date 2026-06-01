@@ -234,43 +234,40 @@
       margin-right: 0.3rem;
     }
 
-    /* === SERIES GRID === */
-    .series-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.75rem;
+    /* === SERIES TAGS === */
+    .series-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.2rem;
     }
 
-    .series-card {
-      background: var(--surface);
+    .series-tag {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 0.88rem;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text-mid);
+      background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 0.9rem 1.1rem;
-      transition: border-color 0.25s, box-shadow 0.25s;
+      padding: 0.3rem 0.8rem;
     }
 
-    .series-card:hover {
-      border-color: var(--gold);
-      box-shadow: 0 0 16px rgba(200, 146, 42, 0.12);
-    }
-
-    .series-name {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--silver);
-      letter-spacing: 0.03em;
-      display: block;
-    }
-
-    .series-special {
-      font-family: "Cinzel", serif;
-      font-size: 0.52rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
+    .series-tag.special {
       color: var(--gold);
-      margin-top: 0.2rem;
-      display: block;
+      border-color: var(--gold-dim);
+    }
+
+    .series-intro {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-family: "Cinzel", serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
     }
 
     /* === PLATFORM LINKS === */
@@ -390,42 +387,18 @@
       <p>MissKittenSK has been a cornerstone of the erotic audio space for over <span class="bio-stat">10</span> years. A master of improvisation with a wide and fearless range, she built one of the most beloved back catalogues in the community — <span class="bio-stat">420+</span> audios spanning every mood, fantasy, and desire.</p>
       <p>Known for her warmth, wit, and total commitment to the craft, Kitten forged deep connections with her audience through genuine intimacy and endless variety. From tender girlfriend experiences to unhinged improv, she did it all — and she did it with style.</p>
       <p>Now retired from recording, she continues to contribute to the community through script writing and occasional collaborations with the Consenting Adults collective and JOI Electric.</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-label">Series &amp; Offerings</div>
-    <div class="series-grid">
-      <div class="series-card">
-        <span class="series-name">Quickie Confessions</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Tales from the Nurses Lounge</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Sibbie Kitten</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Your First Hooker</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Kitten Playtime</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Girlfriend Experience</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Sleepover</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Daddy's Girl</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Love Letters from Kitten</span>
-      </div>
-      <div class="series-card">
-        <span class="series-name">Double Kitten</span>
-        <span class="series-special">Dual Audio Experiences</span>
+      <p class="series-intro">A glimpse of her range</p>
+      <div class="series-tags">
+        <span class="series-tag">Quickie Confessions</span>
+        <span class="series-tag">Tales from the Nurses Lounge</span>
+        <span class="series-tag">Sibbie Kitten</span>
+        <span class="series-tag">Your First Hooker</span>
+        <span class="series-tag">Kitten Playtime</span>
+        <span class="series-tag">Girlfriend Experience</span>
+        <span class="series-tag">Sleepover</span>
+        <span class="series-tag">Daddy's Girl</span>
+        <span class="series-tag">Love Letters from Kitten</span>
+        <span class="series-tag special">Double Kitten — Dual Audio Experiences</span>
       </div>
     </div>
   </div>
