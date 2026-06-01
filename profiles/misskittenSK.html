@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/CA_ICON.png">
+  <link rel="apple-touch-icon" href="../images/CA_ICON.png">
+  <link rel="manifest" href="../manifest-ca.json">
+  <title>MissKittenSK — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@300;400;500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080606;
+      --surface: #100c0a;
+      --surface-2: #181210;
+      --surface-3: #201814;
+      --gold: #c8922a;
+      --gold-bright: #e8c060;
+      --gold-dim: #7a5218;
+      --gold-pale: rgba(200, 146, 42, 0.08);
+      --crimson: #9e2020;
+      --crimson-bright: #c03030;
+      --text: #f0e8e0;
+      --text-mid: #a89080;
+      --text-dim: #6a5040;
+      --silver: #d8ccc0;
+      --silver-hi: #f5ede5;
+      --border: rgba(200, 146, 42, 0.18);
+      --border-mid: rgba(200, 146, 42, 0.35);
+      --border-hi: rgba(200, 146, 42, 0.55);
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Raleway", sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(200, 146, 42, 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 90% 90%, rgba(100, 20, 20, 0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(100, 20, 20, 0.15) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .page-wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 1rem 5rem; }
+
+    /* === BANNER === */
+    .banner-frame {
+      position: relative; z-index: 1;
+      background: #000;
+      border-bottom: 2px solid var(--gold-dim);
+      margin-bottom: 0.5rem;
+    }
+    .banner-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 280px;
+      object-fit: cover;
+      object-position: center center;
+    }
+
+    /* === BREADCRUMB === */
+    .breadcrumb-nav {
+      position: relative; z-index: 10;
+      padding: 1.2rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+    }
+    .breadcrumb-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
+    .breadcrumb-nav a:hover { color: var(--gold); }
+    .bc-sep { color: var(--text-dim); }
+    .bc-current { color: var(--silver); }
+
+    /* === INTRO === */
+    .page-intro {
+      text-align: center;
+      padding: 2.8rem 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .intro-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.45em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    .page-intro h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      font-weight: 600;
+      color: var(--silver-hi);
+      line-height: 1.1;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.06em;
+    }
+
+    .intro-script {
+      font-family: "Dancing Script", cursive;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--crimson-bright);
+      display: block;
+      margin-bottom: 0.8rem;
+      filter: drop-shadow(0 0 10px rgba(160, 30, 30, 0.4));
+    }
+
+    .intro-role {
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 1.2rem;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      justify-content: center;
+      margin: 1.2rem auto;
+      max-width: 260px;
+    }
+    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
+    .divider i { width: 5px; height: 5px; background: var(--gold-dim); transform: rotate(45deg); display: inline-block; }
+
+    /* === RETIRED NOTICE === */
+    .retired-notice {
+      background: rgba(100, 20, 20, 0.15);
+      border: 1px solid rgba(158, 32, 32, 0.35);
+      border-left: 3px solid var(--crimson);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .retired-notice .ret-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--crimson-bright);
+      display: block;
+      margin-bottom: 0.6rem;
+    }
+
+    .retired-notice p {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text-mid);
+      line-height: 1.85;
+    }
+
+    .retired-notice .ret-sign {
+      font-family: "Dancing Script", cursive;
+      font-size: 1.1rem;
+      color: var(--crimson-bright);
+      display: block;
+      margin-top: 0.8rem;
+    }
+
+    /* === SECTION === */
+    .section { margin-bottom: 2.8rem; }
+
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      color: var(--silver-hi);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.4rem;
+      padding-left: 0.8rem;
+      border-left: 2px solid var(--gold);
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    /* === BIO === */
+    .bio {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem 1.8rem;
+    }
+
+    .bio p {
+      font-size: 0.95rem;
+      color: var(--text-mid);
+      line-height: 1.9;
+    }
+
+    .bio p + p { margin-top: 0.9rem; }
+
+    .bio-stat {
+      display: inline-block;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--gold);
+      line-height: 1;
+      margin-right: 0.3rem;
+    }
+
+    /* === SERIES GRID === */
+    .series-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .series-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1.1rem;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .series-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 16px rgba(200, 146, 42, 0.12);
+    }
+
+    .series-name {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--silver);
+      letter-spacing: 0.03em;
+      display: block;
+    }
+
+    .series-special {
+      font-family: "Cinzel", serif;
+      font-size: 0.52rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 0.2rem;
+      display: block;
+    }
+
+    /* === PLATFORM LINKS === */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .platform-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text-mid);
+      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
+    }
+
+    .platform-link:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 18px rgba(200, 146, 42, 0.15);
+      color: var(--text);
+    }
+
+    .platform-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      border: 1px solid var(--border-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--gold);
+      flex-shrink: 0;
+      letter-spacing: 0.03em;
+    }
+
+    .platform-info { flex: 1; min-width: 0; }
+
+    .platform-name {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .platform-desc { font-size: 0.78rem; color: var(--text-dim); }
+
+    .platform-arrow {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      transition: color 0.25s, transform 0.25s;
+    }
+
+    .platform-link:hover .platform-arrow {
+      color: var(--gold);
+      transform: translateX(3px);
+    }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="banner-frame">
+    <img src="../images/KittenSK_Profile.png" alt="MissKittenSK">
+  </div>
+
+  <nav class="breadcrumb-nav">
+    <a href="../index.html">&#8592; Consenting Adults</a>
+    <span class="bc-sep">/</span>
+    <span class="bc-current">MissKittenSK</span>
+  </nav>
+
+  <div class="page-intro">
+    <span class="intro-eyebrow">Artist Profile</span>
+    <h1>MissKittenSK</h1>
+    <span class="intro-script">Play with me?</span>
+    <span class="intro-role">Debauched Erotic Audio &nbsp;&middot;&nbsp; 10+ Years</span>
+    <div class="divider"><span></span><i></i><span></span></div>
+  </div>
+
+  <div class="retired-notice">
+    <span class="ret-label">&#10022; A note from Kitten</span>
+    <p>I have loved being your girl — but I am now retired from Kitten and will only be uploading my scripts and writing occasionally to Reddit. I may add my voice to the odd collab project occasionally, but Kitten as an audio artist above that is done. Please respect it.</p>
+    <p>It has been an honour. Thank you for everything.</p>
+    <span class="ret-sign">— MissKittenSK</span>
+  </div>
+
+  <div class="section">
+    <div class="section-label">About</div>
+    <div class="bio">
+      <p>MissKittenSK has been a cornerstone of the erotic audio space for over <span class="bio-stat">10</span> years. A master of improvisation with a wide and fearless range, she built one of the most beloved back catalogues in the community — <span class="bio-stat">420+</span> audios spanning every mood, fantasy, and desire.</p>
+      <p>Known for her warmth, wit, and total commitment to the craft, Kitten forged deep connections with her audience through genuine intimacy and endless variety. From tender girlfriend experiences to unhinged improv, she did it all — and she did it with style.</p>
+      <p>Now retired from recording, she continues to contribute to the community through script writing and occasional collaborations with the Consenting Adults collective and JOI Electric.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Series &amp; Offerings</div>
+    <div class="series-grid">
+      <div class="series-card">
+        <span class="series-name">Quickie Confessions</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Tales from the Nurses Lounge</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Sibbie Kitten</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Your First Hooker</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Kitten Playtime</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Girlfriend Experience</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Sleepover</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Daddy's Girl</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Love Letters from Kitten</span>
+      </div>
+      <div class="series-card">
+        <span class="series-name">Double Kitten</span>
+        <span class="series-special">Dual Audio Experiences</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Find the Archive</div>
+    <div class="platforms">
+
+      <a class="platform-link" href="https://www.patreon.com/cw/MissKittenSK2020/home?vanity=MissKittenSK2020" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">PAT</div>
+        <div class="platform-info">
+          <span class="platform-name">Patreon</span>
+          <span class="platform-desc">420+ audio back catalogue</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://airtable.com/appyjdkSSJVk45DYF/shrydUiFSrYQbzFlO/tbluSveeoK5Mn0yCL/viwwaVjoBJxQKCNjf" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">ARC</div>
+        <div class="platform-info">
+          <span class="platform-name">Audio Archive</span>
+          <span class="platform-desc">Full catalogue index</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.literotica.com/authors/MissKittenSK" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIT</div>
+        <div class="platform-info">
+          <span class="platform-name">Literotica</span>
+          <span class="platform-desc">Stories &amp; audio works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.reddit.com/r/KittensEroticAudio/" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">RDT</div>
+        <div class="platform-info">
+          <span class="platform-name">Reddit</span>
+          <span class="platform-desc">Scripts &amp; writing</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  MissKittenSK &mdash; Consenting Adults &mdash; 18+ only
+</footer>
+
+</body>
+</html>
