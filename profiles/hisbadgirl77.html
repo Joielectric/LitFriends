@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/CA_ICON.png">
+  <link rel="apple-touch-icon" href="../images/CA_ICON.png">
+  <link rel="manifest" href="../manifest-ca.json">
+  <title>HisBadGirl77 — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@300;400;500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c0808;
+      --surface: #160c0a;
+      --surface-2: #1e1210;
+      --surface-3: #261814;
+      --crimson: #9e1a1a;
+      --crimson-bright: #c03030;
+      --fire: #c85a20;
+      --fire-bright: #e07830;
+      --gold: #b07818;
+      --gold-bright: #d4a030;
+      --gold-pale: rgba(176, 120, 24, 0.08);
+      --text: #f0e0d0;
+      --text-mid: #a07868;
+      --text-dim: #6a4030;
+      --silver: #d8c8b8;
+      --silver-hi: #f5ede0;
+      --border: rgba(158, 26, 26, 0.22);
+      --border-mid: rgba(200, 90, 32, 0.38);
+      --border-hi: rgba(212, 160, 48, 0.5);
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Raleway", sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 100%, rgba(158, 26, 26, 0.2) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 15% 60%, rgba(200, 90, 32, 0.1) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 85% 40%, rgba(140, 20, 20, 0.12) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .page-wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 1rem 5rem; }
+
+    /* === BANNER === */
+    .banner-frame {
+      position: relative; z-index: 1;
+      background: #000;
+      border-bottom: 2px solid var(--crimson);
+      margin-bottom: 0.5rem;
+    }
+    .banner-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 280px;
+      object-fit: cover;
+      object-position: center center;
+    }
+
+    /* === BREADCRUMB === */
+    .breadcrumb-nav {
+      position: relative; z-index: 10;
+      padding: 1.2rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+    }
+    .breadcrumb-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
+    .breadcrumb-nav a:hover { color: var(--fire-bright); }
+    .bc-sep { color: var(--text-dim); }
+    .bc-current { color: var(--silver); }
+
+    /* === INTRO === */
+    .page-intro {
+      text-align: center;
+      padding: 2.8rem 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .intro-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.45em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    .page-intro h1 {
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(2.6rem, 8vw, 4.4rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+      background: linear-gradient(135deg, #f0c880 0%, var(--fire-bright) 40%, var(--crimson-bright) 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(200, 90, 32, 0.4));
+    }
+
+    .intro-script {
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.42em;
+      color: var(--fire);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 1.2rem;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      justify-content: center;
+      margin: 1.2rem auto;
+      max-width: 260px;
+    }
+    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
+    .divider i { width: 5px; height: 5px; background: var(--crimson); transform: rotate(45deg); display: inline-block; }
+
+    .intro-tagline {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--text-mid);
+      line-height: 1.8;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* === SECTION === */
+    .section { margin-bottom: 2.8rem; }
+
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      color: var(--silver-hi);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.4rem;
+      padding-left: 0.8rem;
+      border-left: 2px solid var(--fire);
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    /* === BIO === */
+    .bio {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem 1.8rem;
+    }
+
+    .bio p {
+      font-size: 0.95rem;
+      color: var(--text-mid);
+      line-height: 1.9;
+    }
+
+    .bio p + p { margin-top: 0.9rem; }
+
+    .bio-quote {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--silver);
+      border-left: 2px solid var(--crimson);
+      padding-left: 1rem;
+      margin-top: 1.2rem;
+      line-height: 1.85;
+    }
+
+    /* === PLATFORM LINKS === */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .platform-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text-mid);
+      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
+    }
+
+    .platform-link:hover {
+      border-color: var(--fire);
+      box-shadow: 0 0 20px rgba(200, 90, 32, 0.18);
+      color: var(--text);
+    }
+
+    .platform-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      border: 1px solid var(--border-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--fire-bright);
+      flex-shrink: 0;
+      letter-spacing: 0.03em;
+    }
+
+    .platform-info { flex: 1; min-width: 0; }
+
+    .platform-name {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .platform-desc { font-size: 0.78rem; color: var(--text-dim); }
+
+    .platform-arrow {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      transition: color 0.25s, transform 0.25s;
+    }
+
+    .platform-link:hover .platform-arrow {
+      color: var(--fire-bright);
+      transform: translateX(3px);
+    }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="banner-frame">
+    <img src="../images/HisBadGril77Darkwings.png" alt="HisBadGirl77">
+  </div>
+
+  <nav class="breadcrumb-nav">
+    <a href="../index.html">&#8592; Consenting Adults</a>
+    <span class="bc-sep">/</span>
+    <span class="bc-current">HisBadGirl77</span>
+  </nav>
+
+  <div class="page-intro">
+    <span class="intro-eyebrow">Artist Profile</span>
+    <h1>HisBadGirl77</h1>
+    <span class="intro-script">Erotic Audio &nbsp;&middot;&nbsp; Writer &nbsp;&middot;&nbsp; Collaborator</span>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <p class="intro-tagline">Captivating. Creative. Impossible to ignore.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">About</div>
+    <div class="bio">
+      <p>HisBadGirl77 is the rare kind of creator who brings everything — a genuinely captivating voice, a sharp writer's instinct, and an improv gift that makes every performance feel alive and unrehearsed. She doesn't just read a script; she inhabits it, and the difference is unmistakable.</p>
+      <p>A natural collaborator, she has worked alongside some of the most talented creators in the erotic audio space, including lending her voice to audio adaptations of stories by Literotica authors who trusted her to bring their words to life. That trust is well earned.</p>
+      <p>Whether she's crafting something entirely her own or weaving herself into someone else's vision, HisBadGirl77 brings warmth, skill, and a magnetic energy that keeps listeners coming back. Find her on Reddit, AudioChan, and Literotica.</p>
+      <div class="bio-quote">
+        Sweet enough to trust. Bad enough to remember.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Find Me</div>
+    <div class="platforms">
+
+      <a class="platform-link" href="https://www.literotica.com/authors/HisBadGirl77" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIT</div>
+        <div class="platform-info">
+          <span class="platform-name">Literotica</span>
+          <span class="platform-desc">Stories &amp; audio works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://audiochan.com/u/HisBadGirl77" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">AC</div>
+        <div class="platform-info">
+          <span class="platform-name">AudioChan</span>
+          <span class="platform-desc">Audio works &amp; recordings</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.reddit.com/user/HisBadGirl24/?screen_view_count=2" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">RDT</div>
+        <div class="platform-info">
+          <span class="platform-name">Reddit</span>
+          <span class="platform-desc">Community &amp; posts</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  HisBadGirl77 &mdash; Consenting Adults &mdash; 18+ only
+</footer>
+
+</body>
+</html>
