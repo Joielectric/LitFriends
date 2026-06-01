@@ -22,9 +22,9 @@
       --amber: #e89060;
       --glow-soft: rgba(232, 99, 79, 0.12);
       --glow-mid: rgba(192, 57, 74, 0.25);
-      --text: #f8ede8;
-      --text-mid: #ddb8b0;
-      --text-dim: #b08090;
+      --text: #fff5f0;
+      --text-mid: #f0cfc0;
+      --text-dim: #d0a090;
       --border: rgba(232, 99, 79, 0.15);
       --border-mid: rgba(232, 99, 79, 0.28);
     }
@@ -103,6 +103,7 @@
       text-transform: uppercase;
       display: block;
       margin-bottom: 1.8rem;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.8);
     }
 
     .hero h1 {
@@ -133,12 +134,13 @@
 
     .hero-tagline {
       font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-      font-weight: 300;
+      font-weight: 400;
       font-style: italic;
       color: var(--text-mid);
       max-width: 520px;
       margin: 0 auto 0.8rem;
       line-height: 1.8;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.9);
     }
 
     .hero-sub {
@@ -243,7 +245,7 @@
     .artist-name {
       font-family: "Cinzel", serif;
       font-size: 1.25rem;
-      font-weight: 400;
+      font-weight: 600;
       color: var(--text);
       letter-spacing: 0.06em;
       margin-bottom: 0.4rem;
@@ -260,7 +262,7 @@
 
     .artist-bio {
       font-size: 1rem;
-      color: var(--text-mid);
+      color: var(--text);
       line-height: 1.75;
     }
 
