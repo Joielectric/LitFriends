@@ -719,19 +719,64 @@
       canvas.height = window.innerHeight;
     }
 
+    function getAmp(wave, x){
+      // Combine harmonics for irregular, realistic audio waveform shape
+      return (
+        Math.sin(x * wave.freq       + t * wave.speed * 100 + wave.phase) * 0.50 +
+        Math.sin(x * wave.freq * 2.3 + t * wave.speed * 140 + wave.phase + 1.2) * 0.25 +
+        Math.sin(x * wave.freq * 3.7 + t * wave.speed * 80  + wave.phase + 2.4) * 0.15 +
+        Math.sin(x * wave.freq * 0.4 + t * wave.speed * 40  + wave.phase + 0.6) * 0.10
+      );
+    }
+
     function drawWave(wave){
       var w = canvas.width;
       var h = canvas.height;
       var baseY = h * wave.yPos;
       var amp   = h * wave.amp;
+      var step  = 3;
+      var points = [];
 
+      // Collect amplitude points
+      for(var x = 0; x <= w; x += step){
+        points.push({ x: x, a: getAmp(wave, x) * amp });
+      }
+
+      // Draw filled waveform — top edge
       ctx.beginPath();
-      for(var x = 0; x <= w; x += 2){
-        var y = baseY
-          + Math.sin(x * wave.freq + t * wave.speed * 100 + wave.phase) * amp
-          + Math.sin(x * wave.freq * 0.5 + t * wave.speed * 60 + wave.phase + 1) * amp * 0.4;
-        if(x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      ctx.moveTo(points[0].x, baseY - Math.abs(points[0].a));
+      for(var i = 1; i < points.length; i++){
+        ctx.lineTo(points[i].x, baseY - Math.abs(points[i].a));
+      }
+      // Bottom edge in reverse
+      for(var i = points.length - 1; i >= 0; i--){
+        ctx.lineTo(points[i].x, baseY + Math.abs(points[i].a));
+      }
+      ctx.closePath();
+
+      // Gradient fill
+      var grad = ctx.createLinearGradient(0, baseY - amp, 0, baseY + amp);
+      grad.addColorStop(0,   "rgba(" + wave.color + "," + (wave.opacity * 0.15) + ")");
+      grad.addColorStop(0.5, "rgba(" + wave.color + "," + (wave.opacity * 0.35) + ")");
+      grad.addColorStop(1,   "rgba(" + wave.color + "," + (wave.opacity * 0.15) + ")");
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Top stroke edge
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, baseY - Math.abs(points[0].a));
+      for(var i = 1; i < points.length; i++){
+        ctx.lineTo(points[i].x, baseY - Math.abs(points[i].a));
+      }
+      ctx.strokeStyle = "rgba(" + wave.color + "," + wave.opacity + ")";
+      ctx.lineWidth = wave.width;
+      ctx.stroke();
+
+      // Bottom stroke edge
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, baseY + Math.abs(points[0].a));
+      for(var i = 1; i < points.length; i++){
+        ctx.lineTo(points[i].x, baseY + Math.abs(points[i].a));
       }
       ctx.strokeStyle = "rgba(" + wave.color + "," + wave.opacity + ")";
       ctx.lineWidth = wave.width;
