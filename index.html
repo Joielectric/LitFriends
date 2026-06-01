@@ -703,13 +703,6 @@
     var ctx = canvas.getContext("2d");
     var t = 0;
 
-    // Scroll reactivity
-    var scrollY      = 0;
-    var scrollTarget = 0;
-    var scrollEased  = 0;
-    window.addEventListener("scroll", function(){
-      scrollTarget = window.scrollY || document.documentElement.scrollTop;
-    });
 
 
     var waves = [
@@ -738,14 +731,12 @@
       );
     }
 
-    function drawWave(wave, ampBoost, opacBoost){
-      ampBoost  = ampBoost  || 1;
-      opacBoost = opacBoost || 1;
-      var w = canvas.width;
-      var h = canvas.height;
+    function drawWave(wave){
+      var w  = canvas.width;
+      var h  = canvas.height;
       var baseY = h * wave.yPos;
-      var amp   = h * wave.amp * ampBoost;
-      var op    = Math.min(wave.opacity * opacBoost, 0.9);
+      var amp   = h * wave.amp;
+      var op    = wave.opacity;
       var step  = 3;
       var points = [];
 
@@ -796,22 +787,8 @@
     }
 
     function draw(){
-      // Smooth scroll easing
-      scrollEased += (scrollTarget - scrollEased) * 0.05;
-      var maxScroll   = document.body.scrollHeight - window.innerHeight || 1;
-      var scrollRatio = Math.min(scrollEased / maxScroll, 1); // 0 at top, 1 at bottom
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      waves.forEach(function(wave){
-        // Waves closer to current scroll position get boosted most
-        var waveFocus   = 1 - Math.abs(wave.yPos - (0.1 + scrollRatio * 0.8));
-        var ampBoost    = 1 + scrollRatio * 1.8 + Math.max(0, waveFocus) * 1.2;
-        var opacBoost   = 1 + scrollRatio * 0.8 + Math.max(0, waveFocus) * 0.6;
-
-        drawWave(wave, ampBoost, opacBoost);
-      });
-
+      waves.forEach(function(wave){ drawWave(wave); });
       t++;
       requestAnimationFrame(draw);
     }
