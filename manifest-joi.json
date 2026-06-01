@@ -1,11 +1,12 @@
-{
+﻿{
   "name": "JOI Electric",
   "short_name": "JOI",
   "icons": [
-    { "src": "/LitFriends/JOI_Favicon.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/LitFriends/images/JOI_Favicon.png", "sizes": "512x512", "type": "image/png" }
   ],
-  "start_url": "/LitFriends/joi-electric.html",
+  "start_url": "/LitFriends/profiles/joi-electric.html",
   "display": "standalone",
   "background_color": "#080b14",
   "theme_color": "#080b14"
 }
+

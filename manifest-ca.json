@@ -1,11 +1,12 @@
-{
+﻿{
   "name": "Consenting Adults",
   "short_name": "CA",
   "icons": [
-    { "src": "/LitFriends/CA_ICON.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/LitFriends/images/CA_ICON.png", "sizes": "512x512", "type": "image/png" }
   ],
   "start_url": "/LitFriends/",
   "display": "standalone",
   "background_color": "#060306",
   "theme_color": "#060306"
 }
+
