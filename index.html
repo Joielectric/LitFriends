@@ -47,6 +47,14 @@
       z-index: 0;
     }
 
+    /* === WAVEFORM === */
+    #waveform {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     /* === BG GLOW === */
     .bg-glow {
       position: fixed;
@@ -535,6 +543,7 @@
 </div>
 
 <canvas id="stars"></canvas>
+<canvas id="waveform"></canvas>
 <div class="bg-glow"></div>
 
 <div class="page">
@@ -684,6 +693,57 @@
     init();
     draw();
     window.addEventListener("resize", function(){ resize(); init(); });
+  })();
+
+  // Waveform
+  (function(){
+    var canvas = document.getElementById("waveform");
+    var ctx = canvas.getContext("2d");
+    var t = 0;
+
+    var waves = [
+      { freq: 0.012, amp: 0.06, speed: 0.004, phase: 0,    color: "232,99,79",  opacity: 0.12, width: 1.5, yPos: 0.55 },
+      { freq: 0.018, amp: 0.04, speed: 0.006, phase: 2.1,  color: "192,57,74",  opacity: 0.09, width: 1.0, yPos: 0.60 },
+      { freq: 0.009, amp: 0.08, speed: 0.003, phase: 4.2,  color: "232,117,138",opacity: 0.07, width: 2.0, yPos: 0.50 },
+      { freq: 0.022, amp: 0.03, speed: 0.008, phase: 1.0,  color: "232,99,79",  opacity: 0.06, width: 0.8, yPos: 0.65 },
+      { freq: 0.007, amp: 0.10, speed: 0.002, phase: 3.5,  color: "180,50,90",  opacity: 0.05, width: 2.5, yPos: 0.45 },
+      { freq: 0.015, amp: 0.05, speed: 0.005, phase: 0.8,  color: "232,99,79",  opacity: 0.08, width: 1.2, yPos: 0.72 },
+    ];
+
+    function resize(){
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function drawWave(wave){
+      var w = canvas.width;
+      var h = canvas.height;
+      var baseY = h * wave.yPos;
+      var amp   = h * wave.amp;
+
+      ctx.beginPath();
+      for(var x = 0; x <= w; x += 2){
+        var y = baseY
+          + Math.sin(x * wave.freq + t * wave.speed * 100 + wave.phase) * amp
+          + Math.sin(x * wave.freq * 0.5 + t * wave.speed * 60 + wave.phase + 1) * amp * 0.4;
+        if(x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "rgba(" + wave.color + "," + wave.opacity + ")";
+      ctx.lineWidth = wave.width;
+      ctx.stroke();
+    }
+
+    function draw(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      waves.forEach(drawWave);
+      t++;
+      requestAnimationFrame(draw);
+    }
+
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
   })();
 </script>
 </body>
