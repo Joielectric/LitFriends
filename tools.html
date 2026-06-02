@@ -585,6 +585,34 @@
                         <label class="cm-label">Date</label>
                         <input type="date" id="cm-date" class="cm-input" style="width:100%">
                     </div>
+
+                    <!-- Credits -->
+                    <div class="cm-full" style="border-top:1px solid rgba(255,204,0,0.15);padding-top:14px;margin-top:4px;">
+                        <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:#b8a982">(comma-separated names)</span></label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div>
+                                <label class="cm-label" style="font-size:0.75rem;color:#b8a982">Writer(s)</label>
+                                <input id="cm-credit-writers" class="cm-input" placeholder="e.g. Jane Doe" style="width:100%">
+                            </div>
+                            <div>
+                                <label class="cm-label" style="font-size:0.75rem;color:#b8a982">Voice Artist(s)</label>
+                                <input id="cm-credit-voice" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
+                            </div>
+                            <div>
+                                <label class="cm-label" style="font-size:0.75rem;color:#b8a982">Producer(s)</label>
+                                <input id="cm-credit-producers" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
+                            </div>
+                            <div>
+                                <label class="cm-label" style="font-size:0.75rem;color:#b8a982">Editor(s)</label>
+                                <input id="cm-credit-editors" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
+                            </div>
+                            <div>
+                                <label class="cm-label" style="font-size:0.75rem;color:#b8a982">Musician(s)</label>
+                                <input id="cm-credit-musicians" class="cm-input" placeholder="e.g. Jane Doe" style="width:100%">
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="display:flex;align-items:flex-end;gap:10px">
                         <button class="cm-btn" onclick="cmSaveEntry()" style="width:100%">Save Entry</button>
                         <button class="cm-btn cm-btn-sm" onclick="cmClearForm()" style="background:rgba(255,204,0,0.15);color:#ffcc00;border:1px solid rgba(255,204,0,0.3)">Clear</button>
@@ -1103,6 +1131,13 @@
         tags:    document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
         desc:    document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
+        credits: {
+          writers:     document.getElementById('cm-credit-writers').value.split(',').map(t => t.trim()).filter(Boolean),
+          voiceArtists: document.getElementById('cm-credit-voice').value.split(',').map(t => t.trim()).filter(Boolean),
+          producers:   document.getElementById('cm-credit-producers').value.split(',').map(t => t.trim()).filter(Boolean),
+          editors:     document.getElementById('cm-credit-editors').value.split(',').map(t => t.trim()).filter(Boolean),
+          musicians:   document.getElementById('cm-credit-musicians').value.split(',').map(t => t.trim()).filter(Boolean),
+        },
       };
 
       if (cmEditingId) {
@@ -1130,6 +1165,12 @@
       document.getElementById('cm-url').value      = e.url;
       document.getElementById('cm-tags').value     = (e.tags || []).join(', ');
       document.getElementById('cm-desc').value     = e.desc || '';
+      const cr = e.credits || {};
+      document.getElementById('cm-credit-writers').value   = (cr.writers || []).join(', ');
+      document.getElementById('cm-credit-voice').value     = (cr.voiceArtists || []).join(', ');
+      document.getElementById('cm-credit-producers').value = (cr.producers || []).join(', ');
+      document.getElementById('cm-credit-editors').value   = (cr.editors || []).join(', ');
+      document.getElementById('cm-credit-musicians').value = (cr.musicians || []).join(', ');
       document.getElementById('cm-date').value     = e.date || '';
       window.scrollTo({ top: document.getElementById('cm-panel').offsetTop - 20, behavior: 'smooth' });
     }
@@ -1143,7 +1184,7 @@
     function cmClearForm() {
       cmEditingId = null;
       cmSetSelectedArtists([]);
-      ['cm-title','cm-url','cm-tags','cm-desc'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-url','cm-tags','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 

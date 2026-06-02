@@ -193,12 +193,43 @@
   line-height: 1.6; margin-bottom: 1rem;
 }
 .ag-modal-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 1rem; }
+.ag-modal-credits {
+  margin-top: 1.2rem; padding-top: 1rem;
+  border-top: 1px solid var(--border, rgba(255,255,255,.1));
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.2rem;
+}
+.ag-credit-row { font-size: 0.78rem; line-height: 1.5; }
+.ag-credit-label {
+  color: var(--text-dim, #555); text-transform: uppercase;
+  font-size: 0.66rem; letter-spacing: .08em; display: block; margin-bottom: 1px;
+}
+.ag-credit-names { color: var(--text-mid, #888); }
     `;
     document.head.appendChild(s);
   }
 
   // ── Modal ──────────────────────────────────────────────────────────────────
   let currentOverlay = null;
+
+  const CREDIT_LABELS = {
+    writers:      'Writer',
+    voiceArtists: 'Voice',
+    producers:    'Producer',
+    editors:      'Editor',
+    musicians:    'Music',
+  };
+
+  function creditsHtml(credits) {
+    if (!credits) return '';
+    const rows = Object.entries(CREDIT_LABELS)
+      .filter(([k]) => (credits[k] || []).length)
+      .map(([k, label]) => `
+        <div class="ag-credit-row">
+          <span class="ag-credit-label">${label}</span>
+          <span class="ag-credit-names">${credits[k].join(', ')}</span>
+        </div>`).join('');
+    return rows ? `<div class="ag-modal-credits">${rows}</div>` : '';
+  }
 
   function closeModal() {
     if (currentOverlay) { currentOverlay.remove(); currentOverlay = null; }
@@ -239,6 +270,7 @@
             Open on ${provLabel}
           </a>
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
+          ${creditsHtml(entry.credits)}
         </div>
       </div>`;
 
