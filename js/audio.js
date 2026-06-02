@@ -83,79 +83,74 @@
 .ag-filter-select:focus { outline: none; border-color: var(--border-mid, rgba(255,255,255,.25)); }
 .ag-filter-select option { background: #1a1a1a; color: #eee; }
 
-/* Grid */
+/* Track list */
 .ag-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0;
   border: 1px solid var(--border, rgba(255,255,255,.1));
   border-radius: var(--radius, 3px);
   overflow: hidden;
 }
-.ag-card {
+.ag-row {
+  display: grid;
+  grid-template-columns: 6rem 1fr auto auto;
+  align-items: center;
+  gap: 0 1.2rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.07));
   background: var(--surface-2, #111);
-  padding: 1.1rem 1.2rem 1rem;
-  display: flex; flex-direction: column;
-  transition: background .15s;
   cursor: pointer;
-  border-right: 1px solid var(--border, rgba(255,255,255,.08));
-  border-bottom: 1px solid var(--border, rgba(255,255,255,.08));
+  transition: background .12s;
 }
-.ag-card:hover { background: var(--surface-3, #181518); }
+.ag-row:last-child { border-bottom: none; }
+.ag-row:hover { background: var(--surface-3, #181518); }
 
-/* Platform row */
-.ag-card-platforms {
-  display: flex; flex-wrap: wrap; gap: 4px;
-  margin-bottom: 0.6rem;
+.ag-row-date {
+  color: var(--text-dim, #555);
+  font-size: 0.72rem;
+  letter-spacing: .03em;
+  white-space: nowrap;
 }
-.ag-platform-pill {
-  font-size: 0.58rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600;
-  padding: 2px 7px;
-  border: 1px solid var(--border, rgba(255,255,255,.14));
-  border-radius: 20px;
-  color: var(--text-dim, #666);
-}
-
-/* Title */
-.ag-card-title {
+.ag-row-main { min-width: 0; }
+.ag-row-title {
   color: var(--silver-hi, #f5f0ea);
-  font-size: 0.9rem; font-weight: 500; line-height: 1.4;
-  margin-bottom: 0.3rem;
-  flex: 1;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
 }
-
-/* Date */
-.ag-card-date {
-  color: var(--text-dim, #555); font-size: 0.7rem;
-  margin-bottom: 0.55rem;
+.ag-tags {
+  display: flex; flex-wrap: wrap; gap: 3px;
 }
-
-/* Tags */
-.ag-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 0.8rem; }
 .ag-tag {
   padding: 1px 6px;
-  background: rgba(255,255,255,.03);
   border: 1px solid var(--border, rgba(255,255,255,.08));
   border-radius: 2px;
-  color: var(--text-dim, #666); font-size: 0.67rem;
+  color: var(--text-dim, #666); font-size: 0.65rem;
 }
-
-/* Listen button */
+.ag-row-platforms {
+  display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end;
+}
+.ag-platform-pill {
+  font-size: 0.6rem; letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 7px;
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border-radius: 2px;
+  color: var(--text-dim, #666);
+  white-space: nowrap;
+}
 .ag-listen-btn {
-  margin-top: auto; padding: 0.45rem 0.8rem;
+  padding: 0.38rem 0.9rem;
   background: transparent;
   border: 1px solid var(--border, rgba(255,255,255,.12));
   border-radius: var(--radius, 3px);
   color: var(--text-dim, #777);
-  cursor: pointer; font-size: 0.68rem; letter-spacing: .1em; text-transform: uppercase;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  transition: border-color .15s, color .15s, background .15s;
-  width: 100%;
+  cursor: pointer; font-size: 0.65rem; letter-spacing: .1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 5px;
+  transition: border-color .12s, color .12s;
+  white-space: nowrap;
 }
 .ag-listen-btn:hover {
   border-color: var(--border-hi, rgba(255,255,255,.35));
   color: var(--silver-hi, #f5f0ea);
-  background: rgba(255,255,255,.04);
 }
 .ag-artist-badge {
   display: inline-block; padding: 1px 7px;
@@ -166,6 +161,11 @@
 .ag-empty, .ag-loading {
   color: var(--text-dim, #555); text-align: center;
   padding: 2.5rem 1rem; font-size: 0.88rem;
+}
+@media (max-width: 540px) {
+  .ag-row { grid-template-columns: 1fr auto; }
+  .ag-row-date { display: none; }
+  .ag-row-platforms { display: none; }
 }
 
 /* Modal */
@@ -359,40 +359,41 @@
     currentOverlay = overlay;
   }
 
-  // ── Card ───────────────────────────────────────────────────────────────────
-  function cardHtml(entry, showArtists) {
+  // ── Row ────────────────────────────────────────────────────────────────────
+  function rowHtml(entry, showArtists) {
     const links = getLinks(entry);
     const platformPills = links.map(lk =>
       `<span class="ag-platform-pill">${providerLabel(lk.provider)}</span>`
     ).join('');
-    const tagsHtml = (entry.tags || []).slice(0, 5).map(t => `<span class="ag-tag">${t}</span>`).join('');
+    const tagsHtml = (entry.tags || []).slice(0, 6).map(t => `<span class="ag-tag">${t}</span>`).join('');
     const artistBadges = showArtists
       ? getArtists(entry).map(a => `<span class="ag-artist-badge">${ARTIST_LABELS[a] || a}</span>`).join('')
       : '';
-    const listenLabel = links.length > 1 ? 'Listen' : (canEmbed(links[0]?.provider) ? 'Play' : 'Listen');
 
     return `
-      <div class="ag-card">
-        <div class="ag-card-platforms">${platformPills}${artistBadges}</div>
-        <div class="ag-card-title">${entry.title}</div>
-        ${entry.date ? `<div class="ag-card-date">${entry.date}</div>` : ''}
-        ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
+      <div class="ag-row">
+        <div class="ag-row-date">${entry.date || ''}</div>
+        <div class="ag-row-main">
+          <div class="ag-row-title">${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">— ' + artistBadges + '</span>' : ''}</div>
+          ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
+        </div>
+        <div class="ag-row-platforms">${platformPills}</div>
         <button class="ag-listen-btn">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          ${listenLabel}
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play
         </button>
       </div>`;
   }
 
-  // ── Render grid ────────────────────────────────────────────────────────────
+  // ── Render list ────────────────────────────────────────────────────────────
   function renderGrid(entries, container, showArtists) {
     if (!entries.length) {
       container.innerHTML = '<div class="ag-empty">No audio found.</div>';
       return;
     }
-    container.innerHTML = `<div class="ag-grid">${entries.map(e => cardHtml(e, showArtists)).join('')}</div>`;
-    container.querySelectorAll('.ag-card').forEach((card, i) => {
-      card.addEventListener('click', () => openModal(entries[i]));
+    container.innerHTML = `<div class="ag-grid">${entries.map(e => rowHtml(e, showArtists)).join('')}</div>`;
+    container.querySelectorAll('.ag-row').forEach((row, i) => {
+      row.addEventListener('click', () => openModal(entries[i]));
     });
   }
 
