@@ -8,6 +8,13 @@
     hotaudio:   { label: 'HotAudio',   canEmbed: false },
   };
 
+  // Gender/audience tags shown first in filter and styled distinctly
+  const GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A'];
+
+  function isGenderTag(t) {
+    return GENDER_TAGS.includes(t.toUpperCase());
+  }
+
   const ARTIST_LABELS = {
     'joi-electric': 'JOI Electric',
     'loona-licks':  'Loona Licks',
@@ -125,7 +132,16 @@
   border: 1px solid var(--border-mid, rgba(255,255,255,.18));
   border-radius: 2px;
   color: var(--text-mid, #999); font-size: 0.65rem;
+  cursor: default;
 }
+.ag-tag-gender {
+  border-color: var(--border-hi, rgba(232,99,79,.45));
+  color: var(--coral, #e8634f);
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+.ag-tag[data-filterable] { cursor: pointer; }
+.ag-tag[data-filterable]:hover { border-color: var(--border-hi, rgba(255,255,255,.45)); color: var(--silver-hi, #f5f0ea); }
 .ag-row-platforms {
   display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end;
 }
@@ -360,12 +376,17 @@
   }
 
   // ── Row ────────────────────────────────────────────────────────────────────
-  function rowHtml(entry, showArtists) {
+  function rowHtml(entry, showArtists, filterable) {
     const links = getLinks(entry);
     const platformPills = links.map(lk =>
       `<span class="ag-platform-pill">${providerLabel(lk.provider)}</span>`
     ).join('');
-    const tagsHtml = (entry.tags || []).slice(0, 6).map(t => `<span class="ag-tag">${t}</span>`).join('');
+    const tagsHtml = (entry.tags || []).slice(0, 8).map(t => {
+      const gender = isGenderTag(t);
+      const classes = ['ag-tag', gender ? 'ag-tag-gender' : ''].filter(Boolean).join(' ');
+      const attrs = filterable ? ` data-filterable="1" data-tag="${t}"` : '';
+      return `<span class="${classes}"${attrs}>${t}</span>`;
+    }).join('');
     const artistBadges = showArtists
       ? getArtists(entry).map(a => `<span class="ag-artist-badge">${ARTIST_LABELS[a] || a}</span>`).join('')
       : '';
@@ -386,25 +407,42 @@
   }
 
   // ── Render list ────────────────────────────────────────────────────────────
-  function renderGrid(entries, container, showArtists) {
+  function renderGrid(entries, container, showArtists, filterable, onTagClick) {
     if (!entries.length) {
       container.innerHTML = '<div class="ag-empty">No audio found.</div>';
       return;
     }
-    container.innerHTML = `<div class="ag-grid">${entries.map(e => rowHtml(e, showArtists)).join('')}</div>`;
+    container.innerHTML = `<div class="ag-grid">${entries.map(e => rowHtml(e, showArtists, filterable)).join('')}</div>`;
     container.querySelectorAll('.ag-row').forEach((row, i) => {
-      row.addEventListener('click', () => openModal(entries[i]));
+      row.addEventListener('click', e => {
+        if (e.target.dataset.filterable) return; // tag click handled below
+        openModal(entries[i]);
+      });
     });
+    if (filterable && onTagClick) {
+      container.querySelectorAll('.ag-tag[data-filterable]').forEach(tag => {
+        tag.addEventListener('click', e => {
+          e.stopPropagation();
+          onTagClick(tag.dataset.tag);
+        });
+      });
+    }
   }
 
   // ── Filters (catalog) ─────────────────────────────────────────────────────
   function initFilters(allEntries, container) {
-    const allTags = [...new Set(allEntries.flatMap(e => e.tags || []))].sort();
+    const allTagSet = [...new Set(allEntries.flatMap(e => e.tags || []))].sort();
+    const genderTagsPresent = GENDER_TAGS.filter(t => allTagSet.includes(t));
+    const otherTags = allTagSet.filter(t => !isGenderTag(t));
 
     const filterBar = document.createElement('div');
     filterBar.className = 'ag-filters';
     filterBar.innerHTML = `
-      <input class="ag-search" type="search" placeholder="Search titles…" id="ag-search">
+      <input class="ag-search" type="search" placeholder="Search titles, tags…" id="ag-search">
+      <select class="ag-filter-select" id="ag-gender">
+        <option value="">All Audiences</option>
+        ${genderTagsPresent.map(t => `<option value="${t}">${t}</option>`).join('')}
+      </select>
       <select class="ag-filter-select" id="ag-artist">
         <option value="">All Artists</option>
         ${Object.entries(ARTIST_LABELS).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}
@@ -413,38 +451,61 @@
         <option value="">All Platforms</option>
         ${Object.entries(PROVIDERS).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('')}
       </select>
-      ${allTags.length ? `
+      ${otherTags.length ? `
       <select class="ag-filter-select" id="ag-tag">
         <option value="">All Tags</option>
-        ${allTags.map(t => `<option value="${t}">${t}</option>`).join('')}
+        ${otherTags.map(t => `<option value="${t}">${t}</option>`).join('')}
       </select>` : ''}
     `;
+
+    const countEl = document.createElement('div');
+    countEl.id = 'ag-count';
+    countEl.style.cssText = 'color:var(--text-dim,#555);font-size:0.75rem;padding:0.5rem 0 0.8rem;';
 
     const gridWrap = document.createElement('div');
     gridWrap.id = 'ag-results';
 
     container.appendChild(filterBar);
+    container.appendChild(countEl);
     container.appendChild(gridWrap);
 
-    function applyFilters() {
-      const q        = document.getElementById('ag-search').value.toLowerCase();
-      const artist   = document.getElementById('ag-artist').value;
-      const provider = document.getElementById('ag-provider').value;
-      const tag      = document.getElementById('ag-tag') ? document.getElementById('ag-tag').value : '';
-
-      const filtered = allEntries.filter(e => {
-        if (q && !e.title.toLowerCase().includes(q) && !(e.desc || '').toLowerCase().includes(q)) return false;
-        if (artist && !artistInEntry(e, artist)) return false;
-        if (provider && !getLinks(e).some(lk => lk.provider === provider)) return false;
-        if (tag && !(e.tags || []).includes(tag)) return false;
-        return true;
-      });
-
-      renderGrid(filtered, gridWrap, true);
+    function getFilters() {
+      return {
+        q:        document.getElementById('ag-search').value.toLowerCase(),
+        gender:   document.getElementById('ag-gender').value,
+        artist:   document.getElementById('ag-artist').value,
+        provider: document.getElementById('ag-provider').value,
+        tag:      document.getElementById('ag-tag') ? document.getElementById('ag-tag').value : '',
+      };
     }
 
-    filterBar.addEventListener('input', applyFilters);
-    filterBar.addEventListener('change', applyFilters);
+    function applyFilters(filters) {
+      const f = filters || getFilters();
+      const filtered = allEntries.filter(e => {
+        const tags = e.tags || [];
+        if (f.q && !e.title.toLowerCase().includes(f.q)
+                && !(e.desc || '').toLowerCase().includes(f.q)
+                && !tags.some(t => t.toLowerCase().includes(f.q))) return false;
+        if (f.gender && !tags.includes(f.gender)) return false;
+        if (f.artist && !artistInEntry(e, f.artist)) return false;
+        if (f.provider && !getLinks(e).some(lk => lk.provider === f.provider)) return false;
+        if (f.tag && !tags.includes(f.tag)) return false;
+        return true;
+      });
+      countEl.textContent = `${filtered.length} of ${allEntries.length} works`;
+      renderGrid(filtered, gridWrap, true, true, tag => {
+        if (isGenderTag(tag)) {
+          document.getElementById('ag-gender').value = tag;
+        } else {
+          const sel = document.getElementById('ag-tag');
+          if (sel) sel.value = tag;
+        }
+        applyFilters();
+      });
+    }
+
+    filterBar.addEventListener('input', () => applyFilters());
+    filterBar.addEventListener('change', () => applyFilters());
     applyFilters();
   }
 
@@ -468,7 +529,7 @@
           if (showFilters) {
             initFilters(entries, el);
           } else {
-            renderGrid(entries, el, false);
+            renderGrid(entries, el, false, false, null);
           }
         })
         .catch(() => {
