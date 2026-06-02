@@ -1048,16 +1048,23 @@
     function cmUnlock() {
       const pw = document.getElementById('cm-password').value.trim();
       if (!pw) return;
-      cmPassword = pw;
 
-      fetch('/api/content')
+      fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, action: 'verify' }),
+      })
         .then(r => r.json())
         .then(data => {
+          if (!data.ok) {
+            document.getElementById('cm-lock-msg').textContent = 'Incorrect password.';
+            return;
+          }
+          cmPassword = pw;
           cmEntries = data.entries || [];
           document.getElementById('cm-lock-screen').style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
-          // Set today's date as default
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
         .catch(() => {
