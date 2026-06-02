@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/CA_ICON.png">
+  <link rel="apple-touch-icon" href="images/CA_ICON.png">
+  <link rel="manifest" href="manifest-ca.json">
+  <title>Listen — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060306;
+      --surface: #0c090c;
+      --surface-2: #120f12;
+      --surface-3: #181518;
+      --border: rgba(200,120,110,0.14);
+      --border-mid: rgba(210,130,120,0.3);
+      --border-hi: rgba(220,150,140,0.55);
+      --text: #ede4e0;
+      --text-mid: #b09090;
+      --text-dim: #5a3a38;
+      --silver: #d8c8c0;
+      --silver-hi: #f5ece8;
+      --coral: #e8634f;
+      --rose: #c05070;
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 35% at 50% 0%, rgba(232,99,79,.06) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 90% 95%, rgba(192,80,112,.05) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .page-wrap { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+    .back-nav {
+      padding: 1.6rem 0 0;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .back-link {
+      color: var(--text-dim); text-decoration: none;
+      font-family: "Cinzel", serif; font-size: 0.7rem; letter-spacing: .12em; text-transform: uppercase;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--text-mid); }
+    .back-sep { color: var(--text-dim); font-size: 0.7rem; }
+
+    .hero {
+      text-align: center; padding: 3rem 0 2.4rem;
+    }
+    .hero-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.72rem; letter-spacing: .5em; text-transform: uppercase;
+      color: var(--text-dim); display: block; margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-family: "Cinzel", serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 300; letter-spacing: .12em;
+      background: linear-gradient(160deg, #f0c8b8 0%, var(--coral) 40%, var(--rose) 70%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.8rem;
+    }
+    .hero-sub {
+      color: var(--text-mid); font-style: italic; font-size: 1.05rem;
+    }
+    .hero-divider {
+      display: flex; align-items: center; gap: 1rem;
+      justify-content: center; margin: 1.6rem auto; max-width: 260px;
+    }
+    .hero-divider span { flex: 1; height: 1px; background: var(--border); }
+    .hero-divider i { width: 4px; height: 4px; background: var(--coral); transform: rotate(45deg); display: inline-block; opacity: .7; }
+
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: .38em; text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.6rem;
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+
+    /* Override audio.js filter styles for catalog aesthetic */
+    .ag-search {
+      font-family: "Cormorant Garamond", serif;
+    }
+
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      color: var(--text-dim);
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: .3em; text-transform: uppercase;
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <nav class="back-nav">
+    <a class="back-link" href="index.html">&#8592; Home</a>
+  </nav>
+
+  <header class="hero">
+    <span class="hero-eyebrow">Consenting Adults</span>
+    <h1>Listen</h1>
+    <div class="hero-divider"><span></span><i></i><span></span></div>
+    <p class="hero-sub">Browse the full catalog across all artists and platforms.</p>
+  </header>
+
+  <div class="section-label">Audio Catalog</div>
+  <div id="audio-catalog"></div>
+
+</div>
+
+<footer>
+  Consenting Adults &mdash; 18+ only
+</footer>
+
+<script src="/js/audio.js"></script>
+<script>
+  AudioGrid.init({ container: '#audio-catalog', showFilters: true });
+</script>
+
+</body>
+</html>

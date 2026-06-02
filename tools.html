@@ -553,13 +553,13 @@
                 <!-- Add / Edit form -->
                 <div class="cm-form-grid">
                     <div>
-                        <label class="cm-label">Artist</label>
-                        <select id="cm-artist" class="cm-input filter-select">
-                            <option value="joi-electric">JOI Electric</option>
-                            <option value="loona-licks">Loona Licks</option>
-                            <option value="misskittensk">MissKittenSK</option>
-                            <option value="hisbadgirl77">HisBadGirl77</option>
-                        </select>
+                        <label class="cm-label">Artists <span style="font-weight:normal;color:#b8a982">(select all that apply)</span></label>
+                        <div id="cm-artist-checks" style="display:flex;flex-direction:column;gap:8px;padding:8px 0;">
+                            <label style="display:flex;align-items:center;gap:8px;color:#e6d4a8;cursor:pointer;font-weight:normal"><input type="checkbox" value="joi-electric" style="accent-color:#ffcc00;width:15px;height:15px"> JOI Electric</label>
+                            <label style="display:flex;align-items:center;gap:8px;color:#e6d4a8;cursor:pointer;font-weight:normal"><input type="checkbox" value="loona-licks" style="accent-color:#ffcc00;width:15px;height:15px"> Loona Licks</label>
+                            <label style="display:flex;align-items:center;gap:8px;color:#e6d4a8;cursor:pointer;font-weight:normal"><input type="checkbox" value="misskittensk" style="accent-color:#ffcc00;width:15px;height:15px"> MissKittenSK</label>
+                            <label style="display:flex;align-items:center;gap:8px;color:#e6d4a8;cursor:pointer;font-weight:normal"><input type="checkbox" value="hisbadgirl77" style="accent-color:#ffcc00;width:15px;height:15px"> HisBadGirl77</label>
+                        </div>
                     </div>
                     <div>
                         <label class="cm-label">Provider</label>
@@ -1077,20 +1077,32 @@
 
     function cmProviderChanged() {}
 
+    function cmGetSelectedArtists() {
+      return Array.from(document.querySelectorAll('#cm-artist-checks input:checked')).map(cb => cb.value);
+    }
+
+    function cmSetSelectedArtists(artists) {
+      document.querySelectorAll('#cm-artist-checks input').forEach(cb => {
+        cb.checked = (artists || []).includes(cb.value);
+      });
+    }
+
     function cmSaveEntry() {
-      const title = document.getElementById('cm-title').value.trim();
-      const url   = document.getElementById('cm-url').value.trim();
+      const title   = document.getElementById('cm-title').value.trim();
+      const url     = document.getElementById('cm-url').value.trim();
+      const artists = cmGetSelectedArtists();
       if (!title || !url) { cmShowMsg('Title and URL are required.', false); return; }
+      if (!artists.length) { cmShowMsg('Select at least one artist.', false); return; }
 
       const entry = {
-        id:       cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
-        artist:   document.getElementById('cm-artist').value,
+        id:      cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
+        artists,
         provider: document.getElementById('cm-provider').value,
         title,
         url,
-        tags:     document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-        desc:     document.getElementById('cm-desc').value.trim(),
-        date:     document.getElementById('cm-date').value,
+        tags:    document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        desc:    document.getElementById('cm-desc').value.trim(),
+        date:    document.getElementById('cm-date').value,
       };
 
       if (cmEditingId) {
@@ -1112,7 +1124,7 @@
       const e = cmEntries.find(e => e.id === id);
       if (!e) return;
       cmEditingId = id;
-      document.getElementById('cm-artist').value   = e.artist;
+      cmSetSelectedArtists(e.artists || (e.artist ? [e.artist] : []));
       document.getElementById('cm-provider').value = e.provider;
       document.getElementById('cm-title').value    = e.title;
       document.getElementById('cm-url').value      = e.url;
@@ -1130,13 +1142,16 @@
 
     function cmClearForm() {
       cmEditingId = null;
+      cmSetSelectedArtists([]);
       ['cm-title','cm-url','cm-tags','cm-desc'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
     function cmRenderEntries() {
       const artistFilter = document.getElementById('cm-filter-artist').value;
-      const list = artistFilter ? cmEntries.filter(e => e.artist === artistFilter) : cmEntries;
+      const list = artistFilter
+        ? cmEntries.filter(e => (e.artists || (e.artist ? [e.artist] : [])).includes(artistFilter))
+        : cmEntries;
 
       document.getElementById('cm-count').textContent = `${cmEntries.length} entr${cmEntries.length === 1 ? 'y' : 'ies'}`;
 
@@ -1151,7 +1166,7 @@
           <div class="cm-entry-info">
             <div class="cm-entry-title">${e.title}</div>
             <div class="cm-entry-meta">
-              ${ARTIST_LABELS[e.artist] || e.artist}
+              ${(e.artists || (e.artist ? [e.artist] : [])).map(a => ARTIST_LABELS[a] || a).join(', ')}
               &middot; ${e.date || 'no date'}
               ${e.tags && e.tags.length ? '&middot; ' + e.tags.join(', ') : ''}
             </div>
