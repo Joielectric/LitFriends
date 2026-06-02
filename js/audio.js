@@ -111,8 +111,8 @@
 .ag-row:hover { background: var(--surface-3, #181518); }
 
 .ag-row-date {
-  color: var(--text-mid, #999);
-  font-size: 0.72rem;
+  color: var(--silver, #d8c8c0);
+  font-size: 0.85rem;
   letter-spacing: .03em;
   white-space: nowrap;
 }
