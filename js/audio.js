@@ -104,7 +104,7 @@
 .ag-row:hover { background: var(--surface-3, #181518); }
 
 .ag-row-date {
-  color: var(--text-dim, #555);
+  color: var(--text-mid, #999);
   font-size: 0.72rem;
   letter-spacing: .03em;
   white-space: nowrap;
@@ -112,7 +112,7 @@
 .ag-row-main { min-width: 0; }
 .ag-row-title {
   color: var(--silver-hi, #f5f0ea);
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   line-height: 1.35;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 0.2rem;
@@ -122,9 +122,9 @@
 }
 .ag-tag {
   padding: 1px 6px;
-  border: 1px solid var(--border, rgba(255,255,255,.08));
+  border: 1px solid var(--border-mid, rgba(255,255,255,.18));
   border-radius: 2px;
-  color: var(--text-dim, #666); font-size: 0.65rem;
+  color: var(--text-mid, #999); font-size: 0.65rem;
 }
 .ag-row-platforms {
   display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end;
@@ -132,31 +132,31 @@
 .ag-platform-pill {
   font-size: 0.6rem; letter-spacing: .1em; text-transform: uppercase;
   padding: 2px 7px;
-  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border: 1px solid var(--border-mid, rgba(255,255,255,.18));
   border-radius: 2px;
-  color: var(--text-dim, #666);
+  color: var(--text-mid, #999);
   white-space: nowrap;
 }
 .ag-listen-btn {
   padding: 0.38rem 0.9rem;
   background: transparent;
-  border: 1px solid var(--border, rgba(255,255,255,.12));
+  border: 1px solid var(--border-mid, rgba(255,255,255,.2));
   border-radius: var(--radius, 3px);
-  color: var(--text-dim, #777);
+  color: var(--silver, #ccc);
   cursor: pointer; font-size: 0.65rem; letter-spacing: .1em; text-transform: uppercase;
   display: flex; align-items: center; gap: 5px;
   transition: border-color .12s, color .12s;
   white-space: nowrap;
 }
 .ag-listen-btn:hover {
-  border-color: var(--border-hi, rgba(255,255,255,.35));
+  border-color: var(--border-hi, rgba(255,255,255,.45));
   color: var(--silver-hi, #f5f0ea);
 }
 .ag-artist-badge {
   display: inline-block; padding: 1px 7px;
-  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border: 1px solid var(--border-mid, rgba(255,255,255,.18));
   border-radius: 12px;
-  color: var(--text-dim, #666); font-size: 0.66rem;
+  color: var(--text-mid, #999); font-size: 0.66rem;
 }
 .ag-empty, .ag-loading {
   color: var(--text-dim, #555); text-align: center;
