@@ -398,7 +398,7 @@
                     </div>
 
                     <div style="display:flex;align-items:flex-end;gap:10px">
-                        <button class="cm-btn cm-btn-primary" onclick="cmSaveEntry()" style="width:100%">Save Entry</button>
+                        <button id="cm-save-btn" class="cm-btn cm-btn-primary" onclick="cmSaveEntry()" style="width:100%">Save Entry</button>
                         <button class="cm-btn cm-btn-sm" onclick="cmClearForm()" style="background:var(--border);color:var(--coral);border:1px solid var(--border-mid)">Clear</button>
                     </div>
                 </div>
@@ -995,8 +995,11 @@
       document.getElementById('cm-credit-producers').value = (cr.producers || []).join(', ');
       document.getElementById('cm-credit-editors').value   = (cr.editors || []).join(', ');
       document.getElementById('cm-credit-musicians').value = (cr.musicians || []).join(', ');
-      document.getElementById('cm-date').value     = e.date || '';
-      window.scrollTo({ top: document.getElementById('cm-panel').offsetTop - 20, behavior: 'smooth' });
+      document.getElementById('cm-date').value = e.date || '';
+      const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top: formTop, behavior: 'smooth' });
+      document.getElementById('cm-save-btn').textContent = 'Update Entry';
+      document.getElementById('cm-save-btn').style.borderColor = 'var(--coral)';
     }
 
     function cmDeleteEntry(id) {
@@ -1008,6 +1011,8 @@
     function cmClearForm() {
       cmEditingId = null;
       cmSetLinks([]);
+      document.getElementById('cm-save-btn').textContent = 'Save Entry';
+      document.getElementById('cm-save-btn').style.borderColor = '';
       ['cm-title','cm-tags','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
