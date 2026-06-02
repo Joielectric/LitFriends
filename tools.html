@@ -402,6 +402,78 @@
             margin-top: 5px;
         }
         
+        /* === CONTENT MANAGER === */
+        .cm-lock { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .cm-input {
+            padding: 10px 14px;
+            background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
+            border: 2px solid rgba(255,204,0,0.3);
+            border-radius: 6px;
+            color: #e6d4a8;
+            font-size: 14px;
+            flex: 1;
+            min-width: 180px;
+        }
+        .cm-input:focus { outline: none; border-color: #ffcc00; }
+        .cm-btn {
+            padding: 10px 22px;
+            background: linear-gradient(145deg, #ffcc00, #ff9500);
+            color: #1a1a0f;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .cm-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .cm-btn-danger {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 6px 14px;
+            font-size: 0.8em;
+        }
+        .cm-btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8em;
+        }
+        .cm-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 20px 0;
+        }
+        .cm-form-grid .cm-full { grid-column: 1 / -1; }
+        .cm-label { color: #ffcc00; font-size: 0.85em; font-weight: bold; display: block; margin-bottom: 5px; }
+        .cm-msg { padding: 10px 14px; border-radius: 6px; margin: 10px 0; font-weight: bold; display: none; }
+        .cm-msg.ok  { background: #27ae60; color: white; display: block; }
+        .cm-msg.err { background: #e74c3c; color: white; display: block; }
+        .cm-entries-list { margin-top: 24px; }
+        .cm-entry-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(145deg, #1a1a0f, #2d2a1f);
+            border: 1px solid rgba(255,204,0,0.15);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .cm-entry-info { flex: 1; min-width: 0; }
+        .cm-entry-title { color: #ffcc00; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cm-entry-meta { color: #b8a982; font-size: 0.82em; margin-top: 2px; }
+        .cm-provider-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            background: rgba(255,204,0,0.2);
+            color: #ffcc00;
+            border: 1px solid rgba(255,204,0,0.3);
+            white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -458,6 +530,84 @@
             </div>
         </div>
         
+        <!-- ===== CONTENT MANAGER ===== -->
+        <div class="tools-section">
+            <div class="section-title">Content Manager</div>
+
+            <!-- Lock screen -->
+            <div id="cm-lock-screen">
+                <div class="cm-lock">
+                    <input type="password" id="cm-password" class="cm-input" placeholder="Admin password" style="max-width:260px">
+                    <button class="cm-btn" onclick="cmUnlock()">Unlock</button>
+                    <span id="cm-lock-msg" style="color:#e74c3c;font-weight:bold;"></span>
+                </div>
+            </div>
+
+            <!-- Admin panel -->
+            <div id="cm-panel" style="display:none">
+                <div id="cm-msg" class="cm-msg"></div>
+
+                <!-- Add / Edit form -->
+                <div class="cm-form-grid">
+                    <div>
+                        <label class="cm-label">Artist</label>
+                        <select id="cm-artist" class="cm-input filter-select">
+                            <option value="joi-electric">JOI Electric</option>
+                            <option value="loona-licks">Loona Licks</option>
+                            <option value="misskittensk">MissKittenSK</option>
+                            <option value="hisbadgirl77">HisBadGirl77</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="cm-label">Provider</label>
+                        <select id="cm-provider" class="cm-input filter-select" onchange="cmProviderChanged()"></select>
+                    </div>
+                    <div class="cm-full">
+                        <label class="cm-label">Title</label>
+                        <input id="cm-title" class="cm-input" placeholder="Audio title" style="width:100%">
+                    </div>
+                    <div class="cm-full">
+                        <label class="cm-label">URL</label>
+                        <input id="cm-url" class="cm-input" placeholder="Link to audio" style="width:100%">
+                    </div>
+                    <div class="cm-full">
+                        <label class="cm-label">Tags <span style="font-weight:normal;color:#b8a982">(comma-separated)</span></label>
+                        <input id="cm-tags" class="cm-input" placeholder="GFE, soft, comfort" style="width:100%">
+                    </div>
+                    <div class="cm-full">
+                        <label class="cm-label">Description <span style="font-weight:normal;color:#b8a982">(optional)</span></label>
+                        <input id="cm-desc" class="cm-input" placeholder="Short description" style="width:100%">
+                    </div>
+                    <div>
+                        <label class="cm-label">Date</label>
+                        <input type="date" id="cm-date" class="cm-input" style="width:100%">
+                    </div>
+                    <div style="display:flex;align-items:flex-end;gap:10px">
+                        <button class="cm-btn" onclick="cmSaveEntry()" style="width:100%">Save Entry</button>
+                        <button class="cm-btn cm-btn-sm" onclick="cmClearForm()" style="background:rgba(255,204,0,0.15);color:#ffcc00;border:1px solid rgba(255,204,0,0.3)">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Entry list -->
+                <div class="cm-entries-list">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+                        <span style="color:#ffcc00;font-weight:bold" id="cm-count">0 entries</span>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select id="cm-filter-artist" class="filter-select" onchange="cmRenderEntries()">
+                                <option value="">All Artists</option>
+                                <option value="joi-electric">JOI Electric</option>
+                                <option value="loona-licks">Loona Licks</option>
+                                <option value="misskittensk">MissKittenSK</option>
+                                <option value="hisbadgirl77">HisBadGirl77</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="cm-entries"></div>
+                </div>
+            </div>
+        </div>
+        <!-- ===== END CONTENT MANAGER ===== -->
+
         <div class="projects-container">
             <div class="section-title">Current Projects</div>
             
@@ -861,6 +1011,165 @@
                 }, 3000);
             }
         }
+    </script>
+
+    <script>
+    // ===== CONTENT MANAGER =====
+
+    const PROVIDERS = {
+      soundgasm:  { label: 'Soundgasm' },
+      literotica: { label: 'Literotica' },
+      audiochan:  { label: 'Audiochan' },
+      hotaudio:   { label: 'HotAudio' },
+    };
+
+    const ARTIST_LABELS = {
+      'joi-electric':  'JOI Electric',
+      'loona-licks':   'Loona Licks',
+      'misskittensk':  'MissKittenSK',
+      'hisbadgirl77':  'HisBadGirl77',
+    };
+
+    let cmEntries = [];
+    let cmPassword = '';
+    let cmEditingId = null;
+
+    // Build provider dropdown
+    (function cmInitProviders() {
+      const sel = document.getElementById('cm-provider');
+      sel.innerHTML = Object.entries(PROVIDERS)
+        .map(([k, v]) => `<option value="${k}">${v.label}</option>`)
+        .join('');
+    })();
+
+    function cmUnlock() {
+      const pw = document.getElementById('cm-password').value.trim();
+      if (!pw) return;
+      cmPassword = pw;
+
+      fetch('/api/content')
+        .then(r => r.json())
+        .then(data => {
+          cmEntries = data.entries || [];
+          document.getElementById('cm-lock-screen').style.display = 'none';
+          document.getElementById('cm-panel').style.display = 'block';
+          cmRenderEntries();
+          // Set today's date as default
+          document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
+        })
+        .catch(() => {
+          document.getElementById('cm-lock-msg').textContent = 'Could not reach server.';
+        });
+    }
+
+    function cmProviderChanged() {}
+
+    function cmSaveEntry() {
+      const title = document.getElementById('cm-title').value.trim();
+      const url   = document.getElementById('cm-url').value.trim();
+      if (!title || !url) { cmShowMsg('Title and URL are required.', false); return; }
+
+      const entry = {
+        id:       cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
+        artist:   document.getElementById('cm-artist').value,
+        provider: document.getElementById('cm-provider').value,
+        title,
+        url,
+        tags:     document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        desc:     document.getElementById('cm-desc').value.trim(),
+        date:     document.getElementById('cm-date').value,
+      };
+
+      if (cmEditingId) {
+        const idx = cmEntries.findIndex(e => e.id === cmEditingId);
+        if (idx > -1) cmEntries[idx] = entry;
+        cmEditingId = null;
+      } else {
+        cmEntries.unshift(entry);
+      }
+
+      cmPersist(() => {
+        cmClearForm();
+        cmRenderEntries();
+        cmShowMsg('Saved!', true);
+      });
+    }
+
+    function cmEditEntry(id) {
+      const e = cmEntries.find(e => e.id === id);
+      if (!e) return;
+      cmEditingId = id;
+      document.getElementById('cm-artist').value   = e.artist;
+      document.getElementById('cm-provider').value = e.provider;
+      document.getElementById('cm-title').value    = e.title;
+      document.getElementById('cm-url').value      = e.url;
+      document.getElementById('cm-tags').value     = (e.tags || []).join(', ');
+      document.getElementById('cm-desc').value     = e.desc || '';
+      document.getElementById('cm-date').value     = e.date || '';
+      window.scrollTo({ top: document.getElementById('cm-panel').offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function cmDeleteEntry(id) {
+      if (!confirm('Delete this entry?')) return;
+      cmEntries = cmEntries.filter(e => e.id !== id);
+      cmPersist(() => { cmRenderEntries(); cmShowMsg('Deleted.', true); });
+    }
+
+    function cmClearForm() {
+      cmEditingId = null;
+      ['cm-title','cm-url','cm-tags','cm-desc'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
+    }
+
+    function cmRenderEntries() {
+      const artistFilter = document.getElementById('cm-filter-artist').value;
+      const list = artistFilter ? cmEntries.filter(e => e.artist === artistFilter) : cmEntries;
+
+      document.getElementById('cm-count').textContent = `${cmEntries.length} entr${cmEntries.length === 1 ? 'y' : 'ies'}`;
+
+      const el = document.getElementById('cm-entries');
+      if (!list.length) {
+        el.innerHTML = '<p style="color:#888;text-align:center">No entries yet.</p>';
+        return;
+      }
+
+      el.innerHTML = list.map(e => `
+        <div class="cm-entry-row">
+          <div class="cm-entry-info">
+            <div class="cm-entry-title">${e.title}</div>
+            <div class="cm-entry-meta">
+              ${ARTIST_LABELS[e.artist] || e.artist}
+              &middot; ${e.date || 'no date'}
+              ${e.tags && e.tags.length ? '&middot; ' + e.tags.join(', ') : ''}
+            </div>
+          </div>
+          <span class="cm-provider-badge">${PROVIDERS[e.provider]?.label || e.provider}</span>
+          <button class="cm-btn cm-btn-sm" onclick="cmEditEntry('${e.id}')">Edit</button>
+          <button class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmDeleteEntry('${e.id}')">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    function cmPersist(onSuccess) {
+      fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, entries: cmEntries }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok) onSuccess();
+          else cmShowMsg('Save failed: ' + (data.error || 'unknown error'), false);
+        })
+        .catch(() => cmShowMsg('Network error — changes not saved.', false));
+    }
+
+    function cmShowMsg(text, ok) {
+      const el = document.getElementById('cm-msg');
+      el.textContent = text;
+      el.className = 'cm-msg ' + (ok ? 'ok' : 'err');
+      setTimeout(() => { el.className = 'cm-msg'; }, 3000);
+    }
     </script>
 </body>
 </html>    
