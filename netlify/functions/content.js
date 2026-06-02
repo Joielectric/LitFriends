@@ -22,7 +22,7 @@ exports.handler = async (event) => {
     };
   }
 
-  // Password-protected write
+  // Password-protected actions
   if (event.httpMethod === 'POST') {
     let body;
     try {
@@ -31,10 +31,16 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid JSON' }) };
     }
 
-    const { password, entries } = body;
+    const { password, action, entries } = body;
 
     if (!password || password !== process.env.ADMIN_PASSWORD) {
       return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized' }) };
+    }
+
+    // Verify-only — just confirms the password is correct and returns current entries
+    if (action === 'verify') {
+      const data = await store.get('audio', { type: 'json' }).catch(() => null);
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, ...(data || { entries: [] }) }) };
     }
 
     if (!Array.isArray(entries)) {
