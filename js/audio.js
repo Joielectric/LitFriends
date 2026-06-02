@@ -174,6 +174,40 @@
   border-radius: 12px;
   color: var(--text-mid, #999); font-size: 0.66rem;
 }
+.ag-filter-chip {
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  border-radius: 20px;
+  color: var(--text-mid, #999);
+  font-size: 0.7rem; letter-spacing: .06em;
+  cursor: pointer;
+  transition: border-color .12s, color .12s, background .12s;
+}
+.ag-filter-chip:hover {
+  border-color: var(--border-mid, rgba(255,255,255,.28));
+  color: var(--silver, #ccc);
+}
+.ag-filter-chip.active {
+  border-color: var(--border-hi, rgba(255,255,255,.5));
+  color: var(--silver-hi, #f5f0ea);
+  background: rgba(255,255,255,.06);
+}
+.ag-filter-chip-gender { border-color: rgba(232,99,79,.25); color: var(--coral, #e8634f); }
+.ag-filter-chip-gender:hover { border-color: rgba(232,99,79,.55); }
+.ag-filter-chip-gender.active {
+  border-color: var(--coral, #e8634f);
+  background: rgba(232,99,79,.1);
+  color: var(--coral, #e8634f);
+}
+.ag-clear-btn {
+  background: none; border: none;
+  color: var(--text-dim, #555); font-size: 0.72rem; letter-spacing: .08em;
+  text-transform: uppercase; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color .12s;
+}
+.ag-clear-btn:hover { color: var(--text-mid, #999); }
 .ag-empty, .ag-loading {
   color: var(--text-dim, #555); text-align: center;
   padding: 2.5rem 1rem; font-size: 0.88rem;
@@ -435,14 +469,22 @@
     const genderTagsPresent = GENDER_TAGS.filter(t => allTagSet.includes(t));
     const otherTags = allTagSet.filter(t => !isGenderTag(t));
 
-    const filterBar = document.createElement('div');
-    filterBar.className = 'ag-filters';
-    filterBar.innerHTML = `
+    // Active selections
+    const activeTags = new Set();
+    let activeArtist = '';
+    let activeProvider = '';
+    let searchQ = '';
+
+    // ── Build filter UI ────────────────────────────────────────────────────
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-bottom:1.4rem;';
+
+    // Top row: search + artist + platform
+    const topRow = document.createElement('div');
+    topRow.className = 'ag-filters';
+    topRow.style.cssText = 'margin-bottom:0.8rem;';
+    topRow.innerHTML = `
       <input class="ag-search" type="search" placeholder="Search titles, tags…" id="ag-search">
-      <select class="ag-filter-select" id="ag-gender">
-        <option value="">All Audiences</option>
-        ${genderTagsPresent.map(t => `<option value="${t}">${t}</option>`).join('')}
-      </select>
       <select class="ag-filter-select" id="ag-artist">
         <option value="">All Artists</option>
         ${Object.entries(ARTIST_LABELS).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}
@@ -451,61 +493,118 @@
         <option value="">All Platforms</option>
         ${Object.entries(PROVIDERS).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('')}
       </select>
-      ${otherTags.length ? `
-      <select class="ag-filter-select" id="ag-tag">
-        <option value="">All Tags</option>
-        ${otherTags.map(t => `<option value="${t}">${t}</option>`).join('')}
-      </select>` : ''}
     `;
 
-    const countEl = document.createElement('div');
-    countEl.id = 'ag-count';
-    countEl.style.cssText = 'color:var(--text-dim,#555);font-size:0.75rem;padding:0.5rem 0 0.8rem;';
+    // Tag chip rows
+    function buildChipRow(tags, label, isGender) {
+      if (!tags.length) return null;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:6px;';
+      row.innerHTML = `<span style="font-size:0.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim,#555);margin-right:2px;white-space:nowrap;">${label}</span>`;
+      tags.forEach(t => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.textContent = t;
+        chip.dataset.tag = t;
+        chip.className = 'ag-filter-chip' + (isGender ? ' ag-filter-chip-gender' : '');
+        chip.addEventListener('click', () => toggleTag(t, chip));
+        row.appendChild(chip);
+      });
+      return row;
+    }
+
+    const tagSection = document.createElement('div');
+    const genderRow = buildChipRow(genderTagsPresent, 'Audience', true);
+    const otherRow  = buildChipRow(otherTags, 'Tags', false);
+    if (genderRow) tagSection.appendChild(genderRow);
+    if (otherRow)  tagSection.appendChild(otherRow);
+
+    // Count + clear row
+    const metaRow = document.createElement('div');
+    metaRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0 0.9rem;';
+    metaRow.innerHTML = `
+      <span id="ag-count" style="color:var(--text-dim,#555);font-size:0.75rem;"></span>
+      <button id="ag-clear" type="button" class="ag-clear-btn" style="display:none">Clear filters</button>
+    `;
+
+    wrap.appendChild(topRow);
+    wrap.appendChild(tagSection);
+    wrap.appendChild(metaRow);
 
     const gridWrap = document.createElement('div');
     gridWrap.id = 'ag-results';
 
-    container.appendChild(filterBar);
-    container.appendChild(countEl);
+    container.appendChild(wrap);
     container.appendChild(gridWrap);
 
-    function getFilters() {
-      return {
-        q:        document.getElementById('ag-search').value.toLowerCase(),
-        gender:   document.getElementById('ag-gender').value,
-        artist:   document.getElementById('ag-artist').value,
-        provider: document.getElementById('ag-provider').value,
-        tag:      document.getElementById('ag-tag') ? document.getElementById('ag-tag').value : '',
-      };
+    // ── State helpers ──────────────────────────────────────────────────────
+    function toggleTag(tag, chip) {
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+        chip.classList.remove('active');
+      } else {
+        activeTags.add(tag);
+        chip.classList.add('active');
+      }
+      applyFilters();
     }
 
-    function applyFilters(filters) {
-      const f = filters || getFilters();
+    function toggleTagByValue(tag) {
+      const chip = wrap.querySelector(`.ag-filter-chip[data-tag="${CSS.escape(tag)}"]`);
+      if (chip) toggleTag(tag, chip);
+    }
+
+    function updateClearBtn() {
+      const hasFilters = activeTags.size || activeArtist || activeProvider || searchQ;
+      document.getElementById('ag-clear').style.display = hasFilters ? '' : 'none';
+    }
+
+    function clearAll() {
+      activeTags.clear();
+      wrap.querySelectorAll('.ag-filter-chip.active').forEach(c => c.classList.remove('active'));
+      activeArtist = '';
+      activeProvider = '';
+      searchQ = '';
+      document.getElementById('ag-search').value = '';
+      document.getElementById('ag-artist').value = '';
+      document.getElementById('ag-provider').value = '';
+      applyFilters();
+    }
+
+    // ── Apply ──────────────────────────────────────────────────────────────
+    function applyFilters() {
+      updateClearBtn();
       const filtered = allEntries.filter(e => {
         const tags = e.tags || [];
-        if (f.q && !e.title.toLowerCase().includes(f.q)
-                && !(e.desc || '').toLowerCase().includes(f.q)
-                && !tags.some(t => t.toLowerCase().includes(f.q))) return false;
-        if (f.gender && !tags.includes(f.gender)) return false;
-        if (f.artist && !artistInEntry(e, f.artist)) return false;
-        if (f.provider && !getLinks(e).some(lk => lk.provider === f.provider)) return false;
-        if (f.tag && !tags.includes(f.tag)) return false;
+        if (searchQ && !e.title.toLowerCase().includes(searchQ)
+                    && !(e.desc || '').toLowerCase().includes(searchQ)
+                    && !tags.some(t => t.toLowerCase().includes(searchQ))) return false;
+        if (activeTags.size && ![...activeTags].every(t => tags.includes(t))) return false;
+        if (activeArtist && !artistInEntry(e, activeArtist)) return false;
+        if (activeProvider && !getLinks(e).some(lk => lk.provider === activeProvider)) return false;
         return true;
       });
-      countEl.textContent = `${filtered.length} of ${allEntries.length} works`;
+      document.getElementById('ag-count').textContent = `${filtered.length} of ${allEntries.length} works`;
       renderGrid(filtered, gridWrap, true, true, tag => {
-        if (isGenderTag(tag)) {
-          document.getElementById('ag-gender').value = tag;
-        } else {
-          const sel = document.getElementById('ag-tag');
-          if (sel) sel.value = tag;
-        }
-        applyFilters();
+        toggleTagByValue(tag);
       });
     }
 
-    filterBar.addEventListener('input', () => applyFilters());
-    filterBar.addEventListener('change', () => applyFilters());
+    // ── Events ─────────────────────────────────────────────────────────────
+    document.getElementById('ag-search').addEventListener('input', e => {
+      searchQ = e.target.value.toLowerCase();
+      applyFilters();
+    });
+    document.getElementById('ag-artist').addEventListener('change', e => {
+      activeArtist = e.target.value;
+      applyFilters();
+    });
+    document.getElementById('ag-provider').addEventListener('change', e => {
+      activeProvider = e.target.value;
+      applyFilters();
+    });
+    document.getElementById('ag-clear').addEventListener('click', clearAll);
+
     applyFilters();
   }
 
