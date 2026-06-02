@@ -15,6 +15,21 @@
     'hisbadgirl77': 'HisBadGirl77',
   };
 
+  const CREDIT_LABELS = {
+    writers:      'Writer',
+    voiceArtists: 'Voice',
+    producers:    'Producer',
+    editors:      'Editor',
+    musicians:    'Music',
+  };
+
+  // Normalize: always return links array (backward compat with old provider/url fields)
+  function getLinks(entry) {
+    if (Array.isArray(entry.links) && entry.links.length) return entry.links;
+    if (entry.provider && entry.url) return [{ provider: entry.provider, url: entry.url }];
+    return [];
+  }
+
   function getArtists(entry) {
     return entry.artists || (entry.artist ? [entry.artist] : []);
   }
@@ -67,30 +82,78 @@
 }
 .ag-filter-select:focus { outline: none; border-color: var(--border-mid, rgba(255,255,255,.25)); }
 .ag-filter-select option { background: #1a1a1a; color: #eee; }
+
+/* Grid */
 .ag-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border-radius: var(--radius, 3px);
+  overflow: hidden;
+  background: var(--border, rgba(255,255,255,.1));
 }
 .ag-card {
   background: var(--surface-2, #111);
-  border: 1px solid var(--border, rgba(255,255,255,.12));
-  border-radius: var(--radius, 3px);
-  padding: 1.2rem;
-  display: flex; flex-direction: column; gap: 0.55rem;
-  transition: border-color .2s;
+  padding: 1.3rem 1.4rem 1.1rem;
+  display: flex; flex-direction: column; gap: 0;
+  transition: background .15s;
+  cursor: pointer;
 }
-.ag-card:hover { border-color: var(--border-mid, rgba(255,255,255,.28)); }
-.ag-card-provider {
-  font-size: 0.68rem; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--text-dim, #555); font-weight: 600;
+.ag-card:hover { background: var(--surface-3, #1a1a1a); }
+
+/* Platform row */
+.ag-card-platforms {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 0.75rem;
 }
+.ag-platform-pill {
+  font-size: 0.62rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid var(--border-mid, rgba(255,255,255,.2));
+  border-radius: 20px;
+  color: var(--text-dim, #666);
+  background: transparent;
+}
+
+/* Title */
 .ag-card-title {
   color: var(--silver-hi, #f5f0ea);
-  font-size: 0.92rem; font-weight: 500; line-height: 1.4;
+  font-size: 0.95rem; font-weight: 500; line-height: 1.4;
+  margin-bottom: 0.4rem;
 }
-.ag-card-meta {
-  color: var(--text-mid, #888); font-size: 0.76rem; display: flex; gap: 6px; flex-wrap: wrap;
+
+/* Date */
+.ag-card-date {
+  color: var(--text-dim, #555); font-size: 0.74rem;
+  margin-bottom: 0.65rem;
+}
+
+/* Tags */
+.ag-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.9rem; }
+.ag-tag {
+  padding: 2px 7px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border, rgba(255,255,255,.09));
+  border-radius: 2px;
+  color: var(--text-dim, #666); font-size: 0.7rem;
+}
+
+/* Listen button */
+.ag-listen-btn {
+  margin-top: auto; padding: 0.5rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--border, rgba(255,255,255,.14));
+  border-radius: var(--radius, 3px);
+  color: var(--text-mid, #999);
+  cursor: pointer; font-size: 0.75rem; letter-spacing: .08em; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: border-color .15s, color .15s;
+  width: 100%;
+}
+.ag-listen-btn:hover {
+  border-color: var(--border-hi, rgba(255,255,255,.4));
+  color: var(--silver-hi, #f5f0ea);
 }
 .ag-artist-badge {
   display: inline-block; padding: 1px 7px;
@@ -98,35 +161,9 @@
   border-radius: 12px;
   color: var(--text-mid, #888); font-size: 0.72rem;
 }
-.ag-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
-.ag-tag {
-  padding: 2px 8px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid var(--border, rgba(255,255,255,.1));
-  border-radius: 2px;
-  color: var(--text-mid, #888); font-size: 0.71rem;
-}
-.ag-play-btn {
-  margin-top: auto; padding: 0.55rem 1rem;
-  background: transparent;
-  border: 1px solid var(--border-mid, rgba(255,255,255,.25));
-  border-radius: var(--radius, 3px);
-  color: var(--silver, #ccc);
-  cursor: pointer; font-size: 0.82rem; letter-spacing: .05em;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  transition: background .18s, border-color .18s, color .18s;
-  width: 100%;
-}
-.ag-play-btn:hover {
-  background: rgba(255,255,255,.07);
-  border-color: var(--border-hi, rgba(255,255,255,.5));
-  color: var(--silver-hi, #fff);
-}
-.ag-play-btn svg { flex-shrink: 0; }
 .ag-empty, .ag-loading {
   color: var(--text-dim, #555); text-align: center;
   padding: 2.5rem 1rem; font-size: 0.88rem;
-  grid-column: 1/-1;
 }
 
 /* Modal */
@@ -141,27 +178,25 @@
 @keyframes ag-fade-in { from { opacity: 0 } to { opacity: 1 } }
 .ag-modal {
   background: var(--surface, #0d0d0d);
-  border: 1px solid var(--border-mid, rgba(255,255,255,.25));
+  border: 1px solid var(--border-mid, rgba(255,255,255,.22));
   border-radius: var(--radius, 3px);
-  width: 100%; max-width: 700px;
+  width: 100%; max-width: 680px;
   max-height: 90vh; overflow-y: auto;
   position: relative;
   animation: ag-slide-up .18s ease;
 }
 @keyframes ag-slide-up { from { transform: translateY(12px); opacity: 0 } to { transform: none; opacity: 1 } }
+
 .ag-modal-header {
-  padding: 1.4rem 3.5rem 1rem 1.4rem;
+  padding: 1.4rem 3.5rem 1.2rem 1.4rem;
   border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
-}
-.ag-modal-provider {
-  font-size: 0.68rem; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--text-dim, #555); margin-bottom: 0.35rem;
 }
 .ag-modal-title {
   color: var(--silver-hi, #f5f0ea);
-  font-size: 1.05rem; font-weight: 500; line-height: 1.4;
+  font-size: 1.1rem; font-weight: 500; line-height: 1.4;
+  margin-bottom: 0.35rem;
 }
-.ag-modal-artists { color: var(--text-mid, #888); font-size: 0.8rem; margin-top: 0.3rem; }
+.ag-modal-date { color: var(--text-dim, #555); font-size: 0.78rem; }
 .ag-modal-close {
   position: absolute; top: 1rem; right: 1rem;
   background: none; border: none;
@@ -170,9 +205,28 @@
   transition: color .15s;
 }
 .ag-modal-close:hover { color: var(--text, #eee); }
+
+/* Platform tabs */
+.ag-platform-tabs {
+  display: flex; border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+}
+.ag-platform-tab {
+  padding: 0.7rem 1.2rem;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-dim, #666);
+  cursor: pointer; font-size: 0.75rem; letter-spacing: .1em; text-transform: uppercase;
+  transition: color .15s, border-color .15s;
+  margin-bottom: -1px;
+}
+.ag-platform-tab:hover { color: var(--text-mid, #999); }
+.ag-platform-tab.active {
+  color: var(--silver-hi, #f5f0ea);
+  border-bottom-color: var(--coral, #e8634f);
+}
+
 .ag-modal-body { padding: 1.4rem; }
 .ag-modal-iframe {
-  width: 100%; height: 320px;
+  width: 100%; height: 300px;
   border: 1px solid var(--border, rgba(255,255,255,.1));
   border-radius: 2px;
   background: var(--bg, #000);
@@ -188,16 +242,16 @@
 }
 .ag-modal-open-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; margin-top: 1rem; padding: 0.8rem 1rem;
-  background: rgba(255,255,255,.05);
-  border: 1px solid var(--border-mid, rgba(255,255,255,.25));
+  width: 100%; margin-top: 1rem; padding: 0.75rem 1rem;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border-mid, rgba(255,255,255,.22));
   border-radius: var(--radius, 3px);
   color: var(--silver, #ccc);
-  text-decoration: none; font-size: 0.85rem; letter-spacing: .04em;
-  transition: background .18s, color .18s;
+  text-decoration: none; font-size: 0.8rem; letter-spacing: .06em; text-transform: uppercase;
+  transition: background .15s, color .15s;
   cursor: pointer;
 }
-.ag-modal-open-btn:hover { background: rgba(255,255,255,.1); color: var(--silver-hi, #fff); }
+.ag-modal-open-btn:hover { background: rgba(255,255,255,.08); color: var(--silver-hi, #fff); }
 .ag-modal-desc {
   color: var(--text-mid, #888); font-size: 0.82rem;
   line-height: 1.6; margin-bottom: 1rem;
@@ -221,14 +275,6 @@
   // ── Modal ──────────────────────────────────────────────────────────────────
   let currentOverlay = null;
 
-  const CREDIT_LABELS = {
-    writers:      'Writer',
-    voiceArtists: 'Voice',
-    producers:    'Producer',
-    editors:      'Editor',
-    musicians:    'Music',
-  };
-
   function creditsHtml(credits) {
     if (!credits) return '';
     const rows = Object.entries(CREDIT_LABELS)
@@ -246,43 +292,61 @@
     document.body.style.overflow = '';
   }
 
+  function platformBodyHtml(link) {
+    const embed = canEmbed(link.provider);
+    const label = providerLabel(link.provider);
+    return `
+      ${embed
+        ? `<iframe class="ag-modal-iframe" src="${link.url}" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`
+        : `<div class="ag-modal-no-embed">Embedding not available for ${label}.</div>`
+      }
+      <a class="ag-modal-open-btn" href="${link.url}" target="_blank" rel="noopener noreferrer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open on ${label}
+      </a>`;
+  }
+
   function openModal(entry) {
     closeModal();
     document.body.style.overflow = 'hidden';
 
-    const artists = getArtists(entry);
-    const provLabel = providerLabel(entry.provider);
-    const embed = canEmbed(entry.provider);
+    const links = getLinks(entry);
+    const tagsHtml = (entry.tags || []).map(t => `<span class="ag-tag">${t}</span>`).join('');
 
     const overlay = document.createElement('div');
     overlay.className = 'ag-overlay';
     overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 
-    const tagsHtml = (entry.tags || []).map(t => `<span class="ag-tag">${t}</span>`).join('');
-    const artistsHtml = artists.map(a => ARTIST_LABELS[a] || a).join(', ');
+    const tabsHtml = links.length > 1
+      ? `<div class="ag-platform-tabs">${links.map((lk, i) =>
+          `<button class="ag-platform-tab${i === 0 ? ' active' : ''}" data-idx="${i}">${providerLabel(lk.provider)}</button>`
+        ).join('')}</div>`
+      : '';
 
     overlay.innerHTML = `
       <div class="ag-modal" role="dialog" aria-modal="true">
         <div class="ag-modal-header">
-          <div class="ag-modal-provider">${provLabel}</div>
           <div class="ag-modal-title">${entry.title}</div>
-          ${artistsHtml ? `<div class="ag-modal-artists">${artistsHtml}</div>` : ''}
+          ${entry.date ? `<div class="ag-modal-date">${entry.date}</div>` : ''}
           <button class="ag-modal-close" aria-label="Close">&times;</button>
         </div>
+        ${tabsHtml}
         <div class="ag-modal-body">
           ${entry.desc ? `<div class="ag-modal-desc">${entry.desc}</div>` : ''}
-          ${embed
-            ? `<iframe class="ag-modal-iframe" src="${entry.url}" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`
-            : `<div class="ag-modal-no-embed">This provider doesn't support embedding.<br>Open the link below to listen.</div>`
-          }
-          <a class="ag-modal-open-btn" href="${entry.url}" target="_blank" rel="noopener noreferrer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Open on ${provLabel}
-          </a>
+          <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0]) : ''}</div>
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
           ${creditsHtml(entry.credits)}
         </div>
       </div>`;
+
+    // Tab switching
+    overlay.querySelectorAll('.ag-platform-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        overlay.querySelectorAll('.ag-platform-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        overlay.querySelector('#ag-platform-content').innerHTML = platformBodyHtml(links[+tab.dataset.idx]);
+      });
+    });
 
     overlay.querySelector('.ag-modal-close').addEventListener('click', closeModal);
     document.addEventListener('keydown', function esc(e) {
@@ -293,6 +357,31 @@
     currentOverlay = overlay;
   }
 
+  // ── Card ───────────────────────────────────────────────────────────────────
+  function cardHtml(entry, showArtists) {
+    const links = getLinks(entry);
+    const platformPills = links.map(lk =>
+      `<span class="ag-platform-pill">${providerLabel(lk.provider)}</span>`
+    ).join('');
+    const tagsHtml = (entry.tags || []).slice(0, 5).map(t => `<span class="ag-tag">${t}</span>`).join('');
+    const artistBadges = showArtists
+      ? getArtists(entry).map(a => `<span class="ag-artist-badge">${ARTIST_LABELS[a] || a}</span>`).join('')
+      : '';
+    const listenLabel = links.length > 1 ? 'Listen' : (canEmbed(links[0]?.provider) ? 'Play' : 'Listen');
+
+    return `
+      <div class="ag-card">
+        <div class="ag-card-platforms">${platformPills}${artistBadges}</div>
+        <div class="ag-card-title">${entry.title}</div>
+        ${entry.date ? `<div class="ag-card-date">${entry.date}</div>` : ''}
+        ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
+        <button class="ag-listen-btn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          ${listenLabel}
+        </button>
+      </div>`;
+  }
+
   // ── Render grid ────────────────────────────────────────────────────────────
   function renderGrid(entries, container, showArtists) {
     if (!entries.length) {
@@ -300,31 +389,9 @@
       return;
     }
     container.innerHTML = `<div class="ag-grid">${entries.map(e => cardHtml(e, showArtists)).join('')}</div>`;
-    container.querySelectorAll('.ag-play-btn').forEach((btn, i) => {
-      btn.addEventListener('click', () => openModal(entries[i]));
+    container.querySelectorAll('.ag-card').forEach((card, i) => {
+      card.addEventListener('click', () => openModal(entries[i]));
     });
-  }
-
-  function cardHtml(entry, showArtists) {
-    const artists = getArtists(entry);
-    const tagsHtml = (entry.tags || []).slice(0, 4).map(t => `<span class="ag-tag">${t}</span>`).join('');
-    const artistBadges = showArtists
-      ? artists.map(a => `<span class="ag-artist-badge">${ARTIST_LABELS[a] || a}</span>`).join('')
-      : '';
-    return `
-      <div class="ag-card">
-        <div class="ag-card-provider">${providerLabel(entry.provider)}</div>
-        <div class="ag-card-title">${entry.title}</div>
-        <div class="ag-card-meta">
-          ${entry.date ? `<span>${entry.date}</span>` : ''}
-          ${artistBadges}
-        </div>
-        ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
-        <button class="ag-play-btn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Play
-        </button>
-      </div>`;
   }
 
   // ── Filters (catalog) ─────────────────────────────────────────────────────
@@ -340,7 +407,7 @@
         ${Object.entries(ARTIST_LABELS).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}
       </select>
       <select class="ag-filter-select" id="ag-provider">
-        <option value="">All Providers</option>
+        <option value="">All Platforms</option>
         ${Object.entries(PROVIDERS).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('')}
       </select>
       ${allTags.length ? `
@@ -357,15 +424,15 @@
     container.appendChild(gridWrap);
 
     function applyFilters() {
-      const q       = document.getElementById('ag-search').value.toLowerCase();
-      const artist  = document.getElementById('ag-artist').value;
+      const q        = document.getElementById('ag-search').value.toLowerCase();
+      const artist   = document.getElementById('ag-artist').value;
       const provider = document.getElementById('ag-provider').value;
-      const tag     = document.getElementById('ag-tag') ? document.getElementById('ag-tag').value : '';
+      const tag      = document.getElementById('ag-tag') ? document.getElementById('ag-tag').value : '';
 
       const filtered = allEntries.filter(e => {
         if (q && !e.title.toLowerCase().includes(q) && !(e.desc || '').toLowerCase().includes(q)) return false;
         if (artist && !artistInEntry(e, artist)) return false;
-        if (provider && e.provider !== provider) return false;
+        if (provider && !getLinks(e).some(lk => lk.provider === provider)) return false;
         if (tag && !(e.tags || []).includes(tag)) return false;
         return true;
       });
