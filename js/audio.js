@@ -112,9 +112,10 @@
 
 .ag-row-date {
   color: #e0d0c8;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: .04em;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: .02em;
   white-space: nowrap;
 }
 .ag-row-main { min-width: 0; }
