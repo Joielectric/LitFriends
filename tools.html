@@ -358,7 +358,8 @@
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma-separated)</span></label>
-                        <input id="cm-tags" class="cm-input" placeholder="GFE, soft, comfort" style="width:100%">
+                        <input id="cm-tags" class="cm-input" placeholder="GFE, soft, comfort" style="width:100%;margin-bottom:8px">
+                        <div id="cm-gender-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
@@ -886,6 +887,25 @@
           document.getElementById('cm-lock-msg').textContent = 'Could not reach server.';
         });
     }
+
+    const GENDER_TAGS_CM = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A'];
+
+    function cmAddTag(tag) {
+      const el = document.getElementById('cm-tags');
+      const current = el.value.split(',').map(t => t.trim()).filter(Boolean);
+      if (!current.includes(tag)) {
+        el.value = [...current, tag].join(', ');
+      }
+    }
+
+    (function cmBuildGenderTags() {
+      const wrap = document.getElementById('cm-gender-tags');
+      if (!wrap) return;
+      wrap.innerHTML = '<span style="font-family:\'Cinzel\',serif;font-size:0.7rem;color:var(--text-dim);align-self:center;margin-right:2px;letter-spacing:.08em">Audience:</span>'
+        + GENDER_TAGS_CM.map(tag =>
+          `<button type="button" onclick="cmAddTag('${tag}')" style="padding:2px 9px;background:transparent;border:1px solid rgba(232,99,79,.35);border-radius:2px;color:var(--coral);font-size:0.7rem;letter-spacing:.05em;cursor:pointer;font-family:'Cinzel',serif">${tag}</button>`
+        ).join('');
+    })();
 
     // ── Multi-link helpers ──────────────────────────────────────────────────
 
