@@ -849,14 +849,6 @@
     let cmPassword = '';
     let cmEditingId = null;
 
-    // Build provider dropdown
-    (function cmInitProviders() {
-      const sel = document.getElementById('cm-provider');
-      sel.innerHTML = Object.entries(PROVIDERS)
-        .map(([k, v]) => `<option value="${k}">${v.label}</option>`)
-        .join('');
-    })();
-
     function cmUnlock() {
       const pw = document.getElementById('cm-password').value.trim();
       if (!pw) return;
