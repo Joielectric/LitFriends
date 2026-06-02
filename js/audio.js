@@ -19,6 +19,16 @@
     return entry.artists || (entry.artist ? [entry.artist] : []);
   }
 
+  function artistInEntry(entry, artistId) {
+    if (getArtists(entry).includes(artistId)) return true;
+    const label = ARTIST_LABELS[artistId];
+    if (!label || !entry.credits) return false;
+    const needle = label.toLowerCase();
+    return Object.values(entry.credits).some(arr =>
+      (arr || []).some(name => name.toLowerCase() === needle)
+    );
+  }
+
   function providerLabel(key) {
     return (PROVIDERS[key] || {}).label || key;
   }
@@ -354,7 +364,7 @@
 
       const filtered = allEntries.filter(e => {
         if (q && !e.title.toLowerCase().includes(q) && !(e.desc || '').toLowerCase().includes(q)) return false;
-        if (artist && !getArtists(e).includes(artist)) return false;
+        if (artist && !artistInEntry(e, artist)) return false;
         if (provider && e.provider !== provider) return false;
         if (tag && !(e.tags || []).includes(tag)) return false;
         return true;
@@ -383,7 +393,7 @@
           let entries = (data.entries || []).slice().sort((a, b) =>
             (b.date || '').localeCompare(a.date || '')
           );
-          if (artist) entries = entries.filter(e => getArtists(e).includes(artist));
+          if (artist) entries = entries.filter(e => artistInEntry(e, artist));
           el.innerHTML = '';
           if (showFilters) {
             initFilters(entries, el);
