@@ -34,7 +34,8 @@ exports.handler = async (event) => {
     const { password, action, entries } = body;
 
     const envSet = !!process.env.ADMIN_PASSWORD;
-    if (!password || password !== process.env.ADMIN_PASSWORD) {
+    const envPassword = (process.env.ADMIN_PASSWORD || '').trim();
+    if (!password || password.trim() !== envPassword) {
       return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized', env_set: envSet }) };
     }
 
