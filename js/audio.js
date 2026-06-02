@@ -111,9 +111,10 @@
 .ag-row:hover { background: var(--surface-3, #181518); }
 
 .ag-row-date {
-  color: var(--silver, #d8c8c0);
-  font-size: 0.85rem;
-  letter-spacing: .03em;
+  color: #e0d0c8;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .04em;
   white-space: nowrap;
 }
 .ag-row-main { min-width: 0; }
