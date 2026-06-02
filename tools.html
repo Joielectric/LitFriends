@@ -36,7 +36,7 @@
       background: var(--bg);
       color: var(--text);
       font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 16px;
+      font-size: 19px;
       line-height: 1.75;
       min-height: 100vh;
       overflow-x: hidden;
@@ -57,7 +57,7 @@
     .back-nav { padding: 1.6rem 0 0; display: flex; align-items: center; gap: .5rem; }
     .back-link {
       color: var(--text-dim); text-decoration: none;
-      font-family: "Cinzel", serif; font-size: 0.7rem; letter-spacing: .12em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.82rem; letter-spacing: .12em; text-transform: uppercase;
       transition: color .2s;
     }
     .back-link:hover { color: var(--text-mid); }
@@ -70,7 +70,7 @@
     }
     .header-eyebrow {
       font-family: "Cinzel", serif;
-      font-size: 0.7rem; letter-spacing: .5em; text-transform: uppercase;
+      font-size: 0.85rem; letter-spacing: .5em; text-transform: uppercase;
       color: var(--text-dim); display: block; margin-bottom: 1rem;
     }
     .header h1 {
@@ -98,7 +98,7 @@
     }
     .section-title {
       font-family: "Cinzel", serif;
-      font-size: 0.72rem; font-weight: 600; letter-spacing: .38em; text-transform: uppercase;
+      font-size: 0.88rem; font-weight: 600; letter-spacing: .38em; text-transform: uppercase;
       color: var(--text-dim);
       display: flex; align-items: center; gap: 1rem;
       margin-bottom: 1.6rem;
@@ -116,10 +116,10 @@
       transition: border-color .2s;
     }
     .tool-card:hover { border-color: var(--border-hi); }
-    .tool-card h3 { font-family: "Cinzel", serif; font-size: 0.9rem; font-weight: 400; letter-spacing: .05em; color: var(--silver-hi); margin-bottom: .5rem; }
-    .tool-card p { color: var(--text-mid); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6; }
+    .tool-card h3 { font-family: "Cinzel", serif; font-size: 1.05rem; font-weight: 400; letter-spacing: .05em; color: var(--silver-hi); margin-bottom: .5rem; }
+    .tool-card p { color: var(--text-mid); font-size: 1rem; margin-bottom: 1rem; line-height: 1.6; }
     .tool-badge {
-      font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: .12em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.75rem; letter-spacing: .12em; text-transform: uppercase;
       color: var(--coral); border: 1px solid rgba(232,99,79,.35); padding: 3px 10px;
       border-radius: var(--radius); display: inline-block;
     }
@@ -130,7 +130,7 @@
       background: transparent;
       border: 1px solid var(--border-mid);
       color: var(--silver);
-      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .1em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase;
       cursor: pointer; transition: border-color .2s, color .2s; border-radius: var(--radius);
     }
     .load-button:hover { border-color: var(--border-hi); color: var(--silver-hi); }
@@ -138,13 +138,13 @@
     /* Filters / controls */
     .controls { margin-bottom: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
     .filter-group { display: flex; gap: 8px; align-items: center; }
-    .filter-group label { font-family: "Cinzel", serif; font-size: 0.68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+    .filter-group label { font-family: "Cinzel", serif; font-size: 0.82rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
     .filter-select {
       padding: 7px 12px;
       background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      color: var(--text-mid); font-size: 0.85rem;
+      color: var(--text-mid); font-size: 1rem;
     }
     .filter-select:focus { outline: none; border-color: var(--border-mid); }
     .filter-select option { background: #1a1a1a; color: #eee; }
@@ -160,7 +160,7 @@
       border-radius: var(--radius); padding: 1.2rem; margin-bottom: 1.4rem;
     }
     .filters-title {
-      font-family: "Cinzel", serif; font-size: 0.68rem; letter-spacing: .2em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.82rem; letter-spacing: .2em; text-transform: uppercase;
       color: var(--text-dim); text-align: center; margin-bottom: 1rem;
     }
     .phase-filter-buttons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
@@ -169,7 +169,7 @@
       padding: 5px 12px;
       border: 1px solid var(--border); background: transparent;
       color: var(--text-mid); cursor: pointer;
-      font-size: 0.78rem; border-radius: var(--radius);
+      font-size: 0.9rem; border-radius: var(--radius);
       transition: border-color .2s, color .2s; user-select: none;
     }
     .phase-filter-btn:hover { border-color: var(--border-mid); color: var(--text); }
@@ -183,14 +183,14 @@
       transition: border-color .2s;
     }
     .project-card:hover { border-color: var(--border-mid); }
-    .project-title { color: var(--silver-hi); font-size: 1rem; font-weight: 400; margin-bottom: .5rem; }
-    .project-description { color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
-    .project-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 1rem; margin-bottom: 1rem; font-size: 0.82rem; }
-    .meta-label { color: var(--text-dim); font-size: 0.7rem; letter-spacing: .06em; text-transform: uppercase; }
+    .project-title { color: var(--silver-hi); font-size: 1.15rem; font-weight: 400; margin-bottom: .5rem; }
+    .project-description { color: var(--text-mid); font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+    .project-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 1rem; margin-bottom: 1rem; font-size: 0.95rem; }
+    .meta-label { color: var(--text-dim); font-size: 0.82rem; letter-spacing: .06em; text-transform: uppercase; }
     .meta-item { color: var(--text-mid); }
     .phase-badge {
       display: inline-block; padding: 3px 10px;
-      font-size: 0.7rem; font-family: "Cinzel", serif; letter-spacing: .08em; text-transform: uppercase;
+      font-size: 0.82rem; font-family: "Cinzel", serif; letter-spacing: .08em; text-transform: uppercase;
       border-radius: var(--radius); margin-top: .5rem;
     }
     .phase-idea            { border: 1px solid #3498db; color: #3498db; }
@@ -206,11 +206,11 @@
 
     .tags { margin-top: .8rem; display: flex; flex-wrap: wrap; gap: 4px; }
     .tag {
-      padding: 2px 8px; font-size: 0.74rem;
+      padding: 2px 8px; font-size: 0.88rem;
       background: rgba(232,99,79,.07); color: var(--text-mid);
       border: 1px solid var(--border); border-radius: var(--radius); display: inline-block;
     }
-    .message { padding: 12px 16px; border-radius: var(--radius); margin: 1rem 0; font-size: 0.85rem; display: none; }
+    .message { padding: 12px 16px; border-radius: var(--radius); margin: 1rem 0; font-size: 1rem; display: none; }
     .error-message   { background: rgba(192,80,112,.15); border: 1px solid var(--rose); color: #e090a8; display: block; }
     .success-message { background: rgba(39,174,96,.12); border: 1px solid #27ae60; color: #60c890; display: block; }
     .warning-message { background: rgba(232,99,79,.12); border: 1px solid var(--coral); color: var(--coral); display: block; }
@@ -218,7 +218,7 @@
     .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.4rem; }
     .stat-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; text-align: center; }
     .stat-number { font-family: "Cinzel", serif; font-size: 2rem; font-weight: 300; color: var(--coral); }
-    .stat-label { color: var(--text-dim); font-size: 0.72rem; letter-spacing: .08em; text-transform: uppercase; margin-top: .3rem; }
+    .stat-label { color: var(--text-dim); font-size: 0.85rem; letter-spacing: .08em; text-transform: uppercase; margin-top: .3rem; }
 
     /* === CONTENT MANAGER === */
     .cm-lock { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -227,7 +227,7 @@
       background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      color: var(--text); font-family: "Cormorant Garamond", serif; font-size: 1rem;
+      color: var(--text); font-family: "Cormorant Garamond", serif; font-size: 1.1rem;
       flex: 1; min-width: 180px; transition: border-color .2s;
     }
     .cm-input:focus { outline: none; border-color: var(--border-hi); }
@@ -236,7 +236,7 @@
       background: transparent;
       border: 1px solid var(--border-mid);
       color: var(--silver);
-      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .1em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase;
       cursor: pointer; transition: border-color .2s, color .2s, background .2s;
       white-space: nowrap; border-radius: var(--radius);
     }
@@ -247,14 +247,14 @@
     .cm-btn-primary:hover { border-color: var(--coral); background: rgba(232,99,79,.08); color: var(--coral); }
     .cm-btn-danger { border-color: rgba(192,80,112,.4); color: var(--rose); }
     .cm-btn-danger:hover { border-color: var(--rose); background: rgba(192,80,112,.08); color: #e090a8; }
-    .cm-btn-sm { padding: 5px 13px; font-size: 0.66rem; }
+    .cm-btn-sm { padding: 5px 13px; font-size: 0.78rem; }
     .cm-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.4rem 0; }
     .cm-form-grid .cm-full { grid-column: 1 / -1; }
     .cm-label {
-      font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: .12em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.82rem; letter-spacing: .12em; text-transform: uppercase;
       color: var(--text-dim); display: block; margin-bottom: 6px;
     }
-    .cm-msg { padding: 10px 14px; border-radius: var(--radius); margin: .8rem 0; font-size: 0.85rem; display: none; }
+    .cm-msg { padding: 10px 14px; border-radius: var(--radius); margin: .8rem 0; font-size: 1rem; display: none; }
     .cm-msg.ok  { background: rgba(39,174,96,.12); border: 1px solid #27ae60; color: #60c890; display: block; }
     .cm-msg.err { background: rgba(192,80,112,.12); border: 1px solid var(--rose); color: #e090a8; display: block; }
     .cm-entries-list { margin-top: 1.6rem; }
@@ -267,10 +267,10 @@
     }
     .cm-entry-row:hover { border-color: var(--border-mid); }
     .cm-entry-info { flex: 1; min-width: 0; }
-    .cm-entry-title { color: var(--silver-hi); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cm-entry-meta { color: var(--text-mid); font-size: 0.78rem; margin-top: 2px; }
+    .cm-entry-title { color: var(--silver-hi); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cm-entry-meta { color: var(--text-mid); font-size: 0.92rem; margin-top: 2px; }
     .cm-provider-badge {
-      padding: 2px 9px; font-size: 0.68rem;
+      padding: 2px 9px; font-size: 0.8rem;
       font-family: "Cinzel", serif; letter-spacing: .08em; text-transform: uppercase;
       background: rgba(232,99,79,.07); color: var(--text-dim);
       border: 1px solid var(--border); white-space: nowrap; border-radius: var(--radius);
@@ -279,7 +279,7 @@
     footer {
       text-align: center; padding: 2rem 1rem;
       color: var(--text-dim);
-      font-family: "Cinzel", serif; font-size: 0.65rem; letter-spacing: .3em; text-transform: uppercase;
+      font-family: "Cinzel", serif; font-size: 0.78rem; letter-spacing: .3em; text-transform: uppercase;
       border-top: 1px solid var(--border); position: relative; z-index: 1;
     }
 
@@ -344,15 +344,6 @@
                 <!-- Add / Edit form -->
                 <div class="cm-form-grid">
                     <div>
-                        <label class="cm-label">Artists <span style="font-weight:normal;color:var(--text-mid)">(select all that apply)</span></label>
-                        <div id="cm-artist-checks" style="display:flex;flex-direction:column;gap:8px;padding:8px 0;">
-                            <label style="display:flex;align-items:center;gap:8px;color:var(--text);cursor:pointer;font-weight:normal"><input type="checkbox" value="joi-electric" style="accent-color:var(--coral);width:15px;height:15px"> JOI Electric</label>
-                            <label style="display:flex;align-items:center;gap:8px;color:var(--text);cursor:pointer;font-weight:normal"><input type="checkbox" value="loona-licks" style="accent-color:var(--coral);width:15px;height:15px"> Loona Licks</label>
-                            <label style="display:flex;align-items:center;gap:8px;color:var(--text);cursor:pointer;font-weight:normal"><input type="checkbox" value="misskittensk" style="accent-color:var(--coral);width:15px;height:15px"> MissKittenSK</label>
-                            <label style="display:flex;align-items:center;gap:8px;color:var(--text);cursor:pointer;font-weight:normal"><input type="checkbox" value="hisbadgirl77" style="accent-color:var(--coral);width:15px;height:15px"> HisBadGirl77</label>
-                        </div>
-                    </div>
-                    <div>
                         <label class="cm-label">Provider</label>
                         <select id="cm-provider" class="cm-input filter-select" onchange="cmProviderChanged()"></select>
                     </div>
@@ -382,23 +373,23 @@
                         <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(comma-separated names)</span></label>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                             <div>
-                                <label class="cm-label" style="font-size:0.75rem;color:var(--text-mid)">Writer(s)</label>
+                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Writer(s)</label>
                                 <input id="cm-credit-writers" class="cm-input" placeholder="e.g. Jane Doe" style="width:100%">
                             </div>
                             <div>
-                                <label class="cm-label" style="font-size:0.75rem;color:var(--text-mid)">Voice Artist(s)</label>
+                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Voice Artist(s)</label>
                                 <input id="cm-credit-voice" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
                             </div>
                             <div>
-                                <label class="cm-label" style="font-size:0.75rem;color:var(--text-mid)">Producer(s)</label>
+                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Producer(s)</label>
                                 <input id="cm-credit-producers" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
                             </div>
                             <div>
-                                <label class="cm-label" style="font-size:0.75rem;color:var(--text-mid)">Editor(s)</label>
+                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Editor(s)</label>
                                 <input id="cm-credit-editors" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
                             </div>
                             <div>
-                                <label class="cm-label" style="font-size:0.75rem;color:var(--text-mid)">Musician(s)</label>
+                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Musician(s)</label>
                                 <input id="cm-credit-musicians" class="cm-input" placeholder="e.g. Jane Doe" style="width:100%">
                             </div>
                         </div>
@@ -896,26 +887,13 @@
 
     function cmProviderChanged() {}
 
-    function cmGetSelectedArtists() {
-      return Array.from(document.querySelectorAll('#cm-artist-checks input:checked')).map(cb => cb.value);
-    }
-
-    function cmSetSelectedArtists(artists) {
-      document.querySelectorAll('#cm-artist-checks input').forEach(cb => {
-        cb.checked = (artists || []).includes(cb.value);
-      });
-    }
-
     function cmSaveEntry() {
-      const title   = document.getElementById('cm-title').value.trim();
-      const url     = document.getElementById('cm-url').value.trim();
-      const artists = cmGetSelectedArtists();
+      const title = document.getElementById('cm-title').value.trim();
+      const url   = document.getElementById('cm-url').value.trim();
       if (!title || !url) { cmShowMsg('Title and URL are required.', false); return; }
-      if (!artists.length) { cmShowMsg('Select at least one artist.', false); return; }
 
       const entry = {
         id:      cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
-        artists,
         provider: document.getElementById('cm-provider').value,
         title,
         url,
@@ -950,7 +928,6 @@
       const e = cmEntries.find(e => e.id === id);
       if (!e) return;
       cmEditingId = id;
-      cmSetSelectedArtists(e.artists || (e.artist ? [e.artist] : []));
       document.getElementById('cm-provider').value = e.provider;
       document.getElementById('cm-title').value    = e.title;
       document.getElementById('cm-url').value      = e.url;
@@ -974,7 +951,6 @@
 
     function cmClearForm() {
       cmEditingId = null;
-      cmSetSelectedArtists([]);
       ['cm-title','cm-url','cm-tags','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
