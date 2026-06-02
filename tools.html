@@ -885,7 +885,11 @@
     function cmAddTag(tag) {
       const el = document.getElementById('cm-tags');
       const current = el.value.split(',').map(t => t.trim()).filter(Boolean);
-      if (!current.includes(tag)) {
+      if (current.includes(tag)) return;
+      const isGender = GENDER_TAGS_CM.includes(tag.toUpperCase());
+      if (isGender) {
+        el.value = [tag, ...current].join(', ');
+      } else {
         el.value = [...current, tag].join(', ');
       }
     }
