@@ -343,17 +343,18 @@
 
                 <!-- Add / Edit form -->
                 <div class="cm-form-grid">
-                    <div>
-                        <label class="cm-label">Provider</label>
-                        <select id="cm-provider" class="cm-input filter-select" onchange="cmProviderChanged()"></select>
-                    </div>
                     <div class="cm-full">
                         <label class="cm-label">Title</label>
                         <input id="cm-title" class="cm-input" placeholder="Audio title" style="width:100%">
                     </div>
-                    <div class="cm-full">
-                        <label class="cm-label">URL</label>
-                        <input id="cm-url" class="cm-input" placeholder="Link to audio" style="width:100%">
+
+                    <!-- Multi-platform links -->
+                    <div class="cm-full" style="border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <label class="cm-label" style="margin-bottom:0">Platform Links</label>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddLink()">+ Add Platform</button>
+                        </div>
+                        <div id="cm-links-list"></div>
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma-separated)</span></label>
@@ -878,6 +879,7 @@
           document.getElementById('cm-lock-screen').style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
+          cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
         .catch(() => {
@@ -885,18 +887,52 @@
         });
     }
 
-    function cmProviderChanged() {}
+    // ── Multi-link helpers ──────────────────────────────────────────────────
+
+    const PROVIDER_OPTS = Object.entries(PROVIDERS)
+      .map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+
+    function cmAddLink(provider = '', url = '') {
+      const list = document.getElementById('cm-links-list');
+      const row = document.createElement('div');
+      row.className = 'cm-link-row';
+      row.style.cssText = 'display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:8px;';
+      row.innerHTML = `
+        <select class="cm-input filter-select" style="width:140px;font-size:0.9rem">
+          ${PROVIDER_OPTS}
+        </select>
+        <input class="cm-input" placeholder="https://…" value="${url}" style="width:100%">
+        <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="this.closest('.cm-link-row').remove()" style="padding:5px 10px">✕</button>
+      `;
+      row.querySelector('select').value = provider || 'soundgasm';
+      list.appendChild(row);
+    }
+
+    function cmGetLinks() {
+      return Array.from(document.querySelectorAll('.cm-link-row')).map(row => ({
+        provider: row.querySelector('select').value,
+        url: row.querySelector('input').value.trim(),
+      })).filter(lk => lk.url);
+    }
+
+    function cmSetLinks(links) {
+      document.getElementById('cm-links-list').innerHTML = '';
+      if (!links || !links.length) { cmAddLink(); return; }
+      links.forEach(lk => cmAddLink(lk.provider, lk.url));
+    }
+
+    // ── Save / Edit ─────────────────────────────────────────────────────────
 
     function cmSaveEntry() {
       const title = document.getElementById('cm-title').value.trim();
-      const url   = document.getElementById('cm-url').value.trim();
-      if (!title || !url) { cmShowMsg('Title and URL are required.', false); return; }
+      const links = cmGetLinks();
+      if (!title) { cmShowMsg('Title is required.', false); return; }
+      if (!links.length) { cmShowMsg('Add at least one platform link.', false); return; }
 
       const entry = {
-        id:      cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
-        provider: document.getElementById('cm-provider').value,
+        id:    cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
+        links,
         title,
-        url,
         tags:    document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
         desc:    document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
@@ -928,9 +964,9 @@
       const e = cmEntries.find(e => e.id === id);
       if (!e) return;
       cmEditingId = id;
-      document.getElementById('cm-provider').value = e.provider;
-      document.getElementById('cm-title').value    = e.title;
-      document.getElementById('cm-url').value      = e.url;
+      document.getElementById('cm-title').value = e.title;
+      const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
+      cmSetLinks(links);
       document.getElementById('cm-tags').value     = (e.tags || []).join(', ');
       document.getElementById('cm-desc').value     = e.desc || '';
       const cr = e.credits || {};
@@ -951,7 +987,8 @@
 
     function cmClearForm() {
       cmEditingId = null;
-      ['cm-title','cm-url','cm-tags','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
+      cmSetLinks([]);
+      ['cm-title','cm-tags','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
@@ -979,7 +1016,7 @@
               ${e.tags && e.tags.length ? '&middot; ' + e.tags.join(', ') : ''}
             </div>
           </div>
-          <span class="cm-provider-badge">${PROVIDERS[e.provider]?.label || e.provider}</span>
+          <span class="cm-provider-badge">${(e.links || (e.provider ? [{provider:e.provider}] : [])).map(lk => PROVIDERS[lk.provider]?.label || lk.provider).join(' · ')}</span>
           <button class="cm-btn cm-btn-sm" onclick="cmEditEntry('${e.id}')">Edit</button>
           <button class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmDeleteEntry('${e.id}')">Delete</button>
         </div>
