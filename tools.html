@@ -1057,7 +1057,10 @@
         .then(r => r.json())
         .then(data => {
           if (!data.ok) {
-            document.getElementById('cm-lock-msg').textContent = 'Incorrect password.';
+            const msg = data.env_set === false
+              ? 'ADMIN_PASSWORD env var not found on server.'
+              : 'Incorrect password.';
+            document.getElementById('cm-lock-msg').textContent = msg;
             return;
           }
           cmPassword = pw;

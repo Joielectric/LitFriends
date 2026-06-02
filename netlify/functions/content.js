@@ -33,8 +33,9 @@ exports.handler = async (event) => {
 
     const { password, action, entries } = body;
 
+    const envSet = !!process.env.ADMIN_PASSWORD;
     if (!password || password !== process.env.ADMIN_PASSWORD) {
-      return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized' }) };
+      return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized', env_set: envSet }) };
     }
 
     // Verify-only — just confirms the password is correct and returns current entries
