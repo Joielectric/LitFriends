@@ -133,7 +133,7 @@
   padding: 1px 6px;
   border: 1px solid var(--border-mid, rgba(255,255,255,.18));
   border-radius: 2px;
-  color: var(--text-mid, #999); font-size: 0.65rem;
+  color: var(--silver, #d8c8c0); font-size: 0.65rem;
   cursor: default;
 }
 .ag-tag-gender {
@@ -502,7 +502,7 @@
       if (!tags.length) return null;
       const row = document.createElement('div');
       row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:6px;';
-      row.innerHTML = `<span style="font-size:0.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim,#555);margin-right:2px;white-space:nowrap;">${label}</span>`;
+      row.innerHTML = `<span style="font-size:0.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mid,#b09090);margin-right:2px;white-space:nowrap;">${label}</span>`;
       tags.forEach(t => {
         const chip = document.createElement('button');
         chip.type = 'button';
@@ -525,7 +525,7 @@
     const metaRow = document.createElement('div');
     metaRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0 0.9rem;';
     metaRow.innerHTML = `
-      <span id="ag-count" style="color:var(--text-dim,#555);font-size:0.75rem;"></span>
+      <span id="ag-count" style="color:var(--text-mid,#b09090);font-size:0.75rem;"></span>
       <button id="ag-clear" type="button" class="ag-clear-btn" style="display:none">Clear filters</button>
     `;
 
