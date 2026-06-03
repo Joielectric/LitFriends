@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/CA_ICON.png">
+  <title>Adding Audio Projects — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #151014;
+      --surface: #1d171c;
+      --surface-2: #261f25;
+      --surface-3: #2f282e;
+      --border: rgba(200,120,110,0.26);
+      --border-mid: rgba(210,130,120,0.44);
+      --border-hi: rgba(232,99,79,0.65);
+      --text: #ffffff;
+      --text-mid: #ddccc8;
+      --text-dim: #b09690;
+      --silver: #d8c8c0;
+      --silver-hi: #f5ece8;
+      --coral: #e8634f;
+      --rose: #c05070;
+      --success: rgba(100,200,120,0.9);
+      --success-border: rgba(100,200,120,0.3);
+      --success-bg: rgba(100,200,120,0.08);
+      --radius: 3px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.8;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(140,30,50,0.28) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(200,60,50,0.10) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      max-width: 900px; margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+
+    /* Back nav */
+    .back-nav {
+      padding: 1.6rem 0 0;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .back-link {
+      color: var(--text-dim); text-decoration: none;
+      font-family: "Cinzel", serif; font-size: 0.65rem;
+      letter-spacing: .18em; text-transform: uppercase;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--silver); }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 3.5rem 1rem 2.5rem;
+    }
+    .header-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem; letter-spacing: .5em; text-transform: uppercase;
+      color: var(--text-dim); display: block; margin-bottom: 1rem;
+    }
+    header h1 {
+      font-family: "Cinzel", serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 300; letter-spacing: .1em;
+      background: linear-gradient(160deg, #f0c8b8 0%, var(--coral) 40%, var(--rose) 70%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.6rem;
+    }
+    .subtitle {
+      color: var(--text-dim);
+      font-style: italic; font-size: 1.05rem;
+    }
+    .header-divider {
+      display: flex; align-items: center; gap: 1rem;
+      justify-content: center; margin: 1.8rem auto 0; max-width: 260px;
+    }
+    .header-divider span { flex: 1; height: 1px; background: var(--border); }
+    .header-divider i { width: 4px; height: 4px; background: var(--coral); transform: rotate(45deg); display: inline-block; opacity: .7; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 2.2rem;
+      margin-bottom: 1.4rem;
+      position: relative;
+    }
+
+    /* Step header */
+    .step {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.4rem;
+    }
+    .step-number {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: transparent;
+      border: 1px solid var(--coral);
+      color: var(--coral);
+      font-family: "Cinzel", serif; font-size: 0.78rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step h2 { margin: 0; }
+
+    h2 {
+      font-family: "Cinzel", serif;
+      font-size: 1rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--silver-hi);
+    }
+    h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--coral);
+      margin: 1.6rem 0 0.5rem;
+    }
+    h3 em {
+      font-style: normal;
+      color: var(--text-dim);
+      font-weight: 400;
+      font-size: 0.7rem;
+      letter-spacing: .08em;
+    }
+    h4 {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 1.4rem 0 0.7rem;
+    }
+
+    p { color: var(--text-mid); margin-bottom: 0.8rem; }
+    p:last-child { margin-bottom: 0; }
+
+    ol, ul {
+      padding-left: 1.4rem;
+      color: var(--text-mid);
+    }
+    li { margin-bottom: 0.5rem; }
+    li strong { color: var(--silver-hi); }
+
+    /* Blockquote / example */
+    blockquote {
+      margin: 1rem 0;
+      padding: 0.9rem 1.2rem;
+      border-left: 2px solid var(--coral);
+      background: rgba(232,99,79,0.06);
+      color: var(--text-mid);
+      font-style: italic;
+    }
+    blockquote br { display: block; margin: 0.2rem 0; }
+
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 1px 7px;
+      border-radius: 2px;
+      color: #ffd4c4;
+      font-family: "Courier New", monospace;
+      font-size: 0.88em;
+      font-style: normal;
+    }
+
+    /* Table */
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    th {
+      background: var(--surface-2);
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    td { color: var(--text-mid); }
+
+    /* Tags */
+    .tag-list {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 0.7rem;
+    }
+    .tag {
+      background: rgba(232,99,79,0.1);
+      border: 1px solid rgba(232,99,79,0.35);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--coral);
+    }
+
+    /* Tips */
+    .tip {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      border-left: 2px solid var(--success);
+      padding: 1rem 1.2rem;
+      border-radius: var(--radius);
+      margin-top: 1rem;
+      color: var(--text-mid);
+    }
+    .tip strong {
+      display: block;
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--success);
+      margin-bottom: 0.3rem;
+    }
+
+    /* Section divider */
+    .section-rule {
+      height: 1px; background: var(--border);
+      margin: 0.6rem 0 1.4rem;
+    }
+
+    a { color: var(--coral); text-decoration: none; transition: color .2s; }
+    a:hover { color: var(--silver-hi); }
+
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      color: var(--text-dim);
+      font-family: "Cinzel", serif;
+      font-size: 0.62rem; letter-spacing: .3em; text-transform: uppercase;
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 1.4rem; }
+      header h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <nav class="back-nav">
+    <a class="back-link" href="../tools.html">&#8592; Tools</a>
+  </nav>
+
+  <header>
+    <span class="header-eyebrow">Consenting Adults</span>
+    <h1>How to Add a New Audio Project</h1>
+    <p class="subtitle">Content Manager Guide</p>
+    <div class="header-divider"><span></span><i></i><span></span></div>
+  </header>
+
+  <!-- Overview -->
+  <div class="card">
+    <h2>Overview</h2>
+    <div class="section-rule"></div>
+    <p>All audio content is managed through the <strong>Content Manager</strong> — a password-protected admin tool built directly into the site.</p>
+    <p><strong>No code editing required.</strong></p>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="card">
+    <div class="step">
+      <div class="step-number">1</div>
+      <h2>Access the Content Manager</h2>
+    </div>
+    <ol>
+      <li>Visit <a href="https://consentingadults.netlify.app" target="_blank">consentingadults.netlify.app</a></li>
+      <li>Click <strong>Tools</strong> in the top navigation bar</li>
+      <li>Enter the admin password when prompted</li>
+      <li>You are now inside the Content Manager</li>
+    </ol>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card">
+    <div class="step">
+      <div class="step-number">2</div>
+      <h2>Open the Add Form</h2>
+    </div>
+    <p>Click the <strong>"+ Add New Entry"</strong> button near the top of the Content Manager page.</p>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="card">
+    <div class="step">
+      <div class="step-number">3</div>
+      <h2>Fill in the Details</h2>
+    </div>
+
+    <h3>Title <em>(required)</em></h3>
+    <p>The name of the audio piece.</p>
+    <blockquote>Example: <code>Late Night Confession</code></blockquote>
+
+    <h3>Artist <em>(required)</em></h3>
+    <p>Select the creator from the dropdown. This determines which artist profile the audio appears under.</p>
+
+    <h3>Short Description <em>(max 100 characters)</em></h3>
+    <p>A punchy line displayed in the catalog card. Think of it as your hook.</p>
+    <blockquote>Example:<br><code>She had one confession. You had no idea what was coming.</code></blockquote>
+
+    <h3>Long Description</h3>
+    <p>The full description shown on the detail page. Include mood, setup, content notes, or anything that helps listeners decide.</p>
+
+    <h3>Tags</h3>
+    <p>Tags power the catalog filtering system.</p>
+    <ul>
+      <li>Gender/audience tag always comes first — enforced automatically</li>
+      <li>Type a tag and press <strong>Enter</strong> or <strong>Comma</strong> to add it</li>
+      <li>Existing tags are suggested as you type — reuse them to avoid duplicates</li>
+      <li>Aliases are normalized automatically (e.g. <code>gfe</code> → <code>GFE</code>, <code>rp</code> → <code>roleplay</code>)</li>
+    </ul>
+
+    <h4>Audience Tags</h4>
+    <div class="tag-list">
+      <div class="tag">M4F</div>
+      <div class="tag">F4M</div>
+      <div class="tag">M4M</div>
+      <div class="tag">F4F</div>
+      <div class="tag">Nonbinary</div>
+    </div>
+
+    <h4>Content Tags</h4>
+    <div class="tag-list">
+      <div class="tag">ASMR</div>
+      <div class="tag">GFE</div>
+      <div class="tag">roleplay</div>
+      <div class="tag">comfort</div>
+      <div class="tag">soft spoken</div>
+      <div class="tag">L-bombs</div>
+      <div class="tag">SFW</div>
+      <div class="tag">NSFW</div>
+    </div>
+
+    <blockquote style="margin-top:1.2rem;">Example tag set:<br><code>F4M, GFE, ASMR, comfort, soft spoken</code></blockquote>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="card">
+    <div class="step">
+      <div class="step-number">4</div>
+      <h2>Add Platform Links</h2>
+    </div>
+    <p>Click <strong>"+ Add Platform"</strong> for every location where the audio is hosted.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>What to Enter</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Platform</td>
+          <td>Select from the dropdown (Reddit, SoundCloud, Patreon, etc.)</td>
+        </tr>
+        <tr>
+          <td>URL</td>
+          <td>Paste the direct link to that audio on the selected platform</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:1rem;">Add as many platform entries as needed. The catalog will display all available links.</p>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="card">
+    <div class="step">
+      <div class="step-number">5</div>
+      <h2>Save</h2>
+    </div>
+    <p>Click <strong>Save Entry</strong>.</p>
+    <p>The audio will immediately appear in:</p>
+    <ul>
+      <li>The main catalog (<code>/catalog.html</code>)</li>
+      <li>The selected artist's profile page under Audio Works</li>
+    </ul>
+  </div>
+
+  <!-- Editing -->
+  <div class="card">
+    <h2>Editing an Existing Entry</h2>
+    <div class="section-rule"></div>
+    <ol>
+      <li>Find the audio entry in the Content Manager list</li>
+      <li>Click <strong>Edit</strong></li>
+      <li>Make your changes</li>
+      <li>Click <strong>Save Entry</strong></li>
+    </ol>
+  </div>
+
+  <!-- Tips -->
+  <div class="card">
+    <h2>Tips</h2>
+    <div class="section-rule"></div>
+
+    <div class="tip">
+      <strong>Duplicate Tags</strong>
+      Check the Existing Tags row before creating a new tag. Reuse existing tags whenever possible.
+    </div>
+
+    <div class="tip">
+      <strong>Short Description</strong>
+      Write this after finishing the long description. It's much easier to distill once you have the full version written.
+    </div>
+
+    <div class="tip">
+      <strong>Platform Links</strong>
+      One platform link is perfectly acceptable. Add more as the audio is published elsewhere.
+    </div>
+
+    <div class="tip">
+      <strong>Artist Selection</strong>
+      Verify the correct artist is selected. Entries only appear on that artist's profile page.
+    </div>
+  </div>
+
+  <!-- Access -->
+  <div class="card">
+    <h2>Who Has Access?</h2>
+    <div class="section-rule"></div>
+    <p>The Content Manager is password protected.</p>
+    <p>Contact <strong>JOI Electric</strong> for access credentials.</p>
+  </div>
+
+</div>
+
+<footer>
+  Consenting Adults &mdash; Content Manager Documentation
+</footer>
+
+</body>
+</html>
