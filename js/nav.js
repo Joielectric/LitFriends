@@ -18,14 +18,17 @@
 
   const CSS = `
   #ca-nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
-    background: rgba(21,16,20,0.9);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(200,120,110,0.3);
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 3rem); max-width: 960px;
+    z-index: 9000;
+    background: rgba(21,16,20,0.92);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(200,120,110,0.32);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
     font-family: "Cinzel", serif;
   }
   #ca-nav-inner {
-    max-width: 1100px; margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 1.5rem; height: 52px;
   }
