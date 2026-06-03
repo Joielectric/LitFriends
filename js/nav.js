@@ -302,7 +302,7 @@
     if (!pw) { msg.textContent = 'Enter the password.'; return; }
     msg.textContent = 'Checking…';
     try {
-      const res = await fetch('/.netlify/functions/audio-entries', {
+      const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'verify', password: pw }),
