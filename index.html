@@ -91,7 +91,8 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(6,3,6,0.45) 0%, rgba(6,3,6,0.15) 100%);
+        linear-gradient(to bottom, #150d14 0%, rgba(21,13,20,0.55) 15%, rgba(21,13,20,0.55) 85%, #150d14 100%),
+        radial-gradient(ellipse 80% 70% at 50% 50%, rgba(6,3,6,0.3) 0%, rgba(6,3,6,0.6) 100%);
       pointer-events: none;
     }
 
@@ -106,17 +107,22 @@
       text-shadow: 0 1px 8px rgba(0,0,0,0.8);
     }
 
+    @keyframes breathe-glow {
+      0%, 100% { filter: drop-shadow(0 0 18px rgba(232,99,79,0.35)) drop-shadow(0 0 50px rgba(192,57,74,0.2)); }
+      50%       { filter: drop-shadow(0 0 55px rgba(232,99,79,0.75)) drop-shadow(0 0 110px rgba(192,57,74,0.55)); }
+    }
+
     .hero h1 {
       font-family: "Cinzel", serif;
-      font-size: clamp(2.8rem, 9vw, 5.5rem);
+      font-size: clamp(3.4rem, 11vw, 7rem);
       font-weight: 300;
       letter-spacing: 0.12em;
-      line-height: 1.1;
-      background: linear-gradient(160deg, #f0c8b8 0%, var(--coral) 35%, var(--rose) 65%, #c87090 100%);
+      line-height: 1.05;
+      background: linear-gradient(160deg, #fde8d8 0%, var(--coral) 30%, var(--rose) 60%, #e890a0 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 40px rgba(232, 99, 79, 0.4));
+      animation: breathe-glow 3.5s ease-in-out infinite;
       margin-bottom: 1.4rem;
     }
 
@@ -165,6 +171,24 @@
       margin-bottom: 2rem;
     }
     .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    /* === ABOUT US === */
+    .about-us {
+      margin: 2.5rem 0 2rem;
+    }
+    .about-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem 2.5rem;
+    }
+    .about-col p {
+      font-size: 1.1rem;
+      color: var(--text-mid);
+      line-height: 1.9;
+    }
+    @media (max-width: 640px) {
+      .about-body { grid-template-columns: 1fr; }
+    }
 
     /* === ARTIST GRID === */
     .artists {
@@ -556,7 +580,18 @@
     <div class="hero-divider"><span></span><i></i><span></span></div>
     <p class="hero-tagline">Intimate audio, crafted with intention.<br>Stories that know exactly what they are.</p>
     <span class="hero-sub">Adult audio &mdash; 18+ only</span>
-    <a href="catalog.html" style="display:inline-block;margin-top:1.6rem;padding:0.6rem 1.8rem;border:1px solid rgba(232,99,79,0.4);border-radius:2px;color:var(--text-mid);font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;transition:border-color .2s,color .2s;" onmouseover="this.style.borderColor='rgba(232,99,79,0.8)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='rgba(232,99,79,0.4)';this.style.color='var(--text-mid)'">Browse All Audio</a>
+  </section>
+
+  <section class="about-us">
+    <div class="section-label">About Us</div>
+    <div class="about-body">
+      <div class="about-col">
+        <p>Consenting Adults is a collaborative group of independent audio artists who believe the best work happens together. We pair voices, skills, and visions — writers with producers, performers with storytellers — to create intimate audio that neither could build alone.</p>
+      </div>
+      <div class="about-col">
+        <p>Every piece we release is crafted with intention: high production quality, thoughtful performance, and a genuine desire to realize each artist's creative vision. We're always open to new collaborators. If you have a voice, a story, or a skill that belongs here — reach out.</p>
+      </div>
+    </div>
   </section>
 
   <section class="artists">
@@ -638,9 +673,24 @@
       setTimeout(showAgeGate, 800);
     }
 
-    video.addEventListener("ended", dismissSplash);
-    skip.addEventListener("click", function(e){ e.stopPropagation(); dismissSplash(); });
-    splash.addEventListener("click", dismissSplash);
+    // Fallback: if video doesn't play within 3s (mobile autoplay blocked), skip to age gate
+    var fallbackTimer = setTimeout(dismissSplash, 3000);
+
+    video.addEventListener("ended", function(){ clearTimeout(fallbackTimer); dismissSplash(); });
+
+    var playPromise = video.play();
+    if(playPromise !== undefined){
+      playPromise.then(function(){
+        // Playing — extend fallback to full video length
+        clearTimeout(fallbackTimer);
+      }).catch(function(){
+        // Autoplay blocked — show splash frame, user can tap to skip
+        clearTimeout(fallbackTimer);
+      });
+    }
+
+    skip.addEventListener("click", function(e){ e.stopPropagation(); clearTimeout(fallbackTimer); dismissSplash(); });
+    splash.addEventListener("click", function(){ clearTimeout(fallbackTimer); dismissSplash(); });
 
     ageYes.addEventListener("click", function(){
       sessionStorage.setItem("ca_verified", "true");
