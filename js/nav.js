@@ -29,11 +29,16 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 1.5rem; height: 52px;
   }
+  @keyframes ca-logo-breathe {
+    0%, 100% { filter: drop-shadow(0 0 6px rgba(232,99,79,0.4)) drop-shadow(0 0 18px rgba(192,57,74,0.2)); }
+    50%       { filter: drop-shadow(0 0 18px rgba(232,99,79,0.85)) drop-shadow(0 0 40px rgba(192,57,74,0.55)); }
+  }
   #ca-nav-logo {
-    font-size: 0.72rem; letter-spacing: .38em; text-transform: uppercase;
+    font-size: 0.9rem; letter-spacing: .3em; text-transform: uppercase;
     color: #d8c8c0; text-decoration: none; white-space: nowrap;
-    background: linear-gradient(135deg, #f0c8b8, #e8634f 50%, #c05070);
+    background: linear-gradient(135deg, #fde8d8, #e8634f 45%, #c05070);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: ca-logo-breathe 3.5s ease-in-out infinite;
   }
   #ca-nav-links {
     display: flex; align-items: center; gap: 0; list-style: none; margin: 0; padding: 0;
