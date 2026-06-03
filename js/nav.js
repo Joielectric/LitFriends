@@ -33,13 +33,13 @@
     padding: 0 1.5rem; height: 52px;
   }
   @keyframes ca-logo-breathe {
-    0%, 100% { filter: drop-shadow(0 0 6px rgba(232,99,79,0.4)) drop-shadow(0 0 18px rgba(192,57,74,0.2)); }
-    50%       { filter: drop-shadow(0 0 18px rgba(232,99,79,0.85)) drop-shadow(0 0 40px rgba(192,57,74,0.55)); }
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(232,99,79,0.6)) drop-shadow(0 0 22px rgba(192,57,74,0.35)); }
+    50%       { filter: drop-shadow(0 0 22px rgba(232,99,79,1.0)) drop-shadow(0 0 50px rgba(192,57,74,0.7)); }
   }
   #ca-nav-logo {
     font-size: 0.9rem; letter-spacing: .3em; text-transform: uppercase;
-    color: #d8c8c0; text-decoration: none; white-space: nowrap;
-    background: linear-gradient(135deg, #fde8d8, #e8634f 45%, #c05070);
+    color: #ffffff; text-decoration: none; white-space: nowrap;
+    background: linear-gradient(135deg, #ffffff, #ffb8a0 40%, #ff7060);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     animation: ca-logo-breathe 3.5s ease-in-out infinite;
   }
@@ -155,7 +155,7 @@
   .ca-admin-cancel:hover { border-color: #d8c8c0; color: #f5ece8; }
 
   /* Push page content below nav */
-  body { padding-top: 52px !important; overflow-x: hidden !important; }
+  body { padding-top: 72px !important; overflow-x: hidden !important; }
   html { overflow-x: hidden; }
   @media (max-width: 700px) {
     #ca-nav-links { display: none; }
