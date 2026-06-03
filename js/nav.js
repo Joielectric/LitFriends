@@ -18,22 +18,30 @@
 
   const CSS = `
   #ca-nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
-    background: rgba(21,16,20,0.9);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(200,120,110,0.3);
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 3rem); max-width: 960px;
+    z-index: 9000;
+    background: rgba(21,16,20,0.92);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(200,120,110,0.32);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
     font-family: "Cinzel", serif;
   }
   #ca-nav-inner {
-    max-width: 1100px; margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 1.5rem; height: 52px;
   }
+  @keyframes ca-logo-breathe {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(232,99,79,0.6)) drop-shadow(0 0 22px rgba(192,57,74,0.35)); }
+    50%       { filter: drop-shadow(0 0 22px rgba(232,99,79,1.0)) drop-shadow(0 0 50px rgba(192,57,74,0.7)); }
+  }
   #ca-nav-logo {
-    font-size: 0.72rem; letter-spacing: .38em; text-transform: uppercase;
-    color: #d8c8c0; text-decoration: none; white-space: nowrap;
-    background: linear-gradient(135deg, #f0c8b8, #e8634f 50%, #c05070);
+    font-size: 0.9rem; letter-spacing: .3em; text-transform: uppercase;
+    color: #ffffff; text-decoration: none; white-space: nowrap;
+    background: linear-gradient(135deg, #ffffff, #ffb8a0 40%, #ff7060);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: ca-logo-breathe 3.5s ease-in-out infinite;
   }
   #ca-nav-links {
     display: flex; align-items: center; gap: 0; list-style: none; margin: 0; padding: 0;
@@ -147,7 +155,7 @@
   .ca-admin-cancel:hover { border-color: #d8c8c0; color: #f5ece8; }
 
   /* Push page content below nav */
-  body { padding-top: 52px !important; overflow-x: hidden !important; }
+  body { padding-top: 72px !important; overflow-x: hidden !important; }
   html { overflow-x: hidden; }
   @media (max-width: 700px) {
     #ca-nav-links { display: none; }
