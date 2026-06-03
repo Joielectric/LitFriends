@@ -358,8 +358,10 @@
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma-separated)</span></label>
-                        <input id="cm-tags" class="cm-input" placeholder="GFE, soft, comfort" style="width:100%;margin-bottom:8px">
-                        <div id="cm-gender-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+                        <input id="cm-tags" class="cm-input" list="cm-tag-suggestions" placeholder="GFE, soft, comfort" style="width:100%;margin-bottom:8px">
+                        <datalist id="cm-tag-suggestions"></datalist>
+                        <div id="cm-gender-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"></div>
+                        <div id="cm-existing-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Short Description <span style="font-weight:normal;color:var(--text-mid)">(optional, max 100 chars)</span></label>
@@ -874,6 +876,7 @@
           document.getElementById('cm-lock-screen').style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
+          cmRebuildTagList();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -886,14 +889,12 @@
 
     function cmAddTag(tag) {
       const el = document.getElementById('cm-tags');
+      const canon = cmNormalizeTag(tag);
+      if (!canon) return;
       const current = el.value.split(',').map(t => t.trim()).filter(Boolean);
-      if (current.includes(tag)) return;
-      const isGender = GENDER_TAGS_CM.includes(tag.toUpperCase());
-      if (isGender) {
-        el.value = [tag, ...current].join(', ');
-      } else {
-        el.value = [...current, tag].join(', ');
-      }
+      if (current.some(t => t.toLowerCase() === canon.toLowerCase())) return;
+      const isGender = GENDER_TAGS_CM.includes(canon);
+      el.value = (isGender ? [canon, ...current] : [...current, canon]).join(', ');
     }
 
     (function cmBuildGenderTags() {
@@ -904,6 +905,66 @@
           `<button type="button" onclick="cmAddTag('${tag}')" style="padding:2px 9px;background:transparent;border:1px solid rgba(232,99,79,.35);border-radius:2px;color:var(--coral);font-size:0.7rem;letter-spacing:.05em;cursor:pointer;font-family:'Cinzel',serif">${tag}</button>`
         ).join('');
     })();
+
+    // ── Tag normalization & reuse ────────────────────────────────────────────
+    // Map known misspellings / variants to a single canonical spelling. Keys are
+    // matched case-insensitively; add entries here as you spot duplicates.
+    const TAG_ALIASES = {
+      'gfe': 'GFE', 'girlfriend experience': 'GFE',
+      'asmr': 'ASMR',
+      'comfort': 'comfort', 'comforting': 'comfort', 'cozy': 'comfort',
+      'soft': 'soft', 'softspoken': 'soft spoken', 'soft-spoken': 'soft spoken',
+      'wholesome': 'wholesome',
+      'sfw': 'SFW', 'nsfw': 'NSFW',
+      'roleplay': 'roleplay', 'role play': 'roleplay', 'role-play': 'roleplay', 'rp': 'roleplay',
+      'l-bombs': 'L-bombs', 'lbombs': 'L-bombs', 'l bombs': 'L-bombs',
+    };
+
+    function cmNormalizeTag(tag) {
+      const trimmed = tag.trim();
+      if (!trimmed) return '';
+      const lower = trimmed.toLowerCase();
+      // Gender tags always uppercase canonical form
+      const g = GENDER_TAGS_CM.find(gt => gt.toLowerCase() === lower);
+      if (g) return g;
+      if (TAG_ALIASES[lower]) return TAG_ALIASES[lower];
+      return trimmed;
+    }
+
+    function cmNormalizeTagList(raw) {
+      const seen = new Map(); // lowercased -> canonical (dedupe, keep order)
+      raw.split(',').map(cmNormalizeTag).filter(Boolean).forEach(t => {
+        const key = t.toLowerCase();
+        if (!seen.has(key)) seen.set(key, t);
+      });
+      return [...seen.values()];
+    }
+
+    // Collect every non-gender tag already used, normalized + deduped, for reuse.
+    function cmAllExistingTags() {
+      const seen = new Map();
+      cmEntries.forEach(e => (e.tags || []).forEach(t => {
+        const canon = cmNormalizeTag(t);
+        if (!canon) return;
+        if (GENDER_TAGS_CM.includes(canon)) return;
+        const key = canon.toLowerCase();
+        if (!seen.has(key)) seen.set(key, canon);
+      }));
+      return [...seen.values()].sort((a, b) => a.localeCompare(b));
+    }
+
+    function cmRebuildTagList() {
+      const tags = cmAllExistingTags();
+      const dl = document.getElementById('cm-tag-suggestions');
+      if (dl) dl.innerHTML = tags.map(t => `<option value="${t.replace(/"/g, '&quot;')}">`).join('');
+      const wrap = document.getElementById('cm-existing-tags');
+      if (!wrap) return;
+      if (!tags.length) { wrap.innerHTML = ''; return; }
+      wrap.innerHTML = '<span style="font-family:\'Cinzel\',serif;font-size:0.7rem;color:var(--text-dim);align-self:center;margin-right:2px;letter-spacing:.08em">Existing:</span>'
+        + tags.map(t =>
+          `<button type="button" onclick="cmAddTag(this.dataset.tag)" data-tag="${t.replace(/"/g, '&quot;')}" style="padding:2px 9px;background:transparent;border:1px solid var(--border-mid);border-radius:2px;color:var(--silver);font-size:0.7rem;letter-spacing:.03em;cursor:pointer;font-family:'Cinzel',serif">${t}</button>`
+        ).join('');
+    }
 
     // ── Multi-link helpers ──────────────────────────────────────────────────
 
@@ -951,7 +1012,7 @@
         id:    cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
         links,
         title,
-        tags:      document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        tags:      cmNormalizeTagList(document.getElementById('cm-tags').value),
         shortDesc: document.getElementById('cm-short-desc').value.trim(),
         desc:      document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
@@ -975,6 +1036,7 @@
       cmPersist(() => {
         cmClearForm();
         cmRenderEntries();
+        cmRebuildTagList();
         cmShowMsg('Saved!', true);
       });
     }
