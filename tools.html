@@ -278,7 +278,7 @@
 
     footer {
       text-align: center; padding: 2rem 1rem;
-      color: var(--text-dim);
+      color: var(--text-mid);
       font-family: "Cinzel", serif; font-size: 0.78rem; letter-spacing: .3em; text-transform: uppercase;
       border-top: 1px solid var(--border); position: relative; z-index: 1;
     }
@@ -362,8 +362,10 @@
                         <div id="cm-gender-tags" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
                     </div>
                     <div class="cm-full">
-                        <label class="cm-label">Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
-                        <input id="cm-desc" class="cm-input" placeholder="Short description" style="width:100%">
+                        <label class="cm-label">Short Description <span style="font-weight:normal;color:var(--text-mid)">(optional, max 100 chars)</span></label>
+                        <input id="cm-short-desc" class="cm-input" placeholder="Brief one-line summary" maxlength="100" style="width:100%;margin-bottom:8px">
+                        <label class="cm-label">Long Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
+                        <input id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc." style="width:100%">
                     </div>
                     <div>
                         <label class="cm-label">Date</label>
@@ -949,8 +951,9 @@
         id:    cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
         links,
         title,
-        tags:    document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-        desc:    document.getElementById('cm-desc').value.trim(),
+        tags:      document.getElementById('cm-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        shortDesc: document.getElementById('cm-short-desc').value.trim(),
+        desc:      document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
         credits: {
           writers:     document.getElementById('cm-credit-writers').value.split(',').map(t => t.trim()).filter(Boolean),
@@ -983,8 +986,9 @@
       document.getElementById('cm-title').value = e.title;
       const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
       cmSetLinks(links);
-      document.getElementById('cm-tags').value     = (e.tags || []).join(', ');
-      document.getElementById('cm-desc').value     = e.desc || '';
+      document.getElementById('cm-tags').value       = (e.tags || []).join(', ');
+      document.getElementById('cm-short-desc').value = e.shortDesc || '';
+      document.getElementById('cm-desc').value       = e.desc || '';
       const cr = e.credits || {};
       document.getElementById('cm-credit-writers').value   = (cr.writers || []).join(', ');
       document.getElementById('cm-credit-voice').value     = (cr.voiceArtists || []).join(', ');
@@ -1009,7 +1013,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
