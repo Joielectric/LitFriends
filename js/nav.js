@@ -20,9 +20,9 @@
   const CSS = `
   #ca-nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
-    background: rgba(6,3,6,0.88);
+    background: rgba(21,16,20,0.9);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(200,120,110,0.18);
+    border-bottom: 1px solid rgba(200,120,110,0.3);
     font-family: "Cinzel", serif;
   }
   #ca-nav-inner {
@@ -43,7 +43,7 @@
   .ca-nav-link, .ca-nav-btn {
     display: block; padding: 0 1rem; line-height: 52px;
     font-size: 0.62rem; letter-spacing: .22em; text-transform: uppercase;
-    color: #b0a098; text-decoration: none;
+    color: #c8b8b0; text-decoration: none;
     background: none; border: none; cursor: pointer; font-family: inherit;
     transition: color .2s; white-space: nowrap;
   }
@@ -54,7 +54,7 @@
   /* Dropdown */
   .ca-nav-dropdown {
     position: absolute; top: 52px; left: 0;
-    background: rgba(10,6,10,0.97);
+    background: rgba(28,22,27,0.98);
     border: 1px solid rgba(200,120,110,0.2);
     border-top: 2px solid #e8634f;
     min-width: 200px; list-style: none; padding: 0.4rem 0;
@@ -70,7 +70,7 @@
   .ca-nav-dropdown a {
     display: block; padding: 0.55rem 1.2rem;
     font-size: 0.6rem; letter-spacing: .18em; text-transform: uppercase;
-    color: #b0a098; text-decoration: none; transition: color .15s, background .15s;
+    color: #c8b8b0; text-decoration: none; transition: color .15s, background .15s;
   }
   .ca-nav-dropdown a:hover { color: #f5ece8; background: rgba(232,99,79,0.08); }
 
@@ -90,14 +90,14 @@
   /* Mobile drawer */
   #ca-mobile-menu {
     display: none; flex-direction: column;
-    background: rgba(6,3,6,0.97); border-top: 1px solid rgba(200,120,110,0.15);
+    background: rgba(21,16,20,0.98); border-top: 1px solid rgba(200,120,110,0.25);
     padding: 0.6rem 0 1rem; max-height: 80vh; overflow-y: auto;
   }
   #ca-mobile-menu.open { display: flex; }
   .ca-mobile-link, .ca-mobile-btn {
     display: block; padding: 0.75rem 1.8rem;
     font-family: "Cinzel", serif; font-size: 0.65rem; letter-spacing: .2em; text-transform: uppercase;
-    color: #b0a098; text-decoration: none;
+    color: #c8b8b0; text-decoration: none;
     background: none; border: none; cursor: pointer; text-align: left; width: 100%;
     transition: color .15s;
   }
@@ -106,7 +106,7 @@
   .ca-mobile-link.admin-link:hover { color: #f5ece8; }
   .ca-mobile-sep {
     font-size: 0.55rem; letter-spacing: .3em; text-transform: uppercase;
-    color: #5a3a38; padding: 0.8rem 1.8rem 0.3rem;
+    color: #8a6058; padding: 0.8rem 1.8rem 0.3rem;
   }
   .ca-mobile-sub { padding-left: 2.6rem; }
 
