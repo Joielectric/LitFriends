@@ -95,6 +95,7 @@
   border: 1px solid var(--border, rgba(255,255,255,.1));
   border-radius: var(--radius, 3px);
   overflow: hidden;
+  max-width: 100%;
 }
 .ag-row {
   display: grid;

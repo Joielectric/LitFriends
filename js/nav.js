@@ -148,7 +148,8 @@
   .ca-admin-cancel:hover { border-color: #d8c8c0; color: #f5ece8; }
 
   /* Push page content below nav */
-  body { padding-top: 52px !important; }
+  body { padding-top: 52px !important; overflow-x: hidden !important; }
+  html { overflow-x: hidden; }
   @media (max-width: 700px) {
     #ca-nav-links { display: none; }
     #ca-hamburger { display: flex; }
