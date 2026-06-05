@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/LK_Icon.png">
+  <link rel="apple-touch-icon" href="../images/LK_Icon.png">
+  <link rel="manifest" href="../manifest-ca.json">
+  <title>Lotus Kitty — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #100d18;
+      --surface: #181424;
+      --surface-2: #211b30;
+      --surface-3: #2a223d;
+      --border: rgba(180, 140, 200, 0.22);
+      --border-mid: rgba(190, 150, 210, 0.40);
+      --border-hi: rgba(210, 170, 230, 0.62);
+      --text: #f5f0fa;
+      --text-mid: #c8b8d8;
+      --text-dim: #8a7298;
+      --silver: #d8cce8;
+      --silver-hi: #f0eaf8;
+      --lotus: #c87ab8;
+      --lotus-dim: #5a2860;
+      --lotus-pale: rgba(200, 122, 184, 0.1);
+      --gold: #c9a060;
+      --gold-dim: rgba(201, 160, 96, 0.2);
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.85;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(120, 40, 140, 0.14) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 90% 100%, rgba(80, 20, 100, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(201, 160, 96, 0.06) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .page-wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 1.5rem 1rem 5rem; }
+
+    /* === BANNER === */
+    .banner-frame {
+      position: relative; z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: 2px solid var(--lotus-dim);
+      margin-bottom: 0.5rem;
+    }
+    .banner-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 300px;
+      object-fit: cover;
+      object-position: center top;
+    }
+
+    /* === BREADCRUMB === */
+    .back-nav {
+      padding: 1.2rem 0 0;
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem; letter-spacing: 0.32em; text-transform: uppercase;
+    }
+    .back-nav a { color: var(--text-dim); text-decoration: none; transition: color 0.25s; }
+    .back-nav a:hover { color: var(--lotus); }
+    .back-nav .sep { color: var(--text-dim); }
+    .back-nav .current { color: var(--silver); }
+
+    /* === INTRO === */
+    .page-intro {
+      text-align: center;
+      padding: 2.8rem 1rem 2.2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.2rem;
+    }
+
+    .intro-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--text-dim); display: block; margin-bottom: 1rem;
+    }
+
+    .page-intro h1 {
+      font-family: "IM Fell English", Georgia, serif;
+      font-size: clamp(2.2rem, 7vw, 3.8rem);
+      font-weight: 400; font-style: italic;
+      color: var(--silver-hi);
+      line-height: 1.1; margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 30px rgba(200,122,184,0.3));
+    }
+
+    .intro-script {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem; letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--lotus); display: block; margin-bottom: 1rem;
+    }
+
+    .divider {
+      display: flex; align-items: center; gap: 1rem;
+      justify-content: center; margin: 1.4rem auto; max-width: 280px;
+    }
+    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
+    .divider i {
+      width: 5px; height: 5px;
+      background: var(--lotus); transform: rotate(45deg);
+      display: inline-block; opacity: 0.8;
+    }
+
+    .intro-tagline {
+      font-size: 1.15rem; font-style: italic;
+      color: var(--text-mid); line-height: 1.7;
+      max-width: 440px; margin: 0 auto;
+    }
+
+    /* === SECTION === */
+    .section { margin-bottom: 2.8rem; }
+
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--lotus);
+      display: flex; align-items: center; gap: 0.8rem;
+      margin-bottom: 1.5rem;
+      padding-left: 0.8rem;
+      border-left: 2px solid var(--lotus);
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+
+    /* === BIO === */
+    .bio {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem 2rem;
+    }
+    .bio p {
+      color: var(--text-mid); line-height: 1.95;
+      font-size: 1rem;
+    }
+    .bio p + p { margin-top: 1rem; }
+
+    /* === QUOTE === */
+    .bio-quote {
+      margin: 1.6rem 0 0;
+      padding: 1.1rem 1.4rem;
+      border-left: 2px solid var(--lotus);
+      background: var(--lotus-pale);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .bio-quote p {
+      font-family: "IM Fell English", Georgia, serif;
+      font-style: italic; font-size: 1.1rem;
+      color: var(--silver-hi); margin: 0 0 0.5rem;
+      line-height: 1.7;
+    }
+    .bio-quote cite {
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--text-dim); font-style: normal;
+    }
+
+    /* === TRAITS === */
+    .traits {
+      display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.6rem;
+    }
+    .trait {
+      font-family: "Cinzel", serif;
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.35rem 1rem; border-radius: 999px; border: 1px solid;
+    }
+    .trait-lotus   { color: var(--lotus);  border-color: var(--lotus);  background: rgba(200,122,184,0.1); }
+    .trait-gold    { color: var(--gold);   border-color: var(--gold);   background: var(--gold-dim); }
+    .trait-silver  { color: var(--silver); border-color: var(--border-mid); background: rgba(216,204,232,0.07); }
+
+    /* === PLATFORMS === */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+    .platform-link {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      text-decoration: none; color: var(--text-mid);
+      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
+    }
+    .platform-link:hover {
+      border-color: var(--lotus);
+      box-shadow: 0 0 18px rgba(200,122,184,0.15);
+      color: var(--text);
+    }
+    .platform-icon {
+      width: 36px; height: 36px; border-radius: var(--radius);
+      background: var(--surface-2); border: 1px solid var(--border-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 0.58rem; font-weight: 600;
+      color: var(--lotus); flex-shrink: 0; letter-spacing: 0.05em;
+    }
+    .platform-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); display: block; }
+    .platform-info { flex: 1; min-width: 0; }
+    .platform-name {
+      font-family: "Cinzel", serif; font-size: 0.62rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--silver); display: block; margin-bottom: 0.2rem;
+    }
+    .platform-desc { font-size: 0.82rem; color: var(--text-dim); }
+    .platform-arrow { color: var(--text-dim); font-size: 0.85rem; transition: color 0.25s, transform 0.25s; }
+    .platform-link:hover .platform-arrow { color: var(--lotus); transform: translateX(3px); }
+
+    /* === AUDIO GRID === */
+    #audio-grid { margin-top: 0.4rem; }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      border-top: 1px solid var(--border); margin-top: 3rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--text-dim); position: relative; z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .page-intro h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="banner-frame">
+    <img src="../images/LotusKitty2.png" alt="Lotus Kitty">
+  </div>
+
+  <nav class="back-nav">
+    <a href="../index.html">&#8592; Home</a>
+    <span class="sep">/</span>
+    <span class="current">Lotus Kitty</span>
+  </nav>
+
+  <div class="page-intro">
+    <span class="intro-eyebrow">Consenting Adults</span>
+    <h1>Lotus Kitty</h1>
+    <span class="intro-script">Voice Artist &middot; Explorer &middot; Sensualist</span>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <p class="intro-tagline">Celebrating sexuality with curiosity, warmth, and joyful abandon.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">About</div>
+    <div class="bio">
+      <p>Lotus Kitty came here to explore — sexuality in all its forms, yours and hers and everyone's. Friendly by nature and introverted by design, she prefers to experience intimacy through art, audio, and writing rather than chase it. She's a listener, a feeler, a quiet celebrant of the erotic.</p>
+      <p>Happily partnered and unapologetically herself: demisexual, kinky, an exhibitionist with a love of bondage and intense sensation. She brings that same depth of feeling to everything she creates — thoughtful, original, evocative, and wholly her own.</p>
+
+      <div class="bio-quote">
+        <p>"Let's see what joy and beauty are to be found in sex, eh?"</p>
+        <cite>— Lotus Kitty</cite>
+      </div>
+
+      <div class="traits">
+        <span class="trait trait-lotus">Demisexual</span>
+        <span class="trait trait-lotus">Kinky</span>
+        <span class="trait trait-gold">Exhibitionist</span>
+        <span class="trait trait-gold">Sensory</span>
+        <span class="trait trait-silver">Thoughtful</span>
+        <span class="trait trait-silver">Original</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Find Me</div>
+    <div class="platforms">
+
+      <a class="platform-link" href="https://www.literotica.com" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIT</div>
+        <div class="platform-info">
+          <span class="platform-name">Literotica</span>
+          <span class="platform-desc">Stories &amp; audio works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Audio Works</div>
+    <div id="audio-grid"></div>
+  </div>
+
+</div>
+
+<footer>
+  Lotus Kitty &nbsp;&mdash;&nbsp; Consenting Adults &nbsp;&mdash;&nbsp; 18+ only
+</footer>
+
+<script src="/js/audio.js"></script>
+<script>AudioGrid.init({ container: '#audio-grid', artist: 'lotus-kitty' });</script>
+
+</body>
+</html>
