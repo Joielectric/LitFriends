@@ -190,6 +190,66 @@
       .about-body { grid-template-columns: 1fr; }
     }
 
+    /* === RECENTLY ADDED === */
+    .recent-grid {
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .recent-card {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.9rem 1.2rem;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .recent-card:hover {
+      border-color: var(--coral);
+      box-shadow: 0 0 20px rgba(232,99,79,0.12);
+    }
+    .recent-badge {
+      font-family: "Cinzel", serif;
+      font-size: 0.52rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--coral); border: 1px solid rgba(232,99,79,0.45);
+      padding: 2px 7px; border-radius: 2px; flex-shrink: 0;
+      background: rgba(232,99,79,0.08);
+    }
+    .recent-info { flex: 1; min-width: 0; }
+    .recent-title {
+      font-family: "Cinzel", serif;
+      font-size: 0.82rem; letter-spacing: .06em;
+      color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 0.2rem;
+    }
+    .recent-meta {
+      font-size: 0.85rem; font-style: italic;
+      color: var(--text-dim);
+    }
+    .recent-tags {
+      display: flex; flex-wrap: wrap; gap: 5px; flex-shrink: 0;
+    }
+    .recent-tag {
+      font-family: "Cinzel", serif;
+      font-size: 0.52rem; letter-spacing: .1em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 20px;
+      border: 1px solid rgba(232,99,79,0.35);
+      color: var(--coral); background: rgba(232,99,79,0.08);
+    }
+    .recent-tag.gender { color: #e8634f; font-weight: 700; border-color: rgba(232,99,79,0.6); }
+    .recent-loading { color: var(--text-dim); font-style: italic; font-size: 0.95rem; padding: 1rem 0; }
+    .recent-view-all {
+      display: inline-block; margin-top: 1.2rem;
+      font-family: "Cinzel", serif; font-size: 0.65rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--coral); text-decoration: none;
+      border-bottom: 1px solid rgba(232,99,79,0.35); padding-bottom: 2px;
+      transition: color .2s, border-color .2s;
+    }
+    .recent-view-all:hover { color: var(--text); border-color: rgba(232,99,79,0.8); }
+    @media (max-width: 600px) {
+      .recent-tags { display: none; }
+    }
+
     /* === ARTIST GRID === */
     .artists {
       margin-top: 1rem;
@@ -594,6 +654,14 @@
     </div>
   </section>
 
+  <section id="recently-added" style="margin-bottom:2.5rem;">
+    <div class="section-label">Recently Added</div>
+    <div class="recent-grid" id="recent-grid">
+      <div class="recent-loading">Loading…</div>
+    </div>
+    <a href="catalog.html" class="recent-view-all">View all audio &#8594;</a>
+  </section>
+
   <section class="artists">
     <div class="section-label">The Artists</div>
     <div class="artist-grid">
@@ -821,6 +889,39 @@
     resize();
     draw();
     window.addEventListener("resize", resize);
+  })();
+</script>
+<script>
+  // Recently Added
+  (function(){
+    var GENDER_TAGS = ['m4f','f4m','m4m','f4f','m4a','f4a','nonbinary','nb4a','a4a'];
+    var grid = document.getElementById('recent-grid');
+    fetch('/api/content')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var entries = (data.entries || []).slice().sort(function(a,b){
+          return (b.date||'').localeCompare(a.date||'');
+        }).slice(0, 5);
+        if(!entries.length){ grid.innerHTML = '<div class="recent-loading">No audio yet.</div>'; return; }
+        grid.innerHTML = entries.map(function(e){
+          var tags = (e.tags||[]).slice(0,4);
+          var tagsHtml = tags.map(function(t){
+            var isGender = GENDER_TAGS.indexOf(t.toLowerCase()) !== -1;
+            return '<span class="recent-tag'+(isGender?' gender':'')+'">' + t + '</span>';
+          }).join('');
+          var artist = e.artist || '';
+          var link = artist ? 'profiles/' + artist + '.html' : 'catalog.html';
+          return '<a class="recent-card" href="'+link+'">'
+            + '<span class="recent-badge">New</span>'
+            + '<div class="recent-info">'
+            +   '<div class="recent-title">' + (e.title||'Untitled') + '</div>'
+            +   '<div class="recent-meta">' + (artist||'') + (e.date ? ' &nbsp;&middot;&nbsp; ' + e.date : '') + '</div>'
+            + '</div>'
+            + (tagsHtml ? '<div class="recent-tags">'+tagsHtml+'</div>' : '')
+            + '</a>';
+        }).join('');
+      })
+      .catch(function(){ grid.innerHTML = '<div class="recent-loading">Could not load recent audio.</div>'; });
   })();
 </script>
 <script src="/js/nav.js"></script>
