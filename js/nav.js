@@ -13,6 +13,7 @@
       { label: 'Miss Kitten SK',      href: root + 'profiles/misskittenSK.html' },
       { label: 'His Bad Girl 77',     href: root + 'profiles/hisbadgirl77.html' },
       { label: 'Well Nobody\'s Perfect', href: root + 'profiles/wellnobodysperfect.html' },
+      { label: 'NaughtiWolf',            href: root + 'profiles/naughtiwolf.html' },
     ]},
     { label: 'Tools',   href: root + 'tools.html', admin: true },
   ];
