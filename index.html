@@ -235,6 +235,18 @@
     .recent-artist-row {
       display: flex; align-items: center; gap: 0.5rem;
     }
+    .recent-card-icon-bar {
+      display: flex; align-items: center; justify-content: center;
+      margin: -1.1rem -1.3rem 1rem;
+      padding: 0.7rem 1rem;
+      background: rgba(0,0,0,0.25);
+      border-bottom: 1px solid rgba(232,99,79,0.15);
+    }
+    .recent-card-icon-bar img {
+      width: 44px; height: 44px; border-radius: 3px; object-fit: cover;
+      border: 1px solid rgba(232,99,79,0.4);
+      box-shadow: 0 0 10px rgba(232,99,79,0.2);
+    }
     .recent-artist-icon {
       width: 24px; height: 24px; border-radius: 2px; overflow: hidden; flex-shrink: 0;
       border: 1px solid rgba(232,99,79,0.3);
@@ -977,11 +989,12 @@
           var desc = e.shortDesc || e.desc || '';
           if(desc.length > 100) desc = desc.slice(0,97) + '…';
           var iconSrc = ARTIST_ICONS[artist.toLowerCase()] || FALLBACK_ICON;
-          var iconHtml = '<div class="recent-artist-icon"><img src="'+iconSrc+'" alt="'+artist+'"></div>';
+          var iconBarHtml = '<div class="recent-card-icon-bar"><img src="'+iconSrc+'" alt="'+artist+'"></div>';
           return '<a class="recent-card" href="'+link+'">'
+            + iconBarHtml
             + '<div class="recent-card-top">'
             +   '<span class="recent-badge">New</span>'
-            +   (artist ? '<div class="recent-artist-row">'+iconHtml+'<span class="recent-artist">'+artist+'</span></div>' : '')
+            +   (artist ? '<div class="recent-artist-row"><span class="recent-artist">'+artist+'</span></div>' : '')
             + '</div>'
             + '<div class="recent-title">' + (e.title||'Untitled') + '</div>'
             + (desc ? '<div class="recent-desc">'+desc+'</div>' : '')

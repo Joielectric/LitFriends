@@ -16,10 +16,23 @@
   }
 
   const ARTIST_LABELS = {
-    'joi-electric': 'JOI Electric',
-    'loona-licks':  'Loona Licks',
-    'misskittensk': 'MissKittenSK',
-    'hisbadgirl77': 'HisBadGirl77',
+    'joi-electric':       'JOI Electric',
+    'loona-licks':        'Loona Licks',
+    'misskittensk':       'MissKittenSK',
+    'hisbadgirl77':       'HisBadGirl77',
+    'wellnobodysperfect': "Well Nobody's Perfect",
+    'naughtiwolf':        'NaughtiWolf',
+    'lotus-kitty':        'Lotus Kitty',
+  };
+
+  const ARTIST_ICONS = {
+    'joi-electric':       '/images/JOI_Icon.png',
+    'loona-licks':        '/images/LL_Icon.png',
+    'misskittensk':       '/images/MissKittenSKClub.png',
+    'hisbadgirl77':       '/images/HBG_WIngs.png',
+    'wellnobodysperfect': '/images/CA_ICON.png',
+    'naughtiwolf':        '/images/NW_Icon.png',
+    'lotus-kitty':        '/images/LK_Icon.png',
   };
 
   const CREDIT_LABELS = {
@@ -89,6 +102,22 @@
 }
 .ag-filter-select:focus { outline: none; border-color: var(--border-mid, rgba(255,255,255,.25)); }
 .ag-filter-select option { background: #1a1a1a; color: #eee; }
+.ag-artist-icons {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 1rem;
+}
+.ag-artist-icon-btn {
+  background: none; border: 2px solid transparent; border-radius: 4px;
+  padding: 2px; cursor: pointer; opacity: 0.55; transition: opacity .2s, border-color .2s, box-shadow .2s;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.ag-artist-icon-btn img { width: 38px; height: 38px; border-radius: 2px; object-fit: cover; display: block; }
+.ag-artist-icon-btn span {
+  font-family: "Cinzel", serif; font-size: 0.48rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-dim, #888); white-space: nowrap;
+}
+.ag-artist-icon-btn:hover { opacity: 0.85; border-color: rgba(232,99,79,0.5); }
+.ag-artist-icon-btn.active { opacity: 1; border-color: var(--coral, #e8634f); box-shadow: 0 0 10px rgba(232,99,79,0.35); }
+.ag-artist-icon-btn.active span { color: var(--coral, #e8634f); }
 
 /* Track list */
 .ag-grid {
@@ -482,21 +511,41 @@
     const wrap = document.createElement('div');
     wrap.style.cssText = 'margin-bottom:1.4rem;';
 
-    // Top row: search + artist + platform
+    // Top row: search + platform
     const topRow = document.createElement('div');
     topRow.className = 'ag-filters';
     topRow.style.cssText = 'margin-bottom:0.8rem;';
     topRow.innerHTML = `
       <input class="ag-search" type="search" placeholder="Search titles, tags…" id="ag-search">
-      <select class="ag-filter-select" id="ag-artist">
-        <option value="">All Artists</option>
-        ${Object.entries(ARTIST_LABELS).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}
-      </select>
       <select class="ag-filter-select" id="ag-provider">
         <option value="">All Platforms</option>
         ${Object.entries(PROVIDERS).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('')}
       </select>
     `;
+
+    // Artist icon strip
+    const artistRow = document.createElement('div');
+    artistRow.className = 'ag-artist-icons';
+    Object.entries(ARTIST_LABELS).forEach(([slug, label]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ag-artist-icon-btn';
+      btn.dataset.artist = slug;
+      const iconSrc = ARTIST_ICONS[slug] || '/images/CA_ICON.png';
+      btn.innerHTML = `<img src="${iconSrc}" alt="${label}"><span>${label}</span>`;
+      btn.addEventListener('click', () => {
+        if (activeArtist === slug) {
+          activeArtist = '';
+          btn.classList.remove('active');
+        } else {
+          activeArtist = slug;
+          artistRow.querySelectorAll('.ag-artist-icon-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        }
+        applyFilters();
+      });
+      artistRow.appendChild(btn);
+    });
 
     // Tag chip rows
     function buildChipRow(tags, label, isGender) {
@@ -531,6 +580,7 @@
     `;
 
     wrap.appendChild(topRow);
+    wrap.appendChild(artistRow);
     wrap.appendChild(tagSection);
     wrap.appendChild(metaRow);
 
@@ -565,11 +615,11 @@
     function clearAll() {
       activeTags.clear();
       wrap.querySelectorAll('.ag-filter-chip.active').forEach(c => c.classList.remove('active'));
+      wrap.querySelectorAll('.ag-artist-icon-btn.active').forEach(b => b.classList.remove('active'));
       activeArtist = '';
       activeProvider = '';
       searchQ = '';
       document.getElementById('ag-search').value = '';
-      document.getElementById('ag-artist').value = '';
       document.getElementById('ag-provider').value = '';
       applyFilters();
     }
@@ -596,10 +646,6 @@
     // ── Events ─────────────────────────────────────────────────────────────
     document.getElementById('ag-search').addEventListener('input', e => {
       searchQ = e.target.value.toLowerCase();
-      applyFilters();
-    });
-    document.getElementById('ag-artist').addEventListener('change', e => {
-      activeArtist = e.target.value;
       applyFilters();
     });
     document.getElementById('ag-provider').addEventListener('change', e => {
