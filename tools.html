@@ -371,19 +371,6 @@
                         <input id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc." style="width:100%">
                     </div>
                     <div>
-                        <label class="cm-label">Artist</label>
-                        <select id="cm-artist" class="cm-input" style="width:100%">
-                            <option value="">— Select artist —</option>
-                            <option value="joi-electric">JOI Electric</option>
-                            <option value="loona-licks">Loona Licks</option>
-                            <option value="misskittensk">MissKittenSK</option>
-                            <option value="hisbadgirl77">HisBadGirl77</option>
-                            <option value="wellnobodysperfect">Well Nobody's Perfect</option>
-                            <option value="naughtiwolf">NaughtiWolf</option>
-                            <option value="lotus-kitty">Lotus Kitty</option>
-                        </select>
-                    </div>
-                    <div>
                         <label class="cm-label">Date</label>
                         <input type="date" id="cm-date" class="cm-input" style="width:100%">
                     </div>
@@ -1026,7 +1013,6 @@
         id:    cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
         links,
         title,
-        artist:    document.getElementById('cm-artist').value,
         tags:      cmNormalizeTagList(document.getElementById('cm-tags').value),
         shortDesc: document.getElementById('cm-short-desc').value.trim(),
         desc:      document.getElementById('cm-desc').value.trim(),
@@ -1061,7 +1047,6 @@
       if (!e) return;
       cmEditingId = id;
       document.getElementById('cm-title').value = e.title;
-      document.getElementById('cm-artist').value = e.artist || '';
       const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
       cmSetLinks(links);
       document.getElementById('cm-tags').value       = (e.tags || []).join(', ');
@@ -1091,7 +1076,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-artist','cm-tags','cm-short-desc','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
