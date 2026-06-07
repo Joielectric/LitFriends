@@ -820,11 +820,11 @@
     var playPromise = video.play();
     if(playPromise !== undefined){
       playPromise.then(function(){
-        // Playing — extend fallback to full video length
         clearTimeout(fallbackTimer);
       }).catch(function(){
-        // Autoplay blocked — show splash frame, user can tap to skip
+        // Autoplay blocked — dismiss immediately to age gate
         clearTimeout(fallbackTimer);
+        dismissSplash();
       });
     }
 
