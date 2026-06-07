@@ -633,6 +633,12 @@
           } else {
             renderGrid(entries, el, false, false, null);
           }
+          // Auto-open entry from URL hash: #play=ENCODED_TITLE
+          const hash = decodeURIComponent(location.hash.replace(/^#play=/, ''));
+          if (hash) {
+            const target = entries.find(e => (e.title || '').toLowerCase() === hash.toLowerCase());
+            if (target) { setTimeout(() => openModal(target), 100); }
+          }
         })
         .catch(() => {
           el.innerHTML = '<div class="ag-empty">Could not load audio.</div>';

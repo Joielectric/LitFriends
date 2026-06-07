@@ -951,10 +951,11 @@
       'loona-licks':        'images/LL_Icon.png',
       'misskittensk':       'images/MissKittenSKClub.png',
       'hisbadgirl77':       'images/HBG_WIngs.png',
-      'wellnobodysperfect': null,
+      'wellnobodysperfect': 'images/CA_ICON.png',
       'naughtiwolf':        'images/NW_Icon.png',
       'lotus-kitty':        'images/LK_Icon.png',
     };
+    var FALLBACK_ICON = 'images/CA_ICON.png';
     var grid = document.getElementById('recent-grid');
     fetch('/api/content')
       .then(function(r){ return r.json(); })
@@ -970,13 +971,13 @@
             return '<span class="recent-tag'+(isGender?' gender':'')+'">' + t + '</span>';
           }).join('');
           var artist = e.artist || '';
-          var link = artist ? 'profiles/' + artist + '.html' : 'catalog.html';
+          var title = e.title || '';
+          var hash = title ? '#play=' + encodeURIComponent(title) : '';
+          var link = artist ? 'profiles/' + artist + '.html' + hash : 'catalog.html' + hash;
           var desc = e.shortDesc || e.desc || '';
           if(desc.length > 100) desc = desc.slice(0,97) + '…';
-          var iconSrc = ARTIST_ICONS[artist.toLowerCase()] || null;
-          var iconHtml = iconSrc
-            ? '<div class="recent-artist-icon"><img src="'+iconSrc+'" alt="'+artist+'"></div>'
-            : '';
+          var iconSrc = ARTIST_ICONS[artist.toLowerCase()] || FALLBACK_ICON;
+          var iconHtml = '<div class="recent-artist-icon"><img src="'+iconSrc+'" alt="'+artist+'"></div>';
           return '<a class="recent-card" href="'+link+'">'
             + '<div class="recent-card-top">'
             +   '<span class="recent-badge">New</span>'
