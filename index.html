@@ -232,6 +232,15 @@
     .recent-card-top {
       display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;
     }
+    .recent-artist-row {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .recent-artist-icon {
+      width: 24px; height: 24px; border-radius: 2px; overflow: hidden; flex-shrink: 0;
+      border: 1px solid rgba(232,99,79,0.3);
+      background: var(--surface-2);
+    }
+    .recent-artist-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .recent-badge {
       font-family: "Cinzel", serif;
       font-size: 0.52rem; letter-spacing: .18em; text-transform: uppercase;
@@ -927,6 +936,15 @@
   // Recently Added
   (function(){
     var GENDER_TAGS = ['m4f','f4m','m4m','f4f','m4a','f4a','nonbinary','nb4a','a4a'];
+    var ARTIST_ICONS = {
+      'joi-electric':       'images/JOI_Icon.png',
+      'loona-licks':        'images/LL_Icon.png',
+      'misskittensk':       'images/MissKittenSKClub.png',
+      'hisbadgirl77':       'images/HBG_WIngs.png',
+      'wellnobodysperfect': null,
+      'naughtiwolf':        'images/NW_Icon.png',
+      'lotus-kitty':        'images/LK_Icon.png',
+    };
     var grid = document.getElementById('recent-grid');
     fetch('/api/content')
       .then(function(r){ return r.json(); })
@@ -945,10 +963,14 @@
           var link = artist ? 'profiles/' + artist + '.html' : 'catalog.html';
           var desc = e.shortDesc || e.desc || '';
           if(desc.length > 100) desc = desc.slice(0,97) + '…';
+          var iconSrc = ARTIST_ICONS[artist.toLowerCase()] || null;
+          var iconHtml = iconSrc
+            ? '<div class="recent-artist-icon"><img src="'+iconSrc+'" alt="'+artist+'"></div>'
+            : '';
           return '<a class="recent-card" href="'+link+'">'
             + '<div class="recent-card-top">'
             +   '<span class="recent-badge">New</span>'
-            +   (artist ? '<span class="recent-artist">'+artist+'</span>' : '')
+            +   (artist ? '<div class="recent-artist-row">'+iconHtml+'<span class="recent-artist">'+artist+'</span></div>' : '')
             + '</div>'
             + '<div class="recent-title">' + (e.title||'Untitled') + '</div>'
             + (desc ? '<div class="recent-desc">'+desc+'</div>' : '')
