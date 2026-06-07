@@ -191,63 +191,93 @@
     }
 
     /* === RECENTLY ADDED === */
+    .recent-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+    .recent-section-header .section-label { margin-bottom: 0; flex: 1; }
+    .recent-view-all {
+      font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--coral); text-decoration: none;
+      border: 1px solid rgba(232,99,79,0.35); padding: 0.35rem 0.9rem; border-radius: 2px;
+      transition: color .2s, border-color .2s, background .2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .recent-view-all:hover { color: #fff; border-color: var(--coral); background: rgba(232,99,79,0.15); }
+
     .recent-grid {
-      display: flex; flex-direction: column; gap: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
     }
     .recent-card {
-      display: flex; align-items: center; gap: 1rem;
+      display: flex; flex-direction: column;
       background: var(--surface);
       border: 1px solid var(--border);
+      border-top: 2px solid var(--coral);
       border-radius: 4px;
-      padding: 0.9rem 1.2rem;
+      padding: 1.1rem 1.3rem 1.2rem;
       text-decoration: none; color: inherit;
-      transition: border-color 0.25s, box-shadow 0.25s;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
       position: relative; overflow: hidden;
     }
-    .recent-card:hover {
-      border-color: var(--coral);
-      box-shadow: 0 0 20px rgba(232,99,79,0.12);
+    .recent-card::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(232,99,79,0.08) 0%, transparent 70%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .recent-card:hover { border-color: var(--coral); box-shadow: 0 0 28px rgba(232,99,79,0.2), 0 6px 20px rgba(0,0,0,0.4); transform: translateY(-3px); }
+    .recent-card:hover::before { opacity: 1; }
+
+    .recent-card-top {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;
     }
     .recent-badge {
       font-family: "Cinzel", serif;
-      font-size: 0.52rem; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--coral); border: 1px solid rgba(232,99,79,0.45);
-      padding: 2px 7px; border-radius: 2px; flex-shrink: 0;
-      background: rgba(232,99,79,0.08);
+      font-size: 0.52rem; letter-spacing: .18em; text-transform: uppercase;
+      color: #fff; background: var(--coral);
+      padding: 2px 8px; border-radius: 2px; flex-shrink: 0;
     }
-    .recent-info { flex: 1; min-width: 0; }
-    .recent-title {
+    .recent-artist {
       font-family: "Cinzel", serif;
-      font-size: 0.82rem; letter-spacing: .06em;
-      color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      margin-bottom: 0.2rem;
-    }
-    .recent-meta {
-      font-size: 0.85rem; font-style: italic;
+      font-size: 0.58rem; letter-spacing: .14em; text-transform: uppercase;
       color: var(--text-dim);
     }
+    .recent-title {
+      font-family: "Cinzel", serif;
+      font-size: 0.95rem; letter-spacing: .05em;
+      color: #ffffff;
+      margin-bottom: 0.5rem; line-height: 1.3;
+    }
+    .recent-desc {
+      font-size: 0.95rem; font-style: italic;
+      color: var(--text-mid);
+      line-height: 1.7; flex: 1;
+      margin-bottom: 0.8rem;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
     .recent-tags {
-      display: flex; flex-wrap: wrap; gap: 5px; flex-shrink: 0;
+      display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto;
     }
     .recent-tag {
       font-family: "Cinzel", serif;
       font-size: 0.52rem; letter-spacing: .1em; text-transform: uppercase;
       padding: 2px 8px; border-radius: 20px;
-      border: 1px solid rgba(232,99,79,0.35);
-      color: var(--coral); background: rgba(232,99,79,0.08);
+      border: 1px solid rgba(200,180,170,0.3);
+      color: var(--text-mid);
     }
-    .recent-tag.gender { color: #e8634f; font-weight: 700; border-color: rgba(232,99,79,0.6); }
+    .recent-tag.gender {
+      color: var(--coral); border-color: rgba(232,99,79,0.5);
+      background: rgba(232,99,79,0.08); font-weight: 700;
+    }
+    .recent-date {
+      font-family: "Cinzel", serif;
+      font-size: 0.55rem; letter-spacing: .12em;
+      color: var(--text-dim); margin-top: 0.7rem;
+    }
     .recent-loading { color: var(--text-dim); font-style: italic; font-size: 0.95rem; padding: 1rem 0; }
-    .recent-view-all {
-      display: inline-block; margin-top: 1.2rem;
-      font-family: "Cinzel", serif; font-size: 0.65rem; letter-spacing: .2em; text-transform: uppercase;
-      color: var(--coral); text-decoration: none;
-      border-bottom: 1px solid rgba(232,99,79,0.35); padding-bottom: 2px;
-      transition: color .2s, border-color .2s;
-    }
-    .recent-view-all:hover { color: var(--text); border-color: rgba(232,99,79,0.8); }
     @media (max-width: 600px) {
-      .recent-tags { display: none; }
+      .recent-grid { grid-template-columns: 1fr; }
     }
 
     /* === ARTIST GRID === */
@@ -655,11 +685,13 @@
   </section>
 
   <section id="recently-added" style="margin-bottom:2.5rem;">
-    <div class="section-label">Recently Added</div>
+    <div class="recent-section-header">
+      <div class="section-label">Latest Works</div>
+      <a href="catalog.html" class="recent-view-all">View All &#8594;</a>
+    </div>
     <div class="recent-grid" id="recent-grid">
       <div class="recent-loading">Loading…</div>
     </div>
-    <a href="catalog.html" class="recent-view-all">View all audio &#8594;</a>
   </section>
 
   <section class="artists">
@@ -904,20 +936,24 @@
         }).slice(0, 5);
         if(!entries.length){ grid.innerHTML = '<div class="recent-loading">No audio yet.</div>'; return; }
         grid.innerHTML = entries.map(function(e){
-          var tags = (e.tags||[]).slice(0,4);
+          var tags = (e.tags||[]).slice(0,5);
           var tagsHtml = tags.map(function(t){
             var isGender = GENDER_TAGS.indexOf(t.toLowerCase()) !== -1;
             return '<span class="recent-tag'+(isGender?' gender':'')+'">' + t + '</span>';
           }).join('');
           var artist = e.artist || '';
           var link = artist ? 'profiles/' + artist + '.html' : 'catalog.html';
+          var desc = e.shortDesc || e.desc || '';
+          if(desc.length > 100) desc = desc.slice(0,97) + '…';
           return '<a class="recent-card" href="'+link+'">'
-            + '<span class="recent-badge">New</span>'
-            + '<div class="recent-info">'
-            +   '<div class="recent-title">' + (e.title||'Untitled') + '</div>'
-            +   '<div class="recent-meta">' + (artist||'') + (e.date ? ' &nbsp;&middot;&nbsp; ' + e.date : '') + '</div>'
+            + '<div class="recent-card-top">'
+            +   '<span class="recent-badge">New</span>'
+            +   (artist ? '<span class="recent-artist">'+artist+'</span>' : '')
             + '</div>'
+            + '<div class="recent-title">' + (e.title||'Untitled') + '</div>'
+            + (desc ? '<div class="recent-desc">'+desc+'</div>' : '')
             + (tagsHtml ? '<div class="recent-tags">'+tagsHtml+'</div>' : '')
+            + (e.date ? '<div class="recent-date">'+e.date+'</div>' : '')
             + '</a>';
         }).join('');
       })
