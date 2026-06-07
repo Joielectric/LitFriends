@@ -1018,8 +1018,8 @@
         desc:      document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
         credits: {
-          writers:     document.getElementById('cm-credit-writers').value.split(',').map(t => t.trim()).filter(Boolean),
           voiceArtists: document.getElementById('cm-credit-voice').value.split(',').map(t => t.trim()).filter(Boolean),
+          writers:     document.getElementById('cm-credit-writers').value.split(',').map(t => t.trim()).filter(Boolean),
           producers:   document.getElementById('cm-credit-producers').value.split(',').map(t => t.trim()).filter(Boolean),
           editors:     document.getElementById('cm-credit-editors').value.split(',').map(t => t.trim()).filter(Boolean),
           musicians:   document.getElementById('cm-credit-musicians').value.split(',').map(t => t.trim()).filter(Boolean),
