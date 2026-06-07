@@ -236,16 +236,25 @@
       display: flex; align-items: center; gap: 0.5rem;
     }
     .recent-card-icon-bar {
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       margin: -1.1rem -1.3rem 1rem;
       padding: 0.7rem 1rem;
       background: rgba(0,0,0,0.25);
       border-bottom: 1px solid rgba(232,99,79,0.15);
+      flex-wrap: wrap;
     }
     .recent-card-icon-bar img {
       width: 44px; height: 44px; border-radius: 3px; object-fit: cover;
       border: 1px solid rgba(232,99,79,0.4);
       box-shadow: 0 0 10px rgba(232,99,79,0.2);
+    }
+    .recent-contrib-initials {
+      width: 44px; height: 44px; border-radius: 3px;
+      border: 1px solid rgba(232,99,79,0.4);
+      background: rgba(232,99,79,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 0.65rem; letter-spacing: .08em;
+      color: var(--coral); font-weight: 600;
     }
     .recent-artist-icon {
       width: 24px; height: 24px; border-radius: 2px; overflow: hidden; flex-shrink: 0;
@@ -958,16 +967,35 @@
   // Recently Added
   (function(){
     var GENDER_TAGS = ['m4f','f4m','m4m','f4f','m4a','f4a','nonbinary','nb4a','a4a'];
-    var ARTIST_ICONS = {
-      'joi-electric':       'images/JOI_Icon.png',
-      'loona-licks':        'images/LL_Icon.png',
+    // Map name variants (lowercase, no spaces/punctuation) → icon path
+    var ICON_MAP = {
+      'joielectric':        'images/JOI_Icon.png',
+      'loonaLicks':         'images/LL_Icon.png',
+      'loona licks':        'images/LL_Icon.png',
       'misskittensk':       'images/MissKittenSKClub.png',
+      'miss kitten sk':     'images/MissKittenSKClub.png',
       'hisbadgirl77':       'images/HBG_WIngs.png',
+      'his bad girl 77':    'images/HBG_WIngs.png',
+      'hisbadgirl':         'images/HBG_WIngs.png',
       'wellnobodysperfect': 'images/CA_ICON.png',
       'naughtiwolf':        'images/NW_Icon.png',
       'lotus-kitty':        'images/LK_Icon.png',
+      'lotus kitty':        'images/LK_Icon.png',
+      'lotuskitty':         'images/LK_Icon.png',
     };
-    var FALLBACK_ICON = 'images/CA_ICON.png';
+    // Normalize a credit name to a lookup key
+    function nameKey(n){ return n.toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    var ICON_MAP_NORM = {};
+    Object.keys(ICON_MAP).forEach(function(k){ ICON_MAP_NORM[k.toLowerCase().replace(/[^a-z0-9]/g,'')] = ICON_MAP[k]; });
+
+    function contributorIcon(name) {
+      var icon = ICON_MAP_NORM[nameKey(name)];
+      if (icon) return '<img src="'+icon+'" alt="'+name+'" title="'+name+'">';
+      // Initials placeholder
+      var initials = name.trim().split(/\s+/).map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,3);
+      return '<div class="recent-contrib-initials" title="'+name+'">'+initials+'</div>';
+    }
+
     var grid = document.getElementById('recent-grid');
     fetch('/api/content')
       .then(function(r){ return r.json(); })
@@ -982,21 +1010,36 @@
             var isGender = GENDER_TAGS.indexOf(t.toLowerCase()) !== -1;
             return '<span class="recent-tag'+(isGender?' gender':'')+'">' + t + '</span>';
           }).join('');
-          var artist = e.artist || '';
           var title = e.title || '';
+          // Gather all unique contributors from credits
+          var cr = e.credits || {};
+          var seen = {};
+          var contribs = [];
+          ['voiceArtists','writers','producers','editors','musicians'].forEach(function(role){
+            (cr[role] || []).forEach(function(name){
+              var k = nameKey(name);
+              if (!seen[k]) { seen[k] = true; contribs.push(name); }
+            });
+          });
+          // Determine primary artist for link (first voice artist, or first credit, or empty)
+          var primaryArtist = (cr.voiceArtists && cr.voiceArtists[0]) ? nameKey(cr.voiceArtists[0]) : '';
+          var artistSlug = ICON_MAP_NORM[primaryArtist] ? primaryArtist : '';
+          // Try to find matching profile slug
+          var SLUG_MAP = { 'joielectric':'joi-electric','loonaLicks':'loona-licks','loona licks':'loona-licks','misskittensk':'misskittensk','hisbadgirl77':'hisbadgirl77','hisbadgirl':'hisbadgirl77','wellnobodysperfect':'wellnobodysperfect','naughtiwolf':'naughtiwolf','lotuskitty':'lotus-kitty' };
+          var profileSlug = SLUG_MAP[primaryArtist] || '';
           var hash = title ? '#play=' + encodeURIComponent(title) : '';
-          var link = artist ? 'profiles/' + artist + '.html' + hash : 'catalog.html' + hash;
+          var link = profileSlug ? 'profiles/' + profileSlug + '.html' + hash : 'catalog.html' + hash;
           var desc = e.shortDesc || e.desc || '';
           if(desc.length > 100) desc = desc.slice(0,97) + '…';
-          var iconSrc = ARTIST_ICONS[artist.toLowerCase()] || FALLBACK_ICON;
-          var iconBarHtml = '<div class="recent-card-icon-bar"><img src="'+iconSrc+'" alt="'+artist+'"></div>';
+          var iconBarHtml = contribs.length
+            ? '<div class="recent-card-icon-bar">' + contribs.map(contributorIcon).join('') + '</div>'
+            : '';
           return '<a class="recent-card" href="'+link+'">'
             + iconBarHtml
             + '<div class="recent-card-top">'
             +   '<span class="recent-badge">New</span>'
-            +   (artist ? '<div class="recent-artist-row"><span class="recent-artist">'+artist+'</span></div>' : '')
             + '</div>'
-            + '<div class="recent-title">' + (e.title||'Untitled') + '</div>'
+            + '<div class="recent-title">' + (title||'Untitled') + '</div>'
             + (desc ? '<div class="recent-desc">'+desc+'</div>' : '')
             + (tagsHtml ? '<div class="recent-tags">'+tagsHtml+'</div>' : '')
             + (e.date ? '<div class="recent-date">'+e.date+'</div>' : '')
