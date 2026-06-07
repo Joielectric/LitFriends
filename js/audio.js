@@ -532,7 +532,8 @@
       btn.className = 'ag-artist-icon-btn';
       btn.dataset.artist = slug;
       const iconSrc = ARTIST_ICONS[slug] || '/images/CA_ICON.png';
-      btn.innerHTML = `<img src="${iconSrc}" alt="${label}"><span>${label}</span>`;
+      const initials = label.split(' ').map(w => w[0]).join('').toUpperCase();
+      btn.innerHTML = `<img src="${iconSrc}" alt="${label}"><span>${initials}</span>`;
       btn.addEventListener('click', () => {
         if (activeArtist === slug) {
           activeArtist = '';
