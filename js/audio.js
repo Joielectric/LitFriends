@@ -496,10 +496,18 @@
   }
 
   // ── Filters (catalog) ─────────────────────────────────────────────────────
+  const TOP_TAGS_LIMIT = 12;
+
   function initFilters(allEntries, container) {
-    const allTagSet = [...new Set(allEntries.flatMap(e => e.tags || []))].sort();
+    // Count tag frequency, keep top N non-gender tags
+    const tagCount = {};
+    allEntries.forEach(e => (e.tags || []).forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; }));
+    const allTagSet = [...new Set(allEntries.flatMap(e => e.tags || []))];
     const genderTagsPresent = GENDER_TAGS.filter(t => allTagSet.includes(t));
-    const otherTags = allTagSet.filter(t => !isGenderTag(t));
+    const otherTags = allTagSet
+      .filter(t => !isGenderTag(t))
+      .sort((a, b) => (tagCount[b] || 0) - (tagCount[a] || 0))
+      .slice(0, TOP_TAGS_LIMIT);
 
     // Active selections
     const activeTags = new Set();
@@ -532,7 +540,8 @@
       btn.className = 'ag-artist-icon-btn';
       btn.dataset.artist = slug;
       const iconSrc = ARTIST_ICONS[slug] || '/images/CA_ICON.png';
-      btn.innerHTML = `<img src="${iconSrc}" alt="${label}"><span>${label}</span>`;
+      const initials = label.split(' ').map(w => w[0]).join('').toUpperCase();
+      btn.innerHTML = `<img src="${iconSrc}" alt="${label}"><span>${initials}</span>`;
       btn.addEventListener('click', () => {
         if (activeArtist === slug) {
           activeArtist = '';
