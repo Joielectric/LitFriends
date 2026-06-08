@@ -219,6 +219,7 @@
       text-decoration: none; color: inherit;
       transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
       position: relative; overflow: hidden;
+      cursor: pointer;
     }
     .recent-card::before {
       content: "";
@@ -1004,14 +1005,15 @@
           return (b.date||'').localeCompare(a.date||'');
         }).slice(0, 5);
         if(!entries.length){ grid.innerHTML = '<div class="recent-loading">No audio yet.</div>'; return; }
-        grid.innerHTML = entries.map(function(e){
+
+        // Build cards — store entry index on each card for modal
+        grid.innerHTML = entries.map(function(e, idx){
           var tags = (e.tags||[]).slice(0,5);
           var tagsHtml = tags.map(function(t){
             var isGender = GENDER_TAGS.indexOf(t.toLowerCase()) !== -1;
             return '<span class="recent-tag'+(isGender?' gender':'')+'">' + t + '</span>';
           }).join('');
           var title = e.title || '';
-          // Gather all unique contributors from credits
           var cr = e.credits || {};
           var seen = {};
           var contribs = [];
@@ -1021,32 +1023,98 @@
               if (!seen[k]) { seen[k] = true; contribs.push(name); }
             });
           });
-          // Determine primary artist for link (first voice artist, or first credit, or empty)
-          var primaryArtist = (cr.voiceArtists && cr.voiceArtists[0]) ? nameKey(cr.voiceArtists[0]) : '';
-          var artistSlug = ICON_MAP_NORM[primaryArtist] ? primaryArtist : '';
-          // Try to find matching profile slug
-          var SLUG_MAP = { 'joielectric':'joi-electric','loonaLicks':'loona-licks','loona licks':'loona-licks','misskittensk':'misskittensk','hisbadgirl77':'hisbadgirl77','hisbadgirl':'hisbadgirl77','wellnobodysperfect':'wellnobodysperfect','naughtiwolf':'naughtiwolf','lotuskitty':'lotus-kitty' };
-          var profileSlug = SLUG_MAP[primaryArtist] || '';
-          var hash = title ? '#play=' + encodeURIComponent(title) : '';
-          var link = profileSlug ? 'profiles/' + profileSlug + '.html' + hash : 'catalog.html' + hash;
           var desc = e.shortDesc || e.desc || '';
           if(desc.length > 100) desc = desc.slice(0,97) + '…';
           var iconBarHtml = contribs.length
             ? '<div class="recent-card-icon-bar">' + contribs.map(contributorIcon).join('') + '</div>'
             : '';
-          return '<a class="recent-card" href="'+link+'">'
+          return '<div class="recent-card" data-idx="'+idx+'" role="button" tabindex="0">'
             + iconBarHtml
-            + '<div class="recent-card-top">'
-            +   '<span class="recent-badge">New</span>'
-            + '</div>'
+            + '<div class="recent-card-top"><span class="recent-badge">New</span></div>'
             + '<div class="recent-title">' + (title||'Untitled') + '</div>'
             + (desc ? '<div class="recent-desc">'+desc+'</div>' : '')
             + (tagsHtml ? '<div class="recent-tags">'+tagsHtml+'</div>' : '')
             + (e.date ? '<div class="recent-date">'+e.date+'</div>' : '')
-            + '</a>';
+            + '</div>';
         }).join('');
+
+        // Wire up click → modal
+        grid.querySelectorAll('.recent-card').forEach(function(card){
+          function open(){ openRecentModal(entries[+card.dataset.idx]); }
+          card.addEventListener('click', open);
+          card.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' ') open(); });
+        });
       })
       .catch(function(){ grid.innerHTML = '<div class="recent-loading">Could not load recent audio.</div>'; });
+
+    // ── Inline modal ──────────────────────────────────────────────────────────
+    var PROVIDERS = { soundgasm:{label:'Soundgasm',embed:false}, literotica:{label:'Literotica',embed:false}, audiochan:{label:'Audiochan',embed:true}, hotaudio:{label:'HotAudio',embed:false} };
+    var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
+    var currentModal = null;
+
+    function closeRecentModal(){
+      if(currentModal){ currentModal.remove(); currentModal=null; }
+      document.body.style.overflow='';
+    }
+
+    function openRecentModal(entry){
+      closeRecentModal();
+      document.body.style.overflow='hidden';
+      var links = Array.isArray(entry.links)&&entry.links.length ? entry.links : (entry.provider&&entry.url ? [{provider:entry.provider,url:entry.url}] : []);
+      var tags = (entry.tags||[]).map(function(t){ return '<span style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:20px;border:1px solid rgba(200,180,170,0.3);color:var(--text-mid)">'+t+'</span>'; }).join('');
+      var credits = '';
+      if(entry.credits){ Object.entries(CREDIT_LABELS).forEach(function(pair){ var names=(entry.credits[pair[0]]||[]); if(names.length) credits+='<div style="font-size:0.78rem;line-height:1.5"><span style="display:block;color:var(--text-dim);font-size:0.66rem;letter-spacing:.08em;text-transform:uppercase">'+pair[1]+'</span><span style="color:var(--text-mid)">'+names.join(', ')+'</span></div>'; }); }
+      if(credits) credits='<div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.2rem">'+credits+'</div>';
+
+      function tabBody(link){
+        var prov = PROVIDERS[link.provider]||{label:link.provider,embed:false};
+        return (prov.embed
+          ? '<iframe style="width:100%;height:220px;border:none;border-radius:2px;background:#000" src="'+link.url+'" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>'
+          : '<div style="padding:1.4rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.9rem">Embedding not available for '+prov.label+'.</div>')
+          + '<a href="'+link.url+'" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;margin-top:0.8rem;padding:8px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(200,150,140,0.3);border-radius:2px;color:var(--text-mid);text-decoration:none;font-family:Cinzel,serif;font-size:0.72rem;letter-spacing:.06em;text-transform:uppercase;width:fit-content"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Open on '+prov.label+'</a>';
+      }
+
+      var tabsHtml = links.length > 1
+        ? '<div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">'
+          + links.map(function(lk,i){ var prov=PROVIDERS[lk.provider]||{label:lk.provider}; return '<button class="rm-tab" data-idx="'+i+'" style="padding:5px 14px;border:1px solid '+(i===0?'var(--coral)':'rgba(200,150,140,0.3)')+';background:'+(i===0?'rgba(232,99,79,.12)':'transparent')+';color:'+(i===0?'var(--coral)':'var(--text-dim)')+';font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;cursor:pointer">'+prov.label+'</button>'; }).join('')
+          + '</div>'
+        : '';
+
+      var overlay = document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;z-index:9100;background:rgba(6,3,6,0.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem';
+      overlay.addEventListener('click', function(ev){ if(ev.target===overlay) closeRecentModal(); });
+
+      var modal = document.createElement('div');
+      modal.style.cssText='background:var(--surface);border:1px solid var(--border-mid);border-radius:4px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:1.6rem;position:relative';
+      modal.innerHTML=
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem">'
+        +  '<div><div style="font-family:Cinzel,serif;font-size:1.05rem;letter-spacing:.05em;color:#fff;line-height:1.3">'+(entry.title||'Untitled')+'</div>'+(entry.date?'<div style="color:var(--text-dim);font-size:0.78rem;margin-top:3px">'+entry.date+'</div>':'')+'</div>'
+        +  '<button id="rm-close" style="background:none;border:none;color:var(--text-dim);font-size:1.4rem;cursor:pointer;line-height:1;padding:0 0 0 1rem;flex-shrink:0">&times;</button>'
+        +'</div>'
+        +(entry.desc?'<div style="color:var(--text-mid);font-size:0.9rem;line-height:1.7;margin-bottom:1rem">'+entry.desc+'</div>':'')
+        + tabsHtml
+        +'<div id="rm-body">'+(links.length ? tabBody(links[0]) : '<div style="color:var(--text-dim);font-style:italic">No links available.</div>')+'</div>'
+        +(tags?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:1rem">'+tags+'</div>':'')
+        + credits;
+
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+      currentModal = overlay;
+
+      modal.querySelector('#rm-close').addEventListener('click', closeRecentModal);
+
+      // Tab switching
+      modal.querySelectorAll('.rm-tab').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          modal.querySelectorAll('.rm-tab').forEach(function(b){
+            b.style.borderColor='rgba(200,150,140,0.3)'; b.style.background='transparent'; b.style.color='var(--text-dim)';
+          });
+          btn.style.borderColor='var(--coral)'; btn.style.background='rgba(232,99,79,.12)'; btn.style.color='var(--coral)';
+          modal.querySelector('#rm-body').innerHTML = tabBody(links[+btn.dataset.idx]);
+        });
+      });
+    }
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeRecentModal(); });
   })();
 </script>
 <script src="/js/nav.js"></script>
