@@ -267,6 +267,15 @@
     }
 
     /* === FOOTER === */
+    .back-nav {
+      padding: 1.4rem 0 0;
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.32em; text-transform: uppercase;
+    }
+    .back-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
+    .back-nav a:hover { color: var(--pink); }
+
     footer {
       text-align: center;
       padding: 2rem 1rem;
@@ -291,8 +300,8 @@
 
 <div class="page-wrap">
 
-  <nav style="padding: 1.2rem 0 0; margin-bottom: 0.5rem;">
-    <a href="../index.html" style="font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pink); text-decoration:none; opacity:0.75; transition:opacity .2s;">&#8592; Consenting Adults</a>
+  <nav class="back-nav">
+    <a href="../index.html">&#8592; Consenting Adults</a>
   </nav>
 
   <div class="banner-frame">
