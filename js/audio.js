@@ -156,6 +156,15 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 0.2rem;
 }
+.ag-row-desc {
+  color: var(--text-mid, #b09090);
+  font-size: 0.78rem;
+  font-style: italic;
+  line-height: 1.4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+  opacity: 0.85;
+}
 .ag-tags {
   display: flex; flex-wrap: wrap; gap: 3px;
 }
@@ -462,6 +471,7 @@
         <div class="ag-row-date">${entry.date || ''}</div>
         <div class="ag-row-main">
           <div class="ag-row-title">${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">— ' + artistBadges + '</span>' : ''}</div>
+          ${entry.shortDesc ? `<div class="ag-row-desc">${entry.shortDesc}</div>` : ''}
           ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
         </div>
         <div class="ag-row-platforms">${platformPills}</div>
