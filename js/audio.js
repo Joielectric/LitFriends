@@ -37,6 +37,17 @@
     'filthy-bunny':       '/images/Filthy_Bunny_Avatar_GreenEyes.png',
   };
 
+  const ARTIST_TAGLINES = {
+    'joi-electric':       'Producer · Editor · Musician · Sound Designer',
+    'loona-licks':        'Voice Artist · Collaborator · Currently on Hiatus',
+    'misskittensk':       'A decade of debauched erotic audio · Retired',
+    'hisbadgirl77':       'Voice Artist · Writer · Collaborator',
+    'wellnobodysperfect': 'Voice Artist · Funny · Delightfully Unpredictable',
+    'naughtiwolf':        'Voice Artist · BFE · Narrative Collaborator',
+    'lotus-kitty':        'Voice Artist · Demisexual · Storyteller',
+    'filthy-bunny':       'Voice Artist · Writer · Switchy Sub',
+  };
+
   const CREDIT_LABELS = {
     writers:      'Writer',
     voiceArtists: 'Voice',
@@ -120,6 +131,24 @@
 .ag-artist-icon-btn:hover { opacity: 0.85; border-color: rgba(232,99,79,0.5); }
 .ag-artist-icon-btn.active { opacity: 1; border-color: var(--coral, #e8634f); box-shadow: 0 0 10px rgba(232,99,79,0.35); }
 .ag-artist-icon-btn.active span { color: var(--coral, #e8634f); }
+.ag-artist-icon-btn { position: relative; }
+.ag-artist-tooltip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--surface-3, #222); border: 1px solid var(--border-mid, rgba(255,255,255,.22));
+  border-radius: 4px; padding: 6px 10px; white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity .15s; z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,.5);
+}
+.ag-artist-icon-btn:hover .ag-artist-tooltip { opacity: 1; }
+.ag-artist-tooltip-name {
+  display: block; font-family: "Cinzel", serif; font-size: 0.62rem;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--silver-hi, #f5f0ea);
+  margin-bottom: 2px;
+}
+.ag-artist-tooltip-tag {
+  display: block; font-size: 0.68rem; font-style: italic;
+  color: var(--text-mid, #b09090); line-height: 1.4;
+}
 
 /* Track list */
 .ag-grid {
@@ -553,7 +582,13 @@
       btn.dataset.artist = slug;
       const iconSrc = ARTIST_ICONS[slug] || '/images/CA_ICON.png';
       const initials = label.split(' ').map(w => w[0]).join('').toUpperCase();
-      btn.innerHTML = `<img src="${iconSrc}" alt="${label}"><span>${initials}</span>`;
+      const tagline = ARTIST_TAGLINES[slug] || '';
+      btn.innerHTML = `
+        <div class="ag-artist-tooltip">
+          <span class="ag-artist-tooltip-name">${label}</span>
+          ${tagline ? `<span class="ag-artist-tooltip-tag">${tagline}</span>` : ''}
+        </div>
+        <img src="${iconSrc}" alt="${label}"><span>${initials}</span>`;
       btn.addEventListener('click', () => {
         if (activeArtist === slug) {
           activeArtist = '';
