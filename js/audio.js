@@ -23,6 +23,7 @@
     'wellnobodysperfect': "Well Nobody's Perfect",
     'naughtiwolf':        'NaughtiWolf',
     'lotus-kitty':        'Lotus Kitty',
+    'filthy-bunny':       'Filthy Bunny',
   };
 
   const ARTIST_ICONS = {
@@ -30,9 +31,10 @@
     'loona-licks':        '/images/LL_Icon.png',
     'misskittensk':       '/images/MissKittenSKClub.png',
     'hisbadgirl77':       '/images/HBG_WIngs.png',
-    'wellnobodysperfect': '/images/CA_ICON.png',
+    'wellnobodysperfect': '/images/WNP_Icon.png',
     'naughtiwolf':        '/images/NW_Icon.png',
     'lotus-kitty':        '/images/LK_Icon.png',
+    'filthy-bunny':       '/images/Filthy_Bunny_Avatar_GreenEyes.png',
   };
 
   const CREDIT_LABELS = {
