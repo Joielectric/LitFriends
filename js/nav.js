@@ -15,6 +15,8 @@
       { label: 'Well Nobody\'s Perfect', href: root + 'profiles/wellnobodysperfect.html' },
       { label: 'NaughtiWolf',            href: root + 'profiles/naughtiwolf.html' },
       { label: 'Lotus Kitty',            href: root + 'profiles/lotus-kitty.html' },
+      { label: 'Filthy Bunny',           href: root + 'profiles/filthy-bunny.html' },
+      { label: 'LaSphynxxx',             href: root + 'profiles/la-sphynxxx.html' },
     ]},
     { label: 'Tools',   href: root + 'tools.html', admin: true },
   ];
