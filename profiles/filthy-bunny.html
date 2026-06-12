@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/Filthy_Bunny_Avatar.png">
+  <link rel="apple-touch-icon" href="../images/Filthy_Bunny_Avatar.png">
+  <title>Filthy Bunny — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e090b;
+      --surface: #1a1013;
+      --surface-2: #221519;
+      --surface-3: #2c1c20;
+      --crimson: #9b2035;
+      --wine: #b03050;
+      --rose: #c85070;
+      --amber: #c8903a;
+      --amber-pale: rgba(200,144,58,0.08);
+      --wine-pale: rgba(176,48,80,0.08);
+      --text: #f5ece8;
+      --text-mid: #d4a8a0;
+      --text-dim: #8a5858;
+      --silver: #e0ccc8;
+      --silver-hi: #f8f0ee;
+      --border: rgba(176,48,80,0.28);
+      --border-mid: rgba(176,48,80,0.48);
+      --border-hi: rgba(200,80,112,0.7);
+      --radius: 3px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(155,32,53,0.3) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 35% at 15% 60%, rgba(200,144,58,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 85% 40%, rgba(155,32,53,0.08) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .page-wrap {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+
+    /* === BACK NAV === */
+    .back-nav {
+      padding: 1.4rem 0 0;
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.32em; text-transform: uppercase;
+    }
+    .back-nav a { color: var(--text-dim); text-decoration: none; transition: color 0.25s; }
+    .back-nav a:hover { color: var(--wine); }
+
+    /* === BANNER === */
+    .banner-frame {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: 3px solid var(--crimson);
+      overflow: hidden;
+      margin-top: 1rem;
+      margin-bottom: 0;
+    }
+    .banner-frame img {
+      width: 100%; height: auto; display: block;
+      max-height: 300px; object-fit: cover; object-position: center 30%;
+    }
+
+    /* === INTRO === */
+    .page-intro {
+      text-align: center;
+      padding: 3rem 1rem 2.2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+    .intro-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--text-dim); display: block; margin-bottom: 1rem;
+    }
+    .page-intro h1 {
+      font-family: "Great Vibes", cursive;
+      font-size: clamp(3.2rem, 9vw, 5.5rem);
+      font-weight: 400;
+      color: var(--rose);
+      line-height: 1.1; margin-bottom: 0.4rem;
+      filter: drop-shadow(0 2px 18px rgba(155,32,53,0.5)) drop-shadow(0 0 40px rgba(200,80,100,0.25));
+    }
+    .intro-script {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 1.4rem; display: block;
+    }
+    .divider {
+      display: flex; align-items: center; gap: 1rem;
+      justify-content: center; margin: 1.4rem auto; max-width: 260px;
+    }
+    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
+    .divider i {
+      width: 5px; height: 5px; background: var(--wine);
+      transform: rotate(45deg); display: inline-block;
+    }
+    .intro-tagline {
+      font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+      font-style: italic; color: var(--text-mid);
+      max-width: 480px; margin: 0 auto; line-height: 1.85;
+    }
+
+    /* === SECTION === */
+    .section { margin-bottom: 3rem; }
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.6rem;
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+
+    /* === BIO === */
+    .bio {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--crimson);
+      border-radius: var(--radius);
+      padding: 1.8rem 2rem;
+    }
+    .bio p {
+      font-size: 1.05rem; color: var(--text-mid); line-height: 1.95;
+    }
+    .bio p + p { margin-top: 1rem; }
+
+    /* === TRAITS === */
+    .traits {
+      display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.6rem;
+    }
+    .trait {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 0.88rem; font-style: italic;
+      padding: 0.32rem 1.1rem;
+      border-radius: 999px; border: 1px solid;
+      line-height: 1.4;
+    }
+    .trait-wine    { color: var(--wine);   border-color: var(--wine);   background: var(--wine-pale); }
+    .trait-amber   { color: var(--amber);  border-color: rgba(200,144,58,0.5); background: var(--amber-pale); }
+    .trait-silver  { color: var(--silver); border-color: var(--border-mid); background: rgba(224,204,200,0.05); }
+
+    /* === BLOCKQUOTE === */
+    blockquote {
+      margin-top: 1.6rem;
+      padding: 1rem 1.4rem 0.9rem 1.6rem;
+      border-left: 3px solid var(--wine);
+      background: rgba(176,48,80,0.07);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    blockquote p {
+      font-family: "Great Vibes", cursive;
+      font-size: 1.5rem !important;
+      color: var(--rose) !important;
+      line-height: 1.5 !important;
+      font-style: normal !important;
+    }
+    blockquote cite {
+      display: block; margin-top: 0.4rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* === PLATFORM LINKS === */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+    .platform-link {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none; color: var(--text-mid);
+      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
+    }
+    .platform-link:hover {
+      border-color: var(--wine);
+      box-shadow: 0 0 20px rgba(155,32,53,0.2);
+      color: var(--text);
+    }
+    .platform-icon {
+      width: 38px; height: 38px; border-radius: var(--radius);
+      background: rgba(176,48,80,0.12);
+      border: 1px solid var(--border-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 0.55rem; font-weight: 600;
+      color: var(--wine); flex-shrink: 0; letter-spacing: 0.05em;
+    }
+    .platform-info { flex: 1; min-width: 0; }
+    .platform-name {
+      font-family: "Cinzel", serif; font-size: 0.65rem;
+      letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+      color: var(--silver); display: block; margin-bottom: 0.2rem;
+    }
+    .platform-desc { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+    .platform-arrow {
+      color: var(--text-dim); font-size: 0.9rem;
+      transition: color 0.25s, transform 0.25s;
+    }
+    .platform-link:hover .platform-arrow { color: var(--wine); transform: translateX(3px); }
+
+    /* === AUDIO WORKS === */
+    #audio-grid {
+      --surface-2: var(--surface-2);
+      --border: rgba(176,48,80,0.28);
+      --border-mid: rgba(176,48,80,0.48);
+      --text: #f5ece8;
+      --text-mid: #d4a8a0;
+      --text-dim: #8a5858;
+      --silver: #e0ccc8;
+      --silver-hi: #f8f0ee;
+      --coral: #b03050;
+      --radius: 3px;
+    }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      border-top: 1px solid var(--border); margin-top: 3rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      .platforms { grid-template-columns: 1fr; }
+      .bio { padding: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="banner-frame">
+    <img src="../images/FB_BannerOne.png" alt="Filthy Bunny">
+  </div>
+
+  <nav class="back-nav">
+    <a href="../index.html">&#8592; Consenting Adults</a>
+  </nav>
+
+  <div class="page-intro">
+    <span class="intro-eyebrow">Artist Profile &nbsp;&middot;&nbsp; Consenting Adults</span>
+    <h1>Filthy Bunny</h1>
+    <span class="intro-script">Voice Artist &nbsp;&middot;&nbsp; Writer &nbsp;&middot;&nbsp; Storyteller</span>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <p class="intro-tagline">Versatile, creative and uninhibited in her approach to sexuality — bringing life to her characters through nuance, vulnerability &amp; nurturing.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">About</div>
+    <div class="bio">
+      <p>Filthy Bunny is a voice artist, writer, and storyteller who defies the expected. Versatile, creative, and utterly uninhibited in her approach to sexuality, she brings her characters to life through nuance, vulnerability, and warmth.</p>
+      <p>Whether she's playing the tender caretaker or the playful sub who knows exactly what she wants, there's an honesty to everything she creates. She doesn't perform — she embodies.</p>
+
+      <blockquote>
+        <p>Self Love is Self Care.</p>
+        <cite>— Filthy Bunny</cite>
+      </blockquote>
+
+      <div class="traits">
+        <span class="trait trait-wine">Switchy Sub</span>
+        <span class="trait trait-wine">Voice Artist</span>
+        <span class="trait trait-amber">Writer</span>
+        <span class="trait trait-amber">Storyteller</span>
+        <span class="trait trait-silver">Nuanced</span>
+        <span class="trait trait-silver">Nurturing</span>
+        <span class="trait trait-silver">Uninhibited</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Find Me</div>
+    <div class="platforms">
+
+      <a class="platform-link" href="https://www.literotica.com/authors/Filthy_Bunny" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIT</div>
+        <div class="platform-info">
+          <span class="platform-name">Literotica</span>
+          <span class="platform-desc">Stories &amp; audio works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://audiochan.com/u/Filthy_Bunny" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">AC</div>
+        <div class="platform-info">
+          <span class="platform-name">AudioChan</span>
+          <span class="platform-desc">Audio works &amp; recordings</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.reddit.com/user/Filthy_Bunny4u/" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">RDT</div>
+        <div class="platform-info">
+          <span class="platform-name">Reddit</span>
+          <span class="platform-desc">Community &amp; discussion</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://throne.com/filthy_bunny4u" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">THR</div>
+        <div class="platform-info">
+          <span class="platform-name">Throne</span>
+          <span class="platform-desc">Wishlist &amp; support</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Audio Works</div>
+    <div id="audio-grid"></div>
+  </div>
+
+</div>
+
+<footer>
+  Consenting Adults &mdash; 18+ only &mdash; All rights reserved
+</footer>
+
+<script src="/js/audio.js"></script>
+<script>
+  AudioGrid.init({ container: '#audio-grid', artist: 'filthy-bunny' });
+</script>
+</body>
+</html>
