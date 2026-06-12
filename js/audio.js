@@ -24,6 +24,7 @@
     'naughtiwolf':        'NaughtiWolf',
     'lotus-kitty':        'Lotus Kitty',
     'filthy-bunny':       'Filthy Bunny',
+    'la-sphynxxx':        'LaSphynxxx',
   };
 
   const ARTIST_ICONS = {
@@ -35,6 +36,7 @@
     'naughtiwolf':        '/images/NW_Icon.png',
     'lotus-kitty':        '/images/LK_Icon.png',
     'filthy-bunny':       '/images/Filthy_Bunny_Avatar_GreenEyes.png',
+    'la-sphynxxx':        '/images/LS_ICON.png',
   };
 
   const ARTIST_TAGLINES = {
@@ -46,6 +48,7 @@
     'naughtiwolf':        'Voice Artist · BFE · Narrative Collaborator',
     'lotus-kitty':        'Voice Artist · Demisexual · Storyteller',
     'filthy-bunny':       'Voice Artist · Writer · Switchy Sub',
+    'la-sphynxxx':        'Voice Artist · Singer · Free Content · Open Requests',
   };
 
   const CREDIT_LABELS = {

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/LS_ICON.png">
+  <link rel="apple-touch-icon" href="../images/LS_ICON.png">
+  <link rel="manifest" href="../manifest-ca.json">
+  <title>LaSphynxxx — Consenting Adults</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08060a;
+      --surface: #110d14;
+      --surface-2: #1a1420;
+      --surface-3: #221b2c;
+      --gold: #c8a432;
+      --gold-bright: #e0bc4a;
+      --gold-pale: rgba(200,164,50,0.08);
+      --onyx: #1c1824;
+      --text: #f5f0e8;
+      --text-mid: #d4c49c;
+      --text-dim: #8a7a5a;
+      --silver: #e8dcc8;
+      --silver-hi: #faf4e8;
+      --border: rgba(200,164,50,0.2);
+      --border-mid: rgba(200,164,50,0.38);
+      --border-hi: rgba(224,188,74,0.65);
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 100%, rgba(200,164,50,0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 10% 50%, rgba(160,100,200,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 90% 30%, rgba(200,164,50,0.06) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .page-wrap {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+
+    /* === BANNER === */
+    .banner-frame {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-bottom: 3px solid var(--gold);
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+    .banner-frame img {
+      width: 100%; height: auto; display: block;
+      max-height: 300px; object-fit: cover; object-position: center 40%;
+    }
+
+    /* === BREADCRUMB === */
+    .breadcrumb-nav {
+      padding: 1.2rem 0 0;
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: "Cinzel", serif; font-size: 0.62rem;
+      letter-spacing: 0.32em; text-transform: uppercase;
+    }
+    .breadcrumb-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
+    .breadcrumb-nav a:hover { color: var(--gold-bright); }
+    .bc-sep { color: var(--text-dim); }
+    .bc-current { color: var(--silver); }
+
+    /* === INTRO === */
+    .page-intro {
+      text-align: center;
+      padding: 3rem 1rem 2.2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .intro-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--text-dim); display: block; margin-bottom: 1rem;
+    }
+
+    .page-intro h1 {
+      font-family: "Great Vibes", cursive;
+      font-size: clamp(3.5rem, 10vw, 6rem);
+      font-weight: 400;
+      line-height: 1.05; margin-bottom: 0.3rem;
+      background: linear-gradient(135deg, #f5e8a0 0%, var(--gold-bright) 45%, #b88820 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 20px rgba(200,164,50,0.45));
+    }
+
+    .intro-script {
+      font-family: "Cinzel", serif;
+      font-size: 0.65rem; letter-spacing: 0.42em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1.4rem; display: block;
+    }
+
+    .divider {
+      display: flex; align-items: center; gap: 1rem;
+      justify-content: center; margin: 1.4rem auto; max-width: 260px;
+    }
+    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
+    .divider i {
+      width: 6px; height: 6px; background: var(--gold);
+      transform: rotate(45deg); display: inline-block;
+    }
+
+    .intro-tagline {
+      font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+      font-style: italic; color: var(--text-mid);
+      max-width: 500px; margin: 0 auto; line-height: 1.85;
+    }
+
+    /* === SECTION === */
+    .section { margin-bottom: 3rem; }
+
+    .section-label {
+      font-family: "Cinzel", serif;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--silver);
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.6rem;
+      padding-left: 0.8rem;
+      border-left: 2px solid var(--gold);
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    /* === BIO === */
+    .bio {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 1.8rem 2rem;
+    }
+
+    .bio p {
+      font-size: 1.05rem; color: var(--text-mid); line-height: 1.95;
+    }
+    .bio p + p { margin-top: 1rem; }
+
+    blockquote {
+      margin-top: 1.6rem;
+      padding: 1rem 1.4rem 0.9rem 1.6rem;
+      border-left: 3px solid var(--gold);
+      background: var(--gold-pale);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    blockquote p {
+      font-family: "Great Vibes", cursive;
+      font-size: 1.6rem !important;
+      color: var(--gold-bright) !important;
+      line-height: 1.5 !important;
+      font-style: normal !important;
+    }
+    blockquote cite {
+      display: block; margin-top: 0.4rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* === SUPPORT NOTE === */
+    .support-note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.6rem;
+      font-size: 0.95rem;
+      color: var(--text-mid);
+      line-height: 1.8;
+      font-style: italic;
+    }
+
+    /* === PLATFORM LINKS === */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .platform-link {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none; color: var(--text-mid);
+      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
+    }
+    .platform-link:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 22px rgba(200,164,50,0.2);
+      color: var(--text);
+    }
+
+    .platform-icon {
+      width: 38px; height: 38px; border-radius: var(--radius);
+      background: var(--gold-pale);
+      border: 1px solid var(--border-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 0.55rem; font-weight: 600;
+      color: var(--gold-bright); flex-shrink: 0; letter-spacing: 0.05em;
+    }
+
+    .platform-info { flex: 1; min-width: 0; }
+
+    .platform-name {
+      font-family: "Cinzel", serif; font-size: 0.65rem;
+      letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+      color: var(--silver); display: block; margin-bottom: 0.2rem;
+    }
+
+    .platform-desc { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+
+    .platform-arrow {
+      color: var(--text-dim); font-size: 0.9rem;
+      transition: color 0.25s, transform 0.25s;
+    }
+    .platform-link:hover .platform-arrow { color: var(--gold-bright); transform: translateX(3px); }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      border-top: 1px solid var(--border); margin-top: 3rem;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      .platforms { grid-template-columns: 1fr; }
+      .bio { padding: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="banner-frame">
+    <img src="../images/LaSphynxxx1.png" alt="LaSphynxxx">
+  </div>
+
+  <nav class="breadcrumb-nav">
+    <a href="../index.html">&#8592; Consenting Adults</a>
+    <span class="bc-sep">/</span>
+    <span class="bc-current">LaSphynxxx</span>
+  </nav>
+
+  <div class="page-intro">
+    <span class="intro-eyebrow">Artist Profile &nbsp;&middot;&nbsp; Consenting Adults</span>
+    <h1>LaSphynxxx</h1>
+    <span class="intro-script">Voice Artist &nbsp;&middot;&nbsp; Singer &nbsp;&middot;&nbsp; Erotic Audio</span>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <p class="intro-tagline">Enigmatic. Gifted. Impossible to define — and absolutely impossible to forget.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">About</div>
+    <div class="bio">
+      <p>LaSphynxxx is a rare and genuinely gifted creator — a voice artist and singer whose work carries the kind of warmth and authenticity that's difficult to manufacture and impossible to fake. She brings an openness to everything she does, welcoming feedback, chasing growth, and always reaching for something better.</p>
+      <p>Driven by a commitment to keep her content free, LaSphynxxx is building something real — a growing catalog shaped by listener requests, honest connection, and a voice that commands attention the moment it fills a room.</p>
+
+      <blockquote>
+        <p>I aim to please.</p>
+        <cite>— LaSphynxxx</cite>
+      </blockquote>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">A Note from Sphynxxx</div>
+    <div class="support-note">
+      Hi!! I hope you enjoy my audios :) Whether you liked it or not, I really appreciate any feedback so I can improve and hone my craft. I'm always looking for new ideas for audios so send me your requests — I aim to please 😉<br><br>
+      I aim to make all my content <strong>FREE</strong>. Your support will help me and my production grow as I hone my craft. Please feel free to contact me with any and all questions, requests, and constructive feedback!
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Find Me</div>
+    <div class="platforms">
+
+      <a class="platform-link" href="https://www.literotica.com/authors/laSphynxxx" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LIT</div>
+        <div class="platform-info">
+          <span class="platform-name">Literotica</span>
+          <span class="platform-desc">Stories &amp; audio works</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://linktr.ee/lasphynxxx" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">LTR</div>
+        <div class="platform-info">
+          <span class="platform-name">LinkTree</span>
+          <span class="platform-desc">All links &amp; resources</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+      <a class="platform-link" href="https://www.reddit.com/r/lasphynxxx/" target="_blank" rel="noopener noreferrer">
+        <div class="platform-icon">RDT</div>
+        <div class="platform-info">
+          <span class="platform-name">Reddit</span>
+          <span class="platform-desc">Community &amp; posts</span>
+        </div>
+        <span class="platform-arrow">&#8594;</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Audio Works</div>
+    <div id="audio-grid"></div>
+  </div>
+
+</div>
+
+<footer>
+  LaSphynxxx &mdash; Consenting Adults &mdash; 18+ only
+</footer>
+
+<script src="/js/audio.js"></script>
+<script>
+  AudioGrid.init({ container: '#audio-grid', artist: 'la-sphynxxx' });
+</script>
+</body>
+</html>
