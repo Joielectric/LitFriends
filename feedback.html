@@ -88,18 +88,24 @@ body::before {
 .intro-text { font-size: 0.92rem; color: var(--text-mid); max-width: 480px; margin: 0 auto; line-height: 1.85; }
 
 /* === PRIZE BANNER === */
-.prize-banner { border: 1px solid var(--border-mid); border-top: 2px solid var(--electric-dim); background: rgba(91,141,232,0.05); border-radius: var(--radius); padding: 1.5rem 1.2rem; margin-bottom: 2rem; }
-.prize-header { font-family: "Cinzel", serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.35em; color: var(--electric); text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.7rem; }
-.prize-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+:root { --gold: #f4c542; --gold-dim: #8a6a1a; }
+@keyframes prize-glow { 0%, 100% { box-shadow: 0 0 14px rgba(244,197,66,0.18), 0 0 0 1px rgba(244,197,66,0.3) inset; } 50% { box-shadow: 0 0 28px rgba(244,197,66,0.4), 0 0 0 1px rgba(244,197,66,0.55) inset; } }
+@keyframes prize-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.prize-banner { position: relative; border: 1px solid rgba(244,197,66,0.4); border-top: 2px solid var(--gold); background: linear-gradient(160deg, rgba(244,197,66,0.1), rgba(91,141,232,0.05)); border-radius: var(--radius); padding: 1.7rem 1.3rem; margin-bottom: 2rem; animation: fadeUp 0.5s ease both 0.1s, prize-glow 3.2s ease-in-out infinite; overflow: hidden; }
+.prize-header { font-family: "Cinzel", serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.35em; color: var(--gold); text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.7rem; text-shadow: 0 0 12px rgba(244,197,66,0.5); }
+.prize-header::before { content: "\2605"; font-size: 0.9rem; }
+.prize-header::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--gold-dim), transparent); }
 .prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
-.prize-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; }
-.prize-tier { font-family: "Cinzel", serif; font-size: 0.58rem; letter-spacing: 0.3em; color: var(--electric); text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
-.prize-card h3 { font-family: "Cormorant Garamond", serif; font-size: 1.1rem; font-weight: 400; color: var(--silver-hi); margin-bottom: 0.2rem; }
+.prize-card { position: relative; background: var(--surface-2); border: 1px solid rgba(244,197,66,0.22); border-radius: var(--radius); padding: 1rem 1.1rem; transition: transform 0.25s, border-color 0.25s; }
+.prize-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+.prize-card:first-child { background: linear-gradient(160deg, rgba(244,197,66,0.12), var(--surface-2)); border-color: rgba(244,197,66,0.45); }
+.prize-tier { font-family: "Cinzel", serif; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
+.prize-card h3 { font-family: "Cormorant Garamond", serif; font-size: 1.15rem; font-weight: 500; color: var(--silver-hi); margin-bottom: 0.2rem; }
 .prize-card p { font-size: 0.82rem; color: var(--text-mid); line-height: 1.6; }
-.prize-dates { font-size: 0.84rem; color: var(--text); border-top: 1px solid var(--border); padding-top: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; }
-.prize-dates strong { color: var(--silver-hi); font-weight: 600; }
+.prize-dates { font-size: 0.84rem; color: var(--text); border-top: 1px solid rgba(244,197,66,0.2); padding-top: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.prize-dates strong { color: var(--gold); font-weight: 600; }
 .announce-platforms { margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-mid); }
-.announce-platforms span { color: var(--electric); font-weight: 500; }
+.announce-platforms span { color: var(--gold); font-weight: 500; }
 .announce-platforms a { color: white; text-decoration: underline; }
 
 /* === AGE GATE === */
@@ -201,8 +207,10 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: v
 .tone-value { text-align: center; font-family: "Cormorant Garamond", serif; font-size: 1rem; font-style: italic; color: var(--silver); margin-top: 0.4rem; }
 
 /* === CONTEST FIELDS === */
-.contest-fields { display: none; border: 1px solid var(--border); border-top: 2px solid var(--electric-dim); background: rgba(91,141,232,0.04); border-radius: var(--radius); padding: 1.3rem 1.2rem; margin-top: 1rem; }
-.contest-fields.visible { display: block; }
+.contest-fields { display: none; border: 1px solid rgba(244,197,66,0.35); border-top: 2px solid var(--gold); background: linear-gradient(160deg, rgba(244,197,66,0.07), rgba(91,141,232,0.04)); border-radius: var(--radius); padding: 1.3rem 1.2rem; margin-top: 1rem; }
+.contest-fields.visible { display: block; animation: fadeUp 0.4s ease both; }
+.radio-item:has(input[name="contest_enter"][value="Yes"]) span { color: var(--gold); font-weight: 600; }
+.radio-item:has(input[name="contest_enter"][value="Yes"]:checked) { border-color: var(--gold); background: rgba(244,197,66,0.1); animation: prize-glow 3.2s ease-in-out infinite; }
 .comfort-note { border: 1px solid rgba(180,195,225,0.15); border-left: 3px solid var(--silver); background: var(--surface-2); border-radius: var(--radius); padding: 1.1rem 1.2rem; margin-top: 1.4rem; font-size: 0.82rem; color: var(--text); line-height: 1.8; }
 .comfort-note strong { display: block; font-size: 0.68rem; font-family: "Cinzel", serif; letter-spacing: 0.2em; color: var(--silver-hi); text-transform: uppercase; margin-bottom: 0.5rem; }
 .comfort-note ul { list-style: disc; margin: 0.5rem 0 0.5rem 1.2rem; padding: 0; }
@@ -254,7 +262,6 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .page-intro { animation: fadeUp 0.5s ease both 0.05s; }
-.prize-banner { animation: fadeUp 0.5s ease both 0.1s; }
 </style>
 </head>
 <body>
