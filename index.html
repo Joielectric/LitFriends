@@ -67,6 +67,25 @@
         radial-gradient(ellipse 40% 30% at 80% 70%, rgba(180, 50, 90, 0.10) 0%, transparent 60%);
     }
 
+    /* === CURSOR GLOW === */
+    #cursor-glow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(232,99,79,0.16) 0%, rgba(192,57,74,0.07) 40%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      will-change: transform;
+    }
+    #cursor-glow.active { opacity: 1; }
+    @media (max-width: 768px), (hover: none) {
+      #cursor-glow { display: none; }
+    }
+
     .page {
       position: relative;
       z-index: 1;
@@ -217,17 +236,17 @@
       border-radius: 4px;
       padding: 1.1rem 1.3rem 1.2rem;
       text-decoration: none; color: inherit;
-      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.15s ease-out;
       position: relative; overflow: hidden;
       cursor: pointer;
     }
     .recent-card::before {
       content: "";
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(232,99,79,0.08) 0%, transparent 70%);
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(232,99,79,0.18) 0%, transparent 60%);
       opacity: 0; transition: opacity 0.3s;
     }
-    .recent-card:hover { border-color: var(--coral); box-shadow: 0 0 28px rgba(232,99,79,0.2), 0 6px 20px rgba(0,0,0,0.4); transform: translateY(-3px); }
+    .recent-card:hover { border-color: var(--coral); box-shadow: 0 0 28px rgba(232,99,79,0.2), 0 6px 20px rgba(0,0,0,0.4); }
     .recent-card:hover::before { opacity: 1; }
 
     .recent-card-top {
@@ -329,17 +348,18 @@
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 2rem 1.6rem;
-      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.15s ease-out;
       position: relative;
       overflow: hidden;
       color: inherit;
+      transform: perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0);
     }
 
     .artist-card::before {
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(232, 99, 79, 0.1) 0%, transparent 70%);
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(232, 99, 79, 0.22) 0%, transparent 60%);
       opacity: 0;
       transition: opacity 0.4s;
     }
@@ -347,7 +367,6 @@
     .artist-card:hover {
       border-color: var(--coral);
       box-shadow: 0 0 30px rgba(232, 99, 79, 0.18), 0 8px 24px rgba(0,0,0,0.5);
-      transform: translateY(-4px);
     }
 
     .artist-card:hover::before { opacity: 1; }
@@ -692,6 +711,7 @@
 <canvas id="stars"></canvas>
 <canvas id="waveform"></canvas>
 <div class="bg-glow"></div>
+<div id="cursor-glow"></div>
 
 <div class="page">
 
@@ -883,6 +903,54 @@
     ageNo.addEventListener("click", function(){
       window.location.href = "https://www.google.com";
     });
+  })();
+
+  // Cursor glow + card tilt/spotlight
+  (function(){
+    if (window.matchMedia && window.matchMedia("(hover: none)").matches) return;
+
+    var glow = document.getElementById("cursor-glow");
+    var raf = null, tx = 0, ty = 0;
+    document.addEventListener("mousemove", function(e){
+      tx = e.clientX; ty = e.clientY;
+      glow.classList.add("active");
+      if (!raf) {
+        raf = requestAnimationFrame(function(){
+          glow.style.transform = "translate(" + tx + "px," + ty + "px) translate(-50%,-50%)";
+          raf = null;
+        });
+      }
+    });
+    document.addEventListener("mouseleave", function(){ glow.classList.remove("active"); });
+
+    function wireCard(card){
+      card.addEventListener("mousemove", function(e){
+        var rect = card.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width;
+        var py = (e.clientY - rect.top) / rect.height;
+        card.style.setProperty("--mx", (px * 100) + "%");
+        card.style.setProperty("--my", (py * 100) + "%");
+        if (card.classList.contains("artist-card")) {
+          var rx = (py - 0.5) * -6;
+          var ry = (px - 0.5) * 6;
+          card.style.transform = "perspective(800px) rotateX(" + rx + "deg) rotateY(" + ry + "deg) translateY(-4px)";
+        }
+      });
+      card.addEventListener("mouseleave", function(){
+        if (card.classList.contains("artist-card")) {
+          card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0)";
+        }
+      });
+    }
+
+    document.querySelectorAll(".artist-card").forEach(wireCard);
+    // Recent cards render async — observe the grid and wire new cards as they appear
+    var recentGrid = document.getElementById("recent-grid");
+    if (recentGrid) {
+      new MutationObserver(function(){
+        recentGrid.querySelectorAll(".recent-card").forEach(wireCard);
+      }).observe(recentGrid, { childList: true });
+    }
   })();
 
   // Starfield
