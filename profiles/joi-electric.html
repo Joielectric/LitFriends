@@ -171,16 +171,18 @@
 
     /* === PLATFORM LINKS === */
     .platforms {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
     }
 
     .platform-link {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 1rem;
-      padding: 1.15rem 1.3rem;
+      width: 100%;
+      min-height: 74px;
+      padding: 1rem 1.3rem;
       background: linear-gradient(150deg, rgba(91,141,232,0.12) 0%, var(--surface) 60%);
       border: 1px solid var(--border-mid);
       border-left: 3px solid var(--electric);
@@ -228,7 +230,7 @@
       margin-bottom: 0.28rem;
     }
 
-    .platform-desc { font-size: 0.84rem; color: var(--text-mid); line-height: 1.5; }
+    .platform-desc { font-size: 0.84rem; color: var(--text-mid); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .platform-arrow {
       color: var(--electric);
@@ -386,7 +388,7 @@
         <div class="platform-icon">ASK</div>
         <div class="platform-info">
           <span class="platform-name">Ask Me Anything</span>
-          <span class="platform-desc">Slide into my Tellonym — anonymous questions welcome, curiosity encouraged, no judgment</span>
+          <span class="platform-desc">Anonymous questions welcome — no judgment</span>
         </div>
         <span class="platform-arrow">&#8594;</span>
       </a>
