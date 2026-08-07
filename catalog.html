@@ -38,8 +38,13 @@
 
     .wrap { max-width: 1120px; margin: 0 auto; padding: 0 1.2rem 5rem; }
 
+    /* Nav */
+    .cat-nav { padding: 1.4rem 0 0; }
+    .cat-nav a { font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .cat-nav a:hover { color: var(--electric); }
+
     /* Header */
-    .cat-head { padding: 2.4rem 0 1.4rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .cat-head { padding: 1rem 0 1.4rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
     .cat-eyebrow { font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--electric); display: block; margin-bottom: 0.6rem; }
     .cat-head h1 { font-family: "Cinzel", serif; font-weight: 600; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: 0.06em; color: #fff; }
     .cat-sub { color: var(--text-mid); font-size: 0.95rem; margin-top: 0.4rem; }
@@ -148,6 +153,8 @@
 <body>
 
 <div class="wrap">
+
+  <nav class="cat-nav"><a href="index.html">&#8592; Home</a></nav>
 
   <header class="cat-head">
     <span class="cat-eyebrow">JOI Electric</span>
