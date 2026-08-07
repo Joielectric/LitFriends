@@ -257,6 +257,16 @@
     .cm-msg { padding: 10px 14px; border-radius: var(--radius); margin: .8rem 0; font-size: 1rem; display: none; }
     .cm-msg.ok  { background: rgba(39,174,96,.12); border: 1px solid #27ae60; color: #60c890; display: block; }
     .cm-msg.err { background: rgba(192,80,112,.12); border: 1px solid var(--rose); color: #e090a8; display: block; }
+    /* People pickers + collaborators */
+    .cm-people { display: flex; flex-wrap: wrap; gap: 6px; min-height: 10px; }
+    .cm-people:empty::before { content: "None selected"; color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
+    .cm-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-3); border: 1px solid var(--border-mid); border-radius: 999px; padding: 3px 6px 3px 12px; font-size: 0.84rem; color: var(--text); }
+    .cm-chip button { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.05rem; line-height: 1; padding: 0 2px; }
+    .cm-chip button:hover { color: var(--rose); }
+    .cm-people-add { display: flex; gap: 6px; margin-top: 6px; }
+    .cm-people-add select { flex: 1; }
+    .cm-collab-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px; margin-bottom: 6px; align-items: center; }
+    .cm-collab-empty { color: var(--text-dim); font-style: italic; font-size: 0.86rem; padding: 6px 0; }
     .cm-entries-list { margin-top: 1.6rem; }
     .cm-entry-row {
       display: flex; align-items: center; gap: 12px;
@@ -357,6 +367,21 @@
             <div id="cm-panel" style="display:none">
                 <div id="cm-msg" class="cm-msg"></div>
 
+                <!-- Collaborators -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                        <label class="cm-label" style="margin:0">Collaborators <span style="font-weight:normal;color:var(--text-mid)">(name &amp; profile link)</span></label>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmSeedCollabs()">Seed from entries</button>
+                    </div>
+                    <div id="cm-collab-list"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;margin-top:10px;">
+                        <input id="cm-collab-name" class="cm-input" placeholder="Name">
+                        <input id="cm-collab-url" class="cm-input" placeholder="https://profile-link (optional)">
+                        <button type="button" class="cm-btn" onclick="cmCollabAddFromForm()">Add</button>
+                    </div>
+                </div>
+
+
                 <!-- Add / Edit form -->
                 <div class="cm-form-grid">
                     <div class="cm-full">
@@ -394,29 +419,29 @@
                         <input id="cm-trt" class="cm-input" placeholder="e.g. 14:32" style="width:100%">
                     </div>
 
-                    <!-- Credits -->
+                    <!-- Credits (pick from collaborators) -->
                     <div class="cm-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
-                        <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(comma-separated names)</span></label>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                            <div>
-                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Writer(s)</label>
-                                <input id="cm-credit-writers" class="cm-input" placeholder="e.g. Jane Doe" style="width:100%">
+                        <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(pick collaborators)</span></label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Voice Artist(s)</label>
+                                <div class="cm-people" id="cm-people-voiceArtists"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="voiceArtists"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('voiceArtists')">+ New</button></div>
                             </div>
-                            <div>
-                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Voice Artist(s)</label>
-                                <input id="cm-credit-voice" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Writer(s)</label>
+                                <div class="cm-people" id="cm-people-writers"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="writers"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('writers')">+ New</button></div>
                             </div>
-                            <div>
-                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Producer(s)</label>
-                                <input id="cm-credit-producers" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Producer(s)</label>
+                                <div class="cm-people" id="cm-people-producers"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="producers"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('producers')">+ New</button></div>
                             </div>
-                            <div>
-                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Editor(s)</label>
-                                <input id="cm-credit-editors" class="cm-input" placeholder="e.g. JOI Electric" style="width:100%">
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Editor(s)</label>
+                                <div class="cm-people" id="cm-people-editors"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="editors"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('editors')">+ New</button></div>
                             </div>
-                            <div>
-                                <label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Musician(s)</label>
-                                <input id="cm-credit-musicians" class="cm-input" placeholder="e.g. Jane Doe" style="width:100%">
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Musician(s)</label>
+                                <div class="cm-people" id="cm-people-musicians"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="musicians"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('musicians')">+ New</button></div>
                             </div>
                         </div>
                     </div>
@@ -871,8 +896,117 @@
     };
 
     let cmEntries = [];
+    let cmCollaborators = [];
     let cmPassword = '';
     let cmEditingId = null;
+
+    // ── Credits / collaborators ────────────────────────────────────────────────
+    const CM_ROLES = ['voiceArtists', 'writers', 'producers', 'editors', 'musicians'];
+    let cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
+
+    function cmNorm(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+    function cmCollabNames() {
+      return cmCollaborators.map(c => c.name).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    }
+    function cmFindCollab(name) {
+      const k = cmNorm(name);
+      return cmCollaborators.find(c => cmNorm(c.name) === k);
+    }
+
+    function cmRenderCredits() {
+      CM_ROLES.forEach(role => {
+        const box = document.getElementById('cm-people-' + role);
+        if (box) {
+          box.innerHTML = cmCredits[role].map(function (n) {
+            return '<span class="cm-chip">' + n.replace(/</g, '&lt;') +
+              '<button type="button" title="Remove" onclick="cmCreditRemove(\'' + role + '\',this.parentNode.firstChild.textContent)">&times;</button></span>';
+          }).join('');
+        }
+      });
+      document.querySelectorAll('.cm-people-select').forEach(function (sel) {
+        const role = sel.dataset.role;
+        const chosen = cmCredits[role].map(cmNorm);
+        const opts = ['<option value="">— add collaborator —</option>'].concat(
+          cmCollabNames().filter(n => chosen.indexOf(cmNorm(n)) === -1)
+            .map(n => '<option value="' + n.replace(/"/g, '&quot;') + '">' + n.replace(/</g, '&lt;') + '</option>')
+        );
+        sel.innerHTML = opts.join('');
+      });
+    }
+    function cmCreditRemove(role, name) {
+      cmCredits[role] = cmCredits[role].filter(n => cmNorm(n) !== cmNorm(name));
+      cmRenderCredits();
+    }
+    function cmCreditAdd(role, name) {
+      if (!name) return;
+      if (cmCredits[role].some(n => cmNorm(n) === cmNorm(name))) return;
+      cmCredits[role].push(name);
+      cmRenderCredits();
+    }
+    function cmNewCollab(role) {
+      const name = (prompt('New collaborator name:') || '').trim();
+      if (!name) return;
+      if (!cmFindCollab(name)) {
+        const url = (prompt('Profile link for ' + name + ' (optional):') || '').trim();
+        cmCollaborators.push({ name: name, url: url });
+        cmPersist(function () { cmRenderCollabManager(); cmRenderCredits(); });
+      }
+      cmCreditAdd(role, name);
+    }
+
+    // Collaborators manager
+    function cmRenderCollabManager() {
+      const el = document.getElementById('cm-collab-list');
+      if (!el) return;
+      if (!cmCollaborators.length) { el.innerHTML = '<div class="cm-collab-empty">No collaborators yet. Add people or seed from your entries.</div>'; cmRenderCredits(); return; }
+      const sorted = cmCollaborators.slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      el.innerHTML = sorted.map(function (c) {
+        const i = cmCollaborators.indexOf(c);
+        return '<div class="cm-collab-row">' +
+          '<input class="cm-input" value="' + (c.name || '').replace(/"/g, '&quot;') + '" onchange="cmCollabEdit(' + i + ',\'name\',this.value)">' +
+          '<input class="cm-input" value="' + (c.url || '').replace(/"/g, '&quot;') + '" placeholder="profile link (optional)" onchange="cmCollabEdit(' + i + ',\'url\',this.value)">' +
+          '<button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmCollabDelete(' + i + ')">Delete</button>' +
+        '</div>';
+      }).join('');
+      cmRenderCredits();
+    }
+    function cmCollabEdit(i, field, value) {
+      if (!cmCollaborators[i]) return;
+      cmCollaborators[i][field] = value.trim();
+      cmPersist(function () { cmRenderCollabManager(); });
+    }
+    function cmCollabDelete(i) {
+      if (!cmCollaborators[i]) return;
+      if (!confirm('Delete collaborator "' + cmCollaborators[i].name + '"?')) return;
+      cmCollaborators.splice(i, 1);
+      cmPersist(function () { cmRenderCollabManager(); });
+    }
+    function cmCollabAddFromForm() {
+      const name = document.getElementById('cm-collab-name').value.trim();
+      const url = document.getElementById('cm-collab-url').value.trim();
+      if (!name) { cmShowMsg('Collaborator name is required.', false); return; }
+      if (cmFindCollab(name)) { cmShowMsg('That collaborator already exists.', false); return; }
+      cmCollaborators.push({ name: name, url: url });
+      document.getElementById('cm-collab-name').value = '';
+      document.getElementById('cm-collab-url').value = '';
+      cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator added.', true); });
+    }
+    function cmSeedCollabs() {
+      const seen = {};
+      cmCollaborators.forEach(c => { seen[cmNorm(c.name)] = true; });
+      let added = 0;
+      cmEntries.forEach(function (e) {
+        const cr = e.credits || {};
+        CM_ROLES.forEach(function (role) {
+          (cr[role] || []).forEach(function (name) {
+            const k = cmNorm(name);
+            if (k && !seen[k]) { seen[k] = true; cmCollaborators.push({ name: String(name).trim(), url: '' }); added++; }
+          });
+        });
+      });
+      if (!added) { cmShowMsg('No new names found in entries.', true); return; }
+      cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Seeded ' + added + ' collaborator(s) from entries. Add their links and tidy any duplicates.', true); });
+    }
 
     // Full-page gate — one password unlocks the page and the content manager
     function toolsUnlock() {
@@ -898,11 +1032,13 @@
           // Unlock the content manager with the same password
           cmPassword = pw;
           cmEntries = data.entries || [];
+          cmCollaborators = data.collaborators || [];
           const ls = document.getElementById('cm-lock-screen');
           if (ls) ls.style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
+          cmRenderCollabManager();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -931,10 +1067,12 @@
           }
           cmPassword = pw;
           cmEntries = data.entries || [];
+          cmCollaborators = data.collaborators || [];
           document.getElementById('cm-lock-screen').style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
+          cmRenderCollabManager();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -1076,11 +1214,11 @@
         date:    document.getElementById('cm-date').value,
         trt:     document.getElementById('cm-trt').value.trim(),
         credits: {
-          voiceArtists: document.getElementById('cm-credit-voice').value.split(',').map(t => t.trim()).filter(Boolean),
-          writers:     document.getElementById('cm-credit-writers').value.split(',').map(t => t.trim()).filter(Boolean),
-          producers:   document.getElementById('cm-credit-producers').value.split(',').map(t => t.trim()).filter(Boolean),
-          editors:     document.getElementById('cm-credit-editors').value.split(',').map(t => t.trim()).filter(Boolean),
-          musicians:   document.getElementById('cm-credit-musicians').value.split(',').map(t => t.trim()).filter(Boolean),
+          voiceArtists: cmCredits.voiceArtists.slice(),
+          writers:      cmCredits.writers.slice(),
+          producers:    cmCredits.producers.slice(),
+          editors:      cmCredits.editors.slice(),
+          musicians:    cmCredits.musicians.slice(),
         },
       };
 
@@ -1111,11 +1249,14 @@
       document.getElementById('cm-short-desc').value = e.shortDesc || '';
       document.getElementById('cm-desc').value       = e.desc || '';
       const cr = e.credits || {};
-      document.getElementById('cm-credit-writers').value   = (cr.writers || []).join(', ');
-      document.getElementById('cm-credit-voice').value     = (cr.voiceArtists || []).join(', ');
-      document.getElementById('cm-credit-producers').value = (cr.producers || []).join(', ');
-      document.getElementById('cm-credit-editors').value   = (cr.editors || []).join(', ');
-      document.getElementById('cm-credit-musicians').value = (cr.musicians || []).join(', ');
+      cmCredits = {
+        voiceArtists: (cr.voiceArtists || []).slice(),
+        writers:      (cr.writers || []).slice(),
+        producers:    (cr.producers || []).slice(),
+        editors:      (cr.editors || []).slice(),
+        musicians:    (cr.musicians || []).slice(),
+      };
+      cmRenderCredits();
       document.getElementById('cm-date').value = e.date || '';
       document.getElementById('cm-trt').value = e.trt || '';
       const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
@@ -1135,7 +1276,9 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt'].forEach(id => document.getElementById(id).value = '');
+      cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
+      cmRenderCredits();
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
@@ -1174,7 +1317,7 @@
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, entries: cmEntries }),
+        body: JSON.stringify({ password: cmPassword, entries: cmEntries, collaborators: cmCollaborators }),
       })
         .then(r => r.json())
         .then(data => {
@@ -1183,6 +1326,14 @@
         })
         .catch(() => cmShowMsg('Network error — changes not saved.', false));
     }
+
+    // Add a person to a role when picked from its dropdown
+    document.addEventListener('change', function (ev) {
+      const sel = ev.target;
+      if (sel && sel.classList && sel.classList.contains('cm-people-select')) {
+        if (sel.value) { cmCreditAdd(sel.dataset.role, sel.value); sel.value = ''; }
+      }
+    });
 
     function cmShowMsg(text, ok) {
       const el = document.getElementById('cm-msg');
