@@ -367,17 +367,34 @@
 
                 <!-- Collaborators -->
                 <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                        <label class="cm-label" style="margin:0">Collaborators <span style="font-weight:normal;color:var(--text-mid)">(name &amp; profile link)</span></label>
-                        <select id="cm-collab-from-entries" class="cm-input" style="max-width:250px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
-                            <option value="">Add a name used in entries…</option>
-                        </select>
-                    </div>
-                    <div id="cm-collab-list"></div>
-                    <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;margin-top:10px;">
-                        <input id="cm-collab-name" class="cm-input" placeholder="Name">
+                    <label class="cm-label" style="margin-bottom:10px">Collaborators <span style="font-weight:normal;color:var(--text-mid)">(available in every credit pick-list)</span></label>
+
+                    <!-- Add a new collaborator -->
+                    <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;">
+                        <input id="cm-collab-name" class="cm-input" placeholder="Add collaborator name">
                         <input id="cm-collab-url" class="cm-input" placeholder="https://profile-link (optional)">
                         <button type="button" class="cm-btn" onclick="cmCollabAddFromForm()">Add</button>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <select id="cm-collab-from-entries" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
+                            <option value="">Or add a name already used in entries…</option>
+                        </select>
+                    </div>
+
+                    <!-- Edit an existing collaborator -->
+                    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">Edit a collaborator</label>
+                        <select id="cm-collab-edit-select" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmCollabEditSelect(this.value)">
+                            <option value="">Select a collaborator…</option>
+                        </select>
+                        <div id="cm-collab-edit" style="display:none;margin-top:10px;">
+                            <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;">
+                                <input id="cm-collab-edit-name" class="cm-input" placeholder="Name">
+                                <input id="cm-collab-edit-url" class="cm-input" placeholder="https://profile-link (optional)">
+                                <button type="button" class="cm-btn" onclick="cmCollabSaveEdit()">Save</button>
+                            </div>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmCollabDeleteEdit()">Delete collaborator</button>
+                        </div>
                     </div>
                 </div>
 
@@ -954,33 +971,57 @@
       cmCreditAdd(role, name);
     }
 
-    // Collaborators manager
+    // Collaborators manager — no visible list; add + edit-on-select only
+    let cmEditingCollab = null;
     function cmRenderCollabManager() {
-      const el = document.getElementById('cm-collab-list');
-      if (!el) return;
+      if (!document.getElementById('cm-collab-from-entries')) return;
       cmPopulateEntryNamePicker();
-      if (!cmCollaborators.length) { el.innerHTML = '<div class="cm-collab-empty">No collaborators yet. Add people or seed from your entries.</div>'; cmRenderCredits(); return; }
-      const sorted = cmCollaborators.slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-      el.innerHTML = sorted.map(function (c) {
-        const i = cmCollaborators.indexOf(c);
-        return '<div class="cm-collab-row">' +
-          '<input class="cm-input" value="' + (c.name || '').replace(/"/g, '&quot;') + '" onchange="cmCollabEdit(' + i + ',\'name\',this.value)">' +
-          '<input class="cm-input" value="' + (c.url || '').replace(/"/g, '&quot;') + '" placeholder="profile link (optional)" onchange="cmCollabEdit(' + i + ',\'url\',this.value)">' +
-          '<button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmCollabDelete(' + i + ')">Delete</button>' +
-        '</div>';
-      }).join('');
+      cmPopulateEditSelect();
       cmRenderCredits();
     }
-    function cmCollabEdit(i, field, value) {
-      if (!cmCollaborators[i]) return;
-      cmCollaborators[i][field] = value.trim();
-      cmPersist(function () { cmRenderCollabManager(); });
+    function cmPopulateEditSelect() {
+      const sel = document.getElementById('cm-collab-edit-select');
+      if (!sel) return;
+      const cur = sel.value;
+      const names = cmCollabNames();
+      sel.innerHTML = '<option value="">Select a collaborator…</option>' +
+        names.map(n => '<option value="' + n.replace(/"/g, '&quot;') + '"' + (n === cur ? ' selected' : '') + '>' + n.replace(/</g, '&lt;') + '</option>').join('');
+      if (cur && !cmFindCollab(cur)) { const box = document.getElementById('cm-collab-edit'); if (box) box.style.display = 'none'; }
     }
-    function cmCollabDelete(i) {
-      if (!cmCollaborators[i]) return;
-      if (!confirm('Delete collaborator "' + cmCollaborators[i].name + '"?')) return;
-      cmCollaborators.splice(i, 1);
-      cmPersist(function () { cmRenderCollabManager(); });
+    function cmCollabEditSelect(name) {
+      const box = document.getElementById('cm-collab-edit');
+      if (!name) { box.style.display = 'none'; cmEditingCollab = null; return; }
+      const c = cmFindCollab(name);
+      if (!c) { box.style.display = 'none'; cmEditingCollab = null; return; }
+      cmEditingCollab = c.name;
+      document.getElementById('cm-collab-edit-name').value = c.name;
+      document.getElementById('cm-collab-edit-url').value = c.url || '';
+      box.style.display = 'block';
+    }
+    function cmCollabSaveEdit() {
+      if (!cmEditingCollab) return;
+      const c = cmFindCollab(cmEditingCollab);
+      if (!c) { cmShowMsg('That collaborator no longer exists.', false); return; }
+      const newName = document.getElementById('cm-collab-edit-name').value.trim();
+      const newUrl = document.getElementById('cm-collab-edit-url').value.trim();
+      if (!newName) { cmShowMsg('Name is required.', false); return; }
+      const other = cmFindCollab(newName);
+      if (other && other !== c) { cmShowMsg('Another collaborator already has that name.', false); return; }
+      c.name = newName; c.url = newUrl;
+      cmEditingCollab = newName;
+      cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator updated.', true); });
+    }
+    function cmCollabDeleteEdit() {
+      if (!cmEditingCollab) return;
+      const c = cmFindCollab(cmEditingCollab);
+      if (!c) return;
+      if (!confirm('Delete collaborator "' + c.name + '"?')) return;
+      const i = cmCollaborators.indexOf(c);
+      if (i > -1) cmCollaborators.splice(i, 1);
+      cmEditingCollab = null;
+      const box = document.getElementById('cm-collab-edit'); if (box) box.style.display = 'none';
+      const sel = document.getElementById('cm-collab-edit-select'); if (sel) sel.value = '';
+      cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator deleted.', true); });
     }
     function cmCollabAddFromForm() {
       const name = document.getElementById('cm-collab-name').value.trim();
