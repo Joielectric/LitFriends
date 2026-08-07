@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="images/CA_ICON.png">
-  <link rel="apple-touch-icon" href="images/CA_ICON.png">
-  <link rel="manifest" href="manifest-ca.json">
-  <title>Tools — Consenting Adults</title>
+    <link rel="icon" type="image/png" href="images/JOI_Favicon.png">
+  <link rel="apple-touch-icon" href="images/JOI_Favicon.png">
+  <title>Content Manager — JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #151014;
-      --surface: #1d171c;
-      --surface-2: #261f25;
-      --surface-3: #2f282e;
-      --border: rgba(200,112,100,0.26);
-      --border-mid: rgba(210,120,108,0.44);
-      --border-hi: rgba(232,99,79,0.65);
-      --text: #ffffff;
-      --text-mid: #ddccc8;
-      --text-dim: #b09690;
-      --silver: #d8c8c0;
-      --silver-hi: #f5ece8;
-      --coral: #e8634f;
-      --rose: #c05070;
+      --bg: #151a2a;
+      --surface: #1e2438;
+      --surface-2: #262d44;
+      --surface-3: #2f3750;
+      --border: rgba(180,195,225,0.24);
+      --border-mid: rgba(180,195,225,0.42);
+      --border-hi: rgba(180,195,225,0.65);
+      --text: #f2f6ff;
+      --text-mid: #c2cce0;
+      --text-dim: #8792ab;
+      --silver: #c4cfe0;
+      --silver-hi: #eaf0fa;
+      --coral: #5b8de8;
+      --rose: #7aa6ec;
       --radius: 2px;
     }
 
@@ -46,8 +45,8 @@
       content: "";
       position: fixed; inset: 0;
       background:
-        radial-gradient(ellipse 60% 35% at 50% 0%, rgba(232,99,79,.06) 0%, transparent 65%),
-        radial-gradient(ellipse 40% 40% at 90% 95%, rgba(192,80,112,.04) 0%, transparent 55%);
+        radial-gradient(ellipse 60% 35% at 50% 0%, rgba(91,141,232,.07) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 90% 95%, rgba(42,72,128,.06) 0%, transparent 55%);
       pointer-events: none; z-index: 0;
     }
 
@@ -305,16 +304,16 @@
 <body>
 
 <!-- FULL-PAGE ADMIN GATE -->
-<div id="tools-gate" style="position:fixed;inset:0;z-index:100000;background:#100b10;display:flex;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:#1d171c;border:1px solid rgba(210,130,120,0.4);border-top:2px solid #e8634f;border-radius:3px;max-width:400px;width:100%;padding:2.4rem 2rem;text-align:center;">
-    <div style="font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.4em;text-transform:uppercase;color:#8a6058;margin-bottom:0.8rem;">Restricted</div>
-    <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.6rem;color:#f4ece8;margin-bottom:0.8rem;">Creator Tools</h2>
-    <p style="color:#cbaba4;font-size:0.9rem;margin-bottom:1.4rem;">Enter the admin password to continue.</p>
+<div id="tools-gate" style="position:fixed;inset:0;z-index:100000;background:#0c0f18;display:flex;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#1e2438;border:1px solid rgba(180,195,225,0.35);border-top:2px solid #5b8de8;border-radius:3px;max-width:400px;width:100%;padding:2.4rem 2rem;text-align:center;">
+    <div style="font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.4em;text-transform:uppercase;color:#8792ab;margin-bottom:0.8rem;">Restricted</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.6rem;color:#eaf0fa;margin-bottom:0.8rem;">Content Manager</h2>
+    <p style="color:#c2cce0;font-size:0.9rem;margin-bottom:1.4rem;">Enter the admin password to continue.</p>
     <input type="password" id="tools-gate-pw" placeholder="Admin password" autofocus
       onkeydown="if(event.key==='Enter')toolsUnlock()"
-      style="width:100%;max-width:260px;padding:0.7rem 0.9rem;border-radius:3px;border:1px solid rgba(210,130,120,0.5);background:#261f25;color:#f4ece8;font-size:1rem;outline:none;margin-bottom:0.9rem;">
-    <div><button onclick="toolsUnlock()" style="font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.2em;text-transform:uppercase;color:#f4ece8;background:transparent;border:1px solid #e8634f;padding:0.7rem 1.6rem;border-radius:3px;cursor:pointer;">Unlock</button></div>
-    <div id="tools-gate-msg" style="color:#e74c3c;font-size:0.85rem;margin-top:0.8rem;min-height:1em;"></div>
+      style="width:100%;max-width:260px;padding:0.7rem 0.9rem;border-radius:3px;border:1px solid rgba(180,195,225,0.5);background:#262d44;color:#f2f6ff;font-size:1rem;outline:none;margin-bottom:0.9rem;">
+    <div><button onclick="toolsUnlock()" style="font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.2em;text-transform:uppercase;color:#f2f6ff;background:transparent;border:1px solid #5b8de8;padding:0.7rem 1.6rem;border-radius:3px;cursor:pointer;">Unlock</button></div>
+    <div id="tools-gate-msg" style="color:#e87a88;font-size:0.85rem;margin-top:0.8rem;min-height:1em;"></div>
   </div>
 </div>
 
@@ -325,10 +324,9 @@
   </nav>
 
   <div class="header">
-    <span class="header-eyebrow">Consenting Adults</span>
-    <h1>Tools</h1>
+    <h1>Content Manager</h1>
     <div class="header-divider"><span></span><i></i><span></span></div>
-    <a href="docs/adding-content.html" target="_blank" style="display:inline-block;margin-top:0.8rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:.2em;text-transform:uppercase;color:#e8634f;text-decoration:none;border-bottom:1px solid rgba(232,99,79,0.4);padding-bottom:2px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='#f5ece8';this.style.borderColor='rgba(232,99,79,0.9)'" onmouseout="this.style.color='#e8634f';this.style.borderColor='rgba(232,99,79,0.4)'">How to Add New Content &#8599;</a>
+    <a href="docs/adding-content.html" target="_blank" style="display:inline-block;margin-top:0.8rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5b8de8;text-decoration:none;border-bottom:1px solid rgba(91,141,232,0.4);padding-bottom:2px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='#eaf0fa';this.style.borderColor='rgba(91,141,232,0.9)'" onmouseout="this.style.color='#5b8de8';this.style.borderColor='rgba(91,141,232,0.4)'">How to Add New Content &#8599;</a>
   </div>
         
         <div class="tools-section">
@@ -371,7 +369,9 @@
                 <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
                         <label class="cm-label" style="margin:0">Collaborators <span style="font-weight:normal;color:var(--text-mid)">(name &amp; profile link)</span></label>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmSeedCollabs()">Seed from entries</button>
+                        <select id="cm-collab-from-entries" class="cm-input" style="max-width:250px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
+                            <option value="">Add a name used in entries…</option>
+                        </select>
                     </div>
                     <div id="cm-collab-list"></div>
                     <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;margin-top:10px;">
@@ -958,6 +958,7 @@
     function cmRenderCollabManager() {
       const el = document.getElementById('cm-collab-list');
       if (!el) return;
+      cmPopulateEntryNamePicker();
       if (!cmCollaborators.length) { el.innerHTML = '<div class="cm-collab-empty">No collaborators yet. Add people or seed from your entries.</div>'; cmRenderCredits(); return; }
       const sorted = cmCollaborators.slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
       el.innerHTML = sorted.map(function (c) {
@@ -991,21 +992,33 @@
       document.getElementById('cm-collab-url').value = '';
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator added.', true); });
     }
-    function cmSeedCollabs() {
-      const seen = {};
-      cmCollaborators.forEach(c => { seen[cmNorm(c.name)] = true; });
-      let added = 0;
+    // Distinct credit names used across entries that aren't collaborators yet
+    function cmUnlistedEntryNames() {
+      const have = {}; cmCollaborators.forEach(c => { have[cmNorm(c.name)] = true; });
+      const names = {};
       cmEntries.forEach(function (e) {
         const cr = e.credits || {};
         CM_ROLES.forEach(function (role) {
           (cr[role] || []).forEach(function (name) {
             const k = cmNorm(name);
-            if (k && !seen[k]) { seen[k] = true; cmCollaborators.push({ name: String(name).trim(), url: '' }); added++; }
+            if (k && !have[k]) names[k] = String(name).trim();
           });
         });
       });
-      if (!added) { cmShowMsg('No new names found in entries.', true); return; }
-      cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Seeded ' + added + ' collaborator(s) from entries. Add their links and tidy any duplicates.', true); });
+      return Object.keys(names).map(k => names[k]).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    }
+    function cmPopulateEntryNamePicker() {
+      const sel = document.getElementById('cm-collab-from-entries');
+      if (!sel) return;
+      const list = cmUnlistedEntryNames();
+      sel.innerHTML = '<option value="">Add a name used in entries…</option>' +
+        list.map(n => '<option value="' + n.replace(/"/g, '&quot;') + '">' + n.replace(/</g, '&lt;') + '</option>').join('');
+    }
+    function cmAddCollabFromEntries(name) {
+      name = (name || '').trim();
+      if (!name || cmFindCollab(name)) return;
+      cmCollaborators.push({ name: name, url: '' });
+      cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Added "' + name + '". Add their link, or delete it.', true); });
     }
 
     // Full-page gate — one password unlocks the page and the content manager
@@ -1346,10 +1359,9 @@
 </div><!-- /.container -->
 
 <footer>
-  Consenting Adults &mdash; 18+ only
+  JOI Electric &mdash; Content Manager &mdash; 18+ only
 </footer>
 
-<script src="/js/nav.js"></script>
 </body>
 </html>    
 
