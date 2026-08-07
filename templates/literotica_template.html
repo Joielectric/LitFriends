@@ -170,7 +170,16 @@
         <!-- EDITOR PANEL -->
         <div class="editor-panel">
             <div class="panel-title">Create Literotica Audio Post</div>
-            
+
+            <!-- LOAD FROM CATALOGUE -->
+            <div class="form-group">
+                <label class="form-label">Load from Catalogue</label>
+                <select id="catalogSelect" class="form-select">
+                    <option value="">— Select a published audio —</option>
+                </select>
+                <small style="color:#888;font-size:12px;">Auto-fills title, tags, gender, and description (with listen links + TRT). Contributor attribution still comes from the CSV.</small>
+            </div>
+
             <!-- USERNAME SECTION -->
             <div class="section-header">Username</div>
             
@@ -701,6 +710,56 @@
             });
         }
         
+        // ── Catalogue auto-fill ──────────────────────────────────────────────
+        const CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan', hotaudio:'HotAudio', whyp:'Whyp' };
+        let CATALOG = [];
+
+        function catGetLinks(e) {
+            if (Array.isArray(e.links) && e.links.length) return e.links;
+            if (e.provider && e.url) return [{ provider: e.provider, url: e.url }];
+            return [];
+        }
+        function catLinksBlock(links, trt) {
+            if (!links.length) return '';
+            const multi = links.length > 1;
+            return links.map(lk => {
+                let label = multi ? ('Listen on ' + (CAT_PROVIDERS[lk.provider] || lk.provider)) : 'Listen Here';
+                if (trt) label += ' TRT - ' + trt;
+                return "🎧 <a href='" + lk.url + "' target='_blank' rel='noopener'>" + label + "</a>";
+            }).join('\n');
+        }
+        function catApplyEntry(e) {
+            const genderSelect = document.getElementById('genderTag');
+            const genderOpts = Array.from(genderSelect.options).map(o => o.value).filter(Boolean);
+            const tags = e.tags || [];
+            const gender = tags.find(t => genderOpts.indexOf(String(t).toUpperCase()) !== -1);
+            genderSelect.value = gender ? String(gender).toUpperCase() : '';
+            document.getElementById('audioTitle').value = e.title || '';
+            document.getElementById('shortDescription').value = e.shortDesc || '';
+            document.getElementById('fullTags').value = tags.filter(t => t !== gender).join(', ');
+            const linksBlock = catLinksBlock(catGetLinks(e), e.trt || '');
+            document.getElementById('longDescription').value = (e.desc || '') + (linksBlock ? '\n\n' + linksBlock : '');
+            updatePreviews();
+        }
+        function catLoad() {
+            fetch('/api/content').then(r => r.json()).then(d => {
+                CATALOG = (d.entries || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+                const sel = document.getElementById('catalogSelect');
+                CATALOG.forEach((e, i) => {
+                    const o = document.createElement('option');
+                    o.value = i;
+                    o.textContent = (e.date ? e.date + ' — ' : '') + (e.title || 'Untitled');
+                    sel.appendChild(o);
+                });
+            }).catch(() => {});
+        }
+        document.getElementById('catalogSelect').addEventListener('change', function () {
+            if (this.value === '') return;
+            const e = CATALOG[+this.value];
+            if (e) catApplyEntry(e);
+        });
+        catLoad();
+
         function showSuccessMessage(message) {
             const successMsg = document.getElementById('successMessage');
             successMsg.textContent = message;
