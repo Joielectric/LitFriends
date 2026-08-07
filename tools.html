@@ -374,6 +374,10 @@
                         <label class="cm-label">Date</label>
                         <input type="date" id="cm-date" class="cm-input" style="width:100%">
                     </div>
+                    <div>
+                        <label class="cm-label">Total Run Time <span style="font-weight:normal;color:var(--text-mid)">(TRT, optional)</span></label>
+                        <input id="cm-trt" class="cm-input" placeholder="e.g. 14:32" style="width:100%">
+                    </div>
 
                     <!-- Credits -->
                     <div class="cm-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
@@ -1018,6 +1022,7 @@
         shortDesc: document.getElementById('cm-short-desc').value.trim(),
         desc:      document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
+        trt:     document.getElementById('cm-trt').value.trim(),
         credits: {
           voiceArtists: document.getElementById('cm-credit-voice').value.split(',').map(t => t.trim()).filter(Boolean),
           writers:     document.getElementById('cm-credit-writers').value.split(',').map(t => t.trim()).filter(Boolean),
@@ -1060,6 +1065,7 @@
       document.getElementById('cm-credit-editors').value   = (cr.editors || []).join(', ');
       document.getElementById('cm-credit-musicians').value = (cr.musicians || []).join(', ');
       document.getElementById('cm-date').value = e.date || '';
+      document.getElementById('cm-trt').value = e.trt || '';
       const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
       window.scrollTo({ top: formTop, behavior: 'smooth' });
       document.getElementById('cm-save-btn').textContent = 'Update Entry';
@@ -1077,7 +1083,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt','cm-credit-writers','cm-credit-voice','cm-credit-producers','cm-credit-editors','cm-credit-musicians'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
