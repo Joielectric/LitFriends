@@ -209,14 +209,22 @@
 
   (function () {
     var grid = document.getElementById('news-grid');
-    if (!NEWS.length) { grid.innerHTML = '<div class="news-empty">No updates yet — check back soon.</div>'; return; }
-    grid.innerHTML = NEWS.map(function (n) {
-      return '<div class="news-item">' +
-        (n.date ? '<span class="news-date">' + n.date + '</span>' : '') +
-        '<div class="news-title">' + (n.title || '') + '</div>' +
-        (n.body ? '<div class="news-body">' + n.body + '</div>' : '') +
-      '</div>';
-    }).join('');
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+    function render(list) {
+      if (!list.length) { grid.innerHTML = '<div class="news-empty">No updates yet — check back soon.</div>'; return; }
+      grid.innerHTML = list.map(function (n) {
+        return '<div class="news-item">' +
+          (n.date ? '<span class="news-date">' + esc(n.date) + '</span>' : '') +
+          '<div class="news-title">' + esc(n.title || '') + '</div>' +
+          (n.body ? '<div class="news-body">' + esc(n.body) + '</div>' : '') +
+        '</div>';
+      }).join('');
+    }
+    // Posted from the Content Manager; falls back to the NEWS list above
+    fetch('/api/content')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { render((d.news && d.news.length) ? d.news : NEWS); })
+      .catch(function () { render(NEWS); });
   })();
 
   // ── Lightning ──────────────────────────────────────────────────────────────
