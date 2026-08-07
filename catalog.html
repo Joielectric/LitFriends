@@ -109,8 +109,8 @@
     .c-links { display: flex; flex-wrap: wrap; gap: 5px; }
     .plink {
       font-family: "Cinzel", serif; font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 4px 9px; border-radius: var(--radius); border: 1px solid var(--electric-dim);
-      color: var(--electric); text-decoration: none; white-space: nowrap; transition: all 0.18s; background: rgba(91,141,232,0.08);
+      padding: 4px 11px; border-radius: 999px; border: 1px solid var(--electric);
+      color: #cfe0ff; text-decoration: none; white-space: nowrap; transition: all 0.18s; background: rgba(91,141,232,0.18);
     }
     .plink:hover { background: var(--electric); color: #fff; border-color: var(--electric); }
 
@@ -127,20 +127,28 @@
     /* Modal */
     .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(6,9,16,0.82); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
     .modal { background: var(--surface); border: 1px solid var(--border-mid); border-top: 2px solid var(--electric); border-radius: var(--radius); max-width: 560px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 1.6rem 1.7rem; position: relative; }
-    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.4rem; }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.6rem; }
     .modal-title { font-family: "Cinzel", serif; font-size: 1.15rem; color: #fff; line-height: 1.3; }
-    .modal-date { color: var(--text-dim); font-size: 0.8rem; margin-top: 3px; }
     .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.6rem; line-height: 1; cursor: pointer; padding: 0 0 0 1rem; }
     .modal-close:hover { color: #fff; }
-    .modal-desc { color: var(--text-mid); font-size: 0.92rem; line-height: 1.7; margin: 0.8rem 0 1rem; }
-    .modal-links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.1rem; }
+    /* Labeled meta: Date Created / Total Run Time */
+    .modal-meta { display: flex; flex-wrap: wrap; gap: 1.8rem; margin: 0.2rem 0 1.1rem; }
+    .meta-item { display: flex; flex-direction: column; }
+    .meta-label { font-family: "Cinzel", serif; font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+    .meta-value { font-size: 0.98rem; font-weight: 500; color: #eef3ff; letter-spacing: 0.02em; }
+    /* Description with a defined bezel */
+    .modal-desc { color: var(--text); font-size: 0.92rem; line-height: 1.7; margin: 0 0 1.1rem;
+      background: var(--surface-2); border: 1px solid var(--border-mid); border-radius: 6px; padding: 0.95rem 1.1rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -3px 8px rgba(0,0,0,0.38); }
+    .modal-note { color: var(--text-dim); font-style: italic; font-size: 0.88rem; margin-bottom: 1rem; }
+    .modal-links { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 1.1rem; }
     .modal-link {
       display: inline-flex; align-items: center; gap: 7px;
       font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 0.7rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--electric-dim);
-      color: var(--electric); text-decoration: none; background: rgba(91,141,232,0.1); transition: all 0.18s;
+      padding: 0.7rem 1.25rem; border-radius: 999px; border: 1px solid var(--electric);
+      color: #eaf1ff; text-decoration: none; background: rgba(91,141,232,0.22); transition: all 0.18s;
     }
-    .modal-link:hover { background: var(--electric); color: #fff; border-color: var(--electric); }
+    .modal-link:hover { background: var(--electric); color: #fff; border-color: var(--electric); box-shadow: 0 4px 18px rgba(91,141,232,0.45); }
     .modal-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1rem; }
     .modal-credits { border-top: 1px solid var(--border); padding-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.2rem; }
     .cred-row { font-size: 0.82rem; }
@@ -355,12 +363,16 @@
     overlay = document.createElement('div');
     overlay.className = 'overlay';
     overlay.addEventListener('click', function(ev){ if (ev.target === overlay) closeModal(); });
+    var meta = '';
+    if (e.date) meta += '<div class="meta-item"><span class="meta-label">Date Created</span><span class="meta-value">' + esc(e.date) + '</span></div>';
+    if (e.trt) meta += '<div class="meta-item"><span class="meta-label">Total Run Time</span><span class="meta-value">&#9201; ' + esc(e.trt) + '</span></div>';
+
     overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' +
-      '<div class="modal-head"><div><div class="modal-title">' + esc(e.title||'Untitled') + '</div>' +
-        (e.date || e.trt ? '<div class="modal-date">' + esc(e.date||'') + (e.trt ? '&nbsp;&middot;&nbsp;&#9201; ' + esc(e.trt) : '') + '</div>' : '') + '</div>' +
+      '<div class="modal-head"><div class="modal-title">' + esc(e.title||'Untitled') + '</div>' +
         '<button class="modal-close" aria-label="Close">&times;</button></div>' +
+      (meta ? '<div class="modal-meta">' + meta + '</div>' : '') +
       (e.desc ? '<div class="modal-desc">' + esc(e.desc) + '</div>' : '') +
-      (links ? '<div class="modal-links">' + links + '</div>' : '<div class="modal-desc">No links yet.</div>') +
+      (links ? '<div class="modal-links">' + links + '</div>' : '<div class="modal-note">No links yet.</div>') +
       (tags ? '<div class="modal-tags">' + tags + '</div>' : '') +
       (credits ? '<div class="modal-credits">' + credits + '</div>' : '') +
     '</div>';
