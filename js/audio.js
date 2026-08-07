@@ -732,7 +732,7 @@
 
   // ── Public API ─────────────────────────────────────────────────────────────
   window.AudioGrid = {
-    init({ container, artist, showFilters }) {
+    init({ container, artist, showFilters, limit }) {
       injectStyles();
       const el = typeof container === 'string' ? document.querySelector(container) : container;
       if (!el) return;
@@ -748,6 +748,7 @@
           COLLAB = {};
           (data.collaborators || []).forEach(c => { if (c && c.name) COLLAB[normName(c.name)] = c; });
           if (artist) entries = entries.filter(e => artistInEntry(e, artist));
+          if (limit) entries = entries.slice(0, limit);
           el.innerHTML = '';
           if (showFilters) {
             initFilters(entries, el);
