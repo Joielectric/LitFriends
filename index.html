@@ -127,9 +127,14 @@
     .age-yes:hover { background: var(--electric); border-color: var(--electric); }
     .age-no { color: var(--text-dim); border-color: var(--border); }
     .age-no:hover { color: var(--text-mid); border-color: var(--border-mid); }
+
+    /* Lightning overlay */
+    #lightning { position: fixed; inset: 0; z-index: 55; pointer-events: none; opacity: 0; }
   </style>
 </head>
 <body>
+
+<canvas id="lightning"></canvas>
 
 <!-- AGE GATE -->
 <div id="age-gate">
@@ -214,13 +219,125 @@
     }).join('');
   })();
 
+  // ── Lightning ──────────────────────────────────────────────────────────────
+  var JOILightning = (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var c = document.getElementById('lightning');
+    var ctx = c ? c.getContext('2d') : null;
+    var raf = null, active = [], running = false;
+
+    function size() { c.width = window.innerWidth; c.height = window.innerHeight; }
+    window.addEventListener('resize', function () { if (c) size(); });
+
+    // Jagged bolt via midpoint displacement
+    function bolt(x1, y1, x2, y2, disp) {
+      function sub(a, b, d) {
+        if (d < 6) return [a, b];
+        var m = { x: (a.x + b.x) / 2 + (Math.random() - 0.5) * d,
+                  y: (a.y + b.y) / 2 + (Math.random() - 0.5) * d };
+        return sub(a, m, d / 2).slice(0, -1).concat(sub(m, b, d / 2));
+      }
+      return sub({ x: x1, y: y1 }, { x: x2, y: y2 }, disp);
+    }
+    function stroke(pts, w, color) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.shadowColor = '#a9ccff'; ctx.shadowBlur = 26; ctx.stroke();
+    }
+
+    function makeStrike(intensity) {
+      var W = c.width, H = c.height;
+      var n = intensity >= 1 ? 2 + Math.floor(Math.random() * 2) : 1; // enter = 2-3 bolts, ambient = 1
+      var bolts = [];
+      for (var k = 0; k < n; k++) {
+        var x1 = W * (0.15 + Math.random() * 0.7);
+        var x2 = W * (0.15 + Math.random() * 0.7);
+        var main = bolt(x1, -30, x2, H + 30, W * 0.26);
+        var bi = Math.floor(main.length * (0.35 + Math.random() * 0.3));
+        var bp = main[bi] || main[0];
+        var branch = bolt(bp.x, bp.y, bp.x + (Math.random() - 0.5) * W * 0.4, bp.y + H * 0.22, W * 0.1);
+        bolts.push({ main: main, branch: branch, w: 2.2 + Math.random() * 1.6 });
+      }
+      active.push({ born: performance.now(), bolts: bolts, flash: intensity >= 1 ? 0.55 : 0.22, life: intensity >= 1 ? 480 : 300 });
+      if (!running) { running = true; raf = requestAnimationFrame(frame); }
+    }
+
+    function frame(now) {
+      var W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+      // Pass 1: compute flash + cull expired
+      var maxFlash = 0, any = false;
+      for (var i = active.length - 1; i >= 0; i--) {
+        var s = active[i], age = now - s.born;
+        if (age > s.life) { active.splice(i, 1); continue; }
+        any = true;
+        var fa = Math.max(0, 1 - age / (s.life * 0.5)) * s.flash;
+        if (fa > maxFlash) maxFlash = fa;
+      }
+      // Flash behind the bolts
+      if (maxFlash > 0) {
+        ctx.save(); ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(175,205,255,' + maxFlash + ')';
+        ctx.fillRect(0, 0, W, H); ctx.restore();
+      }
+      // Pass 2: draw bolts on top
+      for (var j = 0; j < active.length; j++) {
+        var st = active[j], a = now - st.born;
+        var ba = a < 70 ? 1 : Math.max(0, 1 - (a - 70) / (st.life - 70));
+        if (ba <= 0) continue;
+        ctx.save();
+        ctx.globalAlpha = ba;
+        st.bolts.forEach(function (b) {
+          stroke(b.main, b.w + 2.5, 'rgba(120,170,255,0.85)');
+          stroke(b.branch, b.w * 0.7, 'rgba(150,190,255,0.8)');
+          stroke(b.main, b.w * 0.5, '#ffffff');
+        });
+        ctx.restore();
+      }
+      if (any) { raf = requestAnimationFrame(frame); }
+      else { ctx.clearRect(0, 0, W, H); c.style.opacity = '0'; running = false; }
+    }
+
+    function strike(intensity) {
+      if (!ctx || reduce) return;
+      size(); c.style.opacity = '1';
+      makeStrike(intensity || 1);
+    }
+
+    var ambientTimer = null;
+    function startAmbient() {
+      if (!ctx || reduce || ambientTimer) return;
+      function schedule() {
+        var wait = 7000 + Math.random() * 9000; // every ~7–16s
+        ambientTimer = setTimeout(function () {
+          if (!document.hidden) { c.style.opacity = '1'; makeStrike(0.5); }
+          schedule();
+        }, wait);
+      }
+      schedule();
+    }
+
+    return { strike: strike, startAmbient: startAmbient };
+  })();
+
   // ── Age gate ───────────────────────────────────────────────────────────────
   (function () {
     var gate = document.getElementById('age-gate');
-    if (sessionStorage.getItem('joi_verified') === 'true') { gate.classList.add('hidden'); return; }
+    function enter() {
+      JOILightning.strike(1);
+      JOILightning.startAmbient();
+    }
+    if (sessionStorage.getItem('joi_verified') === 'true') {
+      gate.classList.add('hidden');
+      setTimeout(enter, 250);
+      return;
+    }
     document.getElementById('age-yes').addEventListener('click', function () {
       sessionStorage.setItem('joi_verified', 'true');
       gate.classList.add('hidden');
+      setTimeout(enter, 120);
     });
     document.getElementById('age-no').addEventListener('click', function () {
       window.location.href = 'https://www.google.com';
