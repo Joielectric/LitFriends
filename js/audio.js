@@ -4,8 +4,9 @@
   const PROVIDERS = {
     soundgasm:  { label: 'Soundgasm',  canEmbed: false },
     literotica: { label: 'Literotica', canEmbed: false },
-    audiochan:  { label: 'Audiochan',  canEmbed: true  },
+    audiochan:  { label: 'Audiochan',  canEmbed: false },
     hotaudio:   { label: 'HotAudio',   canEmbed: false },
+    whyp:       { label: 'Whyp',       canEmbed: false },
   };
 
   // Gender/audience tags shown first in filter and styled distinctly
@@ -425,7 +426,7 @@
     return `
       ${embed
         ? `<iframe class="ag-modal-iframe" src="${link.url}" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`
-        : `<div class="ag-modal-no-embed">Embedding not available for ${label}.</div>`
+        : ``
       }
       <a class="ag-modal-open-btn" href="${link.url}" target="_blank" rel="noopener noreferrer">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
