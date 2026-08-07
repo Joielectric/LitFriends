@@ -18,11 +18,11 @@
   --border: rgba(180,195,225,0.24);
   --border-mid: rgba(180,195,225,0.42);
   --border-hi: rgba(180,195,225,0.65);
-  --text: #e8eefa;
-  --text-mid: #abb6cf;
-  --text-dim: #6c7693;
-  --silver: #c4cfe0;
-  --silver-hi: #eaf0fa;
+  --text: #f4f8ff;
+  --text-mid: #dde5f5;
+  --text-dim: #c3cee4;
+  --silver: #dde5f2;
+  --silver-hi: #f4f8ff;
   --electric: #5b8de8;
   --electric-dim: #2a4880;
   --danger: #c0394a;
@@ -288,14 +288,15 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
         <label class="field-label" for="platform">Where did you find it?</label>
         <select id="platform" name="platform">
           <option value="">&mdash; Select one &mdash;</option>
-          <option>Literotica</option>
-          <option>Audiochan</option>
-          <option>Bluesky</option>
         </select>
       </div>
       <div class="field">
         <label class="field-label" for="audio_title">Which audio(s) are you giving feedback on? <span class="req">*</span></label>
-        <input type="text" id="audio_title" name="audio_title" placeholder="Title, series, or describe it" required>
+        <select id="audio_title" name="audio_title" required>
+          <option value="">&mdash; Select an audio &mdash;</option>
+        </select>
+        <p class="field-hint" id="audio-other-hint" style="display:none;margin-top:0.5rem;">Tell me which one:</p>
+        <input type="text" id="audio_title_other" name="audio_title_other" placeholder="Title, series, or describe it" style="display:none;margin-top:0.2rem;">
       </div>
     </div>
 
@@ -466,6 +467,67 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 </div>
 
 <script>
+// ── Populate platform + audio pickers from the catalogue ────────────────────
+(function () {
+  var PROVIDER_LABELS = {
+    soundgasm: "Soundgasm", literotica: "Literotica", audiochan: "Audiochan",
+    hotaudio: "HotAudio", whyp: "Whyp"
+  };
+  var EXTRA_SOURCES = ["Bluesky", "Reddit", "Other"];
+
+  var platformSel = document.getElementById("platform");
+  var audioSel = document.getElementById("audio_title");
+  var otherInput = document.getElementById("audio_title_other");
+  var otherHint = document.getElementById("audio-other-hint");
+
+  function addOpt(sel, value, label) {
+    var o = document.createElement("option");
+    o.value = value; o.textContent = label || value;
+    sel.appendChild(o);
+  }
+
+  // Show a free-text box when "Other" is chosen
+  audioSel.addEventListener("change", function () {
+    var isOther = this.value === "Other / not listed";
+    otherInput.style.display = isOther ? "" : "none";
+    otherHint.style.display = isOther ? "" : "none";
+    otherInput.required = isOther;
+  });
+
+  fetch("/api/content")
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var entries = (data.entries || []).slice().sort(function (a, b) {
+        return (b.date || "").localeCompare(a.date || "");
+      });
+
+      // Platforms actually used across the catalogue, then extras
+      var used = {};
+      entries.forEach(function (e) {
+        var links = (Array.isArray(e.links) && e.links.length)
+          ? e.links
+          : (e.provider && e.url ? [{ provider: e.provider }] : []);
+        links.forEach(function (l) { if (l && l.provider) used[l.provider] = true; });
+      });
+      Object.keys(used).forEach(function (p) { addOpt(platformSel, PROVIDER_LABELS[p] || p); });
+      EXTRA_SOURCES.forEach(function (s) { addOpt(platformSel, s); });
+
+      // Audio titles from the catalogue
+      entries.forEach(function (e) {
+        if (e.title) addOpt(audioSel, e.title, e.date ? e.title + "  (" + e.date + ")" : e.title);
+      });
+      addOpt(audioSel, "Other / not listed");
+    })
+    .catch(function () {
+      // Offline/API failure — fall back so the form still works
+      ["Literotica", "Audiochan", "Soundgasm", "HotAudio", "Whyp"].forEach(function (p) { addOpt(platformSel, p); });
+      EXTRA_SOURCES.forEach(function (s) { addOpt(platformSel, s); });
+      addOpt(audioSel, "Other / not listed");
+      audioSel.value = "Other / not listed";
+      audioSel.dispatchEvent(new Event("change"));
+    });
+})();
+
 var toneSlider = document.getElementById("tone-slider");
 var toneDisplay = document.getElementById("tone-display");
 var toneMap = [
