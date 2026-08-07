@@ -85,6 +85,17 @@
     return (PROVIDERS[key] || {}).label || key;
   }
 
+  // Collaborators → clickable credit names
+  let COLLAB = {};
+  function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+  function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function collabHtml(name) {
+    const c = COLLAB[normName(name)];
+    const label = c ? c.name : name;
+    if (c && c.url) return '<a class="ag-collab-link" href="' + escHtml(c.url) + '" target="_blank" rel="noopener noreferrer">' + escHtml(label) + '</a>';
+    return escHtml(label);
+  }
+
   function canEmbed(key) {
     return !!(PROVIDERS[key] || {}).canEmbed;
   }
@@ -396,6 +407,8 @@
   font-size: 0.66rem; letter-spacing: .08em; display: block; margin-bottom: 1px;
 }
 .ag-credit-names { color: var(--text-mid, #888); }
+.ag-collab-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(150,180,240,0.5); }
+.ag-collab-link:hover { color: #fff; text-decoration-color: currentColor; }
     `;
     document.head.appendChild(s);
   }
@@ -410,7 +423,7 @@
       .map(([k, label]) => `
         <div class="ag-credit-row">
           <span class="ag-credit-label">${label}</span>
-          <span class="ag-credit-names">${credits[k].join(', ')}</span>
+          <span class="ag-credit-names">${credits[k].map(collabHtml).join(', ')}</span>
         </div>`).join('');
     return rows ? `<div class="ag-modal-credits">${rows}</div>` : '';
   }
@@ -732,6 +745,8 @@
           let entries = (data.entries || []).slice().sort((a, b) =>
             (b.date || '').localeCompare(a.date || '')
           );
+          COLLAB = {};
+          (data.collaborators || []).forEach(c => { if (c && c.name) COLLAB[normName(c.name)] = c; });
           if (artist) entries = entries.filter(e => artistInEntry(e, artist));
           el.innerHTML = '';
           if (showFilters) {
