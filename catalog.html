@@ -106,6 +106,8 @@
     .rt { font-size: 0.66rem; letter-spacing: 0.03em; padding: 1px 7px; border-radius: 12px; border: 1px solid var(--border-mid); color: var(--text-mid); }
     .rt.gender { color: var(--gender); border-color: rgba(232,164,79,0.4); }
     .c-artist { font-size: 0.84rem; color: var(--text-mid); line-height: 1.4; }
+    .collab-link { color: var(--electric); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+    .collab-link:hover { border-bottom-color: var(--electric); }
     .c-links { display: flex; flex-wrap: wrap; gap: 5px; }
     .plink {
       font-family: "Cinzel", serif; font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase;
@@ -225,6 +227,18 @@
   }
   function voiceNames(e){ return ((e.credits || {}).voiceArtists) || []; }
 
+  // Collaborators → clickable names
+  var COLLAB = {};
+  function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+  function collabHtml(name, inRow){
+    var c = COLLAB[normName(name)];
+    var label = c ? c.name : name;
+    if (c && c.url) {
+      return '<a class="collab-link" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer"' + (inRow ? ' data-stop="1"' : '') + '>' + esc(label) + '</a>';
+    }
+    return esc(label);
+  }
+
   var els = {
     rows: document.getElementById('rows'),
     search: document.getElementById('search'),
@@ -243,6 +257,8 @@
     var url = window.__CATALOG_SRC__ || '/api/content';
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       ENTRIES = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      COLLAB = {};
+      (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });
       buildFilters();
       apply();
     }).catch(function(){
@@ -313,7 +329,8 @@
       return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>';
     }).join('');
     var voices = voiceNames(e);
-    var artistStr = voices.length ? voices.join(', ') : (allNames(e).slice(0,2).join(', ') || '&mdash;');
+    var artistList = voices.length ? voices : allNames(e).slice(0,2);
+    var artistStr = artistList.length ? artistList.map(function(n){ return collabHtml(n, true); }).join(', ') : '&mdash;';
     return '<div class="row" data-idx="' + idx + '">' +
       '<div class="c-date">' + esc(e.date||'') + (e.trt ? '<div class="c-trt">&#9201; ' + esc(e.trt) + '</div>' : '') + '</div>' +
       '<div><div class="c-title">' + esc(e.title||'Untitled') + '</div>' +
@@ -357,7 +374,7 @@
     var credits = '';
     var c = e.credits || {};
     CREDIT_ORDER.forEach(function(role){
-      if ((c[role]||[]).length) credits += '<div class="cred-row"><span class="cred-label">' + CREDIT_LABELS[role] + '</span><span class="cred-names">' + esc(c[role].join(', ')) + '</span></div>';
+      if ((c[role]||[]).length) credits += '<div class="cred-row"><span class="cred-label">' + CREDIT_LABELS[role] + '</span><span class="cred-names">' + c[role].map(function(n){ return collabHtml(n, false); }).join(', ') + '</span></div>';
     });
 
     overlay = document.createElement('div');
