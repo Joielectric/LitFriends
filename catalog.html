@@ -3,218 +3,377 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="images/CA_ICON.png">
-  <link rel="apple-touch-icon" href="images/CA_ICON.png">
-  <link rel="manifest" href="manifest-ca.json">
-  <title>Listen — Consenting Adults</title>
+  <link rel="icon" type="image/png" href="images/JOI_Favicon.png">
+  <link rel="apple-touch-icon" href="images/JOI_Favicon.png">
+  <title>Catalogue — JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #151014;
-      --surface: #1d171c;
-      --surface-2: #261f25;
-      --surface-3: #2f282e;
-      --border: rgba(200,120,110,0.26);
-      --border-mid: rgba(210,130,120,0.44);
-      --border-hi: rgba(220,150,140,0.65);
-      --text: #f4ece8;
-      --text-mid: #cbaba4;
-      --text-dim: #8a6058;
-      --silver: #d8c8c0;
-      --silver-hi: #f5ece8;
-      --coral: #e8634f;
-      --rose: #c05070;
-      --radius: 2px;
+      --bg: #12161f;
+      --surface: #1a2030;
+      --surface-2: #222a3e;
+      --surface-3: #2b3450;
+      --border: rgba(150,170,210,0.18);
+      --border-mid: rgba(150,170,210,0.34);
+      --text: #f2f6ff;
+      --text-mid: #c2cce0;
+      --text-dim: #8792ab;
+      --electric: #5b8de8;
+      --electric-dim: #2a4880;
+      --gender: #e8a44f;
+      --radius: 3px;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: "Cormorant Garamond", Georgia, serif;
+      font-family: "Raleway", system-ui, sans-serif;
       font-size: 16px;
-      line-height: 1.75;
+      line-height: 1.6;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    .page-wrap { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 0 1.5rem 6rem; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 1.2rem 5rem; }
 
-    .back-nav {
-      padding: 1.6rem 0 0;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .back-link {
-      color: var(--silver); text-decoration: none;
-      font-family: "Cinzel", serif; font-size: 0.7rem; letter-spacing: .12em; text-transform: uppercase;
-      transition: color .2s;
-    }
-    .back-link:hover { color: var(--silver-hi); }
-    .back-sep { color: var(--text-mid); font-size: 0.7rem; }
+    /* Header */
+    .cat-head { padding: 2.4rem 0 1.4rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .cat-eyebrow { font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--electric); display: block; margin-bottom: 0.6rem; }
+    .cat-head h1 { font-family: "Cinzel", serif; font-weight: 600; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: 0.06em; color: #fff; }
+    .cat-sub { color: var(--text-mid); font-size: 0.95rem; margin-top: 0.4rem; }
 
-    .hero {
-      text-align: center; padding: 3rem 0 2.4rem;
+    /* Filter bar */
+    .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.9rem; }
+    .search-input, .sel {
+      background: var(--surface-2); border: 1px solid var(--border-mid); color: var(--text);
+      font-family: "Raleway", sans-serif; font-size: 0.9rem; padding: 0.6rem 0.85rem; border-radius: var(--radius);
+      outline: none; transition: border-color 0.2s;
     }
-    .hero-eyebrow {
-      font-family: "Cinzel", serif;
-      font-size: 0.72rem; letter-spacing: .5em; text-transform: uppercase;
-      color: var(--silver); display: block; margin-bottom: 1rem;
-    }
-    .hero h1 {
-      font-family: "Cinzel", serif;
-      font-size: clamp(2rem, 6vw, 3.5rem);
-      font-weight: 300; letter-spacing: .12em;
-      background: linear-gradient(160deg, #f0c8b8 0%, var(--coral) 40%, var(--rose) 70%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.8rem;
-    }
-    .hero-sub {
-      color: var(--text-mid); font-style: italic; font-size: 1.05rem;
-    }
-    .hero-divider {
-      display: flex; align-items: center; gap: 1rem;
-      justify-content: center; margin: 1.6rem auto; max-width: 260px;
-    }
-    .hero-divider span { flex: 1; height: 1px; background: var(--border); }
-    .hero-divider i { width: 4px; height: 4px; background: var(--coral); transform: rotate(45deg); display: inline-block; opacity: .7; }
+    .search-input { flex: 1; min-width: 200px; }
+    .search-input:focus, .sel:focus { border-color: var(--electric); }
+    .sel { cursor: pointer; }
+    .sel option { background: var(--surface-2); }
 
-    .section-label {
-      font-family: "Cinzel", serif;
-      font-size: 0.72rem; font-weight: 600; letter-spacing: .38em; text-transform: uppercase;
-      color: var(--text-dim);
-      display: flex; align-items: center; gap: 1rem;
-      margin-bottom: 1.6rem;
+    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-bottom: 0.6rem; }
+    .chip-label { font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-right: 4px; }
+    .chip {
+      font-size: 0.74rem; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 20px;
+      border: 1px solid var(--border-mid); background: transparent; color: var(--text-mid);
+      cursor: pointer; transition: all 0.15s; font-family: "Raleway", sans-serif;
     }
-    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+    .chip:hover { border-color: var(--electric); color: var(--text); }
+    .chip.active { background: var(--electric); border-color: var(--electric); color: #fff; }
+    .chip.gender.active { background: var(--gender); border-color: var(--gender); color: #201400; }
+    .chip.gender { color: var(--gender); border-color: rgba(232,164,79,0.4); }
 
-    /* === STARFIELD & WAVEFORM === */
-    #stars, #waveform {
-      position: fixed; inset: 0;
-      pointer-events: none; z-index: 0;
+    .meta-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0 0.8rem; gap: 1rem; }
+    .count { color: var(--text-dim); font-size: 0.8rem; }
+    .clear-btn {
+      background: none; border: 1px solid var(--border-mid); color: var(--text-mid);
+      font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 0.4rem 0.9rem; border-radius: var(--radius); cursor: pointer; transition: all 0.2s;
     }
-    .bg-glow {
-      position: fixed; inset: 0;
-      pointer-events: none; z-index: 0;
-      background:
-        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(140,30,50,0.35) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(200,60,50,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 30% at 80% 70%, rgba(180,50,90,0.10) 0%, transparent 60%);
+    .clear-btn:hover { border-color: var(--electric); color: var(--text); }
+
+    /* Table */
+    .table { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .thead {
+      display: grid; grid-template-columns: 92px 2fr 1.1fr 1.6fr;
+      gap: 0.8rem; padding: 0.7rem 1rem; background: var(--surface-2);
+      font-family: "Cinzel", serif; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+    .row {
+      display: grid; grid-template-columns: 92px 2fr 1.1fr 1.6fr;
+      gap: 0.8rem; padding: 0.85rem 1rem; align-items: start;
+      border-bottom: 1px solid var(--border); cursor: pointer;
+      transition: background 0.15s; background: var(--surface);
+    }
+    .row:last-child { border-bottom: none; }
+    .row:hover { background: var(--surface-2); }
+    .c-date { font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; padding-top: 2px; }
+    .c-title { font-weight: 600; color: #fff; font-size: 0.98rem; line-height: 1.3; }
+    .c-desc { font-size: 0.82rem; color: var(--text-dim); margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .c-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .rt { font-size: 0.66rem; letter-spacing: 0.03em; padding: 1px 7px; border-radius: 12px; border: 1px solid var(--border-mid); color: var(--text-mid); }
+    .rt.gender { color: var(--gender); border-color: rgba(232,164,79,0.4); }
+    .c-artist { font-size: 0.84rem; color: var(--text-mid); line-height: 1.4; }
+    .c-links { display: flex; flex-wrap: wrap; gap: 5px; }
+    .plink {
+      font-family: "Cinzel", serif; font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 4px 9px; border-radius: var(--radius); border: 1px solid var(--electric-dim);
+      color: var(--electric); text-decoration: none; white-space: nowrap; transition: all 0.18s; background: rgba(91,141,232,0.08);
+    }
+    .plink:hover { background: var(--electric); color: #fff; border-color: var(--electric); }
+
+    .empty, .loading { padding: 2.5rem 1rem; text-align: center; color: var(--text-dim); font-style: italic; }
+
+    /* Mobile: collapse to stacked cards */
+    @media (max-width: 720px) {
+      .thead { display: none; }
+      .row { grid-template-columns: 1fr; gap: 0.4rem; padding: 1rem; }
+      .c-date { padding-top: 0; }
+      .c-artist::before { content: "Feat. "; color: var(--text-dim); }
     }
 
-    footer {
-      text-align: center; padding: 2rem 1rem;
-      color: var(--text-dim);
-      font-family: "Cinzel", serif;
-      font-size: 0.65rem; letter-spacing: .3em; text-transform: uppercase;
-      border-top: 1px solid var(--border);
-      position: relative; z-index: 1;
+    /* Modal */
+    .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(6,9,16,0.82); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal { background: var(--surface); border: 1px solid var(--border-mid); border-top: 2px solid var(--electric); border-radius: var(--radius); max-width: 560px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 1.6rem 1.7rem; position: relative; }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.4rem; }
+    .modal-title { font-family: "Cinzel", serif; font-size: 1.15rem; color: #fff; line-height: 1.3; }
+    .modal-date { color: var(--text-dim); font-size: 0.8rem; margin-top: 3px; }
+    .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.6rem; line-height: 1; cursor: pointer; padding: 0 0 0 1rem; }
+    .modal-close:hover { color: #fff; }
+    .modal-desc { color: var(--text-mid); font-size: 0.92rem; line-height: 1.7; margin: 0.8rem 0 1rem; }
+    .modal-links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.1rem; }
+    .modal-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.7rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--electric-dim);
+      color: var(--electric); text-decoration: none; background: rgba(91,141,232,0.1); transition: all 0.18s;
     }
+    .modal-link:hover { background: var(--electric); color: #fff; border-color: var(--electric); }
+    .modal-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1rem; }
+    .modal-credits { border-top: 1px solid var(--border); padding-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.2rem; }
+    .cred-row { font-size: 0.82rem; }
+    .cred-label { display: block; color: var(--text-dim); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .cred-names { color: var(--text-mid); }
+
+    footer { text-align: center; padding: 2.5rem 1rem 1rem; color: var(--text-dim); font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.28em; text-transform: uppercase; }
   </style>
 </head>
 <body>
 
-<canvas id="stars"></canvas>
-<canvas id="waveform"></canvas>
-<div class="bg-glow"></div>
+<div class="wrap">
 
-<div class="page-wrap">
-
-  <nav class="back-nav">
-    <a class="back-link" href="index.html">&#8592; Home</a>
-  </nav>
-
-  <header class="hero">
-    <span class="hero-eyebrow">Consenting Adults</span>
-    <h1>Listen</h1>
-    <div class="hero-divider"><span></span><i></i><span></span></div>
-    <p class="hero-sub">Browse the full catalog across all artists and platforms.</p>
+  <header class="cat-head">
+    <span class="cat-eyebrow">JOI Electric</span>
+    <h1>Catalogue</h1>
+    <p class="cat-sub">Search the full collection by title, tag, or creator.</p>
   </header>
 
-  <div class="section-label">Audio Catalog</div>
-  <div id="audio-catalog"></div>
+  <div class="filters">
+    <input class="search-input" type="search" id="search" placeholder="Search titles, tags, creators…">
+    <select class="sel" id="name-filter"><option value="">All creators</option></select>
+    <select class="sel" id="provider-filter"><option value="">All platforms</option></select>
+  </div>
+
+  <div class="chip-row" id="audience-chips"></div>
+  <div class="chip-row" id="tag-chips"></div>
+
+  <div class="meta-row">
+    <span class="count" id="count"></span>
+    <button class="clear-btn" id="clear" style="display:none">Clear filters</button>
+  </div>
+
+  <div class="table">
+    <div class="thead">
+      <div>Date</div><div>Title</div><div>Creators</div><div>Links</div>
+    </div>
+    <div id="rows"><div class="loading">Loading catalogue…</div></div>
+  </div>
 
 </div>
 
-<footer>
-  Consenting Adults &mdash; 18+ only
-</footer>
+<footer>JOI Electric &mdash; 18+ only</footer>
 
 <script>
-  // Starfield
-  (function(){
-    var canvas = document.getElementById("stars");
-    var ctx = canvas.getContext("2d");
-    var stars = [];
-    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    function init(){
-      stars = [];
-      for(var i = 0; i < 180; i++){
-        stars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-          r: Math.random()*1.1+0.2, o: Math.random()*0.5+0.1, speed: Math.random()*0.015+0.005 });
-      }
+(function () {
+  'use strict';
+
+  var PROVIDERS = {
+    soundgasm: 'Soundgasm', literotica: 'Literotica', audiochan: 'Audiochan',
+    hotaudio: 'HotAudio', whyp: 'Whyp'
+  };
+  var GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A','NB4A','A4A'];
+  var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
+  var CREDIT_ORDER = ['voiceArtists','writers','producers','editors','musicians'];
+  var TOP_TAGS = 16;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function isGender(t){ return GENDER_TAGS.indexOf(String(t).toUpperCase()) !== -1; }
+  function provLabel(p){ return PROVIDERS[p] || p; }
+
+  function getLinks(e){
+    if (Array.isArray(e.links) && e.links.length) return e.links;
+    if (e.provider && e.url) return [{ provider: e.provider, url: e.url }];
+    return [];
+  }
+  function allNames(e){
+    var out = [], seen = {};
+    var c = e.credits || {};
+    CREDIT_ORDER.forEach(function(role){ (c[role] || []).forEach(function(n){ var k = n.toLowerCase(); if(!seen[k]){ seen[k]=1; out.push(n); } }); });
+    return out;
+  }
+  function voiceNames(e){ return ((e.credits || {}).voiceArtists) || []; }
+
+  var els = {
+    rows: document.getElementById('rows'),
+    search: document.getElementById('search'),
+    name: document.getElementById('name-filter'),
+    provider: document.getElementById('provider-filter'),
+    audience: document.getElementById('audience-chips'),
+    tags: document.getElementById('tag-chips'),
+    count: document.getElementById('count'),
+    clear: document.getElementById('clear')
+  };
+
+  var ENTRIES = [];
+  var state = { q: '', name: '', provider: '', tags: {} };
+
+  function fetchData(){
+    var url = window.__CATALOG_SRC__ || '/api/content';
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      ENTRIES = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      buildFilters();
+      apply();
+    }).catch(function(){
+      els.rows.innerHTML = '<div class="empty">Could not load the catalogue.</div>';
+    });
+  }
+
+  function buildFilters(){
+    // Creator dropdown (all credited names, sorted)
+    var names = {};
+    ENTRIES.forEach(function(e){ allNames(e).forEach(function(n){ names[n] = 1; }); });
+    Object.keys(names).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); })
+      .forEach(function(n){ var o = document.createElement('option'); o.value = n; o.textContent = n; els.name.appendChild(o); });
+
+    // Provider dropdown (only providers present)
+    var provs = {};
+    ENTRIES.forEach(function(e){ getLinks(e).forEach(function(l){ provs[l.provider] = 1; }); });
+    Object.keys(provs).forEach(function(p){ var o = document.createElement('option'); o.value = p; o.textContent = provLabel(p); els.provider.appendChild(o); });
+
+    // Tag chips
+    var count = {};
+    ENTRIES.forEach(function(e){ (e.tags || []).forEach(function(t){ count[t] = (count[t]||0)+1; }); });
+    var all = Object.keys(count);
+    var gender = all.filter(isGender);
+    var other = all.filter(function(t){ return !isGender(t); }).sort(function(a,b){ return count[b]-count[a]; }).slice(0, TOP_TAGS);
+
+    if (gender.length){
+      els.audience.innerHTML = '<span class="chip-label">Audience</span>';
+      gender.forEach(function(t){ els.audience.appendChild(chip(t, true)); });
     }
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      stars.forEach(function(s){
-        s.o += s.speed;
-        if(s.o > 0.7) s.speed = -Math.abs(s.speed);
-        if(s.o < 0.1) s.speed =  Math.abs(s.speed);
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        ctx.fillStyle = "rgba(240,200,180,"+s.o+")"; ctx.fill();
+    if (other.length){
+      els.tags.innerHTML = '<span class="chip-label">Tags</span>';
+      other.forEach(function(t){ els.tags.appendChild(chip(t, false)); });
+    }
+  }
+
+  function chip(t, gender){
+    var b = document.createElement('button');
+    b.className = 'chip' + (gender ? ' gender' : '');
+    b.textContent = t;
+    b.addEventListener('click', function(){
+      if (state.tags[t]){ delete state.tags[t]; b.classList.remove('active'); }
+      else { state.tags[t] = 1; b.classList.add('active'); }
+      apply();
+    });
+    return b;
+  }
+
+  function matches(e){
+    var q = state.q;
+    if (q){
+      var hay = (e.title||'') + ' ' + (e.desc||'') + ' ' + (e.shortDesc||'') + ' ' +
+                (e.tags||[]).join(' ') + ' ' + allNames(e).join(' ');
+      if (hay.toLowerCase().indexOf(q) === -1) return false;
+    }
+    if (state.name && allNames(e).indexOf(state.name) === -1) return false;
+    if (state.provider && !getLinks(e).some(function(l){ return l.provider === state.provider; })) return false;
+    var active = Object.keys(state.tags);
+    if (active.length){ var tags = e.tags || []; for (var i=0;i<active.length;i++){ if (tags.indexOf(active[i]) === -1) return false; } }
+    return true;
+  }
+
+  function rowHtml(e, idx){
+    var links = getLinks(e).map(function(l){
+      return '<a class="plink" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" data-stop="1">' + esc(provLabel(l.provider)) + '</a>';
+    }).join('');
+    var tags = (e.tags||[]).slice(0,6).map(function(t){
+      return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>';
+    }).join('');
+    var voices = voiceNames(e);
+    var artistStr = voices.length ? voices.join(', ') : (allNames(e).slice(0,2).join(', ') || '&mdash;');
+    return '<div class="row" data-idx="' + idx + '">' +
+      '<div class="c-date">' + esc(e.date||'') + '</div>' +
+      '<div><div class="c-title">' + esc(e.title||'Untitled') + '</div>' +
+        (e.shortDesc || e.desc ? '<div class="c-desc">' + esc(e.shortDesc||e.desc) + '</div>' : '') +
+        (tags ? '<div class="c-tags">' + tags + '</div>' : '') +
+      '</div>' +
+      '<div class="c-artist">' + artistStr + '</div>' +
+      '<div class="c-links">' + (links || '<span class="c-date">&mdash;</span>') + '</div>' +
+    '</div>';
+  }
+
+  function apply(){
+    var filtered = ENTRIES.filter(matches);
+    var has = state.q || state.name || state.provider || Object.keys(state.tags).length;
+    els.clear.style.display = has ? '' : 'none';
+    els.count.textContent = filtered.length + ' of ' + ENTRIES.length + ' works';
+    if (!filtered.length){ els.rows.innerHTML = '<div class="empty">No matching works.</div>'; return; }
+    els.rows.innerHTML = filtered.map(rowHtml).join('');
+    // wire rows
+    var rowEls = els.rows.querySelectorAll('.row');
+    filtered.forEach(function(e, i){
+      rowEls[i].addEventListener('click', function(ev){
+        if (ev.target.closest('[data-stop]')) return; // link click
+        openModal(e);
       });
-      requestAnimationFrame(draw);
-    }
-    resize(); init(); draw();
-    window.addEventListener("resize", function(){ resize(); init(); });
-  })();
+    });
+  }
 
-  // Waveform
-  (function(){
-    var canvas = document.getElementById("waveform");
-    var ctx = canvas.getContext("2d");
-    var t = 0;
-    var waves = [
-      { freq:0.010, amp:0.06, speed:0.0004, phase:0.0, color:"232,99,79",   opacity:0.35, width:2.0, yPos:0.08 },
-      { freq:0.014, amp:0.05, speed:0.0003, phase:1.2, color:"192,57,74",   opacity:0.28, width:1.5, yPos:0.20 },
-      { freq:0.008, amp:0.07, speed:0.0005, phase:2.5, color:"232,117,138", opacity:0.22, width:2.5, yPos:0.32 },
-      { freq:0.012, amp:0.05, speed:0.0003, phase:3.8, color:"232,99,79",   opacity:0.30, width:1.8, yPos:0.44 },
-      { freq:0.009, amp:0.08, speed:0.0002, phase:0.7, color:"180,50,90",   opacity:0.20, width:3.0, yPos:0.56 },
-      { freq:0.016, amp:0.04, speed:0.0004, phase:2.0, color:"232,99,79",   opacity:0.25, width:1.5, yPos:0.68 },
-      { freq:0.007, amp:0.09, speed:0.0002, phase:4.5, color:"192,57,74",   opacity:0.18, width:2.0, yPos:0.80 },
-      { freq:0.013, amp:0.05, speed:0.0003, phase:1.8, color:"232,117,138", opacity:0.22, width:1.2, yPos:0.92 },
-    ];
-    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    function drawWave(wave){
-      var w=canvas.width, h=canvas.height, baseY=h*wave.yPos, amp=h*wave.amp;
-      ctx.beginPath();
-      for(var x=0; x<=w; x+=2){
-        var y = baseY
-          + Math.sin(x*wave.freq + t*wave.speed*100 + wave.phase)*amp
-          + Math.sin(x*wave.freq*0.5 + t*wave.speed*60 + wave.phase+1)*amp*0.4;
-        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-      }
-      ctx.strokeStyle = "rgba("+wave.color+","+wave.opacity+")";
-      ctx.lineWidth = wave.width; ctx.stroke();
-    }
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      waves.forEach(function(wave){ drawWave(wave); });
-      t++; requestAnimationFrame(draw);
-    }
-    resize(); draw();
-    window.addEventListener("resize", resize);
-  })();
-</script>
-<script src="/js/audio.js"></script>
-<script>
-  AudioGrid.init({ container: '#audio-catalog', showFilters: true });
-</script>
+  // Modal
+  var overlay = null;
+  function closeModal(){ if (overlay){ overlay.remove(); overlay = null; document.body.style.overflow=''; } }
+  function openModal(e){
+    closeModal();
+    document.body.style.overflow = 'hidden';
+    var links = getLinks(e).map(function(l){
+      return '<a class="modal-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+        'Open on ' + esc(provLabel(l.provider)) + '</a>';
+    }).join('');
+    var tags = (e.tags||[]).map(function(t){ return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>'; }).join('');
+    var credits = '';
+    var c = e.credits || {};
+    CREDIT_ORDER.forEach(function(role){
+      if ((c[role]||[]).length) credits += '<div class="cred-row"><span class="cred-label">' + CREDIT_LABELS[role] + '</span><span class="cred-names">' + esc(c[role].join(', ')) + '</span></div>';
+    });
 
-<script src="/js/nav.js"></script>
+    overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.addEventListener('click', function(ev){ if (ev.target === overlay) closeModal(); });
+    overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' +
+      '<div class="modal-head"><div><div class="modal-title">' + esc(e.title||'Untitled') + '</div>' +
+        (e.date ? '<div class="modal-date">' + esc(e.date) + '</div>' : '') + '</div>' +
+        '<button class="modal-close" aria-label="Close">&times;</button></div>' +
+      (e.desc ? '<div class="modal-desc">' + esc(e.desc) + '</div>' : '') +
+      (links ? '<div class="modal-links">' + links + '</div>' : '<div class="modal-desc">No links yet.</div>') +
+      (tags ? '<div class="modal-tags">' + tags + '</div>' : '') +
+      (credits ? '<div class="modal-credits">' + credits + '</div>' : '') +
+    '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('.modal-close').addEventListener('click', closeModal);
+  }
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+
+  // Events
+  els.search.addEventListener('input', function(e){ state.q = e.target.value.toLowerCase().trim(); apply(); });
+  els.name.addEventListener('change', function(e){ state.name = e.target.value; apply(); });
+  els.provider.addEventListener('change', function(e){ state.provider = e.target.value; apply(); });
+  els.clear.addEventListener('click', function(){
+    state = { q:'', name:'', provider:'', tags:{} };
+    els.search.value = ''; els.name.value = ''; els.provider.value = '';
+    document.querySelectorAll('.chip.active').forEach(function(c){ c.classList.remove('active'); });
+    apply();
+  });
+
+  fetchData();
+})();
+</script>
 </body>
 </html>
