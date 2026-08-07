@@ -291,9 +291,9 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
         </select>
       </div>
       <div class="field">
-        <label class="field-label" for="audio_title">Which audio(s) are you giving feedback on? <span class="req">*</span></label>
+        <label class="field-label" for="audio_title">Which audio or script are you giving feedback on? <span class="req">*</span></label>
         <select id="audio_title" name="audio_title" required>
-          <option value="">&mdash; Select an audio &mdash;</option>
+          <option value="">&mdash; Select one &mdash;</option>
         </select>
         <p class="field-hint" id="audio-other-hint" style="display:none;margin-top:0.5rem;">Tell me which one:</p>
         <input type="text" id="audio_title_other" name="audio_title_other" placeholder="Title, series, or describe it" style="display:none;margin-top:0.2rem;">
@@ -514,7 +514,10 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 
       // Audio titles from the catalogue
       entries.forEach(function (e) {
-        if (e.title) addOpt(audioSel, e.title, e.date ? e.title + "  (" + e.date + ")" : e.title);
+        if (!e.title) return;
+        var kind = (e.type === "script") ? "Script" : "Audio";
+        var label = "[" + kind + "] " + e.title + (e.date ? "  (" + e.date + ")" : "");
+        addOpt(audioSel, e.title, label);
       });
       addOpt(audioSel, "Other / not listed");
     })
