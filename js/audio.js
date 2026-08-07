@@ -89,6 +89,11 @@
   let COLLAB = {};
   function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
   function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function entryType(entry) { return (entry && entry.type) === 'script' ? 'script' : 'audio'; }
+  function typeBadge(entry) {
+    return '<span class="ag-type-badge ag-type-' + entryType(entry) + '">' + (entryType(entry) === 'script' ? 'Script' : 'Audio') + '</span>';
+  }
+
   function collabHtml(name) {
     const c = COLLAB[normName(name)];
     const label = c ? c.name : name;
@@ -407,6 +412,13 @@
   font-size: 0.66rem; letter-spacing: .08em; display: block; margin-bottom: 1px;
 }
 .ag-credit-names { color: var(--text-mid, #888); }
+.ag-type-badge {
+  display: inline-block; font-family: "Cinzel", serif; font-size: 0.54rem; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; border-radius: 999px;
+  padding: 1px 8px; margin-right: 8px; vertical-align: middle;
+}
+.ag-type-audio  { color: #8fb4f2; border: 1px solid rgba(143,180,242,0.5); background: rgba(91,141,232,0.14); }
+.ag-type-script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
 .ag-collab-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(150,180,240,0.5); }
 .ag-collab-link:hover { color: #fff; text-decoration-color: currentColor; }
     `;
@@ -467,7 +479,7 @@
     overlay.innerHTML = `
       <div class="ag-modal" role="dialog" aria-modal="true">
         <div class="ag-modal-header">
-          <div class="ag-modal-title">${entry.title}</div>
+          <div class="ag-modal-title">${typeBadge(entry)}${entry.title}</div>
           ${entry.date ? `<div class="ag-modal-date">${entry.date}</div>` : ''}
           <button class="ag-modal-close" aria-label="Close">&times;</button>
         </div>
@@ -518,7 +530,7 @@
       <div class="ag-row">
         <div class="ag-row-date">${entry.date || ''}</div>
         <div class="ag-row-main">
-          <div class="ag-row-title">${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">— ' + artistBadges + '</span>' : ''}</div>
+          <div class="ag-row-title">${typeBadge(entry)}${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">— ' + artistBadges + '</span>' : ''}</div>
           ${entry.shortDesc ? `<div class="ag-row-desc">${entry.shortDesc}</div>` : ''}
           ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
         </div>
