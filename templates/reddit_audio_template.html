@@ -170,7 +170,16 @@
         <!-- EDITOR PANEL -->
         <div class="editor-panel">
             <div class="panel-title">Reddit Audio Post</div>
-            
+
+            <!-- LOAD FROM CATALOGUE -->
+            <div class="form-group">
+                <label class="form-label">Load from Catalogue</label>
+                <select id="catalogSelect" class="tag-select">
+                    <option value="">— Select a published audio —</option>
+                </select>
+                <small style="color: #888; font-size: 12px;">Auto-fills title, tags, descriptions, links (with TRT), and credits from the catalogue.</small>
+            </div>
+
             <!-- TITLE SECTION -->
             <div class="section-header">Title Section</div>
             
@@ -532,6 +541,83 @@
                 successMsg.style.display = 'none';
             }, 3000);
         }
+
+        // ── Catalogue auto-fill ──────────────────────────────────────────────
+        const CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan', hotaudio:'HotAudio', whyp:'Whyp' };
+        const CAT_CREDIT_MAP = [['voiceArtists','Voice Acting'],['writers','Writers'],['producers','Production'],['editors','Editing'],['musicians','Music']];
+        let CATALOG = [];
+
+        function catGetLinks(e) {
+            if (Array.isArray(e.links) && e.links.length) return e.links;
+            if (e.provider && e.url) return [{ provider: e.provider, url: e.url }];
+            return [];
+        }
+        function catLinkText(provider, trt, multi) {
+            let base = multi ? ('🎧Listen on ' + (CAT_PROVIDERS[provider] || provider)) : '🎧Listen Here';
+            if (trt) base += ' TRT - ' + trt;
+            return base;
+        }
+        function catFormatCredits(c) {
+            if (!c) return '';
+            const lines = [];
+            CAT_CREDIT_MAP.forEach(([k, label]) => { if ((c[k] || []).length) lines.push('**' + label + ':** ' + c[k].join(', ')); });
+            return lines.join('\n');
+        }
+        function catSetLinks(links, trt) {
+            const container = document.getElementById('audioLinksContainer');
+            container.innerHTML = '';
+            audioLinkCount = 0;
+            const list = links.length ? links : [{ provider:'', url:'' }];
+            const multi = links.length > 1;
+            list.forEach(lk => {
+                const idx = audioLinkCount;
+                const g = document.createElement('div');
+                g.className = 'audio-link-group';
+                g.setAttribute('data-link-index', idx);
+                g.innerHTML =
+                    '<div class="form-group"><label class="form-label">Audio Link ' + (idx+1) + ' - URL</label>' +
+                    '<input type="text" class="form-input audio-url" placeholder="https://your-audio-link.com" data-index="' + idx + '"></div>' +
+                    '<div class="form-group"><label class="form-label">Audio Link ' + (idx+1) + ' - Display Text</label>' +
+                    '<input type="text" class="form-input audio-text" placeholder="Listen Here" data-index="' + idx + '"></div>';
+                container.appendChild(g);
+                g.querySelector('.audio-url').value = lk.url || '';
+                g.querySelector('.audio-text').value = lk.url ? catLinkText(lk.provider, trt, multi) : '';
+                g.querySelectorAll('.form-input').forEach(inp => inp.addEventListener('input', updatePreviews));
+                audioLinkCount++;
+            });
+        }
+        function catApplyEntry(e) {
+            const genderSelect = document.getElementById('genderTag');
+            const genderOpts = Array.from(genderSelect.options).map(o => o.value).filter(Boolean);
+            const tags = e.tags || [];
+            const gender = tags.find(t => genderOpts.indexOf(String(t).toUpperCase()) !== -1);
+            genderSelect.value = gender ? String(gender).toUpperCase() : '';
+            document.getElementById('audioTitle').value = e.title || '';
+            document.getElementById('tags').value = tags.filter(t => t !== gender).join(', ');
+            document.getElementById('shortDescription').value = e.shortDesc || '';
+            document.getElementById('longDescription').value = e.desc || '';
+            document.getElementById('credits').value = catFormatCredits(e.credits);
+            catSetLinks(catGetLinks(e), e.trt || '');
+            updatePreviews();
+        }
+        function catLoad() {
+            fetch('/api/content').then(r => r.json()).then(d => {
+                CATALOG = (d.entries || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+                const sel = document.getElementById('catalogSelect');
+                CATALOG.forEach((e, i) => {
+                    const o = document.createElement('option');
+                    o.value = i;
+                    o.textContent = (e.date ? e.date + ' — ' : '') + (e.title || 'Untitled');
+                    sel.appendChild(o);
+                });
+            }).catch(() => {});
+        }
+        document.getElementById('catalogSelect').addEventListener('change', function () {
+            if (this.value === '') return;
+            const e = CATALOG[+this.value];
+            if (e) catApplyEntry(e);
+        });
+        catLoad();
     </script>
 </body>
 </html>
