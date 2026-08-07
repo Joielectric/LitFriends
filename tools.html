@@ -399,11 +399,32 @@
                 </div>
 
 
+                <!-- Latest & News -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label" style="margin-bottom:10px">Latest &amp; News <span style="font-weight:normal;color:var(--text-mid)">(shown on the landing page)</span></label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                        <input id="cm-news-title" class="cm-input" placeholder="Update headline">
+                        <input id="cm-news-date" class="cm-input" placeholder="Date label (e.g. Aug 2026) — optional">
+                    </div>
+                    <textarea id="cm-news-body" class="cm-input" placeholder="Write your update…" style="width:100%;min-height:70px;resize:vertical;"></textarea>
+                    <button type="button" class="cm-btn" style="margin-top:8px" onclick="cmNewsAdd()">Post Update</button>
+                    <div id="cm-news-list" style="margin-top:12px;"></div>
+                </div>
+
                 <!-- Add / Edit form -->
                 <div class="cm-form-grid">
-                    <div class="cm-full">
-                        <label class="cm-label">Title</label>
-                        <input id="cm-title" class="cm-input" placeholder="Audio title" style="width:100%">
+                    <div class="cm-full" style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
+                        <div>
+                            <label class="cm-label">Type</label>
+                            <select id="cm-type" class="cm-input" style="width:100%">
+                                <option value="audio">Audio</option>
+                                <option value="script">Script</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="cm-label">Title</label>
+                            <input id="cm-title" class="cm-input" placeholder="Title" style="width:100%">
+                        </div>
                     </div>
 
                     <!-- Multi-platform links -->
@@ -914,6 +935,7 @@
 
     let cmEntries = [];
     let cmCollaborators = [];
+    let cmNews = [];
     let cmPassword = '';
     let cmEditingId = null;
 
@@ -969,6 +991,43 @@
         cmPersist(function () { cmRenderCollabManager(); cmRenderCredits(); });
       }
       cmCreditAdd(role, name);
+    }
+
+    // ── Latest & News ─────────────────────────────────────────────────────────
+    function cmRenderNews() {
+      const el = document.getElementById('cm-news-list');
+      if (!el) return;
+      if (!cmNews.length) { el.innerHTML = '<div class="cm-collab-empty">No updates posted yet.</div>'; return; }
+      el.innerHTML = cmNews.map(function (n, i) {
+        return '<div class="cm-entry-row" style="padding:10px 14px;">' +
+          '<div class="cm-entry-info">' +
+            '<div class="cm-entry-title">' + String(n.title || '').replace(/</g, '&lt;') + '</div>' +
+            '<div class="cm-entry-meta">' + String(n.date || '').replace(/</g, '&lt;') +
+              (n.body ? ' &middot; ' + String(n.body).replace(/</g, '&lt;').slice(0, 90) : '') + '</div>' +
+          '</div>' +
+          '<button class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmNewsDelete(' + i + ')">Delete</button>' +
+        '</div>';
+      }).join('');
+    }
+    function cmNewsAdd() {
+      const title = document.getElementById('cm-news-title').value.trim();
+      const date = document.getElementById('cm-news-date').value.trim();
+      const body = document.getElementById('cm-news-body').value.trim();
+      if (!title && !body) { cmShowMsg('Write a headline or an update first.', false); return; }
+      cmNews.unshift({ title: title, date: date, body: body });
+      cmPersist(function () {
+        document.getElementById('cm-news-title').value = '';
+        document.getElementById('cm-news-date').value = '';
+        document.getElementById('cm-news-body').value = '';
+        cmRenderNews();
+        cmShowMsg('Update posted to the landing page.', true);
+      });
+    }
+    function cmNewsDelete(i) {
+      if (!cmNews[i]) return;
+      if (!confirm('Delete this update?')) return;
+      cmNews.splice(i, 1);
+      cmPersist(function () { cmRenderNews(); cmShowMsg('Update deleted.', true); });
     }
 
     // Collaborators manager — no visible list; add + edit-on-select only
@@ -1087,12 +1146,14 @@
           cmPassword = pw;
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
+          cmNews = data.news || [];
           const ls = document.getElementById('cm-lock-screen');
           if (ls) ls.style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
           cmRenderCollabManager();
+          cmRenderNews();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -1122,11 +1183,13 @@
           cmPassword = pw;
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
+          cmNews = data.news || [];
           document.getElementById('cm-lock-screen').style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
           cmRenderCollabManager();
+          cmRenderNews();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -1262,6 +1325,7 @@
         id:    cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
         links,
         title,
+        type:  document.getElementById('cm-type').value || 'audio',
         tags:      cmNormalizeTagList(document.getElementById('cm-tags').value),
         shortDesc: document.getElementById('cm-short-desc').value.trim(),
         desc:      document.getElementById('cm-desc').value.trim(),
@@ -1297,6 +1361,7 @@
       if (!e) return;
       cmEditingId = id;
       document.getElementById('cm-title').value = e.title;
+      document.getElementById('cm-type').value = e.type || 'audio';
       const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
       cmSetLinks(links);
       document.getElementById('cm-tags').value       = (e.tags || []).join(', ');
@@ -1331,6 +1396,7 @@
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
       ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cm-type').value = 'audio';
       cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
       cmRenderCredits();
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
@@ -1353,7 +1419,7 @@
       el.innerHTML = list.map(e => `
         <div class="cm-entry-row">
           <div class="cm-entry-info">
-            <div class="cm-entry-title">${e.title}</div>
+            <div class="cm-entry-title">${(e.type || 'audio') === 'script' ? '<span style="font-family:\'Cinzel\',serif;font-size:0.6rem;letter-spacing:.12em;text-transform:uppercase;color:#c9a227;border:1px solid rgba(201,162,39,.5);border-radius:999px;padding:1px 8px;margin-right:8px;vertical-align:middle;">Script</span>' : ''}${e.title}</div>
             <div class="cm-entry-meta">
               ${(e.artists || (e.artist ? [e.artist] : [])).map(a => ARTIST_LABELS[a] || a).join(', ')}
               &middot; ${e.date || 'no date'}
@@ -1371,7 +1437,7 @@
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, entries: cmEntries, collaborators: cmCollaborators }),
+        body: JSON.stringify({ password: cmPassword, entries: cmEntries, collaborators: cmCollaborators, news: cmNews }),
       })
         .then(r => r.json())
         .then(data => {

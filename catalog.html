@@ -106,6 +106,8 @@
     .rt { font-size: 0.66rem; letter-spacing: 0.03em; padding: 1px 7px; border-radius: 12px; border: 1px solid var(--border-mid); color: var(--text-mid); }
     .rt.gender { color: var(--gender); border-color: rgba(232,164,79,0.4); }
     .c-artist { font-size: 0.84rem; color: var(--text-mid); line-height: 1.4; }
+    .type-badge { font-family: "Cinzel", serif; font-size: 0.54rem; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; margin-right: 7px; vertical-align: middle; white-space: nowrap; }
+    .type-badge.script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
     .collab-link { color: var(--electric); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
     .collab-link:hover { border-bottom-color: var(--electric); }
     .c-links { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -174,6 +176,11 @@
 
   <div class="filters">
     <input class="search-input" type="search" id="search" placeholder="Search titles, tags, creators…">
+    <select class="sel" id="type-filter">
+      <option value="">All types</option>
+      <option value="audio">Audio</option>
+      <option value="script">Scripts</option>
+    </select>
     <select class="sel" id="name-filter"><option value="">All creators</option></select>
     <select class="sel" id="provider-filter"><option value="">All platforms</option></select>
   </div>
@@ -242,6 +249,7 @@
   var els = {
     rows: document.getElementById('rows'),
     search: document.getElementById('search'),
+    type: document.getElementById('type-filter'),
     name: document.getElementById('name-filter'),
     provider: document.getElementById('provider-filter'),
     audience: document.getElementById('audience-chips'),
@@ -251,7 +259,7 @@
   };
 
   var ENTRIES = [];
-  var state = { q: '', name: '', provider: '', tags: {} };
+  var state = { q: '', type: '', name: '', provider: '', tags: {} };
 
   function fetchData(){
     var url = window.__CATALOG_SRC__ || '/api/content';
@@ -314,6 +322,7 @@
                 (e.tags||[]).join(' ') + ' ' + allNames(e).join(' ');
       if (hay.toLowerCase().indexOf(q) === -1) return false;
     }
+    if (state.type && (e.type || 'audio') !== state.type) return false;
     if (state.name && allNames(e).indexOf(state.name) === -1) return false;
     if (state.provider && !getLinks(e).some(function(l){ return l.provider === state.provider; })) return false;
     var active = Object.keys(state.tags);
@@ -333,7 +342,7 @@
     var artistStr = artistList.length ? artistList.map(function(n){ return collabHtml(n, true); }).join(', ') : '&mdash;';
     return '<div class="row" data-idx="' + idx + '">' +
       '<div class="c-date">' + esc(e.date||'') + (e.trt ? '<div class="c-trt">&#9201; ' + esc(e.trt) + '</div>' : '') + '</div>' +
-      '<div><div class="c-title">' + esc(e.title||'Untitled') + '</div>' +
+      '<div><div class="c-title">' + ((e.type||'audio')==='script' ? '<span class="type-badge script">Script</span>' : '') + esc(e.title||'Untitled') + '</div>' +
         (e.shortDesc || e.desc ? '<div class="c-desc">' + esc(e.shortDesc||e.desc) + '</div>' : '') +
         (tags ? '<div class="c-tags">' + tags + '</div>' : '') +
       '</div>' +
@@ -344,7 +353,7 @@
 
   function apply(){
     var filtered = ENTRIES.filter(matches);
-    var has = state.q || state.name || state.provider || Object.keys(state.tags).length;
+    var has = state.q || state.type || state.name || state.provider || Object.keys(state.tags).length;
     els.clear.style.display = has ? '' : 'none';
     els.count.textContent = filtered.length + ' of ' + ENTRIES.length + ' works';
     if (!filtered.length){ els.rows.innerHTML = '<div class="empty">No matching works.</div>'; return; }
@@ -385,7 +394,7 @@
     if (e.trt) meta += '<div class="meta-item"><span class="meta-label">Total Run Time</span><span class="meta-value">&#9201; ' + esc(e.trt) + '</span></div>';
 
     overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' +
-      '<div class="modal-head"><div class="modal-title">' + esc(e.title||'Untitled') + '</div>' +
+      '<div class="modal-head"><div class="modal-title">' + ((e.type||'audio')==='script' ? '<span class="type-badge script">Script</span>' : '') + esc(e.title||'Untitled') + '</div>' +
         '<button class="modal-close" aria-label="Close">&times;</button></div>' +
       (meta ? '<div class="modal-meta">' + meta + '</div>' : '') +
       (e.desc ? '<div class="modal-desc">' + esc(e.desc) + '</div>' : '') +
@@ -400,11 +409,12 @@
 
   // Events
   els.search.addEventListener('input', function(e){ state.q = e.target.value.toLowerCase().trim(); apply(); });
+  els.type.addEventListener('change', function(e){ state.type = e.target.value; apply(); });
   els.name.addEventListener('change', function(e){ state.name = e.target.value; apply(); });
   els.provider.addEventListener('change', function(e){ state.provider = e.target.value; apply(); });
   els.clear.addEventListener('click', function(){
-    state = { q:'', name:'', provider:'', tags:{} };
-    els.search.value = ''; els.name.value = ''; els.provider.value = '';
+    state = { q:'', type:'', name:'', provider:'', tags:{} };
+    els.search.value = ''; els.type.value = ''; els.name.value = ''; els.provider.value = '';
     document.querySelectorAll('.chip.active').forEach(function(c){ c.classList.remove('active'); });
     apply();
   });
