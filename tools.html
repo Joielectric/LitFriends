@@ -547,21 +547,23 @@
                     </div>
                 </div>
 
-                <!-- Entry list -->
+                <!-- Existing entries: pick one to edit or delete -->
                 <div class="cm-entries-list">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-                        <span style="color:var(--text-mid)" id="cm-count">0 entries</span>
-                        <div style="display:flex;gap:8px;align-items:center">
-                            <select id="cm-filter-artist" class="filter-select" onchange="cmRenderEntries()">
-                                <option value="">All Artists</option>
-                                <option value="joi-electric">JOI Electric</option>
-                                <option value="loona-licks">Loona Licks</option>
-                                <option value="misskittensk">MissKittenSK</option>
-                                <option value="hisbadgirl77">HisBadGirl77</option>
-                            </select>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+                        <label class="cm-label" style="margin:0">Existing Entries</label>
+                        <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
+                    </div>
+                    <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
+                    <select id="cm-entry-select" class="cm-input" style="width:100%" onchange="cmEntrySelected()">
+                        <option value="">Select an entry…</option>
+                    </select>
+                    <div id="cm-entry-actions" style="display:none;margin-top:10px;">
+                        <div id="cm-entry-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:8px;"></div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="cm-btn" onclick="cmEditSelected()">Edit</button>
+                            <button class="cm-btn cm-btn-danger" onclick="cmDeleteSelected()">Delete</button>
                         </div>
                     </div>
-                    <div id="cm-entries"></div>
                 </div>
             </div>
         </div>
@@ -1588,35 +1590,50 @@
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 
+    function cmEntryHaystack(e) {
+      const names = Object.values(e.credits || {}).flat().join(' ');
+      return [e.title, e.date, (e.tags || []).join(' '), names, e.type || 'audio'].join(' ').toLowerCase();
+    }
+
     function cmRenderEntries() {
-      const artistFilter = document.getElementById('cm-filter-artist').value;
-      const list = artistFilter
-        ? cmEntries.filter(e => (e.artists || (e.artist ? [e.artist] : [])).includes(artistFilter))
-        : cmEntries;
+      const q = (document.getElementById('cm-entry-search').value || '').toLowerCase().trim();
+      const list = q ? cmEntries.filter(e => cmEntryHaystack(e).includes(q)) : cmEntries;
 
-      document.getElementById('cm-count').textContent = `${cmEntries.length} entr${cmEntries.length === 1 ? 'y' : 'ies'}`;
+      document.getElementById('cm-count').textContent =
+        `${list.length}${q ? ' of ' + cmEntries.length : ''} entr${(q ? list.length : cmEntries.length) === 1 ? 'y' : 'ies'}`;
 
-      const el = document.getElementById('cm-entries');
-      if (!list.length) {
-        el.innerHTML = '<p style="color:#888;text-align:center">No entries yet.</p>';
-        return;
-      }
+      const sel = document.getElementById('cm-entry-select');
+      const keep = sel.value;
+      sel.innerHTML = '<option value="">' + (list.length ? 'Select an entry…' : 'No entries match') + '</option>' +
+        list.map(e => {
+          const kind = (e.type || 'audio') === 'script' ? '[Script] ' : '';
+          const label = kind + (e.title || 'Untitled') + (e.date ? '  (' + e.date + ')' : '');
+          return `<option value="${e.id}">${label.replace(/</g, '&lt;')}</option>`;
+        }).join('');
+      if (keep && list.some(e => e.id === keep)) sel.value = keep; else cmEntrySelected();
+    }
 
-      el.innerHTML = list.map(e => `
-        <div class="cm-entry-row">
-          <div class="cm-entry-info">
-            <div class="cm-entry-title">${(e.type || 'audio') === 'script' ? '<span style="font-family:\'Cinzel\',serif;font-size:0.6rem;letter-spacing:.12em;text-transform:uppercase;color:#c9a227;border:1px solid rgba(201,162,39,.5);border-radius:999px;padding:1px 8px;margin-right:8px;vertical-align:middle;">Script</span>' : ''}${e.title}</div>
-            <div class="cm-entry-meta">
-              ${(e.artists || (e.artist ? [e.artist] : [])).map(a => ARTIST_LABELS[a] || a).join(', ')}
-              &middot; ${e.date || 'no date'}
-              ${e.tags && e.tags.length ? '&middot; ' + e.tags.join(', ') : ''}
-            </div>
-          </div>
-          <span class="cm-provider-badge">${(e.links || (e.provider ? [{provider:e.provider}] : [])).map(lk => PROVIDERS[lk.provider]?.label || lk.provider).join(' · ')}</span>
-          <button class="cm-btn cm-btn-sm" onclick="cmEditEntry('${e.id}')">Edit</button>
-          <button class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmDeleteEntry('${e.id}')">Delete</button>
-        </div>
-      `).join('');
+    function cmEntrySelected() {
+      const id = document.getElementById('cm-entry-select').value;
+      const box = document.getElementById('cm-entry-actions');
+      const e = cmEntries.find(x => x.id === id);
+      if (!e) { box.style.display = 'none'; return; }
+      const links = (e.links || (e.provider ? [{ provider: e.provider }] : []))
+        .map(lk => PROVIDERS[lk.provider]?.label || lk.provider).join(' · ');
+      const names = Object.values(e.credits || {}).flat();
+      document.getElementById('cm-entry-summary').innerHTML =
+        [(e.type || 'audio') === 'script' ? 'Script' : 'Audio', e.date || 'no date', links, names.join(', '),
+         (e.tags || []).join(', ')].filter(Boolean).join(' &middot; ');
+      box.style.display = 'block';
+    }
+
+    function cmEditSelected() {
+      const id = document.getElementById('cm-entry-select').value;
+      if (id) cmEditEntry(id);
+    }
+    function cmDeleteSelected() {
+      const id = document.getElementById('cm-entry-select').value;
+      if (id) cmDeleteEntry(id);
     }
 
     function cmPersist(onSuccess) {
