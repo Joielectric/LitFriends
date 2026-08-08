@@ -319,7 +319,15 @@
       .cm-people-add select, .cm-people-add button { width: 100%; max-width: none !important; }
       #cm-collab-from-entries, #cm-collab-edit-select, #fb-filter-title { max-width: none !important; width: 100%; }
       #cm-existing-tags { max-height: 120px; }
-      .cm-entry-row { flex-wrap: wrap; }
+      /* Entry / news rows: give the text the full width, wrap controls below */
+      .cm-entry-row { flex-wrap: wrap; align-items: flex-start; gap: 8px; }
+      .cm-entry-info { flex: 1 0 100%; min-width: 100%; }
+      .cm-entry-title { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.35; }
+      .cm-entry-row .cm-btn, .cm-entry-row .cm-provider-badge { flex: 0 0 auto; }
+      /* Feedback cards */
+      .fb-card-head { flex-direction: column; align-items: stretch; }
+      .fb-card-title { white-space: normal; word-break: break-word; }
+      .fb-field { word-break: break-word; }
       .fb-stats { grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); }
     }
   </style>
