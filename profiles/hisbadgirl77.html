@@ -35,7 +35,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       background: var(--bg);
@@ -45,7 +45,8 @@
       font-size: 16px;
       line-height: 1.75;
       min-height: 100vh;
-      overflow-x: hidden;
+      min-height: 100dvh;
+      overflow-x: clip;
     }
 
     body::before {
