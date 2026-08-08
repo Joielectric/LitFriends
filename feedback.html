@@ -568,8 +568,24 @@ form.addEventListener("submit", async function(e){
   btn.disabled = true;
   btn.querySelector("span").textContent = "Sending…";
   try {
+    var fd = new FormData(form);
+
+    // Archive a copy for the feedback portal (never blocks the real submit)
+    try {
+      var fields = {};
+      fd.forEach(function (v, k) {
+        if (k === "access_key") return;
+        fields[k] = (fields[k] === undefined) ? v : (fields[k] + ", " + v);
+      });
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: fields, botcheck: fd.get("botcheck") || "" })
+      }).catch(function () {});
+    } catch (archiveErr) { /* archiving is best-effort */ }
+
     var res = await fetch(form.getAttribute("action"), {
-      method: "POST", body: new FormData(form)
+      method: "POST", body: fd
     });
     if (res.ok) {
       form.classList.add("hidden");
