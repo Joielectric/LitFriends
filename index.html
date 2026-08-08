@@ -76,7 +76,23 @@
     .news-item { background: rgba(30,36,56,0.82); border: 1px solid var(--border); border-left: 3px solid var(--electric); border-radius: var(--radius); padding: 1.1rem 1.3rem; }
     .news-date { font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 0.3rem; }
     .news-title { font-family: "Cormorant Garamond", serif; font-size: 1.25rem; color: var(--silver-hi); margin-bottom: 0.2rem; }
-    .news-body { font-size: 0.92rem; color: var(--text-mid); }
+    .news-body { font-size: 0.92rem; color: var(--text-mid); line-height: 1.75; }
+    .news-body a { color: var(--electric); text-decoration: none; border-bottom: 1px solid rgba(91,141,232,0.45); word-break: break-word; }
+    .news-body a:hover { color: #fff; border-bottom-color: var(--electric); }
+    .news-frame {
+      margin: 0.75rem 0; border: 1px solid var(--border-mid); border-radius: var(--radius);
+      background: rgba(10,14,24,0.5); padding: 6px; overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px rgba(0,0,0,0.35);
+    }
+    .news-frame img { display: block; width: 100%; height: auto; border-radius: 2px; }
+    .news-btn {
+      display: inline-block; margin-top: 0.8rem;
+      font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #eaf1ff; text-decoration: none; border: 1px solid var(--electric);
+      background: rgba(91,141,232,0.2); padding: 0.55rem 1.2rem; border-radius: 999px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .news-btn:hover { background: var(--electric); box-shadow: 0 4px 16px rgba(91,141,232,0.45); }
     .news-empty { color: var(--text-dim); font-style: italic; }
 
     /* Big cards */
@@ -210,13 +226,33 @@
   (function () {
     var grid = document.getElementById('news-grid');
     function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+    // Escape, keep line breaks, and turn pasted URLs into links
+    function richText(s) {
+      var out = esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
+        var trail = '', m = u.match(/[.,;:!?)\]]+$/);
+        if (m) { trail = m[0]; u = u.slice(0, -trail.length); }
+        return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
+      });
+      return out.replace(/\r?\n/g, '<br>');
+    }
+    // Allow absolute http(s) and site-relative paths; block javascript:/data: etc.
+    function safeUrl(u) {
+      u = String(u || '').trim();
+      if (!u) return '';
+      if (/^https?:\/\//i.test(u)) return u;
+      if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';   // any other scheme
+      return u.replace(/"/g, '%22');                    // relative path
+    }
     function render(list) {
       if (!list.length) { grid.innerHTML = '<div class="news-empty">No updates yet — check back soon.</div>'; return; }
       grid.innerHTML = list.map(function (n) {
+        var img = safeUrl(n.image), link = safeUrl(n.link);
         return '<div class="news-item">' +
           (n.date ? '<span class="news-date">' + esc(n.date) + '</span>' : '') +
           '<div class="news-title">' + esc(n.title || '') + '</div>' +
-          (n.body ? '<div class="news-body">' + esc(n.body) + '</div>' : '') +
+          (img ? '<div class="news-frame"><img src="' + img + '" alt="' + esc(n.title || 'Update image') + '" loading="lazy"></div>' : '') +
+          (n.body ? '<div class="news-body">' + richText(n.body) + '</div>' : '') +
+          (link ? '<a class="news-btn" href="' + link + '" target="_blank" rel="noopener noreferrer">' + esc(n.linkLabel || 'Read more') + ' &#8594;</a>' : '') +
         '</div>';
       }).join('');
     }

@@ -449,7 +449,12 @@
                         <input id="cm-news-title" class="cm-input" placeholder="Update headline">
                         <input id="cm-news-date" class="cm-input" placeholder="Date label (e.g. Aug 2026) — optional">
                     </div>
-                    <textarea id="cm-news-body" class="cm-input" placeholder="Write your update…" style="width:100%;min-height:70px;resize:vertical;"></textarea>
+                    <textarea id="cm-news-body" class="cm-input" placeholder="Write your update… (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                        <input id="cm-news-image" class="cm-input" placeholder="Image URL (optional) — shown in a frame">
+                        <input id="cm-news-link" class="cm-input" placeholder="Button link URL (optional)">
+                    </div>
+                    <input id="cm-news-link-label" class="cm-input" placeholder="Button label (optional, e.g. Listen now)" style="width:100%;margin-top:8px">
                     <button type="button" class="cm-btn" style="margin-top:8px" onclick="cmNewsAdd()">Post Update</button>
                     <div id="cm-news-list" style="margin-top:12px;"></div>
                 </div>
@@ -1168,9 +1173,13 @@
       const title = document.getElementById('cm-news-title').value.trim();
       const date = document.getElementById('cm-news-date').value.trim();
       const body = document.getElementById('cm-news-body').value.trim();
+      const image = document.getElementById('cm-news-image').value.trim();
+      const link = document.getElementById('cm-news-link').value.trim();
+      const linkLabel = document.getElementById('cm-news-link-label').value.trim();
       if (!title && !body) { cmShowMsg('Write a headline or an update first.', false); return; }
-      cmNews.unshift({ title: title, date: date, body: body });
+      cmNews.unshift({ title: title, date: date, body: body, image: image, link: link, linkLabel: linkLabel });
       cmPersist(function () {
+        ['cm-news-image','cm-news-link','cm-news-link-label'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cm-news-title').value = '';
         document.getElementById('cm-news-date').value = '';
         document.getElementById('cm-news-body').value = '';
