@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="../images/CA_ICON.png">
-  <link rel="apple-touch-icon" href="../images/CA_ICON.png">
-  <link rel="manifest" href="manifest-ca.json">
-  <title>Reddit Audio Post Template</title>
+    <link rel="icon" type="image/png" href="../images/JOI_Favicon.png">
+  <link rel="apple-touch-icon" href="../images/JOI_Favicon.png">
+  <title>Reddit Post Generator — JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #060306; --surface: #0c090c; --surface-2: #120f12; --surface-3: #181518;
-      --border: rgba(200,120,110,0.14); --border-mid: rgba(210,130,120,0.3); --border-hi: rgba(220,150,140,0.55);
-      --text: #f0e4d8; --text-mid: #c8b0a8; --text-dim: #7a5a58;
-      --silver: #d8c8c0; --silver-hi: #f5ece8;
-      --coral: #e8634f; --rose: #c05070; --radius: 2px;
+      --bg: #151a2a; --surface: #1e2438; --surface-2: #262d44; --surface-3: #2f3750;
+      --border: rgba(180,195,225,0.24); --border-mid: rgba(180,195,225,0.42); --border-hi: rgba(180,195,225,0.65);
+      --text: #f2f6ff; --text-mid: #c2cce0; --text-dim: #8792ab;
+      --silver: #c4cfe0; --silver-hi: #eaf0fa;
+      --coral: #5b8de8; --rose: #7aa6ec; --radius: 2px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -30,8 +29,8 @@
     body::before {
       content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background:
-        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(140,30,50,0.3) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 20% 80%, rgba(200,60,50,0.10) 0%, transparent 60%);
+        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(91,141,232,0.09) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 90% 90%, rgba(30,20,50,0.35) 0%, transparent 60%);
     }
     .navigation-header {
       position: relative; z-index: 1;
@@ -42,7 +41,7 @@
     }
     .nav-title {
       font-family: "Cinzel", serif; font-weight: 300; font-size: 1.5rem; letter-spacing: .12em;
-      background: linear-gradient(160deg, #f0c8b8 0%, var(--coral) 40%, var(--rose) 70%);
+      background: linear-gradient(160deg, #eaf2ff 0%, var(--coral) 45%, #8fb4f2 80%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .back-button {
@@ -86,10 +85,10 @@
       font-family: "Cormorant Garamond", Georgia, serif; font-size: 1rem;
       box-sizing: border-box; transition: border-color .2s;
     }
-    .tag-select option { background: #1a1a1a; color: #eee; }
+    .tag-select option { background: var(--surface-2); color: var(--text); }
     .form-input:focus, .form-textarea:focus, .tag-select:focus {
       outline: none; border-color: var(--coral);
-      box-shadow: 0 0 0 2px rgba(232,99,79,0.15);
+      box-shadow: 0 0 0 2px rgba(91,141,232,0.15);
     }
     .form-textarea { min-height: 80px; resize: vertical; }
     .copy-buttons { display: flex; gap: 10px; margin-top: 20px; }
@@ -116,7 +115,7 @@
     }
     .readonly-field { color: var(--text-mid); font-style: italic; font-size: 0.95rem; }
     .success-message {
-      background: rgba(232,99,79,0.15); border: 1px solid var(--coral); color: var(--silver-hi);
+      background: rgba(91,141,232,0.15); border: 1px solid var(--coral); color: var(--silver-hi);
       padding: 10px; border-radius: var(--radius); margin-top: 10px;
       display: none; text-align: center;
       font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .1em;
@@ -246,8 +245,8 @@
             </div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button type="button" onclick="addAudioLink()" style="padding: 8px 16px; background: linear-gradient(145deg, #46d160, #2da44e); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">+ Add Audio Link</button>
-                <button type="button" onclick="removeAudioLink()" style="padding: 8px 16px; background: linear-gradient(145deg, #dc3545, #b02a37); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">- Remove Last Link</button>
+                <button type="button" onclick="addAudioLink()" style="padding: 8px 16px; background: linear-gradient(145deg, #5b8de8, #2a4880); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">+ Add Audio Link</button>
+                <button type="button" onclick="removeAudioLink()" style="padding: 8px 16px; background: linear-gradient(145deg, #c0394a, #8f2436); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">- Remove Last Link</button>
             </div>
             
             <div class="readonly-section">

@@ -256,6 +256,24 @@
     .cm-msg { padding: 10px 14px; border-radius: var(--radius); margin: .8rem 0; font-size: 1rem; display: none; }
     .cm-msg.ok  { background: rgba(39,174,96,.12); border: 1px solid #27ae60; color: #60c890; display: block; }
     .cm-msg.err { background: rgba(192,80,112,.12); border: 1px solid var(--rose); color: #e090a8; display: block; }
+    /* Tabs */
+    .cm-tabs {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 18px;
+    }
+    .cm-tab {
+      font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--text-mid); background: transparent; border: 1px solid var(--border-mid);
+      border-radius: 999px; padding: 0.5rem 1.1rem; cursor: pointer; transition: all .18s; min-height: 40px;
+    }
+    .cm-tab:hover { color: var(--text); border-color: var(--coral); }
+    .cm-tab.active { color: #fff; background: rgba(91,141,232,0.25); border-color: var(--coral); box-shadow: 0 0 14px rgba(91,141,232,0.3); }
+    .cm-tab-panel[hidden] { display: none; }
+    @media (max-width: 768px) {
+      .cm-tabs { gap: 5px; }
+      .cm-tab { flex: 1 1 auto; padding: 0.5rem 0.7rem; font-size: 0.6rem; letter-spacing: .1em; }
+    }
+
     /* Feedback portal */
     .fb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
     .fb-stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
@@ -360,22 +378,6 @@
     <a href="docs/adding-content.html" target="_blank" style="display:inline-block;margin-top:0.8rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5b8de8;text-decoration:none;border-bottom:1px solid rgba(91,141,232,0.4);padding-bottom:2px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='#eaf0fa';this.style.borderColor='rgba(91,141,232,0.9)'" onmouseout="this.style.color='#5b8de8';this.style.borderColor='rgba(91,141,232,0.4)'">How to Add New Content &#8599;</a>
   </div>
         
-        <div class="tools-section">
-            <div class="section-title">Creative Tools</div>
-            <div class="tools-grid">
-                <a href="templates/reddit_audio_template.html" class="tool-card">
-                    <h3>Reddit Post Generator</h3>
-                    <p>Create perfectly formatted Reddit posts for your audio content with live preview and copy functionality.</p>
-                    <span class="tool-badge">Template</span>
-                </a>
-                <a href="templates/literotica_template.html" class="tool-card">
-                    <h3>Literotica Post Generator</h3>
-                    <p>Generate HTML-formatted posts for Literotica with contributor management and CSV integration.</p>
-                    <span class="tool-badge">Template</span>
-                </a>
-            </div>
-        </div>
-        
         <!-- ===== CONTENT MANAGER ===== -->
         <div class="tools-section">
             <div class="section-title">Content Manager</div>
@@ -396,77 +398,16 @@
             <div id="cm-panel" style="display:none">
                 <div id="cm-msg" class="cm-msg"></div>
 
-                <!-- Collaborators -->
-                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
-                    <label class="cm-label" style="margin-bottom:10px">Collaborators <span style="font-weight:normal;color:var(--text-mid)">(available in every credit pick-list)</span></label>
+                <nav class="cm-tabs" role="tablist">
+                  <button class="cm-tab active" data-tab="content"  onclick="cmTab('content')">Content</button>
+                  <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Collaborators</button>
+                  <button class="cm-tab"        data-tab="news"     onclick="cmTab('news')">News</button>
+                  <button class="cm-tab"        data-tab="feedback" onclick="cmTab('feedback')">Feedback</button>
+                  <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
+                  <button class="cm-tab"        data-tab="projects" onclick="cmTab('projects')">Projects</button>
+                </nav>
 
-                    <!-- Add a new collaborator -->
-                    <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;">
-                        <input id="cm-collab-name" class="cm-input" placeholder="Add collaborator name">
-                        <input id="cm-collab-url" class="cm-input" placeholder="https://profile-link (optional)">
-                        <button type="button" class="cm-btn" onclick="cmCollabAddFromForm()">Add</button>
-                    </div>
-                    <div style="margin-top:8px;">
-                        <select id="cm-collab-from-entries" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
-                            <option value="">Or add a name already used in entries…</option>
-                        </select>
-                    </div>
-
-                    <!-- Edit an existing collaborator -->
-                    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
-                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">Edit a collaborator</label>
-                        <select id="cm-collab-edit-select" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmCollabEditSelect(this.value)">
-                            <option value="">Select a collaborator…</option>
-                        </select>
-                        <div id="cm-collab-edit" style="display:none;margin-top:10px;">
-                            <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;">
-                                <input id="cm-collab-edit-name" class="cm-input" placeholder="Name">
-                                <input id="cm-collab-edit-url" class="cm-input" placeholder="https://profile-link (optional)">
-                                <button type="button" class="cm-btn" onclick="cmCollabSaveEdit()">Save</button>
-                            </div>
-                            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmCollabDeleteEdit()">Delete collaborator</button>
-                        </div>
-                    </div>
-                </div>
-
-
-                <!-- Feedback portal -->
-                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                        <label class="cm-label" style="margin:0">Listener Feedback <span style="font-weight:normal;color:var(--text-mid)">(submitted responses)</span></label>
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbLoad()">Refresh</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbExportCsv()">Download CSV</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbExportJson()">JSON</button>
-                        </div>
-                    </div>
-                    <div id="fb-stats" class="fb-stats"></div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
-                        <input id="fb-search" class="cm-input" placeholder="Search responses…" style="flex:1;min-width:180px;font-size:0.9rem" oninput="fbRender()">
-                        <select id="fb-filter-title" class="cm-input" style="max-width:260px;font-size:0.9rem" onchange="fbRender()">
-                            <option value="">All audios / scripts</option>
-                        </select>
-                    </div>
-                    <div id="fb-list"><div class="cm-collab-empty">Click Refresh to load responses.</div></div>
-                </div>
-
-                <!-- Latest & News -->
-                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
-                    <label class="cm-label" style="margin-bottom:10px">Latest &amp; News <span style="font-weight:normal;color:var(--text-mid)">(shown on the landing page)</span></label>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                        <input id="cm-news-title" class="cm-input" placeholder="Update headline">
-                        <input id="cm-news-date" class="cm-input" placeholder="Date label (e.g. Aug 2026) — optional">
-                    </div>
-                    <textarea id="cm-news-body" class="cm-input" placeholder="Write your update… (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-                        <input id="cm-news-image" class="cm-input" placeholder="Image URL (optional) — shown in a frame">
-                        <input id="cm-news-link" class="cm-input" placeholder="Button link URL (optional)">
-                    </div>
-                    <input id="cm-news-link-label" class="cm-input" placeholder="Button label (optional, e.g. Listen now)" style="width:100%;margin-top:8px">
-                    <button type="button" class="cm-btn" style="margin-top:8px" onclick="cmNewsAdd()">Post Update</button>
-                    <div id="cm-news-list" style="margin-top:12px;"></div>
-                </div>
-
+                <div class="cm-tab-panel" id="tabp-content">
                 <!-- Add / Edit form -->
                 <div class="cm-form-grid">
                     <div class="cm-full" style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
@@ -565,10 +506,108 @@
                         </div>
                     </div>
                 </div>
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-collab" hidden>
+                <!-- Collaborators -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label" style="margin-bottom:10px">Collaborators <span style="font-weight:normal;color:var(--text-mid)">(available in every credit pick-list)</span></label>
+
+                    <!-- Add a new collaborator -->
+                    <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;">
+                        <input id="cm-collab-name" class="cm-input" placeholder="Add collaborator name">
+                        <input id="cm-collab-url" class="cm-input" placeholder="https://profile-link (optional)">
+                        <button type="button" class="cm-btn" onclick="cmCollabAddFromForm()">Add</button>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <select id="cm-collab-from-entries" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
+                            <option value="">Or add a name already used in entries…</option>
+                        </select>
+                    </div>
+
+                    <!-- Edit an existing collaborator -->
+                    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">Edit a collaborator</label>
+                        <select id="cm-collab-edit-select" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmCollabEditSelect(this.value)">
+                            <option value="">Select a collaborator…</option>
+                        </select>
+                        <div id="cm-collab-edit" style="display:none;margin-top:10px;">
+                            <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;">
+                                <input id="cm-collab-edit-name" class="cm-input" placeholder="Name">
+                                <input id="cm-collab-edit-url" class="cm-input" placeholder="https://profile-link (optional)">
+                                <button type="button" class="cm-btn" onclick="cmCollabSaveEdit()">Save</button>
+                            </div>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmCollabDeleteEdit()">Delete collaborator</button>
+                        </div>
+                    </div>
+                </div>
+
+
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-news" hidden>
+                <!-- Latest & News -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label" style="margin-bottom:10px">Latest &amp; News <span style="font-weight:normal;color:var(--text-mid)">(shown on the landing page)</span></label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                        <input id="cm-news-title" class="cm-input" placeholder="Update headline">
+                        <input id="cm-news-date" class="cm-input" placeholder="Date label (e.g. Aug 2026) — optional">
+                    </div>
+                    <textarea id="cm-news-body" class="cm-input" placeholder="Write your update… (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                        <input id="cm-news-image" class="cm-input" placeholder="Image URL (optional) — shown in a frame">
+                        <input id="cm-news-link" class="cm-input" placeholder="Button link URL (optional)">
+                    </div>
+                    <input id="cm-news-link-label" class="cm-input" placeholder="Button label (optional, e.g. Listen now)" style="width:100%;margin-top:8px">
+                    <button type="button" class="cm-btn" style="margin-top:8px" onclick="cmNewsAdd()">Post Update</button>
+                    <div id="cm-news-list" style="margin-top:12px;"></div>
+                </div>
+
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-feedback" hidden>
+                <!-- Feedback portal -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                        <label class="cm-label" style="margin:0">Listener Feedback <span style="font-weight:normal;color:var(--text-mid)">(submitted responses)</span></label>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbLoad()">Refresh</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbExportCsv()">Download CSV</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbExportJson()">JSON</button>
+                        </div>
+                    </div>
+                    <div id="fb-stats" class="fb-stats"></div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+                        <input id="fb-search" class="cm-input" placeholder="Search responses…" style="flex:1;min-width:180px;font-size:0.9rem" oninput="fbRender()">
+                        <select id="fb-filter-title" class="cm-input" style="max-width:260px;font-size:0.9rem" onchange="fbRender()">
+                            <option value="">All audios / scripts</option>
+                        </select>
+                    </div>
+                    <div id="fb-list"><div class="cm-collab-empty">Click Refresh to load responses.</div></div>
+                </div>
+
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-templates" hidden>
+        <div class="tools-section">
+            <div class="section-title">Creative Tools</div>
+            <div class="tools-grid">
+                <a href="templates/reddit_audio_template.html" class="tool-card">
+                    <h3>Reddit Post Generator</h3>
+                    <p>Create perfectly formatted Reddit posts for your audio content with live preview and copy functionality.</p>
+                    <span class="tool-badge">Template</span>
+                </a>
+                <a href="templates/literotica_template.html" class="tool-card">
+                    <h3>Literotica Post Generator</h3>
+                    <p>Generate HTML-formatted posts for Literotica with contributor management and CSV integration.</p>
+                    <span class="tool-badge">Template</span>
+                </a>
             </div>
         </div>
-        <!-- ===== END CONTENT MANAGER ===== -->
+        
+                </div>
 
+                <div class="cm-tab-panel" id="tabp-projects" hidden>
         <div class="projects-container">
             <div class="section-title">Current Projects</div>
             
@@ -667,6 +706,13 @@
                 <p style="text-align: center; color: #888;">Load projects to view current work</p>
             </div>
         </div>
+                </div>
+
+
+            </div>
+        </div>
+        <!-- ===== END CONTENT MANAGER ===== -->
+
     </div>
 
     <script>
@@ -1329,6 +1375,7 @@
           cmRenderCollabManager();
           cmRenderNews();
           fbLoad();
+          cmRestoreTab();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -1366,6 +1413,7 @@
           cmRenderCollabManager();
           cmRenderNews();
           fbLoad();
+          cmRestoreTab();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -1657,6 +1705,24 @@
         if (sel.value) { cmCreditAdd(sel.dataset.role, sel.value); sel.value = ''; }
       }
     });
+
+    // ── Tabs ──────────────────────────────────────────────────────────────────
+    function cmTab(name) {
+      document.querySelectorAll('.cm-tab').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.tab === name);
+      });
+      document.querySelectorAll('.cm-tab-panel').forEach(function (p) {
+        p.hidden = (p.id !== 'tabp-' + name);
+      });
+      try { sessionStorage.setItem('cm_tab', name); } catch (e) {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function cmRestoreTab() {
+      var name = 'content';
+      try { name = sessionStorage.getItem('cm_tab') || 'content'; } catch (e) {}
+      if (!document.getElementById('tabp-' + name)) name = 'content';
+      cmTab(name);
+    }
 
     function cmShowMsg(text, ok) {
       const el = document.getElementById('cm-msg');
