@@ -94,6 +94,21 @@
     return '<span class="ag-type-badge ag-type-' + entryType(entry) + '">' + (entryType(entry) === 'script' ? 'Script' : 'Audio') + '</span>';
   }
 
+  function richText(str) {
+    return escHtml(str).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
+      var trail = '', m = u.match(/[.,;:!?)\]]+$/);
+      if (m) { trail = m[0]; u = u.slice(0, -trail.length); }
+      return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
+    }).replace(/\r?\n/g, '<br>');
+  }
+  function safeUrl(u) {
+    u = String(u || '').trim();
+    if (!u) return '';
+    if (/^https?:\/\//i.test(u)) return u;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';
+    return u.replace(/"/g, '%22');
+  }
+
   function collabHtml(name) {
     const c = COLLAB[normName(name)];
     const label = c ? c.name : name;
@@ -419,6 +434,10 @@
 }
 .ag-type-audio  { color: #8fb4f2; border: 1px solid rgba(143,180,242,0.5); background: rgba(91,141,232,0.14); }
 .ag-type-script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
+.ag-modal-desc a { color: #8fb4f2; text-decoration: underline; text-underline-offset: 2px; word-break: break-word; }
+.ag-modal-desc a:hover { color: #fff; }
+.ag-modal-frame { margin-bottom: 14px; border: 1px solid var(--border-mid, rgba(180,195,225,0.42)); border-radius: 6px; background: rgba(10,14,24,0.5); padding: 6px; overflow: hidden; }
+.ag-modal-frame img { display: block; width: 100%; height: auto; border-radius: 3px; }
 .ag-collab-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(150,180,240,0.5); }
 .ag-collab-link:hover { color: #fff; text-decoration-color: currentColor; }
     `;
@@ -485,7 +504,8 @@
         </div>
         ${tabsHtml}
         <div class="ag-modal-body">
-          ${entry.desc ? `<div class="ag-modal-desc">${entry.desc}</div>` : ''}
+          ${safeUrl(entry.image) ? `<div class="ag-modal-frame"><img src="${safeUrl(entry.image)}" alt="${escHtml(entry.title || '')}" loading="lazy"></div>` : ''}
+          ${entry.desc ? `<div class="ag-modal-desc">${richText(entry.desc)}</div>` : ''}
           <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0]) : ''}</div>
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
           ${creditsHtml(entry.credits)}
