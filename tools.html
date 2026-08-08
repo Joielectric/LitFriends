@@ -444,7 +444,9 @@
                         <label class="cm-label">Short Description <span style="font-weight:normal;color:var(--text-mid)">(optional, max 100 chars)</span></label>
                         <input id="cm-short-desc" class="cm-input" placeholder="Brief one-line summary" maxlength="100" style="width:100%;margin-bottom:8px">
                         <label class="cm-label">Long Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
-                        <input id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc." style="width:100%">
+                        <textarea id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc. (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
+                        <label class="cm-label" style="margin-top:8px">Image URL <span style="font-weight:normal;color:var(--text-mid)">(optional, shown in a frame)</span></label>
+                        <input id="cm-image" class="cm-input" placeholder="https://… or images/cover.png" style="width:100%">
                     </div>
                     <div>
                         <label class="cm-label">Date</label>
@@ -1567,6 +1569,7 @@
         desc:      document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
         trt:     document.getElementById('cm-trt').value.trim(),
+        image:   document.getElementById('cm-image').value.trim(),
         credits: {
           voiceArtists: cmCredits.voiceArtists.slice(),
           writers:      cmCredits.writers.slice(),
@@ -1614,6 +1617,7 @@
       cmRenderCredits();
       document.getElementById('cm-date').value = e.date || '';
       document.getElementById('cm-trt').value = e.trt || '';
+      document.getElementById('cm-image').value = e.image || '';
       const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
       window.scrollTo({ top: formTop, behavior: 'smooth' });
       document.getElementById('cm-save-btn').textContent = 'Update Entry';
@@ -1631,7 +1635,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt','cm-image'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-type').value = 'audio';
       cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
       cmRenderCredits();
