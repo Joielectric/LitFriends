@@ -256,6 +256,18 @@
     .cm-msg { padding: 10px 14px; border-radius: var(--radius); margin: .8rem 0; font-size: 1rem; display: none; }
     .cm-msg.ok  { background: rgba(39,174,96,.12); border: 1px solid #27ae60; color: #60c890; display: block; }
     .cm-msg.err { background: rgba(192,80,112,.12); border: 1px solid var(--rose); color: #e090a8; display: block; }
+    /* Feedback portal */
+    .fb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+    .fb-stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+    .fb-stat-label { font-family: "Cinzel", serif; font-size: 0.58rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); display: block; }
+    .fb-stat-value { font-size: 1.35rem; color: var(--silver-hi); font-weight: 600; }
+    .fb-card { background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--coral); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+    .fb-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+    .fb-card-title { font-size: 1rem; color: var(--silver-hi); font-weight: 600; }
+    .fb-card-meta { font-size: 0.8rem; color: var(--text-dim); }
+    .fb-field { font-size: 0.88rem; color: var(--text-mid); margin-top: 6px; }
+    .fb-field b { color: var(--silver); font-weight: 600; }
+    .fb-toggle { background: none; border: none; color: var(--coral); cursor: pointer; font-size: 0.82rem; padding: 4px 0; }
     /* People pickers + collaborators */
     .cm-people { display: flex; flex-wrap: wrap; gap: 6px; min-height: 10px; }
     .cm-people:empty::before { content: "None selected"; color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
@@ -398,6 +410,26 @@
                     </div>
                 </div>
 
+
+                <!-- Feedback portal -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                        <label class="cm-label" style="margin:0">Listener Feedback <span style="font-weight:normal;color:var(--text-mid)">(submitted responses)</span></label>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbLoad()">Refresh</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbExportCsv()">Download CSV</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="fbExportJson()">JSON</button>
+                        </div>
+                    </div>
+                    <div id="fb-stats" class="fb-stats"></div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+                        <input id="fb-search" class="cm-input" placeholder="Search responses…" style="flex:1;min-width:180px;font-size:0.9rem" oninput="fbRender()">
+                        <select id="fb-filter-title" class="cm-input" style="max-width:260px;font-size:0.9rem" onchange="fbRender()">
+                            <option value="">All audios / scripts</option>
+                        </select>
+                    </div>
+                    <div id="fb-list"><div class="cm-collab-empty">Click Refresh to load responses.</div></div>
+                </div>
 
                 <!-- Latest & News -->
                 <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
@@ -993,6 +1025,117 @@
       cmCreditAdd(role, name);
     }
 
+    // ── Feedback portal ───────────────────────────────────────────────────────
+    let fbResponses = [];
+    const FB_HIDE = ['id', 'received', 'botcheck', 'access_key', 'subject'];
+    const FB_LABELS = {
+      audio_title: 'Audio / Script', audio_title_other: 'Other title', platform: 'Found on',
+      rating_overall: 'Overall rating', star_performance: 'Performance', listen_again: 'Listen again',
+      liked_most: 'Liked most', could_improve: 'Could improve', pacing: 'Pacing', narrative: 'Narrative',
+      grid_voice: 'Voice', grid_sfx: 'SFX', grid_immersion: 'Immersion', rating_arousal: 'Arousal',
+      tone_position: 'Tone', themes: 'Themes', kinks_more: 'Wants more of',
+      other_comments: 'Other comments', age_confirm: 'Age'
+    };
+    function fbLabel(k) { return FB_LABELS[k] || k.replace(/_/g, ' '); }
+    function fbEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    function fbAvg(key) {
+      const nums = fbResponses.map(r => parseFloat(r[key])).filter(n => !isNaN(n));
+      return nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1) : '—';
+    }
+
+    function fbLoad() {
+      fetch('/api/feedback', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, action: 'list' })
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) { cmShowMsg('Could not load feedback: ' + (d.error || 'error'), false); return; }
+          fbResponses = d.responses || [];
+          fbPopulateTitles();
+          fbRender();
+        })
+        .catch(() => cmShowMsg('Network error loading feedback.', false));
+    }
+
+    function fbPopulateTitles() {
+      const sel = document.getElementById('fb-filter-title');
+      const titles = [...new Set(fbResponses.map(r => r.audio_title).filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">All audios / scripts</option>' +
+        titles.map(t => '<option value="' + fbEsc(t) + '">' + fbEsc(t) + '</option>').join('');
+    }
+
+    function fbFiltered() {
+      const q = (document.getElementById('fb-search').value || '').toLowerCase().trim();
+      const title = document.getElementById('fb-filter-title').value;
+      return fbResponses.filter(r => {
+        if (title && r.audio_title !== title) return false;
+        if (q && !Object.values(r).join(' ').toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+
+    function fbRender() {
+      const list = fbFiltered();
+      const stats = document.getElementById('fb-stats');
+      stats.innerHTML =
+        '<div class="fb-stat"><span class="fb-stat-label">Responses</span><span class="fb-stat-value">' + fbResponses.length + '</span></div>' +
+        '<div class="fb-stat"><span class="fb-stat-label">Avg overall</span><span class="fb-stat-value">' + fbAvg('rating_overall') + '</span></div>' +
+        '<div class="fb-stat"><span class="fb-stat-label">Avg arousal</span><span class="fb-stat-value">' + fbAvg('rating_arousal') + '</span></div>' +
+        '<div class="fb-stat"><span class="fb-stat-label">Avg stars</span><span class="fb-stat-value">' + fbAvg('star_performance') + '</span></div>' +
+        '<div class="fb-stat"><span class="fb-stat-label">Showing</span><span class="fb-stat-value">' + list.length + '</span></div>';
+
+      const el = document.getElementById('fb-list');
+      if (!list.length) { el.innerHTML = '<div class="cm-collab-empty">No responses' + (fbResponses.length ? ' match that filter.' : ' yet.') + '</div>'; return; }
+      el.innerHTML = list.map(function (r) {
+        const when = r.received ? new Date(r.received).toLocaleString() : '';
+        const detail = Object.keys(r).filter(k => FB_HIDE.indexOf(k) === -1 && r[k] !== '')
+          .map(k => '<div class="fb-field"><b>' + fbEsc(fbLabel(k)) + ':</b> ' + fbEsc(r[k]) + '</div>').join('');
+        return '<div class="fb-card">' +
+          '<div class="fb-card-head">' +
+            '<div><div class="fb-card-title">' + fbEsc(r.audio_title || 'Untitled') + '</div>' +
+            '<div class="fb-card-meta">' + fbEsc(when) + (r.rating_overall ? ' &middot; rated ' + fbEsc(r.rating_overall) + '/5' : '') + '</div></div>' +
+            '<button class="cm-btn cm-btn-sm cm-btn-danger" onclick="fbDelete(\'' + r.id + '\')">Delete</button>' +
+          '</div>' +
+          '<button class="fb-toggle" onclick="var d=this.nextElementSibling;var open=d.style.display===\'block\';d.style.display=open?\'none\':\'block\';this.textContent=open?\'Show details ▾\':\'Hide details ▴\';">Show details &#9662;</button>' +
+          '<div style="display:none">' + detail + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function fbDelete(id) {
+      if (!confirm('Delete this response?')) return;
+      fetch('/api/feedback', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, action: 'delete', id: id })
+      })
+        .then(r => r.json())
+        .then(d => { if (d.ok) { fbResponses = fbResponses.filter(r => r.id !== id); fbPopulateTitles(); fbRender(); cmShowMsg('Response deleted.', true); } })
+        .catch(() => cmShowMsg('Network error.', false));
+    }
+
+    function fbDownload(name, text, mime) {
+      const blob = new Blob([text], { type: mime });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    }
+    function fbExportCsv() {
+      const rows = fbFiltered();
+      if (!rows.length) { cmShowMsg('Nothing to export.', false); return; }
+      const cols = [...new Set(rows.flatMap(r => Object.keys(r)))].filter(k => k !== 'botcheck');
+      const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const csv = [cols.map(esc).join(',')].concat(rows.map(r => cols.map(c => esc(r[c])).join(','))).join('\r\n');
+      fbDownload('feedback-' + new Date().toISOString().slice(0, 10) + '.csv', csv, 'text/csv;charset=utf-8');
+    }
+    function fbExportJson() {
+      const rows = fbFiltered();
+      if (!rows.length) { cmShowMsg('Nothing to export.', false); return; }
+      fbDownload('feedback-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(rows, null, 2), 'application/json');
+    }
+
     // ── Latest & News ─────────────────────────────────────────────────────────
     function cmRenderNews() {
       const el = document.getElementById('cm-news-list');
@@ -1154,6 +1297,7 @@
           cmRebuildTagList();
           cmRenderCollabManager();
           cmRenderNews();
+          fbLoad();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -1190,6 +1334,7 @@
           cmRebuildTagList();
           cmRenderCollabManager();
           cmRenderNews();
+          fbLoad();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
