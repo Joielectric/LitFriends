@@ -29,14 +29,15 @@
       --border-mid: rgba(232, 99, 79, 0.44);
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       font-family: "Cormorant Garamond", serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
+      min-height: 100dvh;
+      overflow-x: clip;
     }
 
     /* === STARFIELD === */
