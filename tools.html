@@ -462,8 +462,23 @@
                         <input id="cm-short-desc" class="cm-input" placeholder="Brief one-line summary" maxlength="100" style="width:100%;margin-bottom:8px">
                         <label class="cm-label">Long Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
                         <textarea id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc. (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
-                        <label class="cm-label" style="margin-top:8px">Image URL <span style="font-weight:normal;color:var(--text-mid)">(optional, shown in a frame)</span></label>
-                        <input id="cm-image" class="cm-input" placeholder="https://… or images/cover.png" style="width:100%">
+                        <label class="cm-label" style="margin-top:8px">Cover Image <span style="font-weight:normal;color:var(--text-mid)">(optional, shown in a frame)</span></label>
+                        <div style="display:flex;gap:10px;align-items:flex-start;">
+                            <div id="cm-image-preview" style="display:none;flex:0 0 auto;width:70px;height:70px;border:1px solid var(--border-mid);border-radius:var(--radius);overflow:hidden;background:var(--surface-2);">
+                                <img id="cm-image-preview-img" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                            </div>
+                            <div style="flex:1 1 auto;min-width:0;">
+                                <input id="cm-image" class="cm-input" placeholder="https://… or images/covers/cover.webp" style="width:100%"
+                                    oninput="cmUpdateImagePreview()">
+                                <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image-file').click()">Upload Image</button>
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image').value='';cmUpdateImagePreview()">Remove</button>
+                                    <span id="cm-image-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
+                                </div>
+                                <input type="file" id="cm-image-file" accept="image/*" style="display:none"
+                                    onchange="cmUploadImage(this.files[0]);this.value=''">
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label class="cm-label">Date</label>
@@ -1620,6 +1635,89 @@
       links.forEach(lk => cmAddLink(lk.provider, lk.url));
     }
 
+    // ── Cover image upload ──────────────────────────────────────────────────
+    // Images are resized in the browser before upload: it keeps the catalogue
+    // fast on mobile and keeps the request well under Netlify's 6MB body limit.
+    const CM_IMAGE_MAX_EDGE = 1200;
+    const CM_IMAGE_QUALITY  = 0.85;
+
+    function cmUpdateImagePreview() {
+      const url  = document.getElementById('cm-image').value.trim();
+      const wrap = document.getElementById('cm-image-preview');
+      const img  = document.getElementById('cm-image-preview-img');
+      if (!url) { wrap.style.display = 'none'; img.removeAttribute('src'); return; }
+      img.src = url;
+      wrap.style.display = 'block';
+    }
+
+    // Draw the file to a canvas at a capped size and re-encode it. Falls back to
+    // JPEG where WebP encoding is unavailable.
+    function cmResizeImage(file) {
+      return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          const scale = Math.min(1, CM_IMAGE_MAX_EDGE / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width  = Math.max(1, Math.round(img.width  * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            blob => blob ? resolve(blob) : canvas.toBlob(
+              b2 => b2 ? resolve(b2) : reject(new Error('Could not encode image')),
+              'image/jpeg', CM_IMAGE_QUALITY),
+            'image/webp', CM_IMAGE_QUALITY
+          );
+        };
+        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Could not read that image')); };
+        img.src = objectUrl;
+      });
+    }
+
+    function cmBlobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = () => reject(new Error('Could not read the resized image'));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function cmUploadImage(file) {
+      if (!file) return;
+      const status = document.getElementById('cm-image-status');
+      if (!/^image\//.test(file.type)) { status.textContent = 'That file is not an image.'; return; }
+
+      status.textContent = 'Resizing…';
+      try {
+        const blob = await cmResizeImage(file);
+        status.textContent = `Uploading ${(blob.size / 1024).toFixed(0)}KB…`;
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            password:    cmPassword,
+            filename:    file.name,
+            contentType: blob.type,
+            data:        await cmBlobToBase64(blob),
+          }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
+
+        document.getElementById('cm-image').value = out.url;
+        cmUpdateImagePreview();
+        const saved = file.size > blob.size
+          ? ` (${(file.size / 1024).toFixed(0)}KB → ${(blob.size / 1024).toFixed(0)}KB)`
+          : '';
+        status.textContent = `Uploaded${saved}. Remember to save the entry.`;
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }
+
     // ── Save / Edit ─────────────────────────────────────────────────────────
 
     function cmSaveEntry() {
@@ -1687,6 +1785,8 @@
       document.getElementById('cm-date').value = e.date || '';
       document.getElementById('cm-trt').value = e.trt || '';
       document.getElementById('cm-image').value = e.image || '';
+      cmUpdateImagePreview();
+      document.getElementById('cm-image-status').textContent = '';
       const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
       window.scrollTo({ top: formTop, behavior: 'smooth' });
       document.getElementById('cm-save-btn').textContent = 'Update Entry';
@@ -1705,6 +1805,8 @@
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
       ['cm-title','cm-tags','cm-bracket-src','cm-short-desc','cm-desc','cm-trt','cm-image'].forEach(id => document.getElementById(id).value = '');
+      cmUpdateImagePreview();
+      document.getElementById('cm-image-status').textContent = '';
       document.getElementById('cm-type').value = 'audio';
       cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
       cmRenderCredits();
