@@ -336,7 +336,7 @@
       .cm-link-row select { width: 100% !important; }
       .cm-people-add { flex-direction: column; align-items: stretch; }
       .cm-people-add select, .cm-people-add button { width: 100%; max-width: none !important; }
-      #cm-collab-from-entries, #cm-collab-edit-select, #fb-filter-title { max-width: none !important; width: 100%; }
+      #cm-collab-from-entries, #cm-collab-edit-select, #cm-prov-edit-select, #fb-filter-title { max-width: none !important; width: 100%; }
       #cm-existing-tags { max-height: 120px; }
       /* Entry / news rows: give the text the full width, wrap controls below */
       .cm-entry-row { flex-wrap: wrap; align-items: flex-start; gap: 8px; }
@@ -401,7 +401,7 @@
 
                 <nav class="cm-tabs" role="tablist">
                   <button class="cm-tab active" data-tab="content"  onclick="cmTab('content')">Content</button>
-                  <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Collaborators</button>
+                  <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Lists</button>
                   <button class="cm-tab"        data-tab="news"     onclick="cmTab('news')">News</button>
                   <button class="cm-tab"        data-tab="feedback" onclick="cmTab('feedback')">Feedback</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
@@ -603,7 +603,25 @@
                         Audio platforms read “Listen on …”, script platforms read “Read on …”.
                     </div>
 
-                    <div id="cm-prov-list" style="margin-top:12px;"></div>
+                    <!-- Edit an existing platform -->
+                    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">Edit a platform</label>
+                        <select id="cm-prov-edit-select" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmProviderEditSelect(this.value)">
+                            <option value="">Select a platform…</option>
+                        </select>
+                        <div id="cm-prov-edit" style="display:none;margin-top:10px;">
+                            <div style="display:grid;grid-template-columns:1fr 130px auto;gap:8px;">
+                                <input id="cm-prov-edit-label" class="cm-input" placeholder="Platform name">
+                                <select id="cm-prov-edit-kind" class="cm-input" style="font-size:0.9rem">
+                                    <option value="audio">Audio</option>
+                                    <option value="script">Script</option>
+                                </select>
+                                <button type="button" class="cm-btn" onclick="cmProviderSaveEdit()">Save</button>
+                            </div>
+                            <div id="cm-prov-edit-usage" style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;"></div>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmProviderDeleteEdit()">Remove platform</button>
+                        </div>
+                    </div>
                 </div>
 
                 </div>
@@ -1355,6 +1373,7 @@
 
     // Collaborators manager — no visible list; add + edit-on-select only
     let cmEditingCollab = null;
+    let cmEditingProvider = null;
     function cmRenderCollabManager() {
       if (!document.getElementById('cm-collab-from-entries')) return;
       cmPopulateEntryNamePicker();
@@ -1685,26 +1704,68 @@
       }, 0);
     }
 
+    // Only the picker is shown; the full list stays collapsed, matching the
+    // collaborator manager.
     function cmRenderProviders() {
-      const el = document.getElementById('cm-prov-list');
-      if (!el) return;
-      if (!cmProviders.length) { el.innerHTML = '<div class="cm-collab-empty">No platforms yet.</div>'; return; }
+      const sel = document.getElementById('cm-prov-edit-select');
+      if (!sel) return;
+      const keep = cmEditingProvider || sel.value;
+      sel.innerHTML = '<option value="">Select a platform…</option>'
+        + cmProviders.map(p =>
+            `<option value="${cmEsc(p.key)}">${cmEsc(p.label)}${p.kind === 'script' ? ' (script)' : ''}</option>`
+          ).join('');
+      if (keep && cmProviders.some(p => p.key === keep)) sel.value = keep;
+    }
 
-      el.innerHTML = cmProviders.map(p => {
-        const used = cmProviderUsage(p.key);
-        return `
-          <div style="display:grid;grid-template-columns:1fr 120px auto auto;gap:8px;align-items:center;margin-bottom:6px;">
-            <input class="cm-input" value="${cmEsc(p.label)}" data-prov-label="${cmEsc(p.key)}"
-                   onchange="cmProviderRename('${cmEsc(p.key)}', this.value)" style="font-size:0.9rem">
-            <select class="cm-input" style="font-size:0.85rem" onchange="cmProviderSetKind('${cmEsc(p.key)}', this.value)">
-              <option value="audio"${p.kind !== 'script' ? ' selected' : ''}>Audio</option>
-              <option value="script"${p.kind === 'script' ? ' selected' : ''}>Script</option>
-            </select>
-            <span style="font-size:0.7rem;color:var(--text-dim);white-space:nowrap">${used ? used + ' link' + (used === 1 ? '' : 's') : 'unused'}</span>
-            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="padding:4px 9px"
-                    onclick="cmProviderRemove('${cmEsc(p.key)}')">✕</button>
-          </div>`;
-      }).join('');
+    function cmProviderEditSelect(key) {
+      const box = document.getElementById('cm-prov-edit');
+      const p = cmProviders.find(p => p.key === key);
+      if (!p) { box.style.display = 'none'; cmEditingProvider = null; return; }
+      cmEditingProvider = p.key;
+      document.getElementById('cm-prov-edit-label').value = p.label;
+      document.getElementById('cm-prov-edit-kind').value = p.kind === 'script' ? 'script' : 'audio';
+      const used = cmProviderUsage(p.key);
+      document.getElementById('cm-prov-edit-usage').textContent = used
+        ? `Used by ${used} link${used === 1 ? '' : 's'}. Renaming is safe — entries store the key, not the name.`
+        : 'Not used by any entry yet.';
+      box.style.display = 'block';
+    }
+
+    function cmProviderSaveEdit() {
+      if (!cmEditingProvider) return;
+      const p = cmProviders.find(p => p.key === cmEditingProvider);
+      if (!p) { cmShowMsg('That platform no longer exists.', false); return; }
+
+      const label = document.getElementById('cm-prov-edit-label').value.trim();
+      if (!label) { cmShowMsg('Platform name is required.', false); return; }
+      const clash = cmProviders.find(x => x !== p && x.label.toLowerCase() === label.toLowerCase());
+      if (clash) { cmShowMsg('Another platform already has that name.', false); return; }
+
+      p.label = label;   // key is untouched, so existing entries keep working
+      p.kind = document.getElementById('cm-prov-edit-kind').value === 'script' ? 'script' : 'audio';
+      cmRenderProviders();
+      cmRefreshLinkSelects();
+      cmPersist(() => cmShowMsg('Platform updated.', true));
+    }
+
+    function cmProviderDeleteEdit() {
+      if (!cmEditingProvider) return;
+      const p = cmProviders.find(p => p.key === cmEditingProvider);
+      if (!p) return;
+
+      const used = cmProviderUsage(p.key);
+      const warning = used
+        ? `${used} link${used === 1 ? '' : 's'} still point${used === 1 ? 's' : ''} at ${p.label}. Those links keep working, but the platform will show as “${p.key}” until you add it back.\n\n`
+        : '';
+      if (!confirm(`${warning}Remove ${p.label} from the dropdown?`)) return;
+
+      cmProviders = cmProviders.filter(x => x.key !== p.key);
+      cmEditingProvider = null;
+      document.getElementById('cm-prov-edit').style.display = 'none';
+      document.getElementById('cm-prov-edit-select').value = '';
+      cmRenderProviders();
+      cmRefreshLinkSelects();
+      cmPersist(() => cmShowMsg(`Removed ${p.label}.`, true));
     }
 
     function cmProviderAdd() {
@@ -1721,39 +1782,6 @@
       cmRenderProviders();
       cmRefreshLinkSelects();
       cmPersist(() => cmShowMsg(`Added ${label}.`, true));
-    }
-
-    function cmProviderRename(key, label) {
-      const p = cmProviders.find(p => p.key === key);
-      const name = String(label).trim();
-      if (!p || !name || name === p.label) { cmRenderProviders(); return; }
-      p.label = name;   // key is untouched, so existing entries keep working
-      cmRenderProviders();
-      cmRefreshLinkSelects();
-      cmPersist(() => cmShowMsg('Platform renamed.', true));
-    }
-
-    function cmProviderSetKind(key, kind) {
-      const p = cmProviders.find(p => p.key === key);
-      if (!p || p.kind === kind) return;
-      p.kind = kind === 'script' ? 'script' : 'audio';
-      cmRefreshLinkSelects();
-      cmPersist(() => cmShowMsg('Platform updated.', true));
-    }
-
-    function cmProviderRemove(key) {
-      const p = cmProviders.find(p => p.key === key);
-      if (!p) return;
-      const used = cmProviderUsage(key);
-      const warning = used
-        ? `${used} link${used === 1 ? '' : 's'} still point${used === 1 ? 's' : ''} at ${p.label}. Those links keep working, but the platform will show as “${key}” until you add it back.\n\n`
-        : '';
-      if (!confirm(`${warning}Remove ${p.label} from the dropdown?`)) return;
-
-      cmProviders = cmProviders.filter(x => x.key !== key);
-      cmRenderProviders();
-      cmRefreshLinkSelects();
-      cmPersist(() => cmShowMsg(`Removed ${p.label}.`, true));
     }
 
     // ── Multi-link helpers ──────────────────────────────────────────────────
