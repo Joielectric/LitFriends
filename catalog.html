@@ -214,6 +214,12 @@
     </select>
     <select class="sel" id="name-filter"><option value="">All creators</option></select>
     <select class="sel" id="provider-filter"><option value="">All platforms</option></select>
+    <select class="sel" id="sort-by">
+      <option value="date-desc">Newest first</option>
+      <option value="date-asc">Oldest first</option>
+      <option value="trt-desc">Longest first</option>
+      <option value="trt-asc">Shortest first</option>
+    </select>
   </div>
 
   <div class="chip-row" id="audience-chips"></div>
@@ -315,6 +321,47 @@
   // the platform's kind: a story on an audio host is still read, not listened to.
   function isTextEntry(e){ return typeOf(e) !== 'audio'; }
 
+  // TRT is free text ("14:32", "1:05:30", "45 min"), so parse defensively and
+  // return null when it cannot be read rather than guessing a length.
+  function trtSeconds(e){
+    var raw = String((e && e.trt) || '').trim();
+    if (!raw) return null;
+    var clock = raw.match(/(\d+):(\d{1,2})(?::(\d{1,2}))?/);
+    if (clock){
+      var a = +clock[1], b = +clock[2], c = clock[3] === undefined ? null : +clock[3];
+      return c === null ? a * 60 + b : a * 3600 + b * 60 + c;
+    }
+    var hm = raw.match(/(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)/i);
+    if (hm && (hm[1] || hm[2])) return (+(hm[1] || 0)) * 3600 + (+(hm[2] || 0)) * 60;
+    var hOnly = raw.match(/^(\d+(?:\.\d+)?)\s*h/i);
+    if (hOnly) return Math.round(parseFloat(hOnly[1]) * 3600);
+    return null;
+  }
+
+  // Entries with no readable length sink to the bottom whichever way we sort,
+  // so a length sort never opens with a run of blanks.
+  function sortEntries(list, mode){
+    var out = list.slice();
+    if (mode === 'trt-desc' || mode === 'trt-asc'){
+      var dir = mode === 'trt-asc' ? 1 : -1;
+      out.sort(function(a, b){
+        var sa = trtSeconds(a), sb = trtSeconds(b);
+        if (sa === null && sb === null) return (b.date||'').localeCompare(a.date||'');
+        if (sa === null) return 1;
+        if (sb === null) return -1;
+        if (sa !== sb) return (sa - sb) * dir;
+        return (b.date||'').localeCompare(a.date||'');
+      });
+      return out;
+    }
+    out.sort(function(a, b){
+      return mode === 'date-asc'
+        ? (a.date||'').localeCompare(b.date||'')
+        : (b.date||'').localeCompare(a.date||'');
+    });
+    return out;
+  }
+
   function entryById(id){
     if (!id) return null;
     for (var i = 0; i < ENTRIES.length; i++) if (ENTRIES[i].id === id) return ENTRIES[i];
@@ -358,12 +405,13 @@
     provider: document.getElementById('provider-filter'),
     audience: document.getElementById('audience-chips'),
     tags: document.getElementById('tag-chips'),
+    sort: document.getElementById('sort-by'),
     count: document.getElementById('count'),
     clear: document.getElementById('clear')
   };
 
   var ENTRIES = [];
-  var state = { q: '', type: '', name: '', provider: '', tags: {} };
+  var state = { q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
 
   function fetchData(){
     var url = window.__CATALOG_SRC__ || '/api/content';
@@ -457,7 +505,7 @@
   }
 
   function apply(){
-    var filtered = ENTRIES.filter(matches);
+    var filtered = sortEntries(ENTRIES.filter(matches), state.sort);
     var has = state.q || state.type || state.name || state.provider || Object.keys(state.tags).length;
     els.clear.style.display = has ? '' : 'none';
     els.count.textContent = filtered.length + ' of ' + ENTRIES.length + ' works';
@@ -527,8 +575,9 @@
   els.type.addEventListener('change', function(e){ state.type = e.target.value; apply(); });
   els.name.addEventListener('change', function(e){ state.name = e.target.value; apply(); });
   els.provider.addEventListener('change', function(e){ state.provider = e.target.value; apply(); });
+  els.sort.addEventListener('change', function(e){ state.sort = e.target.value; apply(); });
   els.clear.addEventListener('click', function(){
-    state = { q:'', type:'', name:'', provider:'', tags:{} };
+    state = { q:'', type:'', name:'', provider:'', sort: state.sort, tags:{} };
     els.search.value = ''; els.type.value = ''; els.name.value = ''; els.provider.value = '';
     document.querySelectorAll('.chip.active').forEach(function(c){ c.classList.remove('active'); });
     apply();
