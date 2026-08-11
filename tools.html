@@ -410,14 +410,30 @@
 
                 <div class="cm-tab-panel" id="tabp-content">
                 <!-- Add / Edit form -->
+                <!-- Existing entries: pick one to edit, or scroll past to add a new one -->
+                <div class="cm-entries-list">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+                        <label class="cm-label" style="margin:0">Edit an Entry</label>
+                        <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
+                    </div>
+                    <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
+                    <select id="cm-entry-select" class="cm-input" style="width:100%" onchange="cmEntrySelected()">
+                        <option value="">Select an entry…</option>
+                    </select>
+                    <div id="cm-entry-actions" style="display:none;margin-top:10px;">
+                        <div id="cm-entry-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:8px;"></div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="cm-btn" onclick="cmEditSelected()">Edit</button>
+                            <button class="cm-btn cm-btn-danger" onclick="cmDeleteSelected()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="cm-form-grid">
                     <div class="cm-full" style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
                         <div>
                             <label class="cm-label">Type</label>
-                            <select id="cm-type" class="cm-input" style="width:100%;min-width:0" onchange="cmTypeChanged()">
-                                <option value="audio">Audio</option>
-                                <option value="script">Script</option>
-                            </select>
+                            <select id="cm-type" class="cm-input" style="width:100%;min-width:0" onchange="cmTypeChanged()"></select>
                         </div>
                         <div>
                             <label class="cm-label">Title</label>
@@ -542,24 +558,6 @@
                     </div>
                 </div>
 
-                <!-- Existing entries: pick one to edit or delete -->
-                <div class="cm-entries-list">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px">
-                        <label class="cm-label" style="margin:0">Existing Entries</label>
-                        <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
-                    </div>
-                    <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
-                    <select id="cm-entry-select" class="cm-input" style="width:100%" onchange="cmEntrySelected()">
-                        <option value="">Select an entry…</option>
-                    </select>
-                    <div id="cm-entry-actions" style="display:none;margin-top:10px;">
-                        <div id="cm-entry-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:8px;"></div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <button class="cm-btn" onclick="cmEditSelected()">Edit</button>
-                            <button class="cm-btn cm-btn-danger" onclick="cmDeleteSelected()">Delete</button>
-                        </div>
-                    </div>
-                </div>
                 </div>
 
                 <div class="cm-tab-panel" id="tabp-collab" hidden>
@@ -1113,6 +1111,20 @@
 
     <script>
     // ===== CONTENT MANAGER =====
+
+    // Entry types. Audio is the default and the only one that can fill a script
+    // or carry a run time; the rest are written work.
+    const ENTRY_TYPES = [
+      { key: 'audio',  label: 'Audio'  },
+      { key: 'script', label: 'Script' },
+      { key: 'story',  label: 'Story'  },
+      { key: 'poem',   label: 'Poem'   },
+    ];
+    const cmTypeOf    = e => (e && e.type) || 'audio';
+    const cmTypeLabel = e => {
+      const t = ENTRY_TYPES.find(t => t.key === cmTypeOf(e));
+      return t ? t.label : cmTypeOf(e);
+    };
 
     // Platforms are stored with the content (like collaborators) so new ones can
     // be added from here without a code change. This list only seeds the store
@@ -1962,9 +1974,14 @@
       sel.value = keep || '';
     }
 
-    // The field is meaningless on a script entry, so it is hidden there.
+    (function cmBuildTypeOptions() {
+      const sel = document.getElementById('cm-type');
+      if (sel) sel.innerHTML = ENTRY_TYPES.map(t => `<option value="${t.key}">${t.label}</option>`).join('');
+    })();
+
+    // Only an audio can fill a script, so the field is hidden on every other type.
     function cmTypeChanged() {
-      const isAudio = document.getElementById('cm-type').value !== 'script';
+      const isAudio = document.getElementById('cm-type').value === 'audio';
       document.getElementById('cm-fills-row').style.display = isAudio ? '' : 'none';
       if (isAudio) cmRenderFillsOptions();
     }
@@ -2093,8 +2110,8 @@
         links,
         title,
         type:  document.getElementById('cm-type').value || 'audio',
-        fills: (document.getElementById('cm-type').value || 'audio') === 'script'
-                 ? '' : (document.getElementById('cm-fills').value || ''),
+        fills: (document.getElementById('cm-type').value || 'audio') === 'audio'
+                 ? (document.getElementById('cm-fills').value || '') : '',
         tags:      cmNormalizeTagList(document.getElementById('cm-tags').value),
         shortDesc: document.getElementById('cm-short-desc').value.trim(),
         desc:      document.getElementById('cm-desc').value.trim(),
@@ -2197,7 +2214,7 @@
       const keep = sel.value;
       sel.innerHTML = '<option value="">' + (list.length ? 'Select an entry…' : 'No entries match') + '</option>' +
         list.map(e => {
-          const kind = (e.type || 'audio') === 'script' ? '[Script] ' : '';
+          const kind = cmTypeOf(e) === 'audio' ? '' : '[' + cmTypeLabel(e) + '] ';
           const label = kind + (e.title || 'Untitled') + (e.date ? '  (' + e.date + ')' : '');
           return `<option value="${e.id}">${label.replace(/</g, '&lt;')}</option>`;
         }).join('');
@@ -2213,7 +2230,7 @@
         .map(lk => cmProviderLabel(lk.provider)).join(' · ');
       const names = Object.values(e.credits || {}).flat();
       document.getElementById('cm-entry-summary').innerHTML =
-        [(e.type || 'audio') === 'script' ? 'Script' : 'Audio', e.date || 'no date', links, names.join(', '),
+        [cmTypeLabel(e), e.date || 'no date', links, names.join(', '),
          (e.tags || []).join(', ')].filter(Boolean).join(' &middot; ');
       box.style.display = 'block';
     }

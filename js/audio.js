@@ -105,9 +105,14 @@
   let COLLAB = {};
   function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
   function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  function entryType(entry) { return (entry && entry.type) === 'script' ? 'script' : 'audio'; }
+  const ENTRY_TYPE_LABELS = { audio: 'Audio', script: 'Script', story: 'Story', poem: 'Poem' };
+  function entryType(entry) {
+    const t = (entry && entry.type) || 'audio';
+    return ENTRY_TYPE_LABELS[t] ? t : 'audio';
+  }
   function typeBadge(entry) {
-    return '<span class="ag-type-badge ag-type-' + entryType(entry) + '">' + (entryType(entry) === 'script' ? 'Script' : 'Audio') + '</span>';
+    const t = entryType(entry);
+    return '<span class="ag-type-badge ag-type-' + t + '">' + ENTRY_TYPE_LABELS[t] + '</span>';
   }
 
   function richText(str) {
@@ -450,6 +455,8 @@
 }
 .ag-type-audio  { color: #8fb4f2; border: 1px solid rgba(143,180,242,0.5); background: rgba(91,141,232,0.14); }
 .ag-type-script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
+.ag-type-story  { color: #7fd6c0; border: 1px solid rgba(127,214,192,0.55); background: rgba(127,214,192,0.12); }
+.ag-type-poem   { color: #c79bf0; border: 1px solid rgba(199,155,240,0.55); background: rgba(199,155,240,0.12); }
 .ag-modal-desc a { color: #8fb4f2; text-decoration: underline; text-underline-offset: 2px; word-break: break-word; }
 .ag-modal-desc a:hover { color: #fff; }
 .ag-modal-frame { margin-bottom: 14px; border: 1px solid var(--border-mid, rgba(180,195,225,0.42)); border-radius: 6px; background: rgba(10,14,24,0.5); padding: 6px; overflow: hidden; }

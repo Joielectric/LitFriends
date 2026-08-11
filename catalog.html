@@ -108,6 +108,8 @@
     .c-artist { font-size: 0.84rem; color: var(--text-mid); line-height: 1.4; }
     .type-badge { font-family: "Cinzel", serif; font-size: 0.54rem; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; margin-right: 7px; vertical-align: middle; white-space: nowrap; }
     .type-badge.script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
+    .type-badge.story  { color: #7fd6c0; border: 1px solid rgba(127,214,192,0.55); background: rgba(127,214,192,0.12); }
+    .type-badge.poem   { color: #c79bf0; border: 1px solid rgba(199,155,240,0.55); background: rgba(199,155,240,0.12); }
     .collab-link { color: var(--electric); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
     .collab-link:hover { border-bottom-color: var(--electric); }
     .c-links { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -184,6 +186,8 @@
       <option value="">All types</option>
       <option value="audio">Audio</option>
       <option value="script">Scripts</option>
+      <option value="story">Stories</option>
+      <option value="poem">Poems</option>
     </select>
     <select class="sel" id="name-filter"><option value="">All creators</option></select>
     <select class="sel" id="provider-filter"><option value="">All platforms</option></select>
@@ -227,7 +231,10 @@
       PROVIDER_KIND[p.key] = p.kind === 'script' ? 'script' : 'audio';
     });
   }
-  function provVerb(key){ return PROVIDER_KIND[key] === 'script' ? 'Read on ' : 'Open on '; }
+  function provVerb(key, entry){
+    if (entry && isTextEntry(entry)) return 'Read on ';
+    return PROVIDER_KIND[key] === 'script' ? 'Read on ' : 'Open on ';
+  }
   var GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A','NB4A','A4A'];
   var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
   var CREDIT_ORDER = ['voiceArtists','writers','producers','editors','musicians'];
@@ -269,6 +276,18 @@
   // Collaborators → clickable names
   var COLLAB = {};
   function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+  var TYPE_LABELS = { audio:'Audio', script:'Script', story:'Story', poem:'Poem' };
+  function typeOf(e){ return (e && e.type) || 'audio'; }
+  // Audio is the default and stays unbadged; everything else is called out.
+  function typeBadge(e){
+    var t = typeOf(e);
+    if (t === 'audio') return '';
+    return '<span class="type-badge ' + esc(t) + '">' + esc(TYPE_LABELS[t] || t) + '</span>';
+  }
+  // Written work is read wherever it lives, so the entry's own type wins over
+  // the platform's kind: a story on an audio host is still read, not listened to.
+  function isTextEntry(e){ return typeOf(e) !== 'audio'; }
+
   function entryById(id){
     if (!id) return null;
     for (var i = 0; i < ENTRIES.length; i++) if (ENTRIES[i].id === id) return ENTRIES[i];
@@ -283,7 +302,7 @@
     return '<a class="collab-link" href="#" data-goto="' + esc(e.id) + '">' + esc(e.title || 'Untitled') + '</a>';
   }
   function relatedHtml(e){
-    if ((e.type||'audio') === 'script') {
+    if (typeOf(e) === 'script') {
       var fills = fillsOf(e.id);
       if (!fills.length) return '';
       return '<div class="cred-row"><span class="cred-label">Filled by</span><span class="cred-names">' +
@@ -401,7 +420,7 @@
     var artistStr = artistList.length ? artistList.map(function(n){ return collabHtml(n, true); }).join(', ') : '&mdash;';
     return '<div class="row" data-idx="' + idx + '">' +
       '<div class="c-date">' + esc(e.date||'') + (e.trt ? '<div class="c-trt">&#9201; ' + esc(e.trt) + '</div>' : '') + '</div>' +
-      '<div><div class="c-title">' + ((e.type||'audio')==='script' ? '<span class="type-badge script">Script</span>' : '') + esc(e.title||'Untitled') + '</div>' +
+      '<div><div class="c-title">' + typeBadge(e) + esc(e.title||'Untitled') + '</div>' +
         (e.shortDesc || e.desc ? '<div class="c-desc">' + esc(e.shortDesc||e.desc) + '</div>' : '') +
         (tags ? '<div class="c-tags">' + tags + '</div>' : '') +
       '</div>' +
@@ -436,7 +455,7 @@
     var links = getLinks(e).map(function(l){
       return '<a class="modal-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
-        provVerb(l.provider) + esc(provLabel(l.provider)) + '</a>';
+        provVerb(l.provider, e) + esc(provLabel(l.provider)) + '</a>';
     }).join('');
     var tags = (e.tags||[]).map(function(t){ return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>'; }).join('');
     var related = relatedHtml(e);
@@ -454,7 +473,7 @@
     if (e.trt) meta += '<div class="meta-item"><span class="meta-label">Total Run Time</span><span class="meta-value">&#9201; ' + esc(e.trt) + '</span></div>';
 
     overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' +
-      '<div class="modal-head"><div class="modal-title">' + ((e.type||'audio')==='script' ? '<span class="type-badge script">Script</span>' : '') + esc(e.title||'Untitled') + '</div>' +
+      '<div class="modal-head"><div class="modal-title">' + typeBadge(e) + esc(e.title||'Untitled') + '</div>' +
         '<button class="modal-close" aria-label="Close">&times;</button></div>' +
       (meta ? '<div class="modal-meta">' + meta + '</div>' : '') +
       (safeUrl(e.image) ? '<div class="modal-frame"><img src="' + safeUrl(e.image) + '" alt="' + esc(e.title || '') + '" loading="lazy"></div>' : '') +
