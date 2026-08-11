@@ -1029,6 +1029,7 @@
     fetch('/api/content')
       .then(function(r){ return r.json(); })
       .then(function(data){
+        adoptProviders(data.providers);
         var entries = (data.entries || []).slice().sort(function(a,b){
           return (b.date||'').localeCompare(a.date||'');
         }).slice(0, 5);
@@ -1076,7 +1077,15 @@
       .catch(function(){ grid.innerHTML = '<div class="recent-loading">Could not load recent audio.</div>'; });
 
     // ── Inline modal ──────────────────────────────────────────────────────────
-    var PROVIDERS = { soundgasm:{label:'Soundgasm',embed:false}, literotica:{label:'Literotica',embed:false}, audiochan:{label:'Audiochan',embed:true}, hotaudio:{label:'HotAudio',embed:false} };
+    // Fallback labels only; the managed list arrives with the content payload.
+    var PROVIDERS = { soundgasm:{label:'Soundgasm',embed:false}, literotica:{label:'Literotica',embed:false}, audiochan:{label:'Audiochan',embed:true}, hotaudio:{label:'HotAudio',embed:false}, whyp:{label:'Whyp',embed:false}, scriptbin:{label:'ScriptBin',embed:false}, ellipsus:{label:'Ellipsus',embed:false} };
+    function adoptProviders(list){
+      (list || []).forEach(function(p){
+        if (!p || !p.key) return;
+        var existing = PROVIDERS[p.key] || {};
+        PROVIDERS[p.key] = { label: p.label || p.key, embed: !!existing.embed };
+      });
+    }
     var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
     var currentModal = null;
 

@@ -1,13 +1,29 @@
 (function () {
   'use strict';
 
+  // Fallback labels only. The live list is managed in the Content Manager and
+  // arrives with the content payload; adoptProviders() merges it over these.
   const PROVIDERS = {
     soundgasm:  { label: 'Soundgasm',  canEmbed: false },
     literotica: { label: 'Literotica', canEmbed: false },
     audiochan:  { label: 'Audiochan',  canEmbed: false },
     hotaudio:   { label: 'HotAudio',   canEmbed: false },
     whyp:       { label: 'Whyp',       canEmbed: false },
+    scriptbin:  { label: 'ScriptBin',  canEmbed: false, kind: 'script' },
+    ellipsus:   { label: 'Ellipsus',   canEmbed: false, kind: 'script' },
   };
+
+  function adoptProviders(list) {
+    (list || []).forEach(p => {
+      if (!p || !p.key) return;
+      const existing = PROVIDERS[p.key] || {};
+      PROVIDERS[p.key] = {
+        label: p.label || p.key,
+        canEmbed: !!existing.canEmbed,
+        kind: p.kind === 'script' ? 'script' : 'audio',
+      };
+    });
+  }
 
   // Gender/audience tags shown first in filter and styled distinctly
   const GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A'];
@@ -774,6 +790,7 @@
       fetch('/api/content')
         .then(r => r.json())
         .then(data => {
+          adoptProviders(data.providers);
           let entries = (data.entries || []).slice().sort((a, b) =>
             (b.date || '').localeCompare(a.date || '')
           );

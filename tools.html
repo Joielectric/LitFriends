@@ -586,6 +586,25 @@
                     </div>
                 </div>
 
+                <!-- Platforms -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label" style="margin-bottom:10px">Platforms <span style="font-weight:normal;color:var(--text-mid)">(the Platform Links dropdown on every entry)</span></label>
+
+                    <div style="display:grid;grid-template-columns:1fr 140px auto;gap:8px;">
+                        <input id="cm-prov-label" class="cm-input" placeholder="Platform name, e.g. ScriptBin"
+                            onkeydown="if(event.key==='Enter')cmProviderAdd()">
+                        <select id="cm-prov-kind" class="cm-input" style="font-size:0.9rem">
+                            <option value="audio">Audio</option>
+                            <option value="script">Script</option>
+                        </select>
+                        <button type="button" class="cm-btn" onclick="cmProviderAdd()">Add</button>
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">
+                        Audio platforms read “Listen on …”, script platforms read “Read on …”.
+                    </div>
+
+                    <div id="cm-prov-list" style="margin-top:12px;"></div>
+                </div>
 
                 </div>
 
@@ -1067,13 +1086,19 @@
     <script>
     // ===== CONTENT MANAGER =====
 
-    const PROVIDERS = {
-      soundgasm:  { label: 'Soundgasm' },
-      literotica: { label: 'Literotica' },
-      audiochan:  { label: 'Audiochan' },
-      hotaudio:   { label: 'HotAudio' },
-      whyp:       { label: 'Whyp' },
-    };
+    // Platforms are stored with the content (like collaborators) so new ones can
+    // be added from here without a code change. This list only seeds the store
+    // the first time — after that cmProviders is the source of truth. Keys must
+    // never change: existing entries reference them.
+    const PROVIDER_SEED = [
+      { key: 'soundgasm',  label: 'Soundgasm',  kind: 'audio'  },
+      { key: 'literotica', label: 'Literotica', kind: 'audio'  },
+      { key: 'audiochan',  label: 'Audiochan',  kind: 'audio'  },
+      { key: 'hotaudio',   label: 'HotAudio',   kind: 'audio'  },
+      { key: 'whyp',       label: 'Whyp',       kind: 'audio'  },
+      { key: 'scriptbin',  label: 'ScriptBin',  kind: 'script' },
+      { key: 'ellipsus',   label: 'Ellipsus',   kind: 'script' },
+    ];
 
     const ARTIST_LABELS = {
       'joi-electric':  'JOI Electric',
@@ -1085,8 +1110,42 @@
     let cmEntries = [];
     let cmCollaborators = [];
     let cmNews = [];
+    let cmProviders = [];
     let cmPassword = '';
     let cmEditingId = null;
+
+    // ── Platforms ─────────────────────────────────────────────────────────────
+
+    // Adopt the stored list, falling back to the seed on a store that predates
+    // editable platforms. Seeded entries are merged in by key so a platform
+    // added in code later still appears for stores saved before it existed.
+    function cmSetProviders(list) {
+      const stored = Array.isArray(list) ? list.filter(p => p && p.key) : [];
+      const byKey = new Map(stored.map(p => [String(p.key), {
+        key:   String(p.key),
+        label: String(p.label || p.key),
+        kind:  p.kind === 'script' ? 'script' : 'audio',
+      }]));
+      PROVIDER_SEED.forEach(p => { if (!byKey.has(p.key)) byKey.set(p.key, { ...p }); });
+      cmProviders = [...byKey.values()];
+    }
+
+    function cmProviderLabel(key) {
+      const p = cmProviders.find(p => p.key === key);
+      return p ? p.label : key;
+    }
+
+    function cmProviderOpts(selected) {
+      return cmProviders.map(p =>
+        `<option value="${cmEsc(p.key)}"${p.key === selected ? ' selected' : ''}>${cmEsc(p.label)}${p.kind === 'script' ? ' (script)' : ''}</option>`
+      ).join('');
+    }
+
+    // Turn a label into a stable key. Keys are what entries store, so they are
+    // generated once on creation and never rewritten by a later rename.
+    function cmProviderKeyFor(label) {
+      return String(label).toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 30);
+    }
 
     // ── Credits / collaborators ────────────────────────────────────────────────
     const CM_ROLES = ['voiceArtists', 'writers', 'producers', 'editors', 'musicians'];
@@ -1411,6 +1470,8 @@
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
           cmNews = data.news || [];
+          cmSetProviders(data.providers);
+          cmRenderProviders();
           const ls = document.getElementById('cm-lock-screen');
           if (ls) ls.style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
@@ -1450,6 +1511,8 @@
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
           cmNews = data.news || [];
+          cmSetProviders(data.providers);
+          cmRenderProviders();
           document.getElementById('cm-lock-screen').style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
@@ -1611,10 +1674,89 @@
       cmRebuildTagList();
     }
 
-    // ── Multi-link helpers ──────────────────────────────────────────────────
+    // ── Platform management ─────────────────────────────────────────────────
 
-    const PROVIDER_OPTS = Object.entries(PROVIDERS)
-      .map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+    // How many links across all entries point at a platform. Renaming is always
+    // safe (entries store the key), but removing one in use is not.
+    function cmProviderUsage(key) {
+      return cmEntries.reduce((n, e) => {
+        const links = e.links || (e.provider && e.url ? [{ provider: e.provider }] : []);
+        return n + links.filter(l => l.provider === key).length;
+      }, 0);
+    }
+
+    function cmRenderProviders() {
+      const el = document.getElementById('cm-prov-list');
+      if (!el) return;
+      if (!cmProviders.length) { el.innerHTML = '<div class="cm-collab-empty">No platforms yet.</div>'; return; }
+
+      el.innerHTML = cmProviders.map(p => {
+        const used = cmProviderUsage(p.key);
+        return `
+          <div style="display:grid;grid-template-columns:1fr 120px auto auto;gap:8px;align-items:center;margin-bottom:6px;">
+            <input class="cm-input" value="${cmEsc(p.label)}" data-prov-label="${cmEsc(p.key)}"
+                   onchange="cmProviderRename('${cmEsc(p.key)}', this.value)" style="font-size:0.9rem">
+            <select class="cm-input" style="font-size:0.85rem" onchange="cmProviderSetKind('${cmEsc(p.key)}', this.value)">
+              <option value="audio"${p.kind !== 'script' ? ' selected' : ''}>Audio</option>
+              <option value="script"${p.kind === 'script' ? ' selected' : ''}>Script</option>
+            </select>
+            <span style="font-size:0.7rem;color:var(--text-dim);white-space:nowrap">${used ? used + ' link' + (used === 1 ? '' : 's') : 'unused'}</span>
+            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="padding:4px 9px"
+                    onclick="cmProviderRemove('${cmEsc(p.key)}')">✕</button>
+          </div>`;
+      }).join('');
+    }
+
+    function cmProviderAdd() {
+      const labelEl = document.getElementById('cm-prov-label');
+      const label = labelEl.value.trim();
+      if (!label) { cmShowMsg('Give the platform a name.', false); return; }
+
+      const key = cmProviderKeyFor(label);
+      if (!key) { cmShowMsg('That name has no letters or numbers to build a key from.', false); return; }
+      if (cmProviders.some(p => p.key === key)) { cmShowMsg(`“${label}” is already in the list.`, false); return; }
+
+      cmProviders.push({ key, label, kind: document.getElementById('cm-prov-kind').value });
+      labelEl.value = '';
+      cmRenderProviders();
+      cmRefreshLinkSelects();
+      cmPersist(() => cmShowMsg(`Added ${label}.`, true));
+    }
+
+    function cmProviderRename(key, label) {
+      const p = cmProviders.find(p => p.key === key);
+      const name = String(label).trim();
+      if (!p || !name || name === p.label) { cmRenderProviders(); return; }
+      p.label = name;   // key is untouched, so existing entries keep working
+      cmRenderProviders();
+      cmRefreshLinkSelects();
+      cmPersist(() => cmShowMsg('Platform renamed.', true));
+    }
+
+    function cmProviderSetKind(key, kind) {
+      const p = cmProviders.find(p => p.key === key);
+      if (!p || p.kind === kind) return;
+      p.kind = kind === 'script' ? 'script' : 'audio';
+      cmRefreshLinkSelects();
+      cmPersist(() => cmShowMsg('Platform updated.', true));
+    }
+
+    function cmProviderRemove(key) {
+      const p = cmProviders.find(p => p.key === key);
+      if (!p) return;
+      const used = cmProviderUsage(key);
+      const warning = used
+        ? `${used} link${used === 1 ? '' : 's'} still point${used === 1 ? 's' : ''} at ${p.label}. Those links keep working, but the platform will show as “${key}” until you add it back.\n\n`
+        : '';
+      if (!confirm(`${warning}Remove ${p.label} from the dropdown?`)) return;
+
+      cmProviders = cmProviders.filter(x => x.key !== key);
+      cmRenderProviders();
+      cmRefreshLinkSelects();
+      cmPersist(() => cmShowMsg(`Removed ${p.label}.`, true));
+    }
+
+    // ── Multi-link helpers ──────────────────────────────────────────────────
 
     function cmAddLink(provider = '', url = '') {
       const list = document.getElementById('cm-links-list');
@@ -1622,14 +1764,33 @@
       row.className = 'cm-link-row';
       row.style.cssText = 'display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:8px;';
       row.innerHTML = `
-        <select class="cm-input filter-select" style="width:140px;font-size:0.9rem">
-          ${PROVIDER_OPTS}
+        <select class="cm-input filter-select" style="width:150px;font-size:0.9rem">
+          ${cmProviderOpts(provider)}
         </select>
-        <input class="cm-input" placeholder="https://…" value="${url}" style="width:100%">
+        <input class="cm-input" placeholder="https://…" value="${cmEsc(url)}" style="width:100%">
         <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="this.closest('.cm-link-row').remove()" style="padding:5px 10px">✕</button>
       `;
-      row.querySelector('select').value = provider || 'soundgasm';
+      const sel = row.querySelector('select');
+      // A link may reference a platform that has since been removed; keep it
+      // selectable rather than silently reassigning the entry to another host.
+      if (provider && !cmProviders.some(p => p.key === provider)) {
+        sel.insertAdjacentHTML('afterbegin', `<option value="${cmEsc(provider)}" selected>${cmEsc(provider)} (removed)</option>`);
+      }
+      sel.value = provider || (cmProviders[0] && cmProviders[0].key) || 'soundgasm';
       list.appendChild(row);
+    }
+
+    // Rebuild the platform dropdown on open link rows, preserving each choice.
+    function cmRefreshLinkSelects() {
+      document.querySelectorAll('.cm-link-row').forEach(row => {
+        const sel = row.querySelector('select');
+        const current = sel.value;
+        sel.innerHTML = cmProviderOpts(current);
+        if (current && !cmProviders.some(p => p.key === current)) {
+          sel.insertAdjacentHTML('afterbegin', `<option value="${cmEsc(current)}" selected>${cmEsc(current)} (removed)</option>`);
+        }
+        sel.value = current;
+      });
     }
 
     function cmGetLinks() {
@@ -1967,7 +2128,7 @@
       const e = cmEntries.find(x => x.id === id);
       if (!e) { box.style.display = 'none'; return; }
       const links = (e.links || (e.provider ? [{ provider: e.provider }] : []))
-        .map(lk => PROVIDERS[lk.provider]?.label || lk.provider).join(' · ');
+        .map(lk => cmProviderLabel(lk.provider)).join(' · ');
       const names = Object.values(e.credits || {}).flat();
       document.getElementById('cm-entry-summary').innerHTML =
         [(e.type || 'audio') === 'script' ? 'Script' : 'Audio', e.date || 'no date', links, names.join(', '),
@@ -1988,7 +2149,7 @@
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, entries: cmEntries, collaborators: cmCollaborators, news: cmNews }),
+        body: JSON.stringify({ password: cmPassword, entries: cmEntries, collaborators: cmCollaborators, news: cmNews, providers: cmProviders }),
       })
         .then(r => r.json())
         .then(data => {

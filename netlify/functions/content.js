@@ -45,7 +45,7 @@ export default async (req) => {
       return new Response(JSON.stringify({ error: "entries must be an array" }), { status: 400, headers: CORS });
     }
 
-    // Preserve collaborators / news unless the client sends new lists
+    // Preserve collaborators / news / providers unless the client sends new lists
     const existing = await store.get("audio", { type: "json" }).catch(() => null);
     const collaborators = Array.isArray(body.collaborators)
       ? body.collaborators
@@ -53,8 +53,11 @@ export default async (req) => {
     const news = Array.isArray(body.news)
       ? body.news
       : (existing && existing.news) || [];
+    const providers = Array.isArray(body.providers)
+      ? body.providers
+      : (existing && existing.providers) || [];
 
-    await store.setJSON("audio", { entries, collaborators, news });
+    await store.setJSON("audio", { entries, collaborators, news, providers });
     return new Response(JSON.stringify({ ok: true }), { status: 200, headers: CORS });
   }
 

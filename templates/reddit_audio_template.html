@@ -542,7 +542,17 @@
         }
 
         // ── Catalogue auto-fill ──────────────────────────────────────────────
-        const CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan', hotaudio:'HotAudio', whyp:'Whyp' };
+        // Fallback labels only; the managed list arrives with the content payload.
+        const CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan', hotaudio:'HotAudio', whyp:'Whyp', scriptbin:'ScriptBin', ellipsus:'Ellipsus' };
+        const CAT_KIND = { scriptbin:'script', ellipsus:'script' };
+        function catAdoptProviders(list) {
+            (list || []).forEach(p => {
+                if (!p || !p.key) return;
+                CAT_PROVIDERS[p.key] = p.label || p.key;
+                CAT_KIND[p.key] = p.kind === 'script' ? 'script' : 'audio';
+            });
+        }
+        const catIsScript = k => CAT_KIND[k] === 'script';
         const CAT_CREDIT_MAP = [['voiceArtists','Voice Acting'],['writers','Writers'],['producers','Production'],['editors','Editing'],['musicians','Music']];
         let CATALOG = [];
 
@@ -552,8 +562,11 @@
             return [];
         }
         function catLinkText(provider, trt, multi) {
-            let base = multi ? ('🎧Listen on ' + (CAT_PROVIDERS[provider] || provider)) : '🎧Listen Here';
-            if (trt) base += ' TRT - ' + trt;
+            const script = catIsScript(provider);
+            let base = multi
+                ? ((script ? '📜Read on ' : '🎧Listen on ') + (CAT_PROVIDERS[provider] || provider))
+                : (script ? '📜Read the Script' : '🎧Listen Here');
+            if (trt && !script) base += ' TRT - ' + trt;
             return base;
         }
         function catFormatCredits(c) {
@@ -601,6 +614,7 @@
         }
         function catLoad() {
             fetch('/api/content').then(r => r.json()).then(d => {
+                catAdoptProviders(d.providers);
                 CATALOG = (d.entries || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
                 const sel = document.getElementById('catalogSelect');
                 CATALOG.forEach((e, i) => {

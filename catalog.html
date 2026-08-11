@@ -212,10 +212,22 @@
 (function () {
   'use strict';
 
+  // Fallback labels only. The live list is managed in the Content Manager and
+  // arrives with the content payload; adoptProviders() merges it over these.
   var PROVIDERS = {
     soundgasm: 'Soundgasm', literotica: 'Literotica', audiochan: 'Audiochan',
-    hotaudio: 'HotAudio', whyp: 'Whyp'
+    hotaudio: 'HotAudio', whyp: 'Whyp', scriptbin: 'ScriptBin', ellipsus: 'Ellipsus'
   };
+  var PROVIDER_KIND = { scriptbin: 'script', ellipsus: 'script' };
+
+  function adoptProviders(list){
+    (list || []).forEach(function(p){
+      if (!p || !p.key) return;
+      PROVIDERS[p.key] = p.label || p.key;
+      PROVIDER_KIND[p.key] = p.kind === 'script' ? 'script' : 'audio';
+    });
+  }
+  function provVerb(key){ return PROVIDER_KIND[key] === 'script' ? 'Read on ' : 'Open on '; }
   var GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A','NB4A','A4A'];
   var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
   var CREDIT_ORDER = ['voiceArtists','writers','producers','editors','musicians'];
@@ -284,6 +296,7 @@
   function fetchData(){
     var url = window.__CATALOG_SRC__ || '/api/content';
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      adoptProviders(data.providers);
       ENTRIES = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
       COLLAB = {};
       (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });
@@ -397,7 +410,7 @@
     var links = getLinks(e).map(function(l){
       return '<a class="modal-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
-        'Open on ' + esc(provLabel(l.provider)) + '</a>';
+        provVerb(l.provider) + esc(provLabel(l.provider)) + '</a>';
     }).join('');
     var tags = (e.tags||[]).map(function(t){ return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>'; }).join('');
     var credits = '';

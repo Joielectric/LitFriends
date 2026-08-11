@@ -710,7 +710,17 @@
         }
         
         // ── Catalogue auto-fill ──────────────────────────────────────────────
-        const CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan', hotaudio:'HotAudio', whyp:'Whyp' };
+        // Fallback labels only; the managed list arrives with the content payload.
+        const CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan', hotaudio:'HotAudio', whyp:'Whyp', scriptbin:'ScriptBin', ellipsus:'Ellipsus' };
+        const CAT_KIND = { scriptbin:'script', ellipsus:'script' };
+        function catAdoptProviders(list) {
+            (list || []).forEach(p => {
+                if (!p || !p.key) return;
+                CAT_PROVIDERS[p.key] = p.label || p.key;
+                CAT_KIND[p.key] = p.kind === 'script' ? 'script' : 'audio';
+            });
+        }
+        const catIsScript = k => CAT_KIND[k] === 'script';
         let CATALOG = [];
 
         function catGetLinks(e) {
@@ -722,9 +732,12 @@
             if (!links.length) return '';
             const multi = links.length > 1;
             return links.map(lk => {
-                let label = multi ? ('Listen on ' + (CAT_PROVIDERS[lk.provider] || lk.provider)) : 'Listen Here';
-                if (trt) label += ' TRT - ' + trt;
-                return "🎧 <a href='" + lk.url + "' target='_blank' rel='noopener'>" + label + "</a>";
+                const script = catIsScript(lk.provider);
+                let label = multi
+                    ? ((script ? 'Read on ' : 'Listen on ') + (CAT_PROVIDERS[lk.provider] || lk.provider))
+                    : (script ? 'Read the Script' : 'Listen Here');
+                if (trt && !script) label += ' TRT - ' + trt;
+                return (script ? "📜 " : "🎧 ") + "<a href='" + lk.url + "' target='_blank' rel='noopener'>" + label + "</a>";
             }).join('\n');
         }
         function catApplyEntry(e) {
@@ -742,6 +755,7 @@
         }
         function catLoad() {
             fetch('/api/content').then(r => r.json()).then(d => {
+                catAdoptProviders(d.providers);
                 CATALOG = (d.entries || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
                 const sel = document.getElementById('catalogSelect');
                 CATALOG.forEach((e, i) => {
