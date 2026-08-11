@@ -46,7 +46,26 @@
     /* Header */
     .cat-head { padding: 1rem 0 1.4rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
     .cat-eyebrow { font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--electric); display: block; margin-bottom: 0.6rem; }
-    .cat-head h1 { font-family: "Cinzel", serif; font-weight: 600; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: 0.06em; color: #fff; }
+    .cat-head h1 { font-family: "Cinzel", serif; font-weight: 600; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: 0.06em; color: #fff; display: flex; align-items: center; gap: 0.5em; }
+    .cat-logo { height: 1.25em; width: auto; flex: 0 0 auto; border-radius: 4px; }
+
+    /* Intro: the avatar starts full-screen and rushes at the viewer as it fades.
+       overflow:hidden clips the swell so it can never raise a scrollbar. */
+    #intro { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
+    /* Backdrop is its own layer, so lifting it does not dim the face in front of it. */
+    #intro .intro-veil { position: absolute; inset: 0; background: var(--bg); animation: intro-veil 1.15s ease-out forwards; }
+    /* Absolute rather than a sized grid item, so it fills the overlay outright. */
+    #intro img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center;
+                 will-change: transform, opacity; animation: intro-rush 1.15s cubic-bezier(0.35, 0, 0.85, 0.5) forwards; }
+    /* Accelerating scale reads as the face closing on the viewer, not just growing. */
+    @keyframes intro-rush {
+      0%   { transform: scale(1);   opacity: 1; }
+      55%  { opacity: 0.9; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    /* Backdrop clears just behind the face so the catalogue is there as it goes. */
+    @keyframes intro-veil { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { #intro { display: none; } }
     .cat-sub { color: var(--text-mid); font-size: 0.95rem; margin-top: 0.4rem; }
 
     /* Filter bar */
@@ -172,13 +191,15 @@
 </head>
 <body>
 
+<div id="intro" aria-hidden="true"><span class="intro-veil"></span><img src="images/JOI_Icon.png" alt="" fetchpriority="high"></div>
+
 <div class="wrap">
 
   <nav class="cat-nav"><a href="index.html">&#8592; Home</a></nav>
 
   <header class="cat-head">
     <span class="cat-eyebrow">JOI Electric</span>
-    <h1>Catalogue</h1>
+    <h1><img class="cat-logo" src="images/JOI_Icon.png" alt="">Catalogue</h1>
     <p class="cat-sub">Search the full collection by title, tag, or creator.</p>
   </header>
 
@@ -512,6 +533,17 @@
     document.querySelectorAll('.chip.active').forEach(function(c){ c.classList.remove('active'); });
     apply();
   });
+
+  // Drop the intro once it has played. It is pointer-events:none throughout, so
+  // it never blocks the page even in the window before this fires; the timeout
+  // is a backstop for the case where the animation never starts.
+  (function introTeardown(){
+    var intro = document.getElementById('intro');
+    if (!intro) return;
+    var clear = function(){ if (intro && intro.parentNode) intro.parentNode.removeChild(intro); };
+    intro.addEventListener('animationend', clear, { once: true });
+    setTimeout(clear, 2500);
+  })();
 
   fetchData();
 })();
