@@ -269,6 +269,32 @@
   // Collaborators → clickable names
   var COLLAB = {};
   function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+  function entryById(id){
+    if (!id) return null;
+    for (var i = 0; i < ENTRIES.length; i++) if (ENTRIES[i].id === id) return ENTRIES[i];
+    return null;
+  }
+  // An audio stores the script it filled; the script side is derived, so the
+  // two directions can never disagree.
+  function fillsOf(scriptId){
+    return ENTRIES.filter(function(e){ return e.fills && e.fills === scriptId; });
+  }
+  function relLink(e){
+    return '<a class="collab-link" href="#" data-goto="' + esc(e.id) + '">' + esc(e.title || 'Untitled') + '</a>';
+  }
+  function relatedHtml(e){
+    if ((e.type||'audio') === 'script') {
+      var fills = fillsOf(e.id);
+      if (!fills.length) return '';
+      return '<div class="cred-row"><span class="cred-label">Filled by</span><span class="cred-names">' +
+        fills.map(relLink).join(', ') + '</span></div>';
+    }
+    var script = entryById(e.fills);
+    if (!script) return '';
+    return '<div class="cred-row"><span class="cred-label">Script</span><span class="cred-names">' +
+      relLink(script) + '</span></div>';
+  }
+
   function collabHtml(name, inRow){
     var c = COLLAB[normName(name)];
     var label = c ? c.name : name;
@@ -413,6 +439,7 @@
         provVerb(l.provider) + esc(provLabel(l.provider)) + '</a>';
     }).join('');
     var tags = (e.tags||[]).map(function(t){ return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>'; }).join('');
+    var related = relatedHtml(e);
     var credits = '';
     var c = e.credits || {};
     CREDIT_ORDER.forEach(function(role){
@@ -434,10 +461,18 @@
       (e.desc ? '<div class="modal-desc">' + richText(e.desc) + '</div>' : '') +
       (links ? '<div class="modal-links">' + links + '</div>' : '<div class="modal-note">No links yet.</div>') +
       (tags ? '<div class="modal-tags">' + tags + '</div>' : '') +
-      (credits ? '<div class="modal-credits">' + credits + '</div>' : '') +
+      (credits || related ? '<div class="modal-credits">' + related + credits + '</div>' : '') +
     '</div>';
     document.body.appendChild(overlay);
     overlay.querySelector('.modal-close').addEventListener('click', closeModal);
+    // Jump straight from an audio to its script, or from a script to a fill.
+    Array.prototype.forEach.call(overlay.querySelectorAll('[data-goto]'), function(a){
+      a.addEventListener('click', function(ev){
+        ev.preventDefault();
+        var target = entryById(a.getAttribute('data-goto'));
+        if (target) openModal(target);
+      });
+    });
   }
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
 

@@ -414,7 +414,7 @@
                     <div class="cm-full" style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
                         <div>
                             <label class="cm-label">Type</label>
-                            <select id="cm-type" class="cm-input" style="width:100%">
+                            <select id="cm-type" class="cm-input" style="width:100%;min-width:0" onchange="cmTypeChanged()">
                                 <option value="audio">Audio</option>
                                 <option value="script">Script</option>
                             </select>
@@ -433,6 +433,16 @@
                         </div>
                         <div id="cm-links-list"></div>
                     </div>
+
+                    <!-- Script fill: audio entries only -->
+                    <div class="cm-full" id="cm-fills-row">
+                        <label class="cm-label">Script Filled <span style="font-weight:normal;color:var(--text-mid)">(optional — a script entry in this catalogue)</span></label>
+                        <select id="cm-fills" class="cm-input" style="width:100%;min-width:0"></select>
+                        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">
+                            Only for scripts that have their own entry here. To credit someone else’s script, add a script platform link above instead.
+                        </div>
+                    </div>
+
                     <div class="cm-full">
                         <label class="cm-label">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma-separated)</span></label>
 
@@ -1921,6 +1931,44 @@
       }
     }
 
+    // ── Script fills ────────────────────────────────────────────────────────
+    // An audio may fill at most one script, stored as that script entry's id.
+    // The reverse ("which audios filled this script") is derived, so there is
+    // only ever one field to keep straight.
+
+    function cmScriptEntries() {
+      return cmEntries
+        .filter(e => (e.type || 'audio') === 'script' && e.id !== cmEditingId)
+        .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+    }
+
+    function cmRenderFillsOptions(selected) {
+      const sel = document.getElementById('cm-fills');
+      if (!sel) return;
+      const keep = selected !== undefined ? selected : sel.value;
+      const scripts = cmScriptEntries();
+
+      sel.innerHTML = '<option value="">— none —</option>'
+        + scripts.map(e =>
+            `<option value="${cmEsc(e.id)}">${cmEsc(e.title || 'Untitled')}${e.date ? ' (' + cmEsc(e.date) + ')' : ''}</option>`
+          ).join('');
+
+      // A script that was deleted or retyped must not silently detach the audio.
+      if (keep && !scripts.some(e => e.id === keep)) {
+        const gone = cmEntries.find(e => e.id === keep);
+        sel.insertAdjacentHTML('beforeend',
+          `<option value="${cmEsc(keep)}">${cmEsc(gone ? (gone.title || 'Untitled') : 'Missing script')} (unavailable)</option>`);
+      }
+      sel.value = keep || '';
+    }
+
+    // The field is meaningless on a script entry, so it is hidden there.
+    function cmTypeChanged() {
+      const isAudio = document.getElementById('cm-type').value !== 'script';
+      document.getElementById('cm-fills-row').style.display = isAudio ? '' : 'none';
+      if (isAudio) cmRenderFillsOptions();
+    }
+
     // ── Uploaded image library ──────────────────────────────────────────────
 
     let cmUploads = [];
@@ -2045,6 +2093,8 @@
         links,
         title,
         type:  document.getElementById('cm-type').value || 'audio',
+        fills: (document.getElementById('cm-type').value || 'audio') === 'script'
+                 ? '' : (document.getElementById('cm-fills').value || ''),
         tags:      cmNormalizeTagList(document.getElementById('cm-tags').value),
         shortDesc: document.getElementById('cm-short-desc').value.trim(),
         desc:      document.getElementById('cm-desc').value.trim(),
@@ -2082,6 +2132,8 @@
       cmEditingId = id;
       document.getElementById('cm-title').value = e.title;
       document.getElementById('cm-type').value = e.type || 'audio';
+      cmRenderFillsOptions(e.fills || '');
+      cmTypeChanged();
       const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
       cmSetLinks(links);
       document.getElementById('cm-tags').value       = (e.tags || []).join(', ');
@@ -2122,6 +2174,8 @@
       cmUpdateImagePreview();
       document.getElementById('cm-image-status').textContent = '';
       document.getElementById('cm-type').value = 'audio';
+      cmRenderFillsOptions('');
+      cmTypeChanged();
       cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
       cmRenderCredits();
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
