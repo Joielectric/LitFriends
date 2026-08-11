@@ -435,6 +435,22 @@
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma-separated)</span></label>
+
+                        <!-- Bracketed-title importer: paste "[M4F] Title [Tag] [Tag]" -> tags + title -->
+                        <div style="border:1px dashed var(--border-mid);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                                <span style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.08em">Paste bracketed title &mdash; e.g. [M4F] My Title [Tag] [Tag]</span>
+                                <span style="display:flex;gap:6px;">
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="cmExtractBracketTags()">Extract Tags</button>
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-bracket-src').value=''">Clear</button>
+                                </span>
+                            </div>
+                            <textarea id="cm-bracket-src" class="cm-input" rows="2"
+                                placeholder="[M4F] Dark Fantasy Date Night [Script Fill] [Halloween] [CNC]"
+                                style="width:100%;resize:vertical;font-family:inherit"
+                                onpaste="setTimeout(cmExtractBracketTags, 0)"></textarea>
+                        </div>
+
                         <input id="cm-tags" class="cm-input" list="cm-tag-suggestions" placeholder="GFE, soft, comfort" style="width:100%;margin-bottom:8px">
                         <datalist id="cm-tag-suggestions"></datalist>
                         <div id="cm-gender-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"></div>
@@ -1480,6 +1496,58 @@
       return [...seen.values()];
     }
 
+    // ── Bracketed-title importer ─────────────────────────────────────────────
+    // Turns "[M4F] Dark Fantasy Date Night [CNC] [Vampire]" into comma-separated
+    // tags (gender tags first) plus a clean title. A bracket holding several
+    // comma-separated items is split, so no tag can ever carry a comma into CSV.
+    function cmParseBracketed(raw) {
+      const tags = [];
+      for (const m of raw.matchAll(/\[([^\]]*)\]/g)) {
+        m[1].split(',').forEach(part => {
+          const canon = cmNormalizeTag(part.replace(/\s+/g, ' '));
+          if (canon) tags.push(canon);
+        });
+      }
+      const title = raw
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/^[\s\-–—|:,.]+|[\s\-–—|:,.]+$/g, '')
+        .trim();
+      return { tags, title };
+    }
+
+    function cmExtractBracketTags() {
+      const src = document.getElementById('cm-bracket-src');
+      const raw = src.value;
+      if (!raw.trim()) { cmShowMsg('Paste a bracketed title first.', false); return; }
+
+      const { tags, title } = cmParseBracketed(raw);
+      if (!tags.length) { cmShowMsg('No [bracketed] tags found in that text.', false); return; }
+
+      // Merge into whatever is already in the Tags field, deduped, gender first.
+      const tagsEl = document.getElementById('cm-tags');
+      const before = cmNormalizeTagList(tagsEl.value);
+      const merged = new Map();
+      [...before, ...tags].forEach(t => {
+        const key = t.toLowerCase();
+        if (!merged.has(key)) merged.set(key, t);
+      });
+      const all = [...merged.values()];
+      tagsEl.value = [
+        ...all.filter(t => GENDER_TAGS_CM.includes(t)),
+        ...all.filter(t => !GENDER_TAGS_CM.includes(t)),
+      ].join(', ');
+
+      const added = all.length - before.length;
+      const skipped = tags.length - added;
+      const titleEl = document.getElementById('cm-title');
+      let note = '';
+      if (title && !titleEl.value.trim()) { titleEl.value = title; note = ' Title set.'; }
+      else if (title) { note = ` Title left as-is (found "${title}").`; }
+
+      cmShowMsg(`Added ${added} tag${added === 1 ? '' : 's'}${skipped ? `, skipped ${skipped} duplicate${skipped === 1 ? '' : 's'}` : ''}.${note}`, true);
+    }
+
     // Collect every non-gender tag already used, normalized + deduped, for reuse.
     function cmAllExistingTags() {
       const seen = new Map();
@@ -1636,7 +1704,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt','cm-image'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-bracket-src','cm-short-desc','cm-desc','cm-trt','cm-image'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cm-type').value = 'audio';
       cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
       cmRenderCredits();
