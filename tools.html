@@ -471,13 +471,23 @@
                                 <input id="cm-image" class="cm-input" placeholder="https://… or images/covers/cover.webp" style="width:100%"
                                     oninput="cmUpdateImagePreview()">
                                 <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
-                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image-file').click()">Upload Image</button>
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image-file').click()">Upload New</button>
+                                    <button type="button" id="cm-uploads-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleUploads()">Choose from uploads</button>
                                     <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image').value='';cmUpdateImagePreview()">Remove</button>
                                     <span id="cm-image-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
                                 </div>
                                 <input type="file" id="cm-image-file" accept="image/*" style="display:none"
                                     onchange="cmUploadImage(this.files[0]);this.value=''">
                             </div>
+                        </div>
+
+                        <!-- Library of already-uploaded covers -->
+                        <div id="cm-uploads-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                                <span id="cm-uploads-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadUploads()">Refresh</button>
+                            </div>
+                            <div id="cm-uploads-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:280px;overflow-y:auto;"></div>
                         </div>
                     </div>
                     <div>
@@ -1709,6 +1719,10 @@
 
         document.getElementById('cm-image').value = out.url;
         cmUpdateImagePreview();
+        if (out.images) {
+          cmUploads = out.images;
+          if (document.getElementById('cm-uploads-panel').style.display !== 'none') cmRenderUploads();
+        }
         const saved = file.size > blob.size
           ? ` (${(file.size / 1024).toFixed(0)}KB → ${(blob.size / 1024).toFixed(0)}KB)`
           : '';
@@ -1716,6 +1730,117 @@
       } catch (err) {
         status.textContent = err.message;
       }
+    }
+
+    // ── Uploaded image library ──────────────────────────────────────────────
+
+    let cmUploads = [];
+
+    function cmEsc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function cmFmtSize(bytes) {
+      const n = Number(bytes);
+      if (!n) return '—';
+      return n >= 1048576 ? (n / 1048576).toFixed(1) + 'MB' : Math.round(n / 1024) + 'KB';
+    }
+
+    function cmToggleUploads() {
+      const panel = document.getElementById('cm-uploads-panel');
+      const open = panel.style.display === 'none';
+      panel.style.display = open ? 'block' : 'none';
+      document.getElementById('cm-uploads-toggle').textContent = open ? 'Hide uploads' : 'Choose from uploads';
+      if (open) cmLoadUploads();
+    }
+
+    function cmLoadUploads() {
+      const summary = document.getElementById('cm-uploads-summary');
+      summary.textContent = 'Loading…';
+      fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, action: 'list' }),
+      })
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (!ok) throw new Error(d.error || 'Could not load uploads');
+          cmUploads = d.images || [];
+          cmRenderUploads(d.totalBytes);
+        })
+        .catch(err => { summary.textContent = err.message; });
+    }
+
+    // Which uploads are referenced by an entry — deleting one of these would
+    // leave a card with a broken cover, so they are flagged and confirmed twice.
+    function cmUploadUsage(url) {
+      return cmEntries.filter(e => e.image === url).length;
+    }
+
+    function cmRenderUploads(totalBytes) {
+      const grid = document.getElementById('cm-uploads-grid');
+      const summary = document.getElementById('cm-uploads-summary');
+      const total = totalBytes != null
+        ? totalBytes
+        : cmUploads.reduce((n, i) => n + (Number(i.size) || 0), 0);
+
+      summary.textContent = cmUploads.length
+        ? `${cmUploads.length} image${cmUploads.length === 1 ? '' : 's'} · ${cmFmtSize(total)} stored`
+        : 'No uploads yet';
+
+      if (!cmUploads.length) {
+        grid.innerHTML = '<span style="font-size:0.75rem;color:var(--text-dim)">Upload one with “Upload New”.</span>';
+        return;
+      }
+
+      const current = document.getElementById('cm-image').value.trim();
+      grid.innerHTML = cmUploads.map(img => {
+        const used = cmUploadUsage(img.url);
+        const isCurrent = img.url === current;
+        return `
+          <div style="position:relative;border:1px solid ${isCurrent ? 'var(--coral)' : 'var(--border)'};border-radius:var(--radius);overflow:hidden;background:var(--surface);">
+            <img src="${cmEsc(img.url)}" alt="${cmEsc(img.name)}" loading="lazy"
+                 onclick="cmSelectUpload('${cmEsc(img.url)}')"
+                 title="${cmEsc(img.name)}${used ? ` · used by ${used} entr${used === 1 ? 'y' : 'ies'}` : ''}"
+                 style="width:100%;height:72px;object-fit:cover;display:block;cursor:pointer">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:3px 5px;font-size:0.62rem;color:var(--text-dim)">
+              <span>${cmFmtSize(img.size)}${used ? ' · in use' : ''}</span>
+              <button type="button" title="Delete" onclick="cmDeleteUpload('${cmEsc(img.key)}','${cmEsc(img.url)}')"
+                      style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;line-height:1;padding:0 2px">&times;</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function cmSelectUpload(url) {
+      document.getElementById('cm-image').value = url;
+      cmUpdateImagePreview();
+      document.getElementById('cm-image-status').textContent = 'Selected. Remember to save the entry.';
+      cmRenderUploads();
+    }
+
+    function cmDeleteUpload(key, url) {
+      const used = cmUploadUsage(url);
+      const warning = used
+        ? `This image is used by ${used} entr${used === 1 ? 'y' : 'ies'}. Deleting it will leave ${used === 1 ? 'that card' : 'those cards'} with a broken cover.\n\n`
+        : '';
+      if (!confirm(`${warning}Delete this image permanently?`)) return;
+
+      fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, action: 'delete', key }),
+      })
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (!ok) throw new Error(d.error || 'Could not delete');
+          cmUploads = d.images || [];
+          cmRenderUploads(d.totalBytes);
+          cmShowMsg('Image deleted.', true);
+        })
+        .catch(err => cmShowMsg(err.message, false));
     }
 
     // ── Save / Edit ─────────────────────────────────────────────────────────
