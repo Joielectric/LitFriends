@@ -106,13 +106,16 @@
   function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
   function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   const ENTRY_TYPE_LABELS = { audio: 'Audio', script: 'Script', story: 'Story', poem: 'Poem' };
+  const ENTRY_TYPE_ICONS  = { audio: '🎧', script: '📜', story: '📖', poem: '✍️' };
   function entryType(entry) {
     const t = (entry && entry.type) || 'audio';
     return ENTRY_TYPE_LABELS[t] ? t : 'audio';
   }
   function typeBadge(entry) {
     const t = entryType(entry);
-    return '<span class="ag-type-badge ag-type-' + t + '">' + ENTRY_TYPE_LABELS[t] + '</span>';
+    return '<span class="ag-type-badge ag-type-' + t + '">' +
+      '<span class="ag-type-ico" aria-hidden="true">' + ENTRY_TYPE_ICONS[t] + '</span>' +
+      ENTRY_TYPE_LABELS[t] + '</span>';
   }
 
   function richText(str) {
@@ -448,6 +451,7 @@
   font-size: 0.66rem; letter-spacing: .08em; display: block; margin-bottom: 1px;
 }
 .ag-credit-names { color: var(--text-mid, #888); }
+.ag-type-ico { font-size: 0.82em; letter-spacing: 0; margin-right: 3px; }
 .ag-type-badge {
   display: inline-block; font-family: "Cinzel", serif; font-size: 0.54rem; font-weight: 600;
   letter-spacing: .14em; text-transform: uppercase; border-radius: 999px;

@@ -107,6 +107,8 @@
     .rt.gender { color: var(--gender); border-color: rgba(232,164,79,0.4); }
     .c-artist { font-size: 0.84rem; color: var(--text-mid); line-height: 1.4; }
     .type-badge { font-family: "Cinzel", serif; font-size: 0.54rem; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; margin-right: 7px; vertical-align: middle; white-space: nowrap; }
+    .type-ico { font-size: 0.82em; letter-spacing: 0; margin-right: 3px; }
+    .type-badge.audio  { color: #8fb4f2; border: 1px solid rgba(143,180,242,0.5);  background: rgba(91,141,232,0.14); }
     .type-badge.script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
     .type-badge.story  { color: #7fd6c0; border: 1px solid rgba(127,214,192,0.55); background: rgba(127,214,192,0.12); }
     .type-badge.poem   { color: #c79bf0; border: 1px solid rgba(199,155,240,0.55); background: rgba(199,155,240,0.12); }
@@ -277,12 +279,16 @@
   var COLLAB = {};
   function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
   var TYPE_LABELS = { audio:'Audio', script:'Script', story:'Story', poem:'Poem' };
+  // Glyphs match the ones the post templates already use for links.
+  var TYPE_ICONS  = { audio:'🎧', script:'📜', story:'📖', poem:'✍️' };
   function typeOf(e){ return (e && e.type) || 'audio'; }
   // Audio is the default and stays unbadged; everything else is called out.
   function typeBadge(e){
     var t = typeOf(e);
-    if (t === 'audio') return '';
-    return '<span class="type-badge ' + esc(t) + '">' + esc(TYPE_LABELS[t] || t) + '</span>';
+    if (!TYPE_LABELS[t]) return '';
+    return '<span class="type-badge ' + esc(t) + '">' +
+      '<span class="type-ico" aria-hidden="true">' + TYPE_ICONS[t] + '</span>' +
+      esc(TYPE_LABELS[t]) + '</span>';
   }
   // Written work is read wherever it lives, so the entry's own type wins over
   // the platform's kind: a story on an audio host is still read, not listened to.
