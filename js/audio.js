@@ -585,7 +585,7 @@
       <div class="ag-row">
         <div class="ag-row-date">${entry.date || ''}</div>
         <div class="ag-row-main">
-          <div class="ag-row-title">${typeBadge(entry)}${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">— ' + artistBadges + '</span>' : ''}</div>
+          <div class="ag-row-title">${typeBadge(entry)}${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">&middot; ' + artistBadges + '</span>' : ''}</div>
           ${entry.shortDesc ? `<div class="ag-row-desc">${entry.shortDesc}</div>` : ''}
           ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
         </div>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="images/JOI_Favicon.png">
   <link rel="apple-touch-icon" href="images/JOI_Favicon.png">
-  <title>JOI Electric — Erotic Audio</title>
+  <title>JOI Electric &middot; Erotic Audio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
@@ -174,7 +174,7 @@
     <h1>JOI Electric</h1>
     <p class="hero-tagline">You didn&rsquo;t come here by accident. Some part of you knew exactly what it was looking for.</p>
     <div class="hero-divider"><span></span><i></i><span></span></div>
-    <span class="hero-sub">Erotic Audio &mdash; 18+ only</span>
+    <span class="hero-sub">Erotic Audio &middot; 18+ only</span>
   </header>
 
   <section class="news">
@@ -213,13 +213,13 @@
 </div>
 
 <footer>
-  JOI Electric &mdash; Erotic Audio &mdash; 18+ only
+  JOI Electric &middot; Erotic Audio &middot; 18+ only
   &nbsp;&middot;&nbsp;
   <a class="tools-link" href="tools.html" title="Creator tools (password protected)">&#128274; Tools</a>
 </footer>
 
 <script>
-  // ── Latest / News — edit this list to update the landing page ──────────────
+  // ── Latest / News. Edit this list to update the landing page ───────────────
   var NEWS = [
     { date: "Coming soon", title: "New site, new home", body: "JOI Electric has a new home. Browse the full catalogue and follow along for what's next." }
   ];
@@ -245,7 +245,7 @@
       return u.replace(/"/g, '%22');                    // relative path
     }
     function render(list) {
-      if (!list.length) { grid.innerHTML = '<div class="news-empty">No updates yet — check back soon.</div>'; return; }
+      if (!list.length) { grid.innerHTML = '<div class="news-empty">No updates yet. Check back soon.</div>'; return; }
       grid.innerHTML = list.map(function (n) {
         var img = safeUrl(n.image), link = safeUrl(n.link);
         return '<div class="news-item">' +
@@ -355,7 +355,7 @@
     function startAmbient() {
       if (!ctx || reduce || ambientTimer) return;
       function schedule() {
-        var wait = 7000 + Math.random() * 9000; // every ~7–16s
+        var wait = 7000 + Math.random() * 9000; // every ~7 to 16s
         ambientTimer = setTimeout(function () {
           if (!document.hidden) { c.style.opacity = '1'; makeStrike(0.5); }
           schedule();

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="images/JOI_Favicon.png">
   <link rel="apple-touch-icon" href="images/JOI_Favicon.png">
-  <title>Catalogue — JOI Electric</title>
+  <title>Catalogue &middot; JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -200,7 +200,7 @@
   <header class="cat-head">
     <span class="cat-eyebrow">JOI Electric</span>
     <h1><img class="cat-logo" src="images/JOI_Icon.png" alt="">Catalogue</h1>
-    <p class="cat-sub">Crafted with intention, alongside amazing collaborators and genuinely talented people. Search by title, tag, or creator &mdash; and follow the names; they lead to the people behind the work.</p>
+    <p class="cat-sub">Crafted with intention, alongside amazing collaborators and genuinely talented people. Search by title, tag, or creator. Follow the names; they lead to the people behind the work.</p>
   </header>
 
   <div class="filters">
@@ -239,7 +239,7 @@
 
 </div>
 
-<footer>JOI Electric &mdash; 18+ only</footer>
+<footer>JOI Electric &middot; 18+ only</footer>
 
 <script>
 (function () {
@@ -524,7 +524,7 @@
     }).join('');
     var voices = voiceNames(e);
     var artistList = voices.length ? voices : allNames(e).slice(0,2);
-    var artistStr = artistList.length ? artistList.map(function(n){ return collabHtml(n, true); }).join(', ') : '&mdash;';
+    var artistStr = artistList.length ? artistList.map(function(n){ return collabHtml(n, true); }).join(', ') : '&middot;';
     return '<div class="row" data-idx="' + idx + '">' +
       '<div class="c-date">' + esc(e.date||'') + (e.trt ? '<div class="c-trt">&#9201; ' + esc(e.trt) + '</div>' : '') + '</div>' +
       '<div><div class="c-title">' + typeBadge(e) + esc(e.title||'Untitled') + '</div>' +
@@ -532,7 +532,7 @@
         (tags ? '<div class="c-tags">' + tags + '</div>' : '') +
       '</div>' +
       '<div class="c-artist">' + artistStr + '</div>' +
-      '<div class="c-links">' + (links || '<span class="c-date">&mdash;</span>') + '</div>' +
+      '<div class="c-links">' + (links || '<span class="c-date">&middot;</span>') + '</div>' +
     '</div>';
   }
 
