@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="../images/JOI_Icon.png">
   <link rel="apple-touch-icon" href="../images/JOI_Icon.png">
-  <link rel="manifest" href="../manifest-joi.json"><title>JOI Electric — Consenting Adults</title>
+  <link rel="manifest" href="../manifest-joi.json"><title>JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
@@ -194,6 +194,15 @@
 
     .bio p + p { margin-top: 0.9rem; }
 
+    .bio-outro { margin-top: 1.3rem !important; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+    .bio-more {
+      font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--electric); text-decoration: none; white-space: nowrap;
+      border-bottom: 1px solid rgba(91,141,232,0.4); padding-bottom: 2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .bio-more:hover { color: var(--silver-hi); border-color: var(--electric); }
+
     /* === PLATFORM LINKS === */
     .platforms {
       display: flex;
@@ -375,14 +384,16 @@
     <h1>JOI Electric</h1>
     <span class="intro-script">Producer &middot; Editor &middot; Musician &middot; Sound Designer</span>
     <div class="divider"><span></span><i></i><span></span></div>
-    <p class="intro-text">Intimate audio crafted in collaboration with amazing artists and storytellers.</p>
+    <p class="intro-text">Intimate audio, made with intention.</p>
   </div>
 
   <div class="section">
     <div class="section-label">About</div>
     <div class="bio">
-      <p>Most of my projects are collaborative, created alongside other amazing artists and storytellers. The work is richer for it — every voice, every perspective shapes something none of us could make alone.</p>
-      <p>Explore here and through the links below to discover a growing collection of my work — an ever-unfolding tapestry of voices, stories, and sound, each one waiting to be heard. Wander in, take your time, and let curiosity lead the way.</p>
+      <p>I won&rsquo;t tell you I&rsquo;m safe. I&rsquo;ll tell you I&rsquo;m honest &mdash; and that the two aren&rsquo;t the same thing, though people confuse them constantly.</p>
+      <p>I hold what&rsquo;s offered, and I care for it like it matters &mdash; because it does. That&rsquo;s the job. The intensity, the control, the edge &mdash; none of it means anything if I&rsquo;m not still there in the quiet after, making sure you landed somewhere solid, with room to breathe.</p>
+      <p>Kink-positive, unapologetically. Lightning forks &mdash; every branch just as bright, nothing lessened by being shared. And more interested in who you become after than in anything that happens during.</p>
+      <p class="bio-outro">That&rsquo;s me. <a class="bio-more" href="../a-word-from-me.html">Come find out the rest &#8594;</a></p>
     </div>
   </div>
 
@@ -457,7 +468,7 @@
 </div>
 
 <footer>
-  JOI Electric &mdash; Consenting Adults &mdash; 18+ only
+  JOI Electric &mdash; Erotic Audio &mdash; 18+ only
 </footer>
 <script src="/js/audio.js"></script>
 <script>AudioGrid.init({ container: '#audio-grid', artist: 'joi-electric', limit: 5 });</script>

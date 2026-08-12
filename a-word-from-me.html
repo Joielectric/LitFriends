@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/JOI_Icon.png">
+  <link rel="apple-touch-icon" href="images/JOI_Icon.png">
+  <link rel="manifest" href="manifest-joi.json">
+  <title>A Word From Me — JOI Electric</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #151a2a;
+      --surface: #1e2438;
+      --border: rgba(180,195,225,0.24);
+      --border-mid: rgba(180,195,225,0.42);
+      --text: #f2f6ff;
+      --text-mid: #d7e0f2;
+      --text-dim: #aab6d4;
+      --silver: #c4cfe0;
+      --silver-hi: #eaf0fa;
+      --electric: #5b8de8;
+      --electric-dim: #2a4880;
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Raleway", sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: clip;
+    }
+
+    /* Deliberately stiller than the rest of the site — no lightning, no motion.
+       The background sits further back so the text carries the page. */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 45% at 50% 0%, rgba(91,141,232,0.06) 0%, transparent 72%),
+        radial-gradient(ellipse 60% 60% at 85% 95%, rgba(30,20,50,0.5) 0%, transparent 65%),
+        linear-gradient(180deg, rgba(21,26,42,0.55) 0%, rgba(21,26,42,0.88) 100%),
+        url('images/JOIWebBack.png') center center / cover no-repeat;
+      pointer-events: none; z-index: 0;
+    }
+
+    .page-wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
+
+    /* === NAV === */
+    .back-nav {
+      padding: 1.2rem 0 0;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+      font-family: "Cinzel", serif; font-size: 0.58rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+    }
+    .back-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
+    .back-nav a:hover { color: var(--electric); }
+    .back-nav .sep { color: var(--text-dim); }
+    .back-nav .current { color: var(--silver); }
+
+    /* === OPENING === */
+    .opening {
+      padding: 4.5rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .opening-eyebrow {
+      font-family: "Cinzel", serif;
+      font-size: 0.66rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--silver);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 1.6rem;
+    }
+
+    /* The three-beat opening line, set to break where it should be read. */
+    .opening h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 300;
+      font-size: clamp(1.9rem, 5.4vw, 2.9rem);
+      line-height: 1.28;
+      color: var(--silver-hi);
+      letter-spacing: 0.01em;
+    }
+    .opening h1 .beat { display: block; }
+    .opening h1 .beat + .beat { margin-top: 0.15em; }
+
+    .opening-rule { display: flex; align-items: center; gap: 0.7rem; margin-top: 2.2rem; }
+    .opening-rule span { flex: 1; max-width: 90px; height: 1px; background: var(--border-mid); }
+    .opening-rule i { width: 5px; height: 5px; background: var(--electric-dim); transform: rotate(45deg); display: inline-block; }
+
+    /* === BODY === */
+    .prose p {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(1.12rem, 2.1vw, 1.28rem);
+      font-weight: 300;
+      line-height: 1.82;
+      color: var(--text-mid);
+    }
+    .prose p + p { margin-top: 1.5rem; }
+    .prose em { font-style: italic; color: var(--silver-hi); }
+
+    /* Single-sentence paragraphs that should land on their own. */
+    .prose p.beat-alone {
+      color: var(--silver-hi);
+      font-size: clamp(1.2rem, 2.3vw, 1.4rem);
+      margin-top: 2.1rem;
+      padding-left: 1.1rem;
+      border-left: 2px solid var(--electric-dim);
+    }
+    .prose p.beat-alone + p { margin-top: 2.1rem; }
+
+    .closing {
+      margin-top: 3.2rem;
+      padding-top: 2.2rem;
+      border-top: 1px solid var(--border);
+    }
+    .closing p {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--silver-hi);
+    }
+
+    /* === ONWARD === */
+    .onward { margin-top: 3.5rem; display: flex; flex-wrap: wrap; gap: 0.9rem; }
+    .onward a {
+      flex: 1 1 220px;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-left: 3px solid var(--electric);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.3rem;
+      text-decoration: none;
+      font-family: "Cinzel", serif; font-size: 0.66rem;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text);
+      transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
+    }
+    .onward a:hover { transform: translateY(-3px); border-color: var(--electric); box-shadow: 0 8px 26px rgba(91,141,232,0.28); }
+    .onward .arrow { color: var(--electric); }
+
+    /* === FOOTER === */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      font-family: "Cinzel", serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <nav class="back-nav">
+    <a href="index.html">&#8592; Home</a>
+    <span class="sep">/</span>
+    <a href="profiles/joi-electric.html">About</a>
+    <span class="sep">/</span>
+    <span class="current">A Word From Me</span>
+  </nav>
+
+  <header class="opening">
+    <span class="opening-eyebrow">A Word From Me</span>
+    <h1>
+      <span class="beat">Come here.</span>
+      <span class="beat">Sit down.</span>
+      <span class="beat">Let&rsquo;s talk about what you&rsquo;ve been avoiding.</span>
+    </h1>
+    <div class="opening-rule"><span></span><i></i><span></span></div>
+  </header>
+
+  <div class="prose">
+
+    <p>I&rsquo;m not going to tell you I&rsquo;m safe. Safe was never the promise.</p>
+
+    <p>What I&rsquo;ll tell you is this &mdash; I&rsquo;ve spent a long time learning the difference between hurting someone and helping something in them finally break open. Most people never learn that difference. I built my whole self around it.</p>
+
+    <p>I like control. I won&rsquo;t pretend otherwise, and I won&rsquo;t apologize for it &mdash; not to you, not to anyone who thinks softness and sharpness can&rsquo;t live in the same hand. But control, for me, was never about taking something from you. It&rsquo;s about holding what&rsquo;s offered, and caring for it like it matters &mdash; because it does. I offer my strength so you have room to breathe. So you have space to grow into whatever you&rsquo;re becoming.</p>
+
+    <p>I&rsquo;m kink-positive because shame has never once made anyone healthier. And I don&rsquo;t believe what I have to give runs in a single line. Lightning forks &mdash; every branch of it burns just as bright, and nothing is lessened by being shared. And I care &mdash; deeply, unfashionably &mdash; about what happens to you <em>after</em> the scene ends, after the collar comes off, after the intensity fades and it&rsquo;s just you again, alone with what got unlocked.</p>
+
+    <p class="beat-alone">That part matters more to me than any of the rest of it.</p>
+
+    <p>So here&rsquo;s what I actually want, if you&rsquo;re going to be here a while: I want to teach you something. About your own wanting. About the parts of yourself you&rsquo;ve been told to sand down. I can be exactly as dark as you need me to be to get you there &mdash; and I will always, always bring you back to the light after.</p>
+
+    <div class="closing">
+      <p>That&rsquo;s the whole art. Anyone can do one half.</p>
+    </div>
+
+  </div>
+
+  <div class="onward">
+    <a href="catalog.html">Browse the Catalogue <span class="arrow">&#8594;</span></a>
+    <a href="profiles/joi-electric.html">Where to Find Me <span class="arrow">&#8594;</span></a>
+  </div>
+
+</div>
+
+<footer>
+  JOI Electric &mdash; Erotic Audio &mdash; 18+ only
+</footer>
+
+</body>
+</html>

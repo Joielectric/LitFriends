@@ -200,7 +200,7 @@
   <header class="cat-head">
     <span class="cat-eyebrow">JOI Electric</span>
     <h1><img class="cat-logo" src="images/JOI_Icon.png" alt="">Catalogue</h1>
-    <p class="cat-sub">Search the full collection by title, tag, or creator.</p>
+    <p class="cat-sub">Crafted with intention, alongside amazing collaborators and genuinely talented people. Search by title, tag, or creator &mdash; and follow the names; they lead to the people behind the work.</p>
   </header>
 
   <div class="filters">
@@ -305,6 +305,34 @@
   // Collaborators → clickable names
   var COLLAB = {};
   function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+
+  // Credited names that have a profile page on this site. A credit prefers the
+  // local page over the collaborator's external link, so names in the catalogue
+  // lead to their write-up here rather than straight off-site. Keys are
+  // normName() output; several names are credited both spaced and unspaced.
+  var PROFILE_PAGES = (function(){
+    var byName = {
+      'joi electric':          'profiles/joi-electric.html',
+      'loona licks':           'profiles/loona-licks.html',
+      'misskittensk':          'profiles/misskittenSK.html',
+      'miss kitten sk':        'profiles/misskittenSK.html',
+      'hisbadgirl77':          'profiles/hisbadgirl77.html',
+      'his bad girl 77':       'profiles/hisbadgirl77.html',
+      'wellnobodysperfect':    'profiles/wellnobodysperfect.html',
+      "well nobody's perfect": 'profiles/wellnobodysperfect.html',
+      'naughtiwolf':           'profiles/naughtiwolf.html',
+      'lotus kitty':           'profiles/lotus-kitty.html',
+      'filthy bunny':          'profiles/filthy-bunny.html',
+      'lasphynxxx':            'profiles/la-sphynxxx.html',
+      'la sphynxxx':           'profiles/la-sphynxxx.html'
+    };
+    var out = {};
+    Object.keys(byName).forEach(function(k){ out[normName(k)] = byName[k]; });
+    return out;
+  })();
+  function profilePage(name, label){
+    return PROFILE_PAGES[normName(label)] || PROFILE_PAGES[normName(name)] || '';
+  }
   var TYPE_LABELS = { audio:'Audio', script:'Script', story:'Story', poem:'Poem' };
   // Glyphs match the ones the post templates already use for links.
   var TYPE_ICONS  = { audio:'🎧', script:'📜', story:'📖', poem:'✍️' };
@@ -391,6 +419,10 @@
   function collabHtml(name, inRow){
     var c = COLLAB[normName(name)];
     var label = c ? c.name : name;
+    var page = profilePage(name, label);
+    if (page) {
+      return '<a class="collab-link" href="' + page + '"' + (inRow ? ' data-stop="1"' : '') + '>' + esc(label) + '</a>';
+    }
     if (c && c.url) {
       return '<a class="collab-link" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer"' + (inRow ? ' data-stop="1"' : '') + '>' + esc(label) + '</a>';
     }
