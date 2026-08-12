@@ -170,13 +170,28 @@
       animation: new-flash 1.8s ease-in-out infinite; white-space: nowrap;
     }
 
+    /* The main way out of this page and into the work, so it reads as a
+       button rather than a footnote. Deliberately unanimated: the feedback
+       CTA below owns the pulsing, and two competing glows read as noise. */
     .see-all {
-      display: inline-block; margin-top: 1rem;
-      font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--electric); text-decoration: none; border-bottom: 1px solid rgba(91,141,232,0.4);
-      padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.7rem;
+      width: 100%; min-height: 58px; margin-top: 1.5rem;
+      font-family: "Cinzel", serif; font-size: 0.74rem; font-weight: 600;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      color: #ffffff; text-decoration: none; text-align: center;
+      background: linear-gradient(140deg, rgba(91,141,232,0.35), rgba(42,72,128,0.55));
+      border: 1px solid var(--electric);
+      border-radius: var(--radius);
+      box-shadow: 0 0 18px rgba(91,141,232,0.22);
+      transition: transform 0.2s ease, box-shadow 0.25s, background 0.25s;
     }
-    .see-all:hover { color: var(--silver-hi); border-color: var(--electric); }
+    .see-all:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(140deg, rgba(91,141,232,0.55), rgba(42,72,128,0.75));
+      box-shadow: 0 8px 30px rgba(91,141,232,0.45);
+    }
+    .see-all-arrow { transition: transform 0.25s; }
+    .see-all:hover .see-all-arrow { transform: translateX(4px); }
 
     /* === BIO === */
     .bio {
@@ -195,13 +210,23 @@
     .bio p + p { margin-top: 0.9rem; }
 
     .bio-outro { margin-top: 1.3rem !important; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+    /* Pulses so the deeper piece behind the About text gets noticed. */
+    @keyframes bio-more-glow {
+      0%, 100% { color: var(--electric); text-shadow: 0 0 6px rgba(91,141,232,0.40); border-bottom-color: rgba(91,141,232,0.40); }
+      50%      { color: #a8c7ff;         text-shadow: 0 0 14px rgba(91,141,232,0.95), 0 0 28px rgba(91,141,232,0.50); border-bottom-color: rgba(91,141,232,0.90); }
+    }
     .bio-more {
       font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
       color: var(--electric); text-decoration: none; white-space: nowrap;
       border-bottom: 1px solid rgba(91,141,232,0.4); padding-bottom: 2px;
-      transition: color 0.2s, border-color 0.2s;
+      animation: bio-more-glow 2.4s ease-in-out infinite;
+      transition: color 0.2s, border-color 0.2s, text-shadow 0.2s;
     }
-    .bio-more:hover { color: var(--silver-hi); border-color: var(--electric); }
+    /* Settle bright on hover rather than keep pulsing under the cursor. */
+    .bio-more:hover {
+      animation: none; color: var(--silver-hi); border-color: var(--electric);
+      text-shadow: 0 0 16px rgba(91,141,232,0.9);
+    }
 
     /* === PLATFORM LINKS === */
     .platforms {
@@ -365,6 +390,12 @@
 
     /* Lightning overlay */
     #lightning { position: fixed; inset: 0; z-index: 55; pointer-events: none; opacity: 0; }
+
+    /* Last in the sheet on purpose: it has to outrank every animation
+       declared above it, otherwise the later rule simply wins. */
+    @media (prefers-reduced-motion: reduce) {
+      .bio-more, .btn-feedback, .new-flash { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -399,9 +430,9 @@
 
 
   <div class="section">
-    <div class="section-label">Latest Audio Works <span class="new-flash">&#9889; New</span></div>
+    <div class="section-label">Latest Works <span class="new-flash">&#9889; New</span></div>
     <div id="audio-grid"></div>
-    <a class="see-all" href="../catalog.html">See the full catalogue &#8594;</a>
+    <a class="see-all" href="../catalog.html">See the Full Catalogue <span class="see-all-arrow">&#8594;</span></a>
   </div>
 
   <div class="section">
