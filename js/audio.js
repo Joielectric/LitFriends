@@ -183,6 +183,14 @@
   display: flex; flex-direction: column; align-items: center; gap: 3px;
 }
 .ag-artist-icon-btn img { width: 38px; height: 38px; border-radius: 2px; object-fit: cover; display: block; }
+/* Shown instead of an avatar when a credited artist has no icon of their own */
+.ag-artist-icon-fallback {
+  width: 38px; height: 38px; border-radius: 2px; display: flex;
+  align-items: center; justify-content: center;
+  background: var(--surface-2, #2a2020); border: 1px solid var(--border-mid, rgba(255,255,255,.22));
+  font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .06em;
+  color: var(--text-mid, #b09090);
+}
 .ag-artist-icon-btn span {
   font-family: "Cinzel", serif; font-size: 0.48rem; letter-spacing: .1em; text-transform: uppercase;
   color: var(--text-dim, #888); white-space: nowrap;
@@ -656,7 +664,7 @@
       btn.type = 'button';
       btn.className = 'ag-artist-icon-btn';
       btn.dataset.artist = slug;
-      const iconSrc = ARTIST_ICONS[slug] || '/images/CA_ICON.png';
+      const iconSrc = ARTIST_ICONS[slug] || '';
       const initials = label.split(' ').map(w => w[0]).join('').toUpperCase();
       const tagline = ARTIST_TAGLINES[slug] || '';
       btn.innerHTML = `
@@ -664,7 +672,10 @@
           <span class="ag-artist-tooltip-name">${label}</span>
           ${tagline ? `<span class="ag-artist-tooltip-tag">${tagline}</span>` : ''}
         </div>
-        <img src="${iconSrc}" alt="${label}"><span>${initials}</span>`;
+        ${iconSrc
+          ? `<img src="${iconSrc}" alt="${label}">`
+          : `<div class="ag-artist-icon-fallback" aria-hidden="true">${initials}</div>`
+        }<span>${initials}</span>`;
       btn.addEventListener('click', () => {
         if (activeArtist === slug) {
           activeArtist = '';
