@@ -516,6 +516,25 @@
                             <div id="cm-uploads-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:280px;overflow-y:auto;"></div>
                         </div>
                     </div>
+
+                    <!-- Beats-only fields -->
+                    <div class="cm-full" id="cm-beats-fields" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                        <label class="cm-label" style="margin-bottom:10px">Beat Details <span style="font-weight:normal;color:var(--text-mid)">(mood/vibe goes in Tags above)</span></label>
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Track file URL <span style="font-weight:normal">(mp3 — enables the player &amp; download)</span></label>
+                        <input id="cm-track" class="cm-input" placeholder="audio/my-beat.mp3 or https://…" style="width:100%;margin-bottom:10px">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div>
+                                <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Tempo <span style="font-weight:normal">(optional)</span></label>
+                                <input id="cm-tempo" class="cm-input" placeholder="slow / mid / fast or 92 BPM" style="width:100%">
+                            </div>
+                            <div>
+                                <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Intended use <span style="font-weight:normal">(optional)</span></label>
+                                <input id="cm-use" class="cm-input" placeholder="background audio, outro, transition" style="width:100%">
+                            </div>
+                        </div>
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-top:10px">License / usage note</label>
+                        <input id="cm-license" class="cm-input" placeholder="Free for personal projects — credit appreciated, no resale" style="width:100%">
+                    </div>
                     <div>
                         <label class="cm-label">Date</label>
                         <input type="date" id="cm-date" class="cm-input" style="width:100%">
@@ -1119,6 +1138,7 @@
       { key: 'script', label: 'Script' },
       { key: 'story',  label: 'Story'  },
       { key: 'poem',   label: 'Poem'   },
+      { key: 'beats',  label: 'Beats'  },
     ];
     const cmTypeOf    = e => (e && e.type) || 'audio';
     const cmTypeLabel = e => {
@@ -1981,8 +2001,11 @@
 
     // Only an audio can fill a script, so the field is hidden on every other type.
     function cmTypeChanged() {
-      const isAudio = document.getElementById('cm-type').value === 'audio';
+      const t = document.getElementById('cm-type').value;
+      const isAudio = t === 'audio';
       document.getElementById('cm-fills-row').style.display = isAudio ? '' : 'none';
+      const beats = document.getElementById('cm-beats-fields');
+      if (beats) beats.style.display = (t === 'beats') ? 'block' : 'none';
       if (isAudio) cmRenderFillsOptions();
     }
 
@@ -2118,6 +2141,10 @@
         date:    document.getElementById('cm-date').value,
         trt:     document.getElementById('cm-trt').value.trim(),
         image:   document.getElementById('cm-image').value.trim(),
+        track:   document.getElementById('cm-track').value.trim(),
+        tempo:   document.getElementById('cm-tempo').value.trim(),
+        useCase: document.getElementById('cm-use').value.trim(),
+        license: document.getElementById('cm-license').value.trim(),
         credits: {
           voiceArtists: cmCredits.voiceArtists.slice(),
           writers:      cmCredits.writers.slice(),
@@ -2170,6 +2197,10 @@
       document.getElementById('cm-image').value = e.image || '';
       cmUpdateImagePreview();
       document.getElementById('cm-image-status').textContent = '';
+      document.getElementById('cm-track').value = e.track || '';
+      document.getElementById('cm-tempo').value = e.tempo || '';
+      document.getElementById('cm-use').value = e.useCase || '';
+      document.getElementById('cm-license').value = e.license || '';
       const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
       window.scrollTo({ top: formTop, behavior: 'smooth' });
       document.getElementById('cm-save-btn').textContent = 'Update Entry';
@@ -2187,7 +2218,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-bracket-src','cm-short-desc','cm-desc','cm-trt','cm-image'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-bracket-src','cm-short-desc','cm-desc','cm-trt','cm-image','cm-track','cm-tempo','cm-use','cm-license'].forEach(id => document.getElementById(id).value = '');
       cmUpdateImagePreview();
       document.getElementById('cm-image-status').textContent = '';
       document.getElementById('cm-type').value = 'audio';

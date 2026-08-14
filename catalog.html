@@ -131,6 +131,20 @@
     .type-badge.script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
     .type-badge.story  { color: #7fd6c0; border: 1px solid rgba(127,214,192,0.55); background: rgba(127,214,192,0.12); }
     .type-badge.poem   { color: #c79bf0; border: 1px solid rgba(199,155,240,0.55); background: rgba(199,155,240,0.12); }
+    .type-badge.beats  { color: #6fe3c1; border: 1px solid rgba(111,227,193,0.55); background: rgba(111,227,193,0.12); }
+    /* Inline player */
+    .beat-player { margin: 0 0 1rem; background: var(--surface-2); border: 1px solid var(--border-mid); border-radius: 6px; padding: 0.8rem 0.9rem; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
+    .beat-player audio { width: 100%; display: block; height: 38px; }
+    .beat-meta { display: flex; flex-wrap: wrap; gap: 1.4rem; margin-bottom: 1rem; }
+    .beat-dl {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.7rem 1.25rem; border-radius: 999px; border: 1px solid #6fe3c1;
+      color: #d8fff4; text-decoration: none; background: rgba(111,227,193,0.18); transition: all 0.18s;
+    }
+    .beat-dl:hover { background: #6fe3c1; color: #06231c; box-shadow: 0 4px 18px rgba(111,227,193,0.4); }
+    .beat-license { font-size: 0.82rem; color: var(--text-mid); font-style: italic; border-left: 2px solid rgba(111,227,193,0.5); padding-left: 0.7rem; margin-bottom: 1rem; }
+    .row-play { color: #6fe3c1; }
     .collab-link { color: var(--electric); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
     .collab-link:hover { border-bottom-color: var(--electric); }
     .c-links { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -211,6 +225,7 @@
       <option value="script">Scripts</option>
       <option value="story">Stories</option>
       <option value="poem">Poems</option>
+      <option value="beats">Beats</option>
     </select>
     <select class="sel" id="name-filter"><option value="">All creators</option></select>
     <select class="sel" id="provider-filter"><option value="">All platforms</option></select>
@@ -333,9 +348,9 @@
   function profilePage(name, label){
     return PROFILE_PAGES[normName(label)] || PROFILE_PAGES[normName(name)] || '';
   }
-  var TYPE_LABELS = { audio:'Audio', script:'Script', story:'Story', poem:'Poem' };
+  var TYPE_LABELS = { audio:'Audio', script:'Script', story:'Story', poem:'Poem', beats:'Beat' };
   // Glyphs match the ones the post templates already use for links.
-  var TYPE_ICONS  = { audio:'🎧', script:'📜', story:'📖', poem:'✍️' };
+  var TYPE_ICONS  = { audio:'🎧', script:'📜', story:'📖', poem:'✍️', beats:'🎹' };
   function typeOf(e){ return (e && e.type) || 'audio'; }
   // Audio is the default and stays unbadged; everything else is called out.
   function typeBadge(e){
@@ -347,7 +362,7 @@
   }
   // Written work is read wherever it lives, so the entry's own type wins over
   // the platform's kind: a story on an audio host is still read, not listened to.
-  function isTextEntry(e){ return typeOf(e) !== 'audio'; }
+  function isTextEntry(e){ var t = typeOf(e); return t !== 'audio' && t !== 'beats'; }
 
   // TRT is free text ("14:32", "1:05:30", "45 min"), so parse defensively and
   // return null when it cannot be read rather than guessing a length.
@@ -413,8 +428,7 @@
     var script = entryById(e.fills);
     if (!script) return '';
     return '<div class="cred-row"><span class="cred-label">Script</span><span class="cred-names">' +
-      relLink(script) + '</span></div>';
-  }
+      relLink(script) + '</span></div>';  }
 
   function collabHtml(name, inRow){
     var c = COLLAB[normName(name)];
@@ -515,6 +529,13 @@
     return true;
   }
 
+  function beatMetaHtml(e){
+    var bits = '';
+    if (e.tempo)   bits += '<div class="meta-item"><span class="meta-label">Tempo</span><span class="meta-value">' + esc(e.tempo) + '</span></div>';
+    if (e.useCase) bits += '<div class="meta-item"><span class="meta-label">Intended Use</span><span class="meta-value">' + esc(e.useCase) + '</span></div>';
+    return bits ? '<div class="beat-meta">' + bits + '</div>' : '';
+  }
+
   function rowHtml(e, idx){
     var links = getLinks(e).map(function(l){
       return '<a class="plink" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" data-stop="1">' + esc(provLabel(l.provider)) + '</a>';
@@ -583,9 +604,13 @@
       '<div class="modal-head"><div class="modal-title">' + typeBadge(e) + esc(e.title||'Untitled') + '</div>' +
         '<button class="modal-close" aria-label="Close">&times;</button></div>' +
       (meta ? '<div class="modal-meta">' + meta + '</div>' : '') +
+      (safeUrl(e.track) ? '<div class="beat-player"><audio controls preload="none" src="' + safeUrl(e.track) + '"></audio></div>' : '') +
+      (beatMetaHtml(e)) +
       (safeUrl(e.image) ? '<div class="modal-frame"><img src="' + safeUrl(e.image) + '" alt="' + esc(e.title || '') + '" loading="lazy"></div>' : '') +
       (e.desc ? '<div class="modal-desc">' + richText(e.desc) + '</div>' : '') +
-      (links ? '<div class="modal-links">' + links + '</div>' : '<div class="modal-note">No links yet.</div>') +
+      (safeUrl(e.track) ? '<div class="modal-links"><a class="beat-dl" href="' + safeUrl(e.track) + '" download><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download track</a></div>' : '') +
+      (e.license ? '<div class="beat-license">' + esc(e.license) + '</div>' : '') +
+      (links ? '<div class="modal-links">' + links + '</div>' : (safeUrl(e.track) ? '' : '<div class="modal-note">No links yet.</div>')) +
       (tags ? '<div class="modal-tags">' + tags + '</div>' : '') +
       (credits || related ? '<div class="modal-credits">' + related + credits + '</div>' : '') +
     '</div>';
