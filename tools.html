@@ -518,10 +518,24 @@
                     </div>
 
                     <!-- Beats-only fields -->
-                    <div class="cm-full" id="cm-beats-fields" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
-                        <label class="cm-label" style="margin-bottom:10px">Beat Details <span style="font-weight:normal;color:var(--text-mid)">(mood/vibe goes in Tags above)</span></label>
-                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Track file URL <span style="font-weight:normal">(mp3 — enables the player &amp; download)</span></label>
-                        <input id="cm-track" class="cm-input" placeholder="audio/my-beat.mp3 or https://…" style="width:100%;margin-bottom:10px">
+                    <div class="cm-full" id="cm-music-fields" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                        <label class="cm-label" style="margin-bottom:10px">Music Details <span style="font-weight:normal;color:var(--text-mid)">(mood/vibe goes in Tags above)</span></label>
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Track file <span style="font-weight:normal">(enables the player &amp; download)</span></label>
+                        <input id="cm-track" class="cm-input" placeholder="Upload below, or paste a URL" style="width:100%;margin-bottom:8px">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-track-file').click()">Upload track</button>
+                            <button type="button" id="cm-tracks-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleTracks()">Choose from uploads</button>
+                            <span id="cm-track-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
+                        </div>
+                        <input type="file" id="cm-track-file" accept="audio/*" style="display:none" onchange="cmUploadTrack(this.files[0]);this.value=''">
+                        <div id="cm-tracks-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
+                                <span id="cm-tracks-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadTracks()">Refresh</button>
+                            </div>
+                            <div id="cm-tracks-list" style="max-height:260px;overflow-y:auto;"></div>
+                        </div>
+                        <div style="height:10px"></div>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                             <div>
                                 <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Tempo <span style="font-weight:normal">(optional)</span></label>
@@ -1138,7 +1152,7 @@
       { key: 'script', label: 'Script' },
       { key: 'story',  label: 'Story'  },
       { key: 'poem',   label: 'Poem'   },
-      { key: 'beats',  label: 'Beats'  },
+      { key: 'music',  label: 'Music'  },
     ];
     const cmTypeOf    = e => (e && e.type) || 'audio';
     const cmTypeLabel = e => {
@@ -1963,6 +1977,125 @@
       }
     }
 
+    // ── Music track uploads ─────────────────────────────────────────────────
+    // Tracks post as raw binary rather than base64: Netlify caps a function
+    // request at 6MB and base64 would cost a third of that headroom.
+
+    let cmTracks = [];
+
+    async function cmUploadTrack(file) {
+      if (!file) return;
+      const status = document.getElementById('cm-track-status');
+      if (!/^audio\//.test(file.type)) { status.textContent = 'That file is not audio.'; return; }
+      const mb = file.size / 1048576;
+      if (mb > 5.5) {
+        status.textContent = `That file is ${mb.toFixed(1)}MB; the limit is 5.5MB. Export a smaller MP3, or host it elsewhere and paste the URL.`;
+        return;
+      }
+
+      status.textContent = `Uploading ${mb.toFixed(1)}MB…`;
+      try {
+        const res = await fetch('/api/track-upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': file.type,
+            'x-admin-password': cmPassword,
+            'x-filename': file.name,
+          },
+          body: file,
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
+
+        document.getElementById('cm-track').value = out.url;
+        if (out.tracks) {
+          cmTracks = out.tracks;
+          if (document.getElementById('cm-tracks-panel').style.display !== 'none') cmRenderTracks();
+        }
+        status.textContent = 'Uploaded. Remember to save the entry.';
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }
+
+    function cmToggleTracks() {
+      const panel = document.getElementById('cm-tracks-panel');
+      const open = panel.style.display === 'none';
+      panel.style.display = open ? 'block' : 'none';
+      document.getElementById('cm-tracks-toggle').textContent = open ? 'Hide uploads' : 'Choose from uploads';
+      if (open) cmLoadTracks();
+    }
+
+    function cmLoadTracks() {
+      const summary = document.getElementById('cm-tracks-summary');
+      summary.textContent = 'Loading…';
+      fetch('/api/track-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, action: 'list' }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) throw new Error(d.error || 'Could not load tracks');
+          cmTracks = d.tracks || [];
+          cmRenderTracks(d.totalBytes);
+        })
+        .catch(err => { summary.textContent = err.message; });
+    }
+
+    // Which entries point at a track — deleting one of these would break them.
+    function cmTrackUsage(url) {
+      return cmEntries.filter(e => e.track === url).length;
+    }
+
+    function cmRenderTracks(totalBytes) {
+      const list = document.getElementById('cm-tracks-list');
+      const summary = document.getElementById('cm-tracks-summary');
+      const total = totalBytes != null
+        ? totalBytes
+        : cmTracks.reduce((n, t) => n + (Number(t.size) || 0), 0);
+      summary.textContent = `${cmTracks.length} track${cmTracks.length === 1 ? '' : 's'} · ${cmFmtSize(total)}`;
+
+      if (!cmTracks.length) { list.innerHTML = '<div class="cm-collab-empty">No tracks uploaded yet.</div>'; return; }
+      list.innerHTML = cmTracks.map(t => {
+        const used = cmTrackUsage(t.url);
+        return `<div class="cm-entry-row" style="padding:8px 12px;">
+          <div class="cm-entry-info">
+            <div class="cm-entry-title" style="font-size:0.92rem">${cmEsc(t.name || t.key)}</div>
+            <div class="cm-entry-meta">${cmFmtSize(t.size)}${used ? ' · used by ' + used + ' entr' + (used === 1 ? 'y' : 'ies') : ''}</div>
+          </div>
+          <button class="cm-btn cm-btn-sm" onclick="cmPickTrack('${cmEsc(t.url)}')">Use</button>
+          <button class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmDeleteTrack('${cmEsc(t.key)}')">Delete</button>
+        </div>`;
+      }).join('');
+    }
+
+    function cmPickTrack(url) {
+      document.getElementById('cm-track').value = url;
+      document.getElementById('cm-track-status').textContent = 'Selected. Remember to save the entry.';
+    }
+
+    function cmDeleteTrack(key) {
+      const t = cmTracks.find(x => x.key === key);
+      const used = t ? cmTrackUsage(t.url) : 0;
+      const warn = used
+        ? `This track is used by ${used} entr${used === 1 ? 'y' : 'ies'}, which will lose its player. Delete anyway?`
+        : 'Delete this track?';
+      if (!confirm(warn)) return;
+      fetch('/api/track-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, action: 'delete', key: key }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) throw new Error(d.error || 'Delete failed');
+          cmTracks = d.tracks || [];
+          cmRenderTracks(d.totalBytes);
+        })
+        .catch(err => { document.getElementById('cm-track-status').textContent = err.message; });
+    }
+
     // ── Script fills ────────────────────────────────────────────────────────
     // An audio may fill at most one script, stored as that script entry's id.
     // The reverse ("which audios filled this script") is derived, so there is
@@ -2004,8 +2137,8 @@
       const t = document.getElementById('cm-type').value;
       const isAudio = t === 'audio';
       document.getElementById('cm-fills-row').style.display = isAudio ? '' : 'none';
-      const beats = document.getElementById('cm-beats-fields');
-      if (beats) beats.style.display = (t === 'beats') ? 'block' : 'none';
+      const music = document.getElementById('cm-music-fields');
+      if (music) music.style.display = (t === 'music') ? 'block' : 'none';
       if (isAudio) cmRenderFillsOptions();
     }
 

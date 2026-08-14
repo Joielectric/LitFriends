@@ -105,8 +105,8 @@
   let COLLAB = {};
   function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
   function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  const ENTRY_TYPE_LABELS = { audio: 'Audio', script: 'Script', story: 'Story', poem: 'Poem', beats: 'Beat' };
-  const ENTRY_TYPE_ICONS  = { audio: '🎧', script: '📜', story: '📖', poem: '✍️', beats: '🎹' };
+  const ENTRY_TYPE_LABELS = { audio: 'Audio', script: 'Script', story: 'Story', poem: 'Poem', music: 'Music' };
+  const ENTRY_TYPE_ICONS  = { audio: '🎧', script: '📜', story: '📖', poem: '✍️', music: '🎹' };
   function entryType(entry) {
     const t = (entry && entry.type) || 'audio';
     return ENTRY_TYPE_LABELS[t] ? t : 'audio';
@@ -469,19 +469,19 @@
 .ag-type-script { color: #e3c14f; border: 1px solid rgba(227,193,79,0.55); background: rgba(227,193,79,0.12); }
 .ag-type-story  { color: #7fd6c0; border: 1px solid rgba(127,214,192,0.55); background: rgba(127,214,192,0.12); }
 .ag-type-poem   { color: #c79bf0; border: 1px solid rgba(199,155,240,0.55); background: rgba(199,155,240,0.12); }
-.ag-type-beats  { color: #6fe3c1; border: 1px solid rgba(111,227,193,0.55); background: rgba(111,227,193,0.12); }
-.ag-beat-player { margin-bottom: 14px; background: var(--surface-2, #222a3e); border: 1px solid var(--border-mid, rgba(180,195,225,0.42)); border-radius: 6px; padding: 12px; }
-.ag-beat-player audio { width: 100%; display: block; height: 38px; }
-.ag-beat-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-mid, #c2cce0); }
-.ag-beat-meta b { color: var(--silver-hi, #eaf0fa); font-weight: 600; }
-.ag-beat-dl {
+.ag-type-music  { color: #6fe3c1; border: 1px solid rgba(111,227,193,0.55); background: rgba(111,227,193,0.12); }
+.ag-track-player { margin-bottom: 14px; background: var(--surface-2, #222a3e); border: 1px solid var(--border-mid, rgba(180,195,225,0.42)); border-radius: 6px; padding: 12px; }
+.ag-track-player audio { width: 100%; display: block; height: 38px; }
+.ag-track-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-mid, #c2cce0); }
+.ag-track-meta b { color: var(--silver-hi, #eaf0fa); font-weight: 600; }
+.ag-track-dl {
   display: inline-flex; align-items: center; gap: 7px; margin-bottom: 12px;
   font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: .1em; text-transform: uppercase;
   padding: 10px 18px; border-radius: 999px; border: 1px solid #6fe3c1;
   color: #d8fff4; text-decoration: none; background: rgba(111,227,193,0.18);
 }
-.ag-beat-dl:hover { background: #6fe3c1; color: #06231c; }
-.ag-beat-license { font-size: 0.82rem; font-style: italic; color: var(--text-mid, #c2cce0); border-left: 2px solid rgba(111,227,193,0.5); padding-left: 10px; margin-bottom: 12px; }
+.ag-track-dl:hover { background: #6fe3c1; color: #06231c; }
+.ag-track-license { font-size: 0.82rem; font-style: italic; color: var(--text-mid, #c2cce0); border-left: 2px solid rgba(111,227,193,0.5); padding-left: 10px; margin-bottom: 12px; }
 .ag-modal-desc a { color: #8fb4f2; text-decoration: underline; text-underline-offset: 2px; word-break: break-word; }
 .ag-modal-desc a:hover { color: #fff; }
 .ag-modal-frame { margin-bottom: 14px; border: 1px solid var(--border-mid, rgba(180,195,225,0.42)); border-radius: 6px; background: rgba(10,14,24,0.5); padding: 6px; overflow: hidden; }
@@ -552,10 +552,10 @@
         </div>
         ${tabsHtml}
         <div class="ag-modal-body">
-          ${safeUrl(entry.track) ? `<div class="ag-beat-player"><audio controls preload="none" src="${safeUrl(entry.track)}"></audio></div>` : ''}
-          ${(entry.tempo || entry.useCase) ? `<div class="ag-beat-meta">${entry.tempo ? `<span><b>Tempo:</b> ${escHtml(entry.tempo)}</span>` : ''}${entry.useCase ? `<span><b>Use:</b> ${escHtml(entry.useCase)}</span>` : ''}</div>` : ''}
-          ${safeUrl(entry.track) ? `<a class="ag-beat-dl" href="${safeUrl(entry.track)}" download><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download track</a>` : ''}
-          ${entry.license ? `<div class="ag-beat-license">${escHtml(entry.license)}</div>` : ''}
+          ${safeUrl(entry.track) ? `<div class="ag-track-player"><audio controls preload="none" src="${safeUrl(entry.track)}"></audio></div>` : ''}
+          ${(entry.tempo || entry.useCase) ? `<div class="ag-track-meta">${entry.tempo ? `<span><b>Tempo:</b> ${escHtml(entry.tempo)}</span>` : ''}${entry.useCase ? `<span><b>Use:</b> ${escHtml(entry.useCase)}</span>` : ''}</div>` : ''}
+          ${safeUrl(entry.track) ? `<a class="ag-track-dl" href="${safeUrl(entry.track)}" download><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download track</a>` : ''}
+          ${entry.license ? `<div class="ag-track-license">${escHtml(entry.license)}</div>` : ''}
           ${safeUrl(entry.image) ? `<div class="ag-modal-frame"><img src="${safeUrl(entry.image)}" alt="${escHtml(entry.title || '')}" loading="lazy"></div>` : ''}
           ${entry.desc ? `<div class="ag-modal-desc">${richText(entry.desc)}</div>` : ''}
           <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0]) : ''}</div>
