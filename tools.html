@@ -508,6 +508,7 @@
                         </div>
 
                         <!-- Library of already-uploaded covers -->
+                        <div id="cm-image-uploads-host"></div>
                         <div id="cm-uploads-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                                 <span id="cm-uploads-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
@@ -677,9 +678,37 @@
                     </div>
                     <textarea id="cm-news-body" class="cm-input" placeholder="Write your update… (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-                        <input id="cm-news-image" class="cm-input" placeholder="Image URL (optional) — shown in a frame">
                         <input id="cm-news-link" class="cm-input" placeholder="Button link URL (optional)">
+                        <input id="cm-news-link-label2" class="cm-input" placeholder="" style="display:none">
                     </div>
+
+                    <!-- Header image -->
+                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-top:10px">Header image <span style="font-weight:normal">(optional — above the text)</span></label>
+                    <input id="cm-news-header" class="cm-input" placeholder="Upload below, or paste a URL" style="width:100%">
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-news-header-file').click()">Upload New</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('cm-news-header','cm-news-img-status',false)">Choose from uploads</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-news-header').value=''">Remove</button>
+                    </div>
+                    <input type="file" id="cm-news-header-file" accept="image/*" style="display:none"
+                        onchange="cmUploadImage(this.files[0],'cm-news-header','cm-news-img-status',false);this.value=''">
+
+                    <!-- Footer image -->
+                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-top:12px">Footer image <span style="font-weight:normal">(optional — below the text)</span></label>
+                    <input id="cm-news-footer" class="cm-input" placeholder="Upload below, or paste a URL" style="width:100%">
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-news-footer-file').click()">Upload New</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('cm-news-footer','cm-news-img-status',false)">Choose from uploads</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-news-footer').value=''">Remove</button>
+                    </div>
+                    <input type="file" id="cm-news-footer-file" accept="image/*" style="display:none"
+                        onchange="cmUploadImage(this.files[0],'cm-news-footer','cm-news-img-status',false);this.value=''">
+                    <span id="cm-news-img-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:6px"></span>
+                    <div id="cm-news-uploads-host"></div>
+
+                    <!-- Video -->
+                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-top:12px">Video <span style="font-weight:normal">(optional — YouTube, Vimeo, or a direct .mp4)</span></label>
+                    <input id="cm-news-video" class="cm-input" placeholder="https://youtu.be/… or https://…/clip.mp4" style="width:100%">
                     <input id="cm-news-link-label" class="cm-input" placeholder="Button label (optional, e.g. Listen now)" style="width:100%;margin-top:8px">
                     <button type="button" class="cm-btn" style="margin-top:8px" onclick="cmNewsAdd()">Post Update</button>
                     <div id="cm-news-list" style="margin-top:12px;"></div>
@@ -1406,13 +1435,16 @@
       const title = document.getElementById('cm-news-title').value.trim();
       const date = document.getElementById('cm-news-date').value.trim();
       const body = document.getElementById('cm-news-body').value.trim();
-      const image = document.getElementById('cm-news-image').value.trim();
+      const headerImage = document.getElementById('cm-news-header').value.trim();
+      const footerImage = document.getElementById('cm-news-footer').value.trim();
+      const video = document.getElementById('cm-news-video').value.trim();
       const link = document.getElementById('cm-news-link').value.trim();
       const linkLabel = document.getElementById('cm-news-link-label').value.trim();
       if (!title && !body) { cmShowMsg('Write a headline or an update first.', false); return; }
-      cmNews.unshift({ title: title, date: date, body: body, image: image, link: link, linkLabel: linkLabel });
+      cmNews.unshift({ title: title, date: date, body: body, headerImage: headerImage,
+                       footerImage: footerImage, video: video, link: link, linkLabel: linkLabel });
       cmPersist(function () {
-        ['cm-news-image','cm-news-link','cm-news-link-label'].forEach(id => document.getElementById(id).value = '');
+        ['cm-news-header','cm-news-footer','cm-news-video','cm-news-link','cm-news-link-label'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cm-news-title').value = '';
         document.getElementById('cm-news-date').value = '';
         document.getElementById('cm-news-body').value = '';
@@ -1939,9 +1971,11 @@
       });
     }
 
-    async function cmUploadImage(file) {
+    async function cmUploadImage(file, field, statusId, preview) {
       if (!file) return;
-      const status = document.getElementById('cm-image-status');
+      if (field) cmSetImgCtx(field, statusId, preview);
+      else cmSetImgCtx('cm-image', 'cm-image-status', true);
+      const status = document.getElementById(cmImgCtx.status);
       if (!/^image\//.test(file.type)) { status.textContent = 'That file is not an image.'; return; }
 
       status.textContent = 'Resizing…';
@@ -1962,8 +1996,8 @@
         const out = await res.json().catch(() => ({}));
         if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
 
-        document.getElementById('cm-image').value = out.url;
-        cmUpdateImagePreview();
+        document.getElementById(cmImgCtx.field).value = out.url;
+        if (cmImgCtx.preview) cmUpdateImagePreview();
         if (out.images) {
           cmUploads = out.images;
           if (document.getElementById('cm-uploads-panel').style.display !== 'none') cmRenderUploads();
@@ -1971,7 +2005,7 @@
         const saved = file.size > blob.size
           ? ` (${(file.size / 1024).toFixed(0)}KB → ${(blob.size / 1024).toFixed(0)}KB)`
           : '';
-        status.textContent = `Uploaded${saved}. Remember to save the entry.`;
+        status.textContent = `Uploaded${saved}. Remember to save.`;
       } catch (err) {
         status.textContent = err.message;
       }
@@ -2158,9 +2192,26 @@
       return n >= 1048576 ? (n / 1048576).toFixed(1) + 'MB' : Math.round(n / 1024) + 'KB';
     }
 
-    function cmToggleUploads() {
+    // Which field the image picker is currently filling. The catalogue's cover
+    // field is the default; the news composer points it at its own slots.
+    let cmImgCtx = { field: 'cm-image', status: 'cm-image-status', preview: true };
+
+    function cmSetImgCtx(field, status, preview) {
+      cmImgCtx = { field: field, status: status, preview: !!preview };
+    }
+
+    function cmToggleUploads(field, status, preview) {
+      const target = field || 'cm-image';
       const panel = document.getElementById('cm-uploads-panel');
-      const open = panel.style.display === 'none';
+      const host = document.getElementById(field ? 'cm-news-uploads-host' : 'cm-image-uploads-host');
+      // Switching which field the picker fills always opens it; only clicking
+      // the same field's button again closes it. Otherwise borrowing the panel
+      // from another tab would silently hide it.
+      const switching = cmImgCtx.field !== target || (host && panel.parentNode !== host);
+      const open = switching ? true : panel.style.display === 'none';
+
+      cmSetImgCtx(target, status || 'cm-image-status', field ? !!preview : true);
+      if (host && panel.parentNode !== host) host.appendChild(panel);
       panel.style.display = open ? 'block' : 'none';
       document.getElementById('cm-uploads-toggle').textContent = open ? 'Hide uploads' : 'Choose from uploads';
       if (open) cmLoadUploads();
@@ -2186,7 +2237,9 @@
     // Which uploads are referenced by an entry — deleting one of these would
     // leave a card with a broken cover, so they are flagged and confirmed twice.
     function cmUploadUsage(url) {
-      return cmEntries.filter(e => e.image === url).length;
+      const inEntries = cmEntries.filter(e => e.image === url).length;
+      const inNews = cmNews.filter(n => n.headerImage === url || n.footerImage === url).length;
+      return inEntries + inNews;
     }
 
     function cmRenderUploads(totalBytes) {
@@ -2205,7 +2258,7 @@
         return;
       }
 
-      const current = document.getElementById('cm-image').value.trim();
+      const current = (document.getElementById(cmImgCtx.field) || {}).value ? document.getElementById(cmImgCtx.field).value.trim() : '';
       grid.innerHTML = cmUploads.map(img => {
         const used = cmUploadUsage(img.url);
         const isCurrent = img.url === current;
@@ -2225,9 +2278,11 @@
     }
 
     function cmSelectUpload(url) {
-      document.getElementById('cm-image').value = url;
-      cmUpdateImagePreview();
-      document.getElementById('cm-image-status').textContent = 'Selected. Remember to save the entry.';
+      const f = document.getElementById(cmImgCtx.field);
+      if (f) f.value = url;
+      if (cmImgCtx.preview) cmUpdateImagePreview();
+      const st = document.getElementById(cmImgCtx.status);
+      if (st) st.textContent = 'Selected. Remember to save.';
       cmRenderUploads();
     }
 

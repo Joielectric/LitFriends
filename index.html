@@ -86,6 +86,12 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px rgba(0,0,0,0.35);
     }
     .news-frame img { display: block; width: 100%; height: auto; border-radius: 2px; }
+    .news-video {
+      margin: 0.75rem 0; border: 1px solid var(--border-mid); border-radius: var(--radius);
+      background: #000; padding: 6px; overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px rgba(0,0,0,0.35);
+    }
+    .news-video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; border-radius: 2px; }
     .news-btn {
       display: inline-block; margin-top: 0.8rem;
       font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
@@ -244,15 +250,36 @@
       if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';   // any other scheme
       return u.replace(/"/g, '%22');                    // relative path
     }
+    // YouTube / Vimeo become privacy-friendly iframes; anything else that looks
+    // like a video file plays inline. Unknown links are ignored rather than
+    // embedded blindly.
+    function videoHtml(raw) {
+      var u = safeUrl(raw);
+      if (!u) return '';
+      var yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/i);
+      if (yt) return '<div class="news-video"><iframe src="https://www.youtube-nocookie.com/embed/' + yt[1] +
+                     '" title="Video" frameborder="0" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>';
+      var vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+      if (vm) return '<div class="news-video"><iframe src="https://player.vimeo.com/video/' + vm[1] +
+                     '" title="Video" frameborder="0" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe></div>';
+      if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(u)) return '<div class="news-frame"><video controls preload="metadata" src="' + u + '" style="width:100%;display:block;border-radius:2px"></video></div>';
+      return '';
+    }
+
     function render(list) {
       if (!list.length) { grid.innerHTML = '<div class="news-empty">No updates yet. Check back soon.</div>'; return; }
       grid.innerHTML = list.map(function (n) {
-        var img = safeUrl(n.image), link = safeUrl(n.link);
+        var head = safeUrl(n.headerImage || n.image);   // legacy single image = header
+        var foot = safeUrl(n.footerImage);
+        var link = safeUrl(n.link);
+        var alt  = esc(n.title || 'Update image');
         return '<div class="news-item">' +
           (n.date ? '<span class="news-date">' + esc(n.date) + '</span>' : '') +
           '<div class="news-title">' + esc(n.title || '') + '</div>' +
-          (img ? '<div class="news-frame"><img src="' + img + '" alt="' + esc(n.title || 'Update image') + '" loading="lazy"></div>' : '') +
+          (head ? '<div class="news-frame"><img src="' + head + '" alt="' + alt + '" loading="lazy"></div>' : '') +
           (n.body ? '<div class="news-body">' + richText(n.body) + '</div>' : '') +
+          videoHtml(n.video) +
+          (foot ? '<div class="news-frame"><img src="' + foot + '" alt="' + alt + '" loading="lazy"></div>' : '') +
           (link ? '<a class="news-btn" href="' + link + '" target="_blank" rel="noopener noreferrer">' + esc(n.linkLabel || 'Read more') + ' &#8594;</a>' : '') +
         '</div>';
       }).join('');
