@@ -1,8 +1,13 @@
 (function () {
   'use strict';
 
-  // Fallback labels only. The live list is managed in the Content Manager and
-  // arrives with the content payload; adoptProviders() merges it over these.
+  // Shared, genuinely static lists live in js/site-config.js so there is one
+  // copy of each. Providers are not among them: they are managed in the
+  // Content Manager and arrive with the content payload, so the list below is
+  // only a seed that adoptProviders() merges the live one over.
+  const CFG = window.SITE_CONFIG;
+  if (!CFG) { console.error('audio.js: js/site-config.js must load first'); return; }
+
   const PROVIDERS = {
     soundgasm:  { label: 'Soundgasm',  canEmbed: false },
     literotica: { label: 'Literotica', canEmbed: false },
@@ -25,56 +30,14 @@
     });
   }
 
-  // Gender/audience tags shown first in filter and styled distinctly
-  const GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A'];
+  const GENDER_TAGS = CFG.audienceTags;
+  function isGenderTag(t) { return CFG.isAudienceTag(t); }
 
-  function isGenderTag(t) {
-    return GENDER_TAGS.includes(t.toUpperCase());
-  }
+  const ARTIST_LABELS   = CFG.artistLabels;
+  const ARTIST_ICONS    = CFG.artistIcons;
+  const ARTIST_TAGLINES = CFG.artistTaglines;
 
-  const ARTIST_LABELS = {
-    'joi-electric':       'JOI Electric',
-    'loona-licks':        'Loona Licks',
-    'misskittensk':       'MissKittenSK',
-    'hisbadgirl77':       'HisBadGirl77',
-    'wellnobodysperfect': "Well Nobody's Perfect",
-    'naughtiwolf':        'NaughtiWolf',
-    'lotus-kitty':        'Lotus Kitty',
-    'filthy-bunny':       'Filthy Bunny',
-    'la-sphynxxx':        'LaSphynxxx',
-  };
-
-  const ARTIST_ICONS = {
-    'joi-electric':       '/images/JOI_Icon.png',
-    'loona-licks':        '/images/LL_Icon.png',
-    'misskittensk':       '/images/MissKittenSKClub.png',
-    'hisbadgirl77':       '/images/HBG_WIngs.png',
-    'wellnobodysperfect': '/images/WNP_Icon.png',
-    'naughtiwolf':        '/images/NW_Icon.png',
-    'lotus-kitty':        '/images/LK_Icon.png',
-    'filthy-bunny':       '/images/Filthy_Bunny_Avatar_GreenEyes.png',
-    'la-sphynxxx':        '/images/LS_ICON.png',
-  };
-
-  const ARTIST_TAGLINES = {
-    'joi-electric':       'Producer · Editor · Musician · Sound Designer',
-    'loona-licks':        'Voice Artist · Collaborator · Currently on Hiatus',
-    'misskittensk':       'A decade of debauched erotic audio · Retired',
-    'hisbadgirl77':       'Voice Artist · Writer · Collaborator',
-    'wellnobodysperfect': 'Voice Artist · Funny · Delightfully Unpredictable',
-    'naughtiwolf':        'Voice Artist · BFE · Narrative Collaborator',
-    'lotus-kitty':        'Voice Artist · Demisexual · Storyteller',
-    'filthy-bunny':       'Voice Artist · Writer · Switchy Sub',
-    'la-sphynxxx':        'Voice Artist · Singer · Free Content · Open Requests',
-  };
-
-  const CREDIT_LABELS = {
-    writers:      'Writer',
-    voiceArtists: 'Voice',
-    producers:    'Producer',
-    editors:      'Editor',
-    musicians:    'Music',
-  };
+  const CREDIT_LABELS = CFG.creditLabels;
 
   // Normalize: always return links array (backward compat with old provider/url fields)
   function getLinks(entry) {
@@ -105,17 +68,12 @@
   let COLLAB = {};
   function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
   function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  const ENTRY_TYPE_LABELS = { audio: 'Audio', script: 'Script', story: 'Story', poem: 'Poem', music: 'Music' };
-  const ENTRY_TYPE_ICONS  = { audio: '🎧', script: '📜', story: '📖', poem: '✍️', music: '🎹' };
-  function entryType(entry) {
-    const t = (entry && entry.type) || 'audio';
-    return ENTRY_TYPE_LABELS[t] ? t : 'audio';
-  }
+  function entryType(entry) { return CFG.typeOf(entry); }
   function typeBadge(entry) {
     const t = entryType(entry);
     return '<span class="ag-type-badge ag-type-' + t + '">' +
-      '<span class="ag-type-ico" aria-hidden="true">' + ENTRY_TYPE_ICONS[t] + '</span>' +
-      ENTRY_TYPE_LABELS[t] + '</span>';
+      '<span class="ag-type-ico" aria-hidden="true">' + CFG.typeIcons[t] + '</span>' +
+      CFG.typeLabels[t] + '</span>';
   }
 
   function richText(str) {

@@ -367,6 +367,8 @@
   </div>
 </div>
 
+<script src="/js/site-config.js"></script>
+
 <div class="container" id="tools-main" style="display:none">
 
   <nav class="back-nav">
@@ -1174,15 +1176,12 @@
     <script>
     // ===== CONTENT MANAGER =====
 
+    // Shared lists come from js/site-config.js, loaded above.
+    const CFG = window.SITE_CONFIG;
+
     // Entry types. Audio is the default and the only one that can fill a script
     // or carry a run time; the rest are written work.
-    const ENTRY_TYPES = [
-      { key: 'audio',  label: 'Audio'  },
-      { key: 'script', label: 'Script' },
-      { key: 'story',  label: 'Story'  },
-      { key: 'poem',   label: 'Poem'   },
-      { key: 'music',  label: 'Music'  },
-    ];
+    const ENTRY_TYPES = CFG.entryTypes;
     const cmTypeOf    = e => (e && e.type) || 'audio';
     const cmTypeLabel = e => {
       const t = ENTRY_TYPES.find(t => t.key === cmTypeOf(e));
@@ -1203,12 +1202,7 @@
       { key: 'ellipsus',   label: 'Ellipsus',   kind: 'script' },
     ];
 
-    const ARTIST_LABELS = {
-      'joi-electric':  'JOI Electric',
-      'loona-licks':   'Loona Licks',
-      'misskittensk':  'MissKittenSK',
-      'hisbadgirl77':  'HisBadGirl77',
-    };
+    const ARTIST_LABELS = CFG.artistLabels;
 
     let cmEntries = [];
     let cmCollaborators = [];
@@ -1251,7 +1245,7 @@
     }
 
     // ── Credits / collaborators ────────────────────────────────────────────────
-    const CM_ROLES = ['voiceArtists', 'writers', 'producers', 'editors', 'musicians'];
+    const CM_ROLES = CFG.creditKeys;
     let cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
 
     function cmNorm(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
@@ -1636,7 +1630,7 @@
         });
     }
 
-    const GENDER_TAGS_CM = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A'];
+    const GENDER_TAGS_CM = CFG.audienceTags;
 
     function cmAddTag(tag) {
       const el = document.getElementById('cm-tags');
