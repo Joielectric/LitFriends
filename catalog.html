@@ -256,6 +256,7 @@
 
 <footer>JOI Electric &middot; 18+ only</footer>
 
+<script src="/js/site-config.js"></script>
 <script>
 (function () {
   'use strict';
@@ -279,10 +280,16 @@
     if (entry && isTextEntry(entry)) return 'Read on ';
     return PROVIDER_KIND[key] === 'script' ? 'Read on ' : 'Open on ';
   }
-  var GENDER_TAGS = ['M4F','F4M','M4M','F4F','MF4A','MF4F','MF4M','MM4F','FF4M','F4A','M4A','A4A','NB4A','A4A'];
-  var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
-  var CREDIT_ORDER = ['voiceArtists','writers','producers','editors','musicians'];
   var TOP_TAGS = 16;
+
+  // Shared lists come from js/site-config.js (loaded above).
+  var CFG = window.SITE_CONFIG;
+  var GENDER_TAGS   = CFG.audienceTags;
+  var CREDIT_LABELS = CFG.creditLabels;
+  var CREDIT_ORDER  = CFG.creditKeys;
+  var TYPE_LABELS   = CFG.typeLabels;
+  var TYPE_ICONS    = CFG.typeIcons;
+  var profilePage   = CFG.profilePage;
 
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
 
@@ -301,7 +308,7 @@
     if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';
     return u.replace(/"/g, '%22');
   }
-  function isGender(t){ return GENDER_TAGS.indexOf(String(t).toUpperCase()) !== -1; }
+  function isGender(t){ return CFG.isAudienceTag(t); }
   function provLabel(p){ return PROVIDERS[p] || p; }
 
   function getLinks(e){
@@ -321,37 +328,7 @@
   var COLLAB = {};
   function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
 
-  // Credited names that have a profile page on this site. A credit prefers the
-  // local page over the collaborator's external link, so names in the catalogue
-  // lead to their write-up here rather than straight off-site. Keys are
-  // normName() output; several names are credited both spaced and unspaced.
-  var PROFILE_PAGES = (function(){
-    var byName = {
-      'joi electric':          'profiles/joi-electric.html',
-      'loona licks':           'profiles/loona-licks.html',
-      'misskittensk':          'profiles/misskittenSK.html',
-      'miss kitten sk':        'profiles/misskittenSK.html',
-      'hisbadgirl77':          'profiles/hisbadgirl77.html',
-      'his bad girl 77':       'profiles/hisbadgirl77.html',
-      'wellnobodysperfect':    'profiles/wellnobodysperfect.html',
-      "well nobody's perfect": 'profiles/wellnobodysperfect.html',
-      'naughtiwolf':           'profiles/naughtiwolf.html',
-      'lotus kitty':           'profiles/lotus-kitty.html',
-      'filthy bunny':          'profiles/filthy-bunny.html',
-      'lasphynxxx':            'profiles/la-sphynxxx.html',
-      'la sphynxxx':           'profiles/la-sphynxxx.html'
-    };
-    var out = {};
-    Object.keys(byName).forEach(function(k){ out[normName(k)] = byName[k]; });
-    return out;
-  })();
-  function profilePage(name, label){
-    return PROFILE_PAGES[normName(label)] || PROFILE_PAGES[normName(name)] || '';
-  }
-  var TYPE_LABELS = { audio:'Audio', script:'Script', story:'Story', poem:'Poem', music:'Music' };
-  // Glyphs match the ones the post templates already use for links.
-  var TYPE_ICONS  = { audio:'🎧', script:'📜', story:'📖', poem:'✍️', music:'🎹' };
-  function typeOf(e){ return (e && e.type) || 'audio'; }
+  function typeOf(e){ return CFG.typeOf(e); }
   // Audio is the default and stays unbadged; everything else is called out.
   function typeBadge(e){
     var t = typeOf(e);
@@ -362,7 +339,7 @@
   }
   // Written work is read wherever it lives, so the entry's own type wins over
   // the platform's kind: a story on an audio host is still read, not listened to.
-  function isTextEntry(e){ var t = typeOf(e); return t !== 'audio' && t !== 'music'; }
+  function isTextEntry(e){ return CFG.isTextType(e); }
 
   // TRT is free text ("14:32", "1:05:30", "45 min"), so parse defensively and
   // return null when it cannot be read rather than guessing a length.
