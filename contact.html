@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/JOI_Favicon.png">
+  <link rel="apple-touch-icon" href="images/JOI_Favicon.png">
+  <title>Contact &middot; JOI Electric</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #151a2a;
+      --surface: #1e2438;
+      --surface-2: #262d44;
+      --border: rgba(180,195,225,0.24);
+      --border-mid: rgba(180,195,225,0.42);
+      --text: #f2f6ff;
+      --text-mid: #d7e0f2;
+      --text-dim: #aab6d4;
+      --silver-hi: #eaf0fa;
+      --electric: #5b8de8;
+      --electric-dim: #2a4880;
+      --danger: #c0394a;
+      --ok: #4fb783;
+      --radius: 3px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: "Raleway", sans-serif; font-size: 16px; line-height: 1.7;
+      min-height: 100vh; min-height: 100dvh; overflow-x: clip;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(91,141,232,0.08) 0%, transparent 70%),
+        linear-gradient(to bottom, rgba(21,26,42,0.72) 0%, rgba(21,26,42,0.88) 60%, rgba(21,26,42,0.95) 100%),
+        url('images/JOIWebBack.png') center center / cover no-repeat;
+    }
+
+    .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 1.2rem 4rem; }
+    .nav { padding: 1.4rem 0 0; font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; }
+    .nav a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .nav a:hover { color: var(--electric); }
+    .nav .sep { color: var(--text-dim); margin: 0 0.4rem; }
+
+    header { text-align: center; padding: 2.6rem 0 1.6rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+    .eyebrow { font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--electric); display: block; margin-bottom: 0.7rem; }
+    header h1 { font-family: "Cinzel", serif; font-weight: 600; font-size: clamp(1.9rem, 5vw, 2.7rem); letter-spacing: 0.06em; color: #fff; }
+    .sub { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.1rem; color: var(--text-mid); margin-top: 0.5rem; }
+
+    .section-label { font-family: "Cinzel", serif; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--electric); display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.1rem; }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--electric); border-radius: var(--radius); padding: 1.5rem 1.6rem; margin-bottom: 2.4rem; }
+    .card p.lead { color: var(--text-mid); font-size: 0.95rem; margin-bottom: 1.2rem; }
+
+    label { display: block; font-size: 0.9rem; font-weight: 500; color: var(--silver-hi); margin-bottom: 0.4rem; }
+    label .opt { font-weight: 400; color: var(--text-dim); font-size: 0.82rem; }
+    input[type="text"], input[type="email"], textarea {
+      width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text); font-family: "Raleway", sans-serif; font-size: 1rem;
+      padding: 0.75rem 0.95rem; border-radius: var(--radius); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none;
+    }
+    input:focus, textarea:focus { border-color: var(--electric); box-shadow: 0 0 0 2px rgba(91,141,232,0.15); }
+    input::placeholder, textarea::placeholder { color: var(--text-dim); }
+    textarea { resize: vertical; min-height: 130px; line-height: 1.7; }
+    .field { margin-bottom: 1.1rem; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+
+    .check { display: flex; align-items: flex-start; gap: 0.7rem; cursor: pointer; font-size: 0.92rem; color: var(--text-mid); }
+    .check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; accent-color: var(--electric); cursor: pointer; }
+
+    button.send {
+      font-family: "Cinzel", serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase;
+      color: #fff; background: linear-gradient(140deg, rgba(91,141,232,0.42), rgba(42,72,128,0.6));
+      border: 1px solid var(--electric); border-radius: 999px; padding: 0.9rem 2.2rem;
+      cursor: pointer; min-height: 52px; transition: transform 0.2s, box-shadow 0.25s;
+      box-shadow: 0 0 16px rgba(91,141,232,0.25);
+    }
+    button.send:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 26px rgba(91,141,232,0.45); }
+    button.send:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .msg { margin-top: 0.9rem; font-size: 0.9rem; min-height: 1.2em; }
+    .msg.ok  { color: var(--ok); }
+    .msg.err { color: #e87a88; }
+    .hp { position: absolute; left: -9999px; opacity: 0; height: 0; }
+
+    .direct { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--electric); text-decoration: none; font-size: 0.98rem; word-break: break-all; }
+    .direct:hover { color: #fff; }
+
+    .done { display: none; text-align: center; padding: 1.5rem 0.5rem; }
+    .done.active { display: block; }
+    .done h3 { font-family: "Cormorant Garamond", serif; font-weight: 300; font-size: 1.6rem; color: #fff; margin-bottom: 0.5rem; }
+    .done p { color: var(--text-mid); font-size: 0.95rem; }
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem 1rem 1rem; border-top: 1px solid var(--border); color: var(--text-dim); font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.24em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="index.html">&#8592; Home</a>
+    <span class="sep">/</span>
+    <a href="catalog.html">Catalogue</a>
+  </nav>
+
+  <header>
+    <span class="eyebrow">Get In Touch</span>
+    <h1>Contact</h1>
+    <p class="sub">Collaborations, questions, or just to say hello.</p>
+  </header>
+
+  <!-- Message -->
+  <section>
+    <div class="section-label">Send a message</div>
+    <div class="card">
+      <div id="form-wrap">
+        <p class="lead">Requests, collaboration ideas, script permissions, or anything else &mdash; it comes straight to me.</p>
+        <form id="contact-form" novalidate>
+          <div class="row2">
+            <div class="field">
+              <label for="c-name">Your name <span class="opt">(or handle)</span></label>
+              <input type="text" id="c-name" name="name" placeholder="What should I call you?" autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="c-email">Email <span class="opt">(so I can reply)</span></label>
+              <input type="email" id="c-email" name="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+          </div>
+          <div class="field">
+            <label for="c-subject">Subject <span class="opt">(optional)</span></label>
+            <input type="text" id="c-subject" name="subject" placeholder="Collaboration, request, question…">
+          </div>
+          <div class="field">
+            <label for="c-message">Message</label>
+            <textarea id="c-message" name="message" placeholder="Tell me what you have in mind."></textarea>
+          </div>
+          <div class="field">
+            <label class="check">
+              <input type="checkbox" id="c-subscribe">
+              <span>Also sign me up for email alerts on new releases.</span>
+            </label>
+          </div>
+          <input type="text" class="hp" id="c-botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button type="submit" class="send" id="c-send">Send Message</button>
+          <div class="msg" id="c-msg"></div>
+        </form>
+      </div>
+      <div class="done" id="form-done">
+        <h3>Message sent.</h3>
+        <p>Thank you &mdash; I read everything personally and will get back to you if you left an address.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alerts -->
+  <section>
+    <div class="section-label">Email alerts</div>
+    <div class="card">
+      <div id="sub-wrap">
+        <p class="lead">A note when something new drops. No schedule, no noise, and you can ask to be removed any time.</p>
+        <form id="sub-form" novalidate>
+          <div class="row2">
+            <div class="field">
+              <label for="s-email">Email</label>
+              <input type="email" id="s-email" name="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="s-name">Name <span class="opt">(optional)</span></label>
+              <input type="text" id="s-name" name="name" placeholder="What should I call you?" autocomplete="name">
+            </div>
+          </div>
+          <input type="text" class="hp" id="s-botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button type="submit" class="send" id="s-send">Sign Me Up</button>
+          <div class="msg" id="s-msg"></div>
+        </form>
+      </div>
+      <div class="done" id="sub-done">
+        <h3>You're on the list.</h3>
+        <p>You'll hear from me when there's something new worth hearing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Direct -->
+  <section>
+    <div class="section-label">Or email me directly</div>
+    <div class="card" style="margin-bottom:1rem">
+      <a class="direct" href="mailto:joi@joielectric.com">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        joi@joielectric.com
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<footer>JOI Electric &mdash; 18+ only</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  function post(payload) {
+    return fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
+  }
+
+  function wire(opts) {
+    var form = document.getElementById(opts.form);
+    var btn  = document.getElementById(opts.btn);
+    var msg  = document.getElementById(opts.msg);
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      msg.textContent = ''; msg.className = 'msg';
+
+      var payload = opts.collect();
+      var problem = opts.validate(payload);
+      if (problem) { msg.textContent = problem; msg.className = 'msg err'; return; }
+
+      var label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Sending…';
+
+      post(payload).then(function (res) {
+        if (!res.ok || !res.d.ok) throw new Error(res.d.error || 'Something went wrong. Please try again.');
+        document.getElementById(opts.wrap).style.display = 'none';
+        var done = document.getElementById(opts.done);
+        done.classList.add('active');
+        if (res.d.already && opts.alreadyText) done.querySelector('p').textContent = opts.alreadyText;
+      }).catch(function (err) {
+        btn.disabled = false; btn.textContent = label;
+        msg.textContent = err.message; msg.className = 'msg err';
+      });
+    });
+  }
+
+  wire({
+    form: 'contact-form', btn: 'c-send', msg: 'c-msg', wrap: 'form-wrap', done: 'form-done',
+    collect: function () {
+      return {
+        kind: 'message',
+        name: document.getElementById('c-name').value,
+        email: document.getElementById('c-email').value,
+        subject: document.getElementById('c-subject').value,
+        message: document.getElementById('c-message').value,
+        subscribe: document.getElementById('c-subscribe').checked,
+        botcheck: document.getElementById('c-botcheck').value,
+      };
+    },
+    validate: function (p) {
+      if (!p.message.trim()) return 'Please write a message first.';
+      if (p.subscribe && !p.email.trim()) return 'Add your email if you would like the alerts.';
+      return '';
+    },
+  });
+
+  wire({
+    form: 'sub-form', btn: 's-send', msg: 's-msg', wrap: 'sub-wrap', done: 'sub-done',
+    alreadyText: "You were already on the list — nothing more to do.",
+    collect: function () {
+      return {
+        kind: 'subscribe',
+        email: document.getElementById('s-email').value,
+        name: document.getElementById('s-name').value,
+        source: 'contact page',
+        botcheck: document.getElementById('s-botcheck').value,
+      };
+    },
+    validate: function (p) { return p.email.trim() ? '' : 'Please add your email address.'; },
+  });
+})();
+</script>
+</body>
+</html>

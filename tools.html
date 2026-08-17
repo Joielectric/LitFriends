@@ -406,6 +406,7 @@
                   <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Lists</button>
                   <button class="cm-tab"        data-tab="news"     onclick="cmTab('news')">News</button>
                   <button class="cm-tab"        data-tab="feedback" onclick="cmTab('feedback')">Feedback</button>
+                  <button class="cm-tab"        data-tab="inbox"    onclick="cmTab('inbox')">Inbox</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
                   <button class="cm-tab"        data-tab="projects" onclick="cmTab('projects')">Projects</button>
                 </nav>
@@ -739,6 +740,31 @@
                     <div id="fb-list"><div class="cm-collab-empty">Click Refresh to load responses.</div></div>
                 </div>
 
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-inbox" hidden>
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                      <label class="cm-label" style="margin:0">Messages <span style="font-weight:normal;color:var(--text-mid)">(from the contact page)</span></label>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="inboxLoad()">Refresh</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="inboxExport('messages')">Download CSV</button>
+                      </div>
+                    </div>
+                    <input id="inbox-search" class="cm-input" placeholder="Search messages…" style="width:100%;margin-bottom:8px" oninput="inboxRender()">
+                    <div id="inbox-messages"><div class="cm-collab-empty">Click Refresh to load.</div></div>
+                  </div>
+
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                      <label class="cm-label" style="margin:0">Email alerts <span style="font-weight:normal;color:var(--text-mid)">(signups)</span></label>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="inboxExport('subscribers')">Download CSV</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="inboxCopyEmails()">Copy addresses</button>
+                      </div>
+                    </div>
+                    <div id="inbox-subs"><div class="cm-collab-empty">Click Refresh to load.</div></div>
+                  </div>
                 </div>
 
                 <div class="cm-tab-panel" id="tabp-templates" hidden>
@@ -1409,6 +1435,92 @@
       fbDownload('feedback-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(rows, null, 2), 'application/json');
     }
 
+    // ── Inbox: contact messages and alert signups ───────────────────────────
+    let inboxMessages = [];
+    let inboxSubs = [];
+
+    function inboxPost(payload, then) {
+      fetch('/api/contact', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ password: cmPassword }, payload)),
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) throw new Error(d.error || 'Request failed');
+          inboxMessages = d.messages || [];
+          inboxSubs = d.subscribers || [];
+          inboxRender();
+          if (then) then();
+        })
+        .catch(err => cmShowMsg(err.message, false));
+    }
+
+    function inboxLoad() { inboxPost({ action: 'list' }); }
+
+    function inboxRender() {
+      const q = (document.getElementById('inbox-search').value || '').toLowerCase().trim();
+      const msgs = q
+        ? inboxMessages.filter(m => [m.name, m.email, m.subject, m.message].join(' ').toLowerCase().includes(q))
+        : inboxMessages;
+
+      const mEl = document.getElementById('inbox-messages');
+      mEl.innerHTML = msgs.length ? msgs.map(m => {
+        const when = m.received ? new Date(m.received).toLocaleString() : '';
+        const reply = m.email
+          ? `<a class="cm-btn cm-btn-sm" style="text-decoration:none" href="mailto:${cmEsc(m.email)}?subject=${encodeURIComponent('Re: ' + (m.subject || 'your message'))}">Reply</a>`
+          : '';
+        return `<div class="cm-entry-row" style="align-items:flex-start">
+          <div class="cm-entry-info">
+            <div class="cm-entry-title" style="font-size:0.95rem">${cmEsc(m.subject || '(no subject)')}</div>
+            <div class="cm-entry-meta">${cmEsc(m.name || 'Anonymous')}${m.email ? ' &middot; ' + cmEsc(m.email) : ' &middot; no reply address'} &middot; ${cmEsc(when)}</div>
+            <div style="margin-top:6px;color:var(--text);font-size:0.9rem;white-space:pre-wrap;word-break:break-word">${cmEsc(m.message || '')}</div>
+          </div>
+          ${reply}
+          <button class="cm-btn cm-btn-sm cm-btn-danger" onclick="inboxDelete('${cmEsc(m.id)}','message')">Delete</button>
+        </div>`;
+      }).join('') : `<div class="cm-collab-empty">No messages${inboxMessages.length ? ' match that search.' : ' yet.'}</div>`;
+
+      const active = inboxSubs.filter(s => !s.unsubscribed);
+      const sEl = document.getElementById('inbox-subs');
+      sEl.innerHTML = (inboxSubs.length
+        ? `<div style="color:var(--text-mid);font-size:0.88rem;margin-bottom:8px">${active.length} active${inboxSubs.length !== active.length ? ' · ' + (inboxSubs.length - active.length) + ' unsubscribed' : ''}</div>`
+          + inboxSubs.map(s => `<div class="cm-entry-row" style="padding:8px 12px">
+              <div class="cm-entry-info">
+                <div class="cm-entry-title" style="font-size:0.9rem${s.unsubscribed ? ';opacity:.55;text-decoration:line-through' : ''}">${cmEsc(s.email)}</div>
+                <div class="cm-entry-meta">${cmEsc(s.name || '')}${s.name ? ' &middot; ' : ''}${cmEsc(s.source || '')} &middot; ${cmEsc(s.signedUpAt ? new Date(s.signedUpAt).toLocaleDateString() : '')}</div>
+              </div>
+              ${s.unsubscribed ? '' : `<button class="cm-btn cm-btn-sm" onclick="inboxUnsub('${cmEsc(s.id)}')">Unsubscribe</button>`}
+              <button class="cm-btn cm-btn-sm cm-btn-danger" onclick="inboxDelete('${cmEsc(s.id)}','subscriber')">Delete</button>
+            </div>`).join('')
+        : '<div class="cm-collab-empty">No signups yet.</div>');
+    }
+
+    function inboxDelete(id, kind) {
+      if (!confirm('Delete this ' + kind + '?')) return;
+      inboxPost({ action: 'delete', id: id, kind: kind });
+    }
+    function inboxUnsub(id) {
+      if (!confirm('Mark this address as unsubscribed?')) return;
+      inboxPost({ action: 'unsubscribe', id: id });
+    }
+
+    function inboxCopyEmails() {
+      const list = inboxSubs.filter(s => !s.unsubscribed).map(s => s.email);
+      if (!list.length) { cmShowMsg('No active subscribers.', false); return; }
+      navigator.clipboard.writeText(list.join(', '))
+        .then(() => cmShowMsg(`Copied ${list.length} address${list.length === 1 ? '' : 'es'}.`, true))
+        .catch(() => cmShowMsg('Could not copy.', false));
+    }
+
+    function inboxExport(which) {
+      const rows = which === 'subscribers' ? inboxSubs : inboxMessages;
+      if (!rows.length) { cmShowMsg('Nothing to export.', false); return; }
+      const cols = [...new Set(rows.flatMap(r => Object.keys(r)))];
+      const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const csv = [cols.map(esc).join(',')].concat(rows.map(r => cols.map(c => esc(r[c])).join(','))).join('\r\n');
+      fbDownload(which + '-' + new Date().toISOString().slice(0, 10) + '.csv', csv, 'text/csv;charset=utf-8');
+    }
+
     // ── Latest & News ─────────────────────────────────────────────────────────
     function cmRenderNews() {
       const el = document.getElementById('cm-news-list');
@@ -1581,6 +1693,7 @@
           cmRenderCollabManager();
           cmRenderNews();
           fbLoad();
+          inboxLoad();
           cmRestoreTab();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
@@ -1621,6 +1734,7 @@
           cmRenderCollabManager();
           cmRenderNews();
           fbLoad();
+          inboxLoad();
           cmRestoreTab();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
