@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, deleteEverywhere } from "./_site.js";
 
 // Cover-image upload, listing and serving, backed by Netlify Blobs.
 //
@@ -36,10 +36,10 @@ const INDEX_KEY = "__index.json";
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 
-const store = () => getStore({ name: "images", consistency: "strong" });
+const store = () => siteStore("images");
 
 async function readIndex(s) {
-  const idx = await s.get(INDEX_KEY, { type: "json" }).catch(() => null);
+  const idx = (await readJsonWithLegacy("images", INDEX_KEY)).data;
   return idx && Array.isArray(idx.images) ? idx.images : [];
 }
 
@@ -47,10 +47,8 @@ async function readIndex(s) {
 // index, so a failed write or a manual deletion can never strand the list.
 async function reconcileIndex(s) {
   const indexed = await readIndex(s);
-  const listed = await s.list().catch(() => null);
-  if (!listed || !Array.isArray(listed.blobs)) return { images: indexed, changed: false };
-
-  const real = new Set(listed.blobs.map(b => b.key).filter(k => k !== INDEX_KEY));
+  const listedKeys = await listWithLegacy("images");
+  const real = new Set(listedKeys.filter(k => k !== INDEX_KEY));
   const kept = indexed.filter(i => real.has(i.key));
   const known = new Set(kept.map(i => i.key));
 
@@ -74,7 +72,7 @@ export default async (req) => {
     const key = decodeURIComponent(url.pathname.replace(/^\/api\/image\//, ""));
     if (!key || key === INDEX_KEY) return json({ error: "Missing image key" }, 400);
 
-    const blob = await store().getWithMetadata(key, { type: "arrayBuffer" }).catch(() => null);
+    const blob = await readBlobWithLegacy("images", key);
     if (!blob || !blob.data) return json({ error: "Not found" }, 404);
 
     return new Response(blob.data, {
@@ -117,7 +115,7 @@ export default async (req) => {
     const key = String(body.key || "");
     if (!key || key === INDEX_KEY) return json({ error: "Missing image key" }, 400);
 
-    await s.delete(key).catch(() => null);
+    await deleteEverywhere("images", key);
     const images = (await readIndex(s)).filter(i => i.key !== key);
     await s.setJSON(INDEX_KEY, { images });
     return json({ ok: true, images, totalBytes: images.reduce((n, i) => n + (Number(i.size) || 0), 0) });

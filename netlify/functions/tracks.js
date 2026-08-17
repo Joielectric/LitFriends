@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, deleteEverywhere } from "./_site.js";
 
 // Music-track upload, listing and serving, backed by Netlify Blobs.
 //
@@ -42,10 +42,10 @@ const INDEX_KEY = "__index.json";
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 
-const store = () => getStore({ name: "tracks", consistency: "strong" });
+const store = () => siteStore("tracks");
 
 async function readIndex(s) {
-  const idx = await s.get(INDEX_KEY, { type: "json" }).catch(() => null);
+  const idx = (await readJsonWithLegacy("tracks", INDEX_KEY)).data;
   return idx && Array.isArray(idx.tracks) ? idx.tracks : [];
 }
 
@@ -53,10 +53,8 @@ async function readIndex(s) {
 // index, so a failed write can never strand the list.
 async function reconcileIndex(s) {
   const indexed = await readIndex(s);
-  const listed = await s.list().catch(() => null);
-  if (!listed || !Array.isArray(listed.blobs)) return { tracks: indexed, changed: false };
-
-  const real = new Set(listed.blobs.map(b => b.key).filter(k => k !== INDEX_KEY));
+  const listedKeys = await listWithLegacy("tracks");
+  const real = new Set(listedKeys.filter(k => k !== INDEX_KEY));
   const kept = indexed.filter(t => real.has(t.key));
   const known = new Set(kept.map(t => t.key));
 
@@ -89,7 +87,7 @@ export default async (req) => {
     const key = decodeURIComponent(url.pathname.replace(/^\/api\/track\//, ""));
     if (!key || key === INDEX_KEY) return json({ error: "Missing track key" }, 400);
 
-    const blob = await store().getWithMetadata(key, { type: "arrayBuffer" }).catch(() => null);
+    const blob = await readBlobWithLegacy("tracks", key);
     if (!blob || !blob.data) return json({ error: "Not found" }, 404);
 
     const meta = blob.metadata || {};
@@ -137,7 +135,7 @@ export default async (req) => {
     if (body.action === "delete") {
       const key = String(body.key || "");
       if (!key || key === INDEX_KEY) return json({ error: "Missing track key" }, 400);
-      await s.delete(key).catch(() => null);
+      await deleteEverywhere("tracks", key);
       const tracks = (await readIndex(s)).filter(t => t.key !== key);
       await s.setJSON(INDEX_KEY, { tracks });
       return json({ ok: true, tracks, totalBytes: tracks.reduce((n, t) => n + (Number(t.size) || 0), 0) });
