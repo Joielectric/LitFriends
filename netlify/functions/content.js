@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { siteStore, readJsonWithLegacy } from "./_site.js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -10,11 +10,11 @@ export default async (req) => {
     return new Response("", { status: 200, headers: CORS });
   }
 
-  const store = getStore({ name: "content", consistency: "strong" });
+  const store = siteStore("content");
 
   // Public read
   if (req.method === "GET") {
-    const data = await store.get("audio", { type: "json" }).catch(() => null);
+    const { data } = await readJsonWithLegacy("content", "audio");
     return new Response(JSON.stringify(data || { entries: [] }), { status: 200, headers: CORS });
   }
 
@@ -37,7 +37,7 @@ export default async (req) => {
 
     // Verify-only — confirms password and returns current entries
     if (action === "verify") {
-      const data = await store.get("audio", { type: "json" }).catch(() => null);
+      const { data } = await readJsonWithLegacy("content", "audio");
       return new Response(JSON.stringify({ ok: true, ...(data || { entries: [] }) }), { status: 200, headers: CORS });
     }
 
@@ -46,7 +46,7 @@ export default async (req) => {
     }
 
     // Preserve collaborators / news / providers unless the client sends new lists
-    const existing = await store.get("audio", { type: "json" }).catch(() => null);
+    const { data: existing } = await readJsonWithLegacy("content", "audio");
     const collaborators = Array.isArray(body.collaborators)
       ? body.collaborators
       : (existing && existing.collaborators) || [];

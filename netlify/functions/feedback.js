@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { siteStore, readJsonWithLegacy } from "./_site.js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +23,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });
   }
 
-  const store = getStore({ name: "feedback", consistency: "strong" });
+  const store = siteStore("feedback");
 
   let body;
   try {
@@ -43,7 +43,7 @@ export default async (req) => {
       });
     }
 
-    const data = (await store.get(KEY, { type: "json" }).catch(() => null)) || { responses: [] };
+    const data = (await readJsonWithLegacy("feedback", KEY)).data || { responses: [] };
 
     if (body.action === "list") {
       return new Response(JSON.stringify({ ok: true, responses: data.responses || [] }), { status: 200, headers: CORS });
@@ -71,7 +71,7 @@ export default async (req) => {
     record[clean(k)] = Array.isArray(v) ? v.map(clean).join(", ") : clean(v);
   }
 
-  const data = (await store.get(KEY, { type: "json" }).catch(() => null)) || { responses: [] };
+  const data = (await readJsonWithLegacy("feedback", KEY)).data || { responses: [] };
   const responses = data.responses || [];
   responses.unshift(record);
   if (responses.length > MAX_RESPONSES) responses.length = MAX_RESPONSES;
