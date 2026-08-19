@@ -418,6 +418,7 @@
                   <button class="cm-tab"        data-tab="inbox"    onclick="cmTab('inbox')">Inbox</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
                   <button class="cm-tab"        data-tab="projects" onclick="cmTab('projects')">Projects</button>
+                  <button class="cm-tab"        data-tab="profile"  onclick="cmTab('profile')">My Profile</button>
                   <button class="cm-tab owner-only" data-tab="creators" onclick="cmTab('creators')" style="display:none">Creators</button>
                 </nav>
 
@@ -778,6 +779,79 @@
                       </div>
                     </div>
                     <div id="inbox-subs"><div class="cm-collab-empty">Click Refresh to load.</div></div>
+                  </div>
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-profile" hidden>
+                  <div id="pf-none" style="display:none;color:var(--text-mid);padding:14px;">
+                    No profile is linked to your account yet.
+                  </div>
+
+                  <div id="pf-editor" style="display:none">
+                    <div class="owner-only" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;">
+                      <label class="cm-label" style="font-size:0.7rem">Editing profile</label>
+                      <select id="pf-who" class="cm-input" style="width:100%" onchange="pfLoad(this.value)"></select>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                      <div>
+                        <span style="color:var(--text-mid);font-size:0.85rem;">Your page:</span>
+                        <a id="pf-url" href="#" target="_blank" style="color:var(--coral);font-size:0.85rem;"></a>
+                      </div>
+                      <label style="display:flex;align-items:center;gap:0.5rem;color:var(--text-mid);font-size:0.85rem;cursor:pointer;">
+                        <input type="checkbox" id="pf-published" style="cursor:pointer">
+                        Visible to the public
+                      </label>
+                    </div>
+
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Basics</label>
+                      <label class="cm-label" style="font-size:0.7rem">Display name</label>
+                      <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80">
+                      <label class="cm-label" style="font-size:0.7rem">Tagline</label>
+                      <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="140"
+                             placeholder="Voice Artist &middot; Writer &middot; Collaborator">
+                      <label class="cm-label" style="font-size:0.7rem">About</label>
+                      <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
+                                placeholder="Line breaks are kept. Pasted links become links."></textarea>
+                    </div>
+
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Pictures</label>
+                      <label class="cm-label" style="font-size:0.7rem">Avatar URL</label>
+                      <input id="pf-avatar" class="cm-input" style="width:100%;margin-bottom:10px" placeholder="/images/your-icon.png">
+                      <label class="cm-label" style="font-size:0.7rem">Banner URL</label>
+                      <input id="pf-banner" class="cm-input" style="width:100%" placeholder="/images/your-banner.png">
+                    </div>
+
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Look</label>
+                      <div id="pf-themes" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+                      <label class="cm-label" style="font-size:0.7rem">Accent colour (optional)</label>
+                      <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="color" id="pf-accent-pick" style="width:44px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer"
+                               oninput="document.getElementById('pf-accent').value = this.value">
+                        <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme">
+                      </div>
+                    </div>
+
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Sections to show</label>
+                      <div id="pf-sections" style="display:flex;gap:14px;flex-wrap:wrap;"></div>
+                    </div>
+
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <label class="cm-label" style="margin:0">Find me links</label>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">Add link</button>
+                      </div>
+                      <div id="pf-links"></div>
+                    </div>
+
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                      <button type="button" class="cm-btn" onclick="pfSave()">Save profile</button>
+                      <span id="pf-msg" style="font-size:0.85rem;"></span>
+                    </div>
                   </div>
                 </div>
 
@@ -1799,7 +1873,8 @@
           document.querySelectorAll('.owner-only').forEach(el => {
             el.style.display = cmWho.isOwner ? '' : 'none';
           });
-          if (cmWho.isOwner) { crFillSlugOptions(); crLoad(); }
+          if (cmWho.isOwner) { crFillSlugOptions(); crLoad(); pfFillWhoPicker(); }
+          pfLoad();
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
           cmNews = data.news || [];
@@ -2724,6 +2799,157 @@
     });
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
+    // ── My Profile ──────────────────────────────────────────────────────────
+    const PF_THEMES = [
+      { key: 'electric', label: 'Electric', swatch: '#5b8de8' },
+      { key: 'ember',    label: 'Ember',    swatch: '#d9743f' },
+      { key: 'orchid',   label: 'Orchid',   swatch: '#b478e8' },
+      { key: 'moss',     label: 'Moss',     swatch: '#5fbf94' },
+      { key: 'noir',     label: 'Noir',     swatch: '#c9c9d2' },
+    ];
+    const PF_SECTIONS = [
+      { key: 'about',    label: 'About' },
+      { key: 'works',    label: 'Works' },
+      { key: 'links',    label: 'Find me' },
+      { key: 'feedback', label: 'Feedback' },
+    ];
+
+    let pfProfile = null;
+    let pfLinks = [];
+
+    function pfMsg(text, good) {
+      const el = document.getElementById('pf-msg');
+      el.textContent = text || '';
+      el.style.color = good ? '#6fe3c1' : '#e87a88';
+    }
+
+    function pfRenderThemes() {
+      document.getElementById('pf-themes').innerHTML = PF_THEMES.map(t =>
+        `<button type="button" class="cm-btn cm-btn-sm pf-theme" data-theme="${t.key}" onclick="pfPickTheme('${t.key}')"
+           style="display:flex;align-items:center;gap:6px;">
+           <span style="width:12px;height:12px;border-radius:50%;background:${t.swatch};display:inline-block"></span>${t.label}
+         </button>`).join('');
+      pfMarkTheme();
+    }
+    function pfMarkTheme() {
+      const active = (pfProfile && pfProfile.theme) || 'electric';
+      document.querySelectorAll('.pf-theme').forEach(b => {
+        b.style.borderColor = b.dataset.theme === active ? 'var(--coral)' : '';
+        b.style.color = b.dataset.theme === active ? '#fff' : '';
+      });
+    }
+    function pfPickTheme(key) { if (pfProfile) { pfProfile.theme = key; pfMarkTheme(); } }
+
+    function pfRenderSections(sections) {
+      document.getElementById('pf-sections').innerHTML = PF_SECTIONS.map(s =>
+        `<label style="display:flex;align-items:center;gap:0.4rem;color:var(--text-mid);font-size:0.85rem;cursor:pointer">
+           <input type="checkbox" class="pf-section" data-key="${s.key}" ${sections[s.key] === false ? '' : 'checked'} style="cursor:pointer">${s.label}
+         </label>`).join('');
+    }
+
+    function pfRenderLinks() {
+      const host = document.getElementById('pf-links');
+      if (!pfLinks.length) {
+        host.innerHTML = '<div class="cm-collab-empty">No links yet.</div>';
+        return;
+      }
+      host.innerHTML = pfLinks.map((l, i) =>
+        `<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+           <input class="cm-input pf-link-label" style="flex:1 1 120px" placeholder="Label" value="${cmEsc(l.label || '')}" data-i="${i}">
+           <input class="cm-input pf-link-url" style="flex:2 1 200px" placeholder="https://…" value="${cmEsc(l.url || '')}" data-i="${i}">
+           <button type="button" class="cm-btn cm-btn-sm" onclick="pfRemoveLink(${i})">&times;</button>
+         </div>`).join('');
+    }
+    function pfAddLink() { pfCollectLinks(); pfLinks.push({ label: '', url: '' }); pfRenderLinks(); }
+    function pfRemoveLink(i) { pfCollectLinks(); pfLinks.splice(i, 1); pfRenderLinks(); }
+    function pfCollectLinks() {
+      const labels = [...document.querySelectorAll('.pf-link-label')];
+      const urls = [...document.querySelectorAll('.pf-link-url')];
+      pfLinks = labels.map((el, i) => ({ label: el.value, url: (urls[i] || {}).value || '' }));
+    }
+
+    function pfFill(p) {
+      pfProfile = p;
+      document.getElementById('pf-editor').style.display = '';
+      document.getElementById('pf-none').style.display = 'none';
+      document.getElementById('pf-name').value = p.name || '';
+      document.getElementById('pf-tagline').value = p.tagline || '';
+      document.getElementById('pf-bio').value = p.bio || '';
+      document.getElementById('pf-avatar').value = p.avatar || '';
+      document.getElementById('pf-banner').value = p.banner || '';
+      document.getElementById('pf-accent').value = p.accent || '';
+      if (p.accent) document.getElementById('pf-accent-pick').value = p.accent;
+      document.getElementById('pf-published').checked = !!p.published;
+      const url = '/profile/' + p.slug;
+      const link = document.getElementById('pf-url');
+      link.href = url; link.textContent = location.origin + url;
+      pfLinks = (p.links || []).slice();
+      pfRenderThemes();
+      pfRenderSections(p.sections || {});
+      pfRenderLinks();
+    }
+
+    function pfApi(payload, onOk) {
+      fetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ password: cmPassword }, payload)),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) {
+            document.getElementById('pf-editor').style.display = 'none';
+            const none = document.getElementById('pf-none');
+            none.style.display = ''; none.textContent = data.error || 'Could not load your profile.';
+            return;
+          }
+          onOk(data);
+        })
+        .catch(() => pfMsg('Could not reach the server.'));
+    }
+
+    function pfLoad(slug) {
+      pfApi(slug ? { action: 'mine', slug } : { action: 'mine' }, data => {
+        pfFill(data.profile);
+        pfMsg('');
+      });
+    }
+
+    // The owner edits anyone's profile, so give them a picker of the ones that exist.
+    function pfFillWhoPicker() {
+      pfApi({ action: 'list' }, data => {
+        const sel = document.getElementById('pf-who');
+        const slugs = Object.keys(data.profiles || {}).sort();
+        if (cmWho.slug && !slugs.includes(cmWho.slug)) slugs.unshift(cmWho.slug);
+        sel.innerHTML = slugs.map(sg => `<option value="${cmEsc(sg)}">${cmEsc(sg)}</option>`).join('');
+        sel.value = (pfProfile && pfProfile.slug) || cmWho.slug || slugs[0] || '';
+      });
+    }
+
+    function pfSave() {
+      if (!pfProfile) return;
+      pfCollectLinks();
+      const sections = {};
+      document.querySelectorAll('.pf-section').forEach(el => { sections[el.dataset.key] = el.checked; });
+      const profile = {
+        name: document.getElementById('pf-name').value,
+        tagline: document.getElementById('pf-tagline').value,
+        bio: document.getElementById('pf-bio').value,
+        avatar: document.getElementById('pf-avatar').value,
+        banner: document.getElementById('pf-banner').value,
+        accent: document.getElementById('pf-accent').value,
+        theme: pfProfile.theme,
+        published: document.getElementById('pf-published').checked,
+        links: pfLinks,
+        sections,
+      };
+      pfMsg('Saving…', true);
+      // The server decides which profile this writes to, from who is signed in.
+      const payload = { action: 'save', profile };
+      if (cmWho.isOwner && pfProfile.slug) payload.slug = pfProfile.slug;
+      pfApi(payload, data => { pfFill(data.profile); pfMsg('Saved.', true); });
+    }
+
     // ── Creators (owner only) ───────────────────────────────────────────────
     let crCreators = [];
 

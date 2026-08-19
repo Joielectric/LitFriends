@@ -150,6 +150,16 @@
     SITE.artistNames[a.slug] = names.filter(function (n, i) { return n && names.indexOf(n) === i; });
   });
 
+  // Creators who joined after this file was written are not in `artists`, so
+  // their profile teaches the matcher the name they are credited under.
+  SITE.registerArtistName = function (slug, name) {
+    if (!slug) return;
+    var known = SITE.artistNames[slug] || [norm(slug)];
+    var extra = norm(name);
+    if (extra && known.indexOf(extra) === -1) known = known.concat(extra);
+    SITE.artistNames[slug] = known;
+  };
+
   // Is this artist on the entry — either as an owning artist or credited in
   // any role? One definition, so the catalogue, the profile pages and the
   // feedback picker can never disagree about whose work something is.
