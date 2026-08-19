@@ -51,13 +51,7 @@
   }
 
   function artistInEntry(entry, artistId) {
-    if (getArtists(entry).includes(artistId)) return true;
-    const label = ARTIST_LABELS[artistId];
-    if (!label || !entry.credits) return false;
-    const needle = label.toLowerCase();
-    return Object.values(entry.credits).some(arr =>
-      (arr || []).some(name => name.toLowerCase() === needle)
-    );
+    return CFG.creditedIn(entry, artistId);
   }
 
   function providerLabel(key) {

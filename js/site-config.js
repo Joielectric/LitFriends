@@ -26,6 +26,11 @@
       banner:   '/images/JOIElectric5BannerSide.png',
       backdrop: '/images/JOIWebBack.png',
       ageNote:  'Erotic Audio — 18+ only',
+      // Whose site this is. The catalogue, the feedback picker and anything
+      // else public shows only work this artist is credited on — collaborators
+      // share the same content store to build their own pages, and their
+      // uncredited work should not surface here. Must match an `artists` slug.
+      owner:    'joi-electric',
     },
 
     // NOTE: platforms/providers are deliberately NOT here. They are managed in
@@ -129,6 +134,32 @@
       (a.aliases || []).forEach(function (alias) { SITE.profilePages[norm(alias)] = a.page; });
     }
   });
+
+  // Every name an artist might be credited under: slug, display name, aliases.
+  SITE.artistNames = {};
+  SITE.artists.forEach(function (a) {
+    var names = [norm(a.slug), norm(a.name)].concat((a.aliases || []).map(norm));
+    SITE.artistNames[a.slug] = names.filter(function (n, i) { return n && names.indexOf(n) === i; });
+  });
+
+  // Is this artist on the entry — either as an owning artist or credited in
+  // any role? One definition, so the catalogue, the profile pages and the
+  // feedback picker can never disagree about whose work something is.
+  SITE.creditedIn = function (entry, slug) {
+    if (!entry || !slug) return false;
+    var names = SITE.artistNames[slug] || [norm(slug)];
+    var owners = entry.artists || (entry.artist ? [entry.artist] : []);
+    if (owners.some(function (o) { return names.indexOf(norm(o)) !== -1; })) return true;
+    var credits = entry.credits || {};
+    return Object.keys(credits).some(function (role) {
+      return (credits[role] || []).some(function (n) { return names.indexOf(norm(n)) !== -1; });
+    });
+  };
+
+  // Work belonging on this site.
+  SITE.isOwnWork = function (entry) {
+    return !SITE.identity.owner || SITE.creditedIn(entry, SITE.identity.owner);
+  };
 
   // A credit points at the local page when there is one.
   SITE.profilePage = function (name, label) {

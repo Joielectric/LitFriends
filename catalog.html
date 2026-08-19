@@ -434,13 +434,18 @@
   };
 
   var ENTRIES = [];
-  var state = { q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
+  var SHOW_ALL = /(?:^|[?&])all=1(?:&|$)/.test(location.search);
+  var state ={ q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
 
   function fetchData(){
     var url = window.__CATALOG_SRC__ || '/api/content';
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       adoptProviders(data.providers);
-      ENTRIES = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      // The content store is shared with collaborators building their own
+      // pages, so this catalogue shows only work the site's owner is credited
+      // on. ?all=1 lifts that for checking the full store.
+      var all = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      ENTRIES = SHOW_ALL ? all : all.filter(function(e){ return CFG.isOwnWork(e); });
       COLLAB = {};
       (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });
       buildFilters();
@@ -538,7 +543,8 @@
     var filtered = sortEntries(ENTRIES.filter(matches), state.sort);
     var has = state.q || state.type || state.name || state.provider || Object.keys(state.tags).length;
     els.clear.style.display = has ? '' : 'none';
-    els.count.textContent = filtered.length + ' of ' + ENTRIES.length + ' works';
+    els.count.textContent = filtered.length + ' of ' + ENTRIES.length + ' works' +
+      (SHOW_ALL ? ' — showing every creator' : '');
     if (!filtered.length){ els.rows.innerHTML = '<div class="empty">No matching works.</div>'; return; }
     els.rows.innerHTML = filtered.map(rowHtml).join('');
     // wire rows
