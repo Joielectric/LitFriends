@@ -1,9 +1,11 @@
-// Who is allowed to change things.
+import { readCreators, findCreator, touchCreator } from "./_creators.js";
+
+// Who is allowed to change things, and as whom.
 //
 // Two ways in, checked in this order:
 //
 //   1. A Google ID token in `Authorization: Bearer <jwt>`, whose verified email
-//      appears in ADMIN_EMAILS.
+//      appears in ADMIN_EMAILS or in the creator registry (_creators.js).
 //   2. The shared ADMIN_PASSWORD, in the body or the x-admin-password header.
 //
 // The password is the fallback so a misconfigured OAuth origin cannot lock
@@ -13,6 +15,8 @@
 // Environment:
 //   GOOGLE_CLIENT_ID  the ...apps.googleusercontent.com id (public)
 //   ADMIN_EMAILS      comma-separated allowlist; empty means nobody signs in
+//   OWNER_EMAIL       whose site this is; defaults to the first ADMIN_EMAILS
+//                     entry. Owner-only powers hang off this.
 //   ADMIN_PASSWORD    shared password; empty disables the fallback
 //
 // The token is verified here rather than by calling Google's tokeninfo
@@ -115,6 +119,15 @@ export async function verifyGoogleToken(token, clientId) {
 
 const normEmail = (v) => String(v == null ? "" : v).trim().toLowerCase();
 
+// Which profile the owner's own work hangs off. Matches site-config's
+// identity.owner; kept here so the functions do not have to parse that file.
+export const OWNER_SLUG = (process.env.OWNER_SLUG || "joi-electric").trim();
+
+/** The one account that can see and do everything. */
+export function ownerEmail() {
+  return normEmail(process.env.OWNER_EMAIL) || adminEmails()[0] || "";
+}
+
 export function adminEmails() {
   return String(process.env.ADMIN_EMAILS || "")
     .split(/[,\s]+/)
@@ -125,8 +138,9 @@ export function adminEmails() {
 /**
  * Decide whether a request may make changes.
  *
- * Returns { ok, email, name, via, error }. `via` is "google" or "password",
- * which lets a caller log who did what once sign-in is the norm.
+ * Returns { ok, email, name, via, role, slug, isOwner, error }. `via` is
+ * "google" or "password", which lets a caller log who did what. `slug` is the
+ * profile this person owns, and is what content gets scoped by.
  */
 export async function authorize(req, body) {
   const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
@@ -141,10 +155,36 @@ export async function authorize(req, body) {
       return { ok: false, error: `Sign-in failed: ${err.message}` };
     }
     const email = normEmail(claims.email);
-    if (!adminEmails().includes(email)) {
-      return { ok: false, error: `${claims.email} is not on the access list.`, email };
+    const isOwner = email === ownerEmail();
+
+    // ADMIN_EMAILS first: it is the bootstrap that works even if the registry
+    // cannot be read.
+    if (adminEmails().includes(email)) {
+      const rec = await touchCreator(email);
+      return {
+        ok: true, email, name: claims.name || "", via: "google", isOwner,
+        role: isOwner ? "owner" : (rec && rec.role) || "creator",
+        slug: (rec && rec.slug) || (isOwner ? OWNER_SLUG : ""),
+      };
     }
-    return { ok: true, email, name: claims.name || "", via: "google" };
+
+    const rec = findCreator(await readCreators(), email);
+    if (!rec) {
+      return {
+        ok: false,
+        error: `${claims.email} has not been invited. Ask the site owner for access.`,
+        email,
+      };
+    }
+    if (rec.status === "suspended") {
+      return { ok: false, error: "That account's access has been turned off.", email };
+    }
+    await touchCreator(email);
+    return {
+      ok: true, email, name: claims.name || rec.name || "", via: "google", isOwner,
+      role: isOwner ? "owner" : rec.role || "creator",
+      slug: rec.slug || "",
+    };
   }
 
   const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
@@ -153,7 +193,8 @@ export async function authorize(req, body) {
   ).trim();
 
   if (envPassword && given && given === envPassword) {
-    return { ok: true, email: "", name: "", via: "password" };
+    // Only the owner has the shared password, so it grants owner rights.
+    return { ok: true, email: ownerEmail(), name: "", via: "password", isOwner: true, role: "owner", slug: OWNER_SLUG };
   }
   return { ok: false, error: "Unauthorized" };
 }
