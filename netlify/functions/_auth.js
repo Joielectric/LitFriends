@@ -13,6 +13,8 @@
 // Environment:
 //   GOOGLE_CLIENT_ID  the ...apps.googleusercontent.com id (public)
 //   ADMIN_EMAILS      comma-separated allowlist; empty means nobody signs in
+//   OWNER_EMAIL       whose site this is; defaults to the first ADMIN_EMAILS
+//                     entry. Owner-only powers hang off this.
 //   ADMIN_PASSWORD    shared password; empty disables the fallback
 //
 // The token is verified here rather than by calling Google's tokeninfo
@@ -115,6 +117,11 @@ export async function verifyGoogleToken(token, clientId) {
 
 const normEmail = (v) => String(v == null ? "" : v).trim().toLowerCase();
 
+/** The one account that can see and do everything. */
+export function ownerEmail() {
+  return normEmail(process.env.OWNER_EMAIL) || adminEmails()[0] || "";
+}
+
 export function adminEmails() {
   return String(process.env.ADMIN_EMAILS || "")
     .split(/[,\s]+/)
@@ -144,7 +151,7 @@ export async function authorize(req, body) {
     if (!adminEmails().includes(email)) {
       return { ok: false, error: `${claims.email} is not on the access list.`, email };
     }
-    return { ok: true, email, name: claims.name || "", via: "google" };
+    return { ok: true, email, name: claims.name || "", via: "google", isOwner: email === ownerEmail() };
   }
 
   const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
@@ -153,7 +160,8 @@ export async function authorize(req, body) {
   ).trim();
 
   if (envPassword && given && given === envPassword) {
-    return { ok: true, email: "", name: "", via: "password" };
+    // Only the owner has the shared password, so it grants owner rights.
+    return { ok: true, email: ownerEmail(), name: "", via: "password", isOwner: true };
   }
   return { ok: false, error: "Unauthorized" };
 }

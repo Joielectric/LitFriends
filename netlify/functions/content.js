@@ -38,7 +38,9 @@ export default async (req) => {
     // Verify-only — confirms password and returns current entries
     if (action === "verify") {
       const { data } = await readJsonWithLegacy("content", "audio");
-      return new Response(JSON.stringify({ ok: true, ...(data || { entries: [] }) }), { status: 200, headers: CORS });
+      // who is asking, so the client can show owner-only controls
+      const who = { email: auth.email, isOwner: !!auth.isOwner, via: auth.via };
+      return new Response(JSON.stringify({ ok: true, who, ...(data || { entries: [] }) }), { status: 200, headers: CORS });
     }
 
     if (!Array.isArray(entries)) {
