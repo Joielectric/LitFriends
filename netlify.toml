@@ -5,3 +5,11 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# One page renders every creator profile, so /profile/<slug> is served by
+# profile.html rather than a file per creator. A rewrite (200) rather than a
+# redirect, so the URL the creator shares is the URL that stays in the bar.
+[[redirects]]
+  from = "/profile/*"
+  to = "/profile.html"
+  status = 200

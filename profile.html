@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/images/JOI_Favicon.png">
+  <link rel="apple-touch-icon" href="/images/JOI_Favicon.png">
+  <title>Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* One page renders every creator profile. The theme is a set of custom
+       properties swapped on <body data-theme>, so a creator picks a look
+       without any of them getting their own stylesheet to break. */
+    :root {
+      --bg: #151a2a; --surface: #1e2438; --surface-2: #262d44;
+      --accent: #5b8de8; --accent-soft: rgba(91,141,232,0.14);
+      --text: #f2f6ff; --text-mid: #c2cce0; --text-dim: #8792ab;
+      --border: rgba(180,195,225,0.2); --border-mid: rgba(180,195,225,0.42);
+      --radius: 3px;
+    }
+    body[data-theme="ember"] {
+      --bg: #140d0c; --surface: #1e1412; --surface-2: #291c19;
+      --accent: #d9743f; --accent-soft: rgba(217,116,63,0.14);
+      --text: #fdf3ee; --text-mid: #e6c9b8; --text-dim: #b08d78;
+      --border: rgba(217,116,63,0.24); --border-mid: rgba(217,116,63,0.45);
+    }
+    body[data-theme="orchid"] {
+      --bg: #150e1c; --surface: #1f1529; --surface-2: #2a1d37;
+      --accent: #b478e8; --accent-soft: rgba(180,120,232,0.14);
+      --text: #f7f0fd; --text-mid: #d6c4e8; --text-dim: #a189b8;
+      --border: rgba(180,120,232,0.24); --border-mid: rgba(180,120,232,0.45);
+    }
+    body[data-theme="moss"] {
+      --bg: #0d1512; --surface: #141f1a; --surface-2: #1c2b24;
+      --accent: #5fbf94; --accent-soft: rgba(95,191,148,0.14);
+      --text: #eefaf4; --text-mid: #bcd8cb; --text-dim: #85a394;
+      --border: rgba(95,191,148,0.24); --border-mid: rgba(95,191,148,0.45);
+    }
+    body[data-theme="noir"] {
+      --bg: #101011; --surface: #1a1a1c; --surface-2: #242427;
+      --accent: #c9c9d2; --accent-soft: rgba(201,201,210,0.12);
+      --text: #f4f4f6; --text-mid: #c4c4cc; --text-dim: #8a8a94;
+      --border: rgba(201,201,210,0.2); --border-mid: rgba(201,201,210,0.4);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 17px; line-height: 1.75;
+      min-height: 100vh; min-height: 100dvh; overflow-x: clip;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 70% 45% at 50% 0%, var(--accent-soft) 0%, transparent 70%);
+    }
+    .wrap { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
+
+    .banner {
+      height: 180px; border-radius: var(--radius); border: 1px solid var(--border);
+      background-size: cover; background-position: center; margin-bottom: -60px;
+    }
+    .head { text-align: center; padding-top: 1rem; }
+    .avatar {
+      width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--accent); background: var(--surface-2);
+      box-shadow: 0 6px 26px rgba(0,0,0,0.45);
+    }
+    h1 {
+      font-family: "Cinzel", serif; font-weight: 300; font-size: 2.1rem;
+      letter-spacing: 0.06em; margin: 0.8rem 0 0.3rem; color: var(--text);
+    }
+    .tagline {
+      font-family: "Raleway", sans-serif; font-size: 0.8rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    section { margin-top: 2.6rem; }
+    h2 {
+      font-family: "Cinzel", serif; font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim);
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+    }
+    h2::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+    .bio {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 2px solid var(--accent); border-radius: var(--radius);
+      padding: 1.3rem 1.5rem; color: var(--text-mid); white-space: pre-wrap;
+    }
+    .links { display: grid; gap: 0.6rem; }
+    .link {
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+      background: var(--surface); border: 1px solid var(--border-mid);
+      border-radius: var(--radius); padding: 0.85rem 1.1rem;
+      color: var(--text); text-decoration: none; transition: border-color .2s, background .2s;
+      font-family: "Raleway", sans-serif; font-size: 0.86rem; letter-spacing: 0.08em;
+    }
+    .link:hover { border-color: var(--accent); background: var(--surface-2); }
+    .link span:last-child { color: var(--accent); }
+    .cta {
+      display: inline-block; padding: 0.85rem 2rem; border-radius: 999px;
+      border: 1px solid var(--accent); color: var(--accent); text-decoration: none;
+      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: background .2s, color .2s;
+    }
+    .cta:hover { background: var(--accent); color: var(--bg); }
+    footer {
+      margin-top: 3.5rem; text-align: center; color: var(--text-dim);
+      font-size: 0.8rem; font-family: "Raleway", sans-serif; letter-spacing: 0.1em;
+    }
+    footer a { color: var(--text-mid); }
+    .state { text-align: center; padding: 5rem 1rem; color: var(--text-mid); }
+    #audio-grid { margin-top: 0.5rem; }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.7rem; }
+      .banner { height: 120px; margin-bottom: -50px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="page"><div class="state">Loading…</div></div>
+
+  <script src="/js/site-config.js"></script>
+  <script src="/js/audio.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var CFG = window.SITE_CONFIG;
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
+      });
+    }
+    // Profile text is written by creators, so it is escaped and only then given
+    // line breaks and links. Nothing they type is ever treated as markup.
+    function richText(s) {
+      return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
+        var trail = '', m = u.match(/[.,;:!?)\]]+$/);
+        if (m) { trail = m[0]; u = u.slice(0, -trail.length); }
+        return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
+      }).replace(/\r?\n/g, '<br>');
+    }
+
+    // /profile/<slug>, or ?u=<slug> if the rewrite is not in play.
+    function currentSlug() {
+      var m = /\/profile\/([^/?#]+)/.exec(location.pathname);
+      if (m) return decodeURIComponent(m[1]);
+      return new URLSearchParams(location.search).get('u') || '';
+    }
+
+    function show(html) { document.getElementById('page').innerHTML = html; }
+
+    function render(p) {
+      document.title = p.name + ' · ' + CFG.identity.name;
+      document.body.setAttribute('data-theme', p.theme || 'electric');
+      // A custom accent overrides the theme's, and has already been checked
+      // server-side to be a colour and nothing else.
+      if (p.accent) document.body.style.setProperty('--accent', p.accent);
+
+      var sections = p.sections || {};
+      var html = '';
+
+      if (p.banner) html += '<div class="banner" style="background-image:url(\'' + esc(p.banner) + '\')"></div>';
+      html += '<div class="head">';
+      if (p.avatar) html += '<img class="avatar" src="' + esc(p.avatar) + '" alt="">';
+      html += '<h1>' + esc(p.name) + '</h1>';
+      if (p.tagline) html += '<div class="tagline">' + esc(p.tagline) + '</div>';
+      html += '</div>';
+
+      if (sections.about !== false && p.bio) {
+        html += '<section><h2>About</h2><div class="bio">' + richText(p.bio) + '</div></section>';
+      }
+      if (sections.works !== false) {
+        html += '<section><h2>Works</h2><div id="audio-grid"></div></section>';
+      }
+      if (sections.links !== false && (p.links || []).length) {
+        html += '<section><h2>Find Me</h2><div class="links">' +
+          p.links.map(function (l) {
+            return '<a class="link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
+              '<span>' + esc(l.label) + '</span><span>&#8599;</span></a>';
+          }).join('') + '</div></section>';
+      }
+      if (sections.feedback !== false) {
+        html += '<section style="text-align:center"><h2>Feedback</h2>' +
+          '<a class="cta" href="/feedback.html">Leave Feedback</a></section>';
+      }
+      html += '<footer><a href="/">' + esc(CFG.identity.name) + '</a> &middot; 18+ only</footer>';
+
+      show(html);
+
+      if (sections.works !== false && window.AudioGrid) {
+        // A creator who is not in site-config's artist list is still credited
+        // under their display name, so teach the matcher that before asking.
+        CFG.registerArtistName(p.slug, p.name);
+        AudioGrid.init({ container: '#audio-grid', artist: p.slug });
+      }
+    }
+
+    var slug = currentSlug();
+    if (!slug) {
+      show('<div class="state">No profile named.</div>');
+      return;
+    }
+    fetch('/api/profile/' + encodeURIComponent(slug))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok || !data.profile) {
+          show('<div class="state">There is no profile here yet.</div>');
+          return;
+        }
+        render(data.profile);
+      })
+      .catch(function () { show('<div class="state">Could not load this profile.</div>'); });
+  })();
+  </script>
+</body>
+</html>
