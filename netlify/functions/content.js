@@ -39,7 +39,11 @@ export default async (req) => {
     if (action === "verify") {
       const { data } = await readJsonWithLegacy("content", "audio");
       // who is asking, so the client can show owner-only controls
-      const who = { email: auth.email, isOwner: !!auth.isOwner, via: auth.via };
+      const who = {
+        email: auth.email, isOwner: !!auth.isOwner, via: auth.via,
+        role: auth.role || (auth.isOwner ? "owner" : "creator"),
+        slug: auth.slug || "",
+      };
       return new Response(JSON.stringify({ ok: true, who, ...(data || { entries: [] }) }), { status: 200, headers: CORS });
     }
 

@@ -418,6 +418,7 @@
                   <button class="cm-tab"        data-tab="inbox"    onclick="cmTab('inbox')">Inbox</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
                   <button class="cm-tab"        data-tab="projects" onclick="cmTab('projects')">Projects</button>
+                  <button class="cm-tab owner-only" data-tab="creators" onclick="cmTab('creators')" style="display:none">Creators</button>
                 </nav>
 
                 <div class="cm-tab-panel" id="tabp-content">
@@ -777,6 +778,42 @@
                       </div>
                     </div>
                     <div id="inbox-subs"><div class="cm-collab-empty">Click Refresh to load.</div></div>
+                  </div>
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-creators" hidden>
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label">Invite a creator</label>
+                    <p style="color:var(--text-mid);font-size:0.85rem;margin-bottom:12px;">
+                      They sign in with this Google address. The profile name decides their page
+                      (<code style="color:var(--coral)">/profile/&lt;name&gt;</code>) and which catalogue entries they see.
+                      Use an existing profile name to hand someone their current page.
+                    </p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                      <div style="flex:1 1 220px;">
+                        <label class="cm-label" style="font-size:0.7rem">Google email</label>
+                        <input id="cr-email" class="cm-input" placeholder="them@gmail.com" style="width:100%">
+                      </div>
+                      <div style="flex:1 1 160px;">
+                        <label class="cm-label" style="font-size:0.7rem">Display name</label>
+                        <input id="cr-name" class="cm-input" placeholder="Filthy Bunny" style="width:100%" oninput="crSuggestSlug()">
+                      </div>
+                      <div style="flex:1 1 160px;">
+                        <label class="cm-label" style="font-size:0.7rem">Profile name</label>
+                        <input id="cr-slug" class="cm-input" placeholder="filthy-bunny" style="width:100%" list="cr-slug-options" oninput="this.dataset.touched='1'">
+                        <datalist id="cr-slug-options"></datalist>
+                      </div>
+                      <button type="button" class="cm-btn" onclick="crInvite()">Invite</button>
+                    </div>
+                    <div id="cr-msg" style="margin-top:10px;min-height:1em;font-size:0.85rem;"></div>
+                  </div>
+
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                      <label class="cm-label" style="margin:0">Who has access</label>
+                      <button type="button" class="cm-btn cm-btn-sm" onclick="crLoad()">Refresh</button>
+                    </div>
+                    <div id="cr-list"><div class="cm-collab-empty">Click Refresh to load.</div></div>
                   </div>
                 </div>
 
@@ -1759,6 +1796,10 @@
           // Seeing other people's entries is the owner's business alone.
           const allRow = document.getElementById('cm-all-creators-row');
           if (allRow) allRow.style.display = cmWho.isOwner ? 'flex' : 'none';
+          document.querySelectorAll('.owner-only').forEach(el => {
+            el.style.display = cmWho.isOwner ? '' : 'none';
+          });
+          if (cmWho.isOwner) { crFillSlugOptions(); crLoad(); }
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
           cmNews = data.news || [];
@@ -2683,6 +2724,91 @@
     });
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
+    // ── Creators (owner only) ───────────────────────────────────────────────
+    let crCreators = [];
+
+    function crMsg(text, good) {
+      const el = document.getElementById('cr-msg');
+      el.textContent = text || '';
+      el.style.color = good ? '#6fe3c1' : '#e87a88';
+    }
+
+    // Offer the profile names the site already knows, so handing someone their
+    // existing page is a pick rather than a guess at the exact spelling.
+    function crFillSlugOptions() {
+      const dl = document.getElementById('cr-slug-options');
+      if (!dl) return;
+      dl.innerHTML = (CFG.artists || [])
+        .map(a => `<option value="${a.slug}">${a.name}</option>`).join('');
+    }
+
+    function crSuggestSlug() {
+      const slugEl = document.getElementById('cr-slug');
+      if (slugEl.dataset.touched) return;
+      slugEl.value = String(document.getElementById('cr-name').value || '')
+        .trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function crApi(payload, onOk) {
+      crMsg('Working…', true);
+      fetch('/api/creators', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ password: cmPassword }, payload)),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) return crMsg(data.error || 'That did not work.');
+          crCreators = data.creators || [];
+          crRender();
+          onOk && onOk(data);
+        })
+        .catch(() => crMsg('Could not reach the server.'));
+    }
+
+    function crLoad() { crApi({ action: 'list' }, () => crMsg('')); }
+
+    function crInvite() {
+      const email = document.getElementById('cr-email').value.trim();
+      if (!email) return crMsg('Enter their Google email address.');
+      crApi({
+        action: 'invite',
+        email,
+        name: document.getElementById('cr-name').value.trim(),
+        slug: document.getElementById('cr-slug').value.trim(),
+      }, data => {
+        crMsg(`Invited ${data.creator.email} as "${data.creator.slug}".`, true);
+        ['cr-email', 'cr-name', 'cr-slug'].forEach(id => (document.getElementById(id).value = ''));
+        document.getElementById('cr-slug').dataset.touched = '';
+      });
+    }
+
+    function crRemove(email) {
+      if (!confirm(`Remove access for ${email}? They will not be able to sign in.`)) return;
+      crApi({ action: 'remove', email }, () => crMsg(`Removed ${email}.`, true));
+    }
+
+    function crRender() {
+      const host = document.getElementById('cr-list');
+      if (!crCreators.length) {
+        host.innerHTML = '<div class="cm-collab-empty">Nobody invited yet.</div>';
+        return;
+      }
+      host.innerHTML = crCreators.map(c => {
+        const seen = c.lastSeenAt ? new Date(c.lastSeenAt).toLocaleDateString() : 'never signed in';
+        const badge = c.status === 'active' ? '#6fe3c1' : 'var(--text-dim)';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:0;flex:1 1 240px;">
+            <div style="color:var(--text);word-break:break-word;">${cmEsc(c.name || c.slug)}
+              <span style="color:${badge};font-size:0.75rem;margin-left:6px;">${cmEsc(c.status || '')}</span></div>
+            <div style="color:var(--text-mid);font-size:0.8rem;word-break:break-all;">${cmEsc(c.email)}</div>
+            <div style="color:var(--text-dim);font-size:0.78rem;">/profile/${cmEsc(c.slug)} &middot; ${cmEsc(seen)}</div>
+          </div>
+          <button type="button" class="cm-btn cm-btn-sm" onclick="crRemove('${cmEsc(c.email)}')">Remove</button>
+        </div>`;
+      }).join('');
+    }
+
     function cmTab(name) {
       document.querySelectorAll('.cm-tab').forEach(function (b) {
         b.classList.toggle('active', b.dataset.tab === name);
