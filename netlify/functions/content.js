@@ -1,4 +1,5 @@
 import { siteStore, readJsonWithLegacy } from "./_site.js";
+import { authorize, unauthorized } from "./_auth.js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -27,12 +28,11 @@ export default async (req) => {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: CORS });
     }
 
-    const { password, action, entries } = body;
-    const envSet = !!process.env.ADMIN_PASSWORD;
-    const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
+    const { action, entries } = body;
 
-    if (!password || password.trim() !== envPassword) {
-      return new Response(JSON.stringify({ error: "Unauthorized", env_set: envSet }), { status: 401, headers: CORS });
+    const auth = await authorize(req, body);
+    if (!auth.ok) {
+      return new Response(JSON.stringify(unauthorized(auth)), { status: 401, headers: CORS });
     }
 
     // Verify-only — confirms password and returns current entries

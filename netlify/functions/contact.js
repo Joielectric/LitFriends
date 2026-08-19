@@ -1,4 +1,5 @@
 import { siteStore, readJsonWithLegacy } from "./_site.js";
+import { authorize, unauthorized } from "./_auth.js";
 
 // Contact messages and email-alert signups.
 //
@@ -9,7 +10,8 @@ import { siteStore, readJsonWithLegacy } from "./_site.js";
 //   POST /api/contact  { password, action: "unsubscribe", id } -> mark, keep record
 //
 // Writes are public (that is the point of a contact form) and guarded by a
-// honeypot plus length caps. Reading requires ADMIN_PASSWORD, same as the rest.
+// honeypot plus length caps. Reading requires an admin (see _auth.js), same
+// as the rest.
 //
 // Nothing here sends email. Signups are stored so they can be exported into a
 // real sender (Buttondown, Mailchimp, Resend) when there is one; a message just
@@ -52,14 +54,10 @@ export default async (req) => {
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
-  const isAdmin = !!body.password && body.password.trim() === envPassword;
-
   // ── Admin ────────────────────────────────────────────────────────────────
   if (body.action) {
-    if (!isAdmin) {
-      return json({ error: "Unauthorized", env_set: !!process.env.ADMIN_PASSWORD }, 401);
-    }
+    const auth = await authorize(req, body);
+    if (!auth.ok) return json(unauthorized(auth), 401);
     const inbox = await readInbox();
 
     if (body.action === "list") return json({ ok: true, ...inbox });

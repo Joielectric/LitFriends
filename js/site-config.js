@@ -33,6 +33,14 @@
       owner:    'joi-electric',
     },
 
+    // ── Sign-in ───────────────────────────────────────────────────────────
+    // The Google OAuth client id is public by design — it ships in the page and
+    // only names the app. Who may actually change anything is decided by the
+    // ADMIN_EMAILS environment variable, server-side, in netlify/functions.
+    auth: {
+      googleClientId: '446769740170-dfuc3h2hl1cabpopmdl1kttsfuujr6t0.apps.googleusercontent.com',
+    },
+
     // NOTE: platforms/providers are deliberately NOT here. They are managed in
     // the Content Manager and travel with the content payload, so putting a
     // copy in this file would re-create the drift it exists to prevent.
