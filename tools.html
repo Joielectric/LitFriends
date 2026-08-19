@@ -358,8 +358,16 @@
   <div style="background:#1e2438;border:1px solid rgba(180,195,225,0.35);border-top:2px solid #5b8de8;border-radius:3px;max-width:400px;width:100%;padding:2.4rem 2rem;text-align:center;">
     <div style="font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.4em;text-transform:uppercase;color:#8792ab;margin-bottom:0.8rem;">Restricted</div>
     <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.6rem;color:#eaf0fa;margin-bottom:0.8rem;">Content Manager</h2>
-    <p style="color:#c2cce0;font-size:0.9rem;margin-bottom:1.4rem;">Enter the admin password to continue.</p>
-    <input type="password" id="tools-gate-pw" placeholder="Admin password" autofocus
+    <p style="color:#c2cce0;font-size:0.9rem;margin-bottom:1.4rem;">Sign in to continue.</p>
+
+    <div id="tools-gsi" style="display:flex;justify-content:center;min-height:44px;"></div>
+    <div id="tools-gsi-note" style="color:#8792ab;font-size:0.78rem;margin-top:0.6rem;display:none;">Sign-in is unavailable &mdash; use the password below.</div>
+
+    <div style="display:flex;align-items:center;gap:0.7rem;margin:1.2rem 0;color:#8792ab;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;">
+      <span style="flex:1;height:1px;background:rgba(180,195,225,0.24);"></span>or<span style="flex:1;height:1px;background:rgba(180,195,225,0.24);"></span>
+    </div>
+
+    <input type="password" id="tools-gate-pw" placeholder="Admin password"
       onkeydown="if(event.key==='Enter')toolsUnlock()"
       style="width:100%;max-width:260px;padding:0.7rem 0.9rem;border-radius:3px;border:1px solid rgba(180,195,225,0.5);background:#262d44;color:#f2f6ff;font-size:1rem;outline:none;margin-bottom:0.9rem;">
     <div><button onclick="toolsUnlock()" style="font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.2em;text-transform:uppercase;color:#f2f6ff;background:transparent;border:1px solid #5b8de8;padding:0.7rem 1.6rem;border-radius:3px;cursor:pointer;">Unlock</button></div>
@@ -367,6 +375,7 @@
   </div>
 </div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
 
 <div class="container" id="tools-main" style="display:none">
@@ -1657,29 +1666,90 @@
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Added "' + name + '". Add their link, or delete it.', true); });
     }
 
-    // Full-page gate — one password unlocks the page and the content manager
+    // ── Signing in ──────────────────────────────────────────────────────────
+    // Two ways in, and the server accepts either: a Google account on the
+    // ADMIN_EMAILS list, or the shared password. The password stays so a
+    // mistyped OAuth origin can never lock anyone out of their own site.
+    let cmIdToken = '';
+
+    // Rather than thread the token through the dozen fetch() calls below, it is
+    // attached here to every admin API call. The server prefers it over the
+    // password when both are present.
+    (function attachToken() {
+      const realFetch = window.fetch.bind(window);
+      window.fetch = function (input, init) {
+        const url = typeof input === 'string' ? input : (input && input.url) || '';
+        if (cmIdToken && url.indexOf('/api/') !== -1) {
+          init = Object.assign({}, init);
+          init.headers = Object.assign({}, init.headers, { Authorization: 'Bearer ' + cmIdToken });
+        }
+        return realFetch(input, init);
+      };
+    })();
+
+    function toolsGsiInit() {
+      const cfg = (window.SITE_CONFIG && window.SITE_CONFIG.auth) || {};
+      const host = document.getElementById('tools-gsi');
+      const note = document.getElementById('tools-gsi-note');
+      if (!host) return;
+      if (!cfg.googleClientId || !window.google || !google.accounts || !google.accounts.id) {
+        host.style.display = 'none';
+        if (note) note.style.display = '';
+        return;
+      }
+      google.accounts.id.initialize({
+        client_id: cfg.googleClientId,
+        callback: toolsGoogleSignIn,
+        auto_select: true,
+      });
+      google.accounts.id.renderButton(host, {
+        theme: 'filled_black', size: 'large', shape: 'pill', text: 'signin_with',
+      });
+    }
+    // The GIS script is async, so it may land before or after this one.
+    window.onGoogleLibraryLoad = toolsGsiInit;
+    if (window.google && google.accounts) toolsGsiInit();
+
+    function toolsGoogleSignIn(resp) {
+      if (!resp || !resp.credential) return;
+      cmIdToken = resp.credential;
+      document.getElementById('tools-gate-msg').textContent = 'Signing in\u2026';
+      toolsVerify({}, function (data) {
+        if (data.ok) return;
+        // A verified Google account that is not on the list: say so plainly,
+        // because retyping the password will not help.
+        cmIdToken = '';
+        document.getElementById('tools-gate-msg').textContent =
+          data.error || 'That account does not have access.';
+      });
+    }
+
+    // Full-page gate — password path
     function toolsUnlock() {
       const pw = document.getElementById('tools-gate-pw').value.trim();
       if (!pw) return;
+      toolsVerify({ password: pw }, function (data) {
+        if (data.ok) return;
+        document.getElementById('tools-gate-msg').textContent = data.env_set === false
+          ? 'ADMIN_PASSWORD env var not found on server.'
+          : 'Incorrect password.';
+      });
+    }
 
+    // Shared by both paths: confirm with the server, then open the page.
+    function toolsVerify(creds, onFail) {
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw, action: 'verify' }),
+        body: JSON.stringify(Object.assign({ action: 'verify' }, creds)),
       })
         .then(r => r.json())
         .then(data => {
-          if (!data.ok) {
-            document.getElementById('tools-gate-msg').textContent = data.env_set === false
-              ? 'ADMIN_PASSWORD env var not found on server.'
-              : 'Incorrect password.';
-            return;
-          }
+          if (!data.ok) return onFail(data);
           // Reveal the page
           document.getElementById('tools-gate').style.display = 'none';
           document.getElementById('tools-main').style.display = '';
-          // Unlock the content manager with the same password
-          cmPassword = pw;
+          cmPassword = creds.password || '';
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
           cmNews = data.news || [];

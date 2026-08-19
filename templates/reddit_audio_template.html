@@ -274,7 +274,7 @@
             <div class="readonly-section">
                 <div class="readonly-section-title">Copyright Notice (Auto-generated)</div>
                 <div class="readonly-field" id="copyrightPreview">
-                    © 2025 YourName. All rights reserved. Do not repost, redistribute, or train models on this work without permission.
+                    © YourName. All rights reserved. Do not repost, redistribute, or train models on this work without permission.
                 </div>
             </div>
             
@@ -326,6 +326,10 @@
     </div>
 
     <script>
+        // Copyright year follows the clock, so a post made in January is not
+        // stamped with last year.
+        const CURRENT_YEAR = new Date().getFullYear();
+
         // Live preview update function
         function updatePreviews() {
             updateTitlePreview();
@@ -392,7 +396,7 @@
 
             preview += `**18+ Disclaimer:** This content is intended for mature audiences (18+) only. Please ensure you are of legal age in your jurisdiction before engaging with this material.\n\n`;
             preview += `${credits}\n\n`;
-            preview += `*© 2025 ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.*`;
+            preview += `*© ${CURRENT_YEAR} ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.*`;
             
             document.getElementById('postPreview').textContent = preview;
         }
@@ -400,7 +404,7 @@
         function updateCopyrightPreview() {
             const creatorName = document.getElementById('creatorName').value || 'YourName';
             document.getElementById('copyrightPreview').textContent = 
-                `© 2025 ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.`;
+                `© ${CURRENT_YEAR} ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.`;
         }
         
         // Add event listeners
@@ -521,7 +525,7 @@
             
             markdown += `**18+ Disclaimer:** This content is intended for mature audiences (18+) only. Please ensure you are of legal age in your jurisdiction before engaging with this material.\n\n`;
             markdown += `${credits}\n\n`;
-            markdown += `*© 2025 ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.*`;
+            markdown += `*© ${CURRENT_YEAR} ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.*`;
             
             // Copy to clipboard
             navigator.clipboard.writeText(markdown).then(function() {

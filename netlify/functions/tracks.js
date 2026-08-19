@@ -1,3 +1,4 @@
+import { authorize, unauthorized } from "./_auth.js";
 import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, deleteEverywhere } from "./_site.js";
 
 // Music-track upload, listing and serving, backed by Netlify Blobs.
@@ -8,7 +9,8 @@ import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, dele
 //   POST /api/track-upload      { password, action: "delete", key } -> { ok }
 //   GET  /api/track/:key                                       -> the bytes
 //
-// Uploads and management are admin-only and reuse ADMIN_PASSWORD, same as
+// Uploads and management are admin-only and use the shared check in
+// _auth.js — Google sign-in, or the password fallback — same as
 // /api/content. Reads are public — the catalogue has to play and serve the
 // tracks.
 //
@@ -74,7 +76,7 @@ export default async (req) => {
       status: 200,
       headers: {
         ...JSON_HEADERS,
-        "Access-Control-Allow-Headers": "content-type,x-admin-password,x-filename",
+        "Access-Control-Allow-Headers": "content-type,x-admin-password,x-filename,authorization",
         "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       },
     });
@@ -109,8 +111,6 @@ export default async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const s = store();
-  const headerPassword = (req.headers.get("x-admin-password") || "").trim();
-  const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
   const contentType = String(req.headers.get("content-type") || "").split(";")[0].toLowerCase();
 
   // ── List / delete (JSON) ────────────────────────────────────────────────
@@ -121,9 +121,8 @@ export default async (req) => {
     } catch {
       return json({ error: "Invalid JSON" }, 400);
     }
-    if (!body.password || body.password.trim() !== envPassword) {
-      return json({ error: "Unauthorized", env_set: !!process.env.ADMIN_PASSWORD }, 401);
-    }
+    const auth = await authorize(req, body);
+    if (!auth.ok) return json(unauthorized(auth), 401);
 
     if (body.action === "list") {
       const { tracks, changed } = await reconcileIndex(s);
@@ -145,9 +144,9 @@ export default async (req) => {
   }
 
   // ── Upload (raw binary) ─────────────────────────────────────────────────
-  if (!headerPassword || headerPassword !== envPassword) {
-    return json({ error: "Unauthorized", env_set: !!process.env.ADMIN_PASSWORD }, 401);
-  }
+  // The body is the audio itself, so credentials can only ride in headers.
+  const auth = await authorize(req, null);
+  if (!auth.ok) return json(unauthorized(auth), 401);
 
   const ext = ALLOWED_TYPES[contentType];
   if (!ext) {

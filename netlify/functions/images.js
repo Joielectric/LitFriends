@@ -1,4 +1,5 @@
 import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, deleteEverywhere } from "./_site.js";
+import { authorize, unauthorized } from "./_auth.js";
 
 // Cover-image upload, listing and serving, backed by Netlify Blobs.
 //
@@ -7,7 +8,8 @@ import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, dele
 //   POST /api/upload  { password, action: "delete", key }       -> { ok }
 //   GET  /api/image/:key                                        -> the bytes
 //
-// Uploads and management are admin-only and reuse ADMIN_PASSWORD, same as
+// Uploads and management are admin-only and use the shared check in
+// _auth.js — Google sign-in, or the password fallback — same as
 // /api/content. Reads are public — the catalogue has to show the covers.
 
 const JSON_HEADERS = {
@@ -95,10 +97,8 @@ export default async (req) => {
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
-  if (!body.password || body.password.trim() !== envPassword) {
-    return json({ error: "Unauthorized", env_set: !!process.env.ADMIN_PASSWORD }, 401);
-  }
+  const auth = await authorize(req, body);
+  if (!auth.ok) return json(unauthorized(auth), 401);
 
   const s = store();
 

@@ -287,7 +287,7 @@
             
             <div class="form-group">
                 <label class="form-label">Copyright Year</label>
-                <input type="text" id="copyrightYear" class="form-input" placeholder="2025" value="2025">
+                <input type="text" id="copyrightYear" class="form-input" placeholder="2025">
             </div>
             
             <div class="form-group">
@@ -307,7 +307,7 @@
             <div class="readonly-section">
                 <div class="readonly-section-title">Copyright Notice (Auto-generated)</div>
                 <div class="readonly-field" id="copyrightPreview">
-                    Copyright 2025 [Copyright Holders]. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission.
+                    Copyright [Year] [Copyright Holders]. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission.
                 </div>
             </div>
             
@@ -345,6 +345,10 @@
     </div>
 
     <script>
+        // Copyright year follows the clock, so a post made in January is not
+        // stamped with last year.
+        const CURRENT_YEAR = new Date().getFullYear();
+
         let contributorsData = [];
         let attributeCount = 1;
         
@@ -566,7 +570,7 @@
             const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
             const fullTags = document.getElementById('fullTags').value.trim();
             const longDesc = document.getElementById('longDescription').value || '[Long description]';
-            const copyrightYear = document.getElementById('copyrightYear').value || '2025';
+            const copyrightYear = document.getElementById('copyrightYear').value || CURRENT_YEAR;
             const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
             
             // Get attributes
@@ -632,7 +636,7 @@
             const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
             const fullTags = document.getElementById('fullTags').value.trim();
             const longDesc = document.getElementById('longDescription').value || '[Long description]';
-            const copyrightYear = document.getElementById('copyrightYear').value || '2025';
+            const copyrightYear = document.getElementById('copyrightYear').value || CURRENT_YEAR;
             const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
             
             // Get attributes
@@ -692,7 +696,7 @@
         }
         
         function updateCopyrightPreview() {
-            const copyrightYear = document.getElementById('copyrightYear').value || '2025';
+            const copyrightYear = document.getElementById('copyrightYear').value || CURRENT_YEAR;
             const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
             document.getElementById('copyrightPreview').textContent = 
                 `Copyright ${copyrightYear} ${copyrightHolders}. All rights reserved. No part of this audio story, including script and music, may be reproduced, distributed, or transmitted in any form without prior written permission from ${copyrightHolders}`;
@@ -807,8 +811,9 @@
         // Add event listeners when page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Set current year as default
-            const currentYear = new Date().getFullYear();
-            document.getElementById('copyrightYear').value = currentYear;
+            const yearInput = document.getElementById('copyrightYear');
+            yearInput.value = CURRENT_YEAR;
+            yearInput.placeholder = CURRENT_YEAR;
             
             const inputs = document.querySelectorAll('.form-input, .form-textarea, .form-select');
             inputs.forEach(input => {

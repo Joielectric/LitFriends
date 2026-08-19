@@ -467,14 +467,16 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
   </footer>
 </div>
 
+<script src="/js/site-config.js"></script>
 <script>
 // ── Populate platform + audio pickers from the catalogue ────────────────────
 (function () {
+  var CFG = window.SITE_CONFIG;
   var PROVIDER_LABELS = {
     soundgasm: "Soundgasm", literotica: "Literotica", audiochan: "Audiochan",
     hotaudio: "HotAudio", whyp: "Whyp"
   };
-  var EXTRA_SOURCES = ["Bluesky", "Reddit", "Other"];
+  var EXTRA_SOURCES = CFG.extraSources;
 
   var platformSel = document.getElementById("platform");
   var audioSel = document.getElementById("audio_title");
@@ -498,9 +500,11 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
   fetch("/api/content")
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      var entries = (data.entries || []).slice().sort(function (a, b) {
-        return (b.date || "").localeCompare(a.date || "");
-      });
+      // Only work this site's owner is credited on — collaborators share the
+      // content store, and nobody is giving feedback here on their solo work.
+      var entries = (data.entries || [])
+        .filter(function (e) { return CFG.isOwnWork(e); })
+        .sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
 
       // Platforms actually used across the catalogue, then extras
       var used = {};
