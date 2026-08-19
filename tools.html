@@ -882,12 +882,20 @@
                     <div id="cr-msg" style="margin-top:10px;min-height:1em;font-size:0.85rem;"></div>
                   </div>
 
-                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
                       <label class="cm-label" style="margin:0">Who has access</label>
                       <button type="button" class="cm-btn cm-btn-sm" onclick="crLoad()">Refresh</button>
                     </div>
                     <div id="cr-list"><div class="cm-collab-empty">Click Refresh to load.</div></div>
+                  </div>
+
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                      <label class="cm-label" style="margin:0">All profile pages</label>
+                      <input id="pl-search" class="cm-input cm-btn-sm" placeholder="Search…" style="max-width:180px" oninput="plRender()">
+                    </div>
+                    <div id="pl-list"><div class="cm-collab-empty">Loading…</div></div>
                   </div>
                 </div>
 
@@ -1873,7 +1881,7 @@
           document.querySelectorAll('.owner-only').forEach(el => {
             el.style.display = cmWho.isOwner ? '' : 'none';
           });
-          if (cmWho.isOwner) { crFillSlugOptions(); crLoad(); pfFillWhoPicker(); }
+          if (cmWho.isOwner) { crFillSlugOptions(); crLoad(); pfFillWhoPicker(); plLoad(); }
           pfLoad();
           cmEntries = data.entries || [];
           cmCollaborators = data.collaborators || [];
@@ -2971,6 +2979,72 @@
       const payload = { action: 'save', profile };
       if (cmWho.isOwner && pfProfile.slug) payload.slug = pfProfile.slug;
       pfApi(payload, data => { pfFill(data.profile); pfMsg('Saved.', true); });
+    }
+
+    // ── Every profile page, static and dynamic (owner only) ─────────────────
+    // Two kinds exist side by side: the hand-built pages listed in site-config,
+    // and the records creators edit themselves. A slug can have both — the
+    // dynamic one is what its creator controls, so it is listed first and the
+    // old page is still reachable underneath.
+    let plRows = [];
+
+    function plLoad() {
+      pfApi({ action: 'list' }, data => {
+        const live = data.profiles || {};
+        const rows = [];
+        (CFG.artists || []).forEach(a => {
+          const p = live[a.slug];
+          if (p) rows.push(plRow(p, a));
+          rows.push({
+            name: a.name, slug: a.slug, tagline: a.tagline || '',
+            href: '/' + a.page, kind: 'static',
+          });
+          delete live[a.slug];
+        });
+        // Creators who joined after site-config was written have no static page.
+        Object.keys(live).sort().forEach(slug => rows.push(plRow(live[slug], null)));
+        plRows = rows;
+        plRender();
+      });
+    }
+
+    function plRow(p, artist) {
+      return {
+        name: p.name || (artist && artist.name) || p.slug,
+        slug: p.slug,
+        tagline: p.tagline || '',
+        href: '/profile/' + encodeURIComponent(p.slug),
+        kind: p.published ? 'live' : 'draft',
+      };
+    }
+
+    const PL_BADGE = {
+      live:   { text: 'Live',   color: '#6fe3c1' },
+      draft:  { text: 'Draft',  color: 'var(--text-dim)' },
+      static: { text: 'Static', color: 'var(--coral)' },
+    };
+
+    function plRender() {
+      const q = (document.getElementById('pl-search').value || '').trim().toLowerCase();
+      const rows = q
+        ? plRows.filter(r => (r.name + ' ' + r.slug + ' ' + r.tagline).toLowerCase().includes(q))
+        : plRows;
+      const host = document.getElementById('pl-list');
+      if (!rows.length) {
+        host.innerHTML = '<div class="cm-collab-empty">Nothing matches.</div>';
+        return;
+      }
+      host.innerHTML = rows.map(r => {
+        const b = PL_BADGE[r.kind];
+        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:0;flex:1 1 240px;">
+            <div style="color:var(--text);word-break:break-word;">${cmEsc(r.name)}
+              <span style="color:${b.color};font-size:0.72rem;margin-left:6px;">${b.text}</span></div>
+            <div style="color:var(--text-dim);font-size:0.78rem;word-break:break-all;">${cmEsc(r.href)}</div>
+          </div>
+          <a class="cm-btn cm-btn-sm" href="${cmEsc(r.href)}" target="_blank" style="text-decoration:none;">Open &#8599;</a>
+        </div>`;
+      }).join('');
     }
 
     // ── Creators (owner only) ───────────────────────────────────────────────
