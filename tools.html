@@ -2731,7 +2731,9 @@
     function cmPickable() {
       const box = document.getElementById('cm-all-creators');
       if (cmWho.isOwner && box && box.checked) return cmEntries;
-      return cmEntries.filter(e => CFG.isOwnWork(e));
+      // Whose work counts depends on who is signed in, not on whose site it is.
+      const slug = cmWho.slug || CFG.identity.owner;
+      return cmEntries.filter(e => CFG.creditedIn(e, slug) || e.owner === slug);
     }
 
     function cmRenderEntries() {
@@ -2767,13 +2769,30 @@
       box.style.display = 'block';
     }
 
+    // The server enforces this too. Checking here as well is so a creator gets
+    // told why, rather than watching a save quietly do nothing.
+    function cmCanEdit(e) {
+      if (!e) return false;
+      if (cmWho.isOwner) return true;
+      return !!e.owner && e.owner === cmWho.slug;
+    }
+    function cmDenyEdit(e) {
+      cmShowMsg('"' + (e.title || 'That entry') + '" belongs to someone else. You can see it because you are credited on it, but only its creator or the site owner can change it.', false);
+    }
+
     function cmEditSelected() {
       const id = document.getElementById('cm-entry-select').value;
-      if (id) cmEditEntry(id);
+      if (!id) return;
+      const e = cmEntries.find(x => x.id === id);
+      if (!cmCanEdit(e)) return cmDenyEdit(e);
+      cmEditEntry(id);
     }
     function cmDeleteSelected() {
       const id = document.getElementById('cm-entry-select').value;
-      if (id) cmDeleteEntry(id);
+      if (!id) return;
+      const e = cmEntries.find(x => x.id === id);
+      if (!cmCanEdit(e)) return cmDenyEdit(e);
+      cmDeleteEntry(id);
     }
 
     function cmPersist(onSuccess) {
@@ -2870,6 +2889,10 @@
 
     function pfFill(p) {
       pfProfile = p;
+      // A creator who postdates site-config's artist list is still credited
+      // under their display name, so the entry picker needs to know it.
+      CFG.registerArtistName(p.slug, p.name);
+      if (p.slug === (cmWho.slug || '')) cmRenderEntries();
       document.getElementById('pf-editor').style.display = '';
       document.getElementById('pf-none').style.display = 'none';
       document.getElementById('pf-name').value = p.name || '';
