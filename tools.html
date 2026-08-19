@@ -429,6 +429,10 @@
                         <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
                     </div>
                     <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
+                    <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:8px;color:var(--text-mid);font-size:0.85rem;cursor:pointer;">
+                      <input type="checkbox" id="cm-all-creators" onchange="cmRenderEntries()" style="cursor:pointer">
+                      Show other creators&rsquo; entries
+                    </label>
                     <select id="cm-entry-select" class="cm-input" style="width:100%" onchange="cmEntrySelected()">
                         <option value="">Select an entry…</option>
                     </select>
@@ -2600,12 +2604,22 @@
       return [e.title, e.date, (e.tags || []).join(' '), names, e.type || 'audio'].join(' ').toLowerCase();
     }
 
+    // The store is shared with collaborators, so the picker shows your work by
+    // default. cmEntries itself is never filtered — it is what gets saved back,
+    // and dropping entries from it would delete other people's work.
+    function cmPickable() {
+      const box = document.getElementById('cm-all-creators');
+      if (box && box.checked) return cmEntries;
+      return cmEntries.filter(e => CFG.isOwnWork(e));
+    }
+
     function cmRenderEntries() {
       const q = (document.getElementById('cm-entry-search').value || '').toLowerCase().trim();
-      const list = q ? cmEntries.filter(e => cmEntryHaystack(e).includes(q)) : cmEntries;
+      const pool = cmPickable();
+      const list = q ? pool.filter(e => cmEntryHaystack(e).includes(q)) : pool;
 
       document.getElementById('cm-count').textContent =
-        `${list.length}${q ? ' of ' + cmEntries.length : ''} entr${(q ? list.length : cmEntries.length) === 1 ? 'y' : 'ies'}`;
+        `${list.length}${q ? ' of ' + pool.length : ''} entr${(q ? list.length : pool.length) === 1 ? 'y' : 'ies'}`;
 
       const sel = document.getElementById('cm-entry-select');
       const keep = sel.value;
