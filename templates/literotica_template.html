@@ -344,6 +344,7 @@
         </div>
     </div>
 
+    <script src="/js/site-config.js"></script>
     <script>
         // Copyright year follows the clock, so a post made in January is not
         // stamped with last year.
@@ -760,7 +761,11 @@
         function catLoad() {
             fetch('/api/content').then(r => r.json()).then(d => {
                 catAdoptProviders(d.providers);
-                CATALOG = (d.entries || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+                // You only post your own work, so the picker offers only entries
+                // you are credited on — the store is shared with collaborators.
+                CATALOG = (d.entries || [])
+                    .filter(e => !window.SITE_CONFIG || SITE_CONFIG.isOwnWork(e))
+                    .sort((a,b) => (b.date||'').localeCompare(a.date||''));
                 const sel = document.getElementById('catalogSelect');
                 CATALOG.forEach((e, i) => {
                     const o = document.createElement('option');
