@@ -183,16 +183,21 @@
             <div class="section-header">Username</div>
             
             <div class="form-group">
-                <button class="load-button" onclick="loadContributors()">Load Contributors from CSV</button>
-                <div id="csvMessage" class="message"></div>
-            </div>
-            
-            <div class="form-group">
                 <label class="form-label">Select Username</label>
                 <select id="usernameSelect" class="form-select">
-                    <option value="">Load contributors first...</option>
+                    <option value="">Loading collaborators…</option>
                 </select>
+                <small style="color:#888;font-size:12px;">From the Content Manager's collaborator list. Add someone there and they appear here.</small>
+                <div id="csvMessage" class="message"></div>
             </div>
+
+            <details style="margin-bottom:16px;">
+                <summary style="cursor:pointer;color:#888;font-size:12px;">Import from a CSV instead</summary>
+                <div style="margin-top:8px;">
+                    <button class="load-button" onclick="loadContributors()">Load Contributors from CSV</button>
+                    <small style="display:block;color:#888;font-size:12px;margin-top:6px;">Only needed for people not yet in the collaborator list.</small>
+                </div>
+            </details>
             
             <div class="form-group">
                 <label class="form-label">Header Image URL</label>
@@ -760,6 +765,32 @@
             updatePreviews();
         }
 
+        // The collaborator list is the source of contributors. The CSV loader is
+        // still there for anyone not in it yet, and overwrites nothing: names
+        // already present keep the details the site holds.
+        function catAdoptCollaborators(list) {
+            list.forEach(c => {
+                if (!c || !c.name) return;
+                const key = c.name.trim().toLowerCase();
+                const at = contributorsData.findIndex(
+                    x => String(x.username || '').trim().toLowerCase() === key
+                );
+                const rec = {
+                    username: c.name.trim(),
+                    profileUrl: c.url || '',
+                    bannerUrl: c.banner || '',
+                };
+                if (at === -1) contributorsData.push(rec);
+                else contributorsData[at] = { ...contributorsData[at], ...rec };
+            });
+            contributorsData.sort((a, b) =>
+                String(a.username).toLowerCase().localeCompare(String(b.username).toLowerCase()));
+            populateDropdowns();
+            if (contributorsData.length) {
+                showMessage(`${contributorsData.length} collaborators loaded.`, 'success');
+            }
+        }
+
         // The catalogue already records who did what, so the attribution block
         // is built from it rather than retyped. Credits are the source of
         // truth; the CSV stays for anyone not in the catalogue yet.
@@ -827,6 +858,7 @@
                 (d.collaborators || []).forEach(c => {
                     if (c && c.name) CAT_COLLABS[c.name.trim().toLowerCase()] = c;
                 });
+                catAdoptCollaborators(d.collaborators || []);
                 // You only post your own work, so the picker offers only entries
                 // you are credited on — the store is shared with collaborators.
                 CATALOG = (d.entries || [])
