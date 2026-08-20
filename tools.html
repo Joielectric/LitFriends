@@ -417,7 +417,7 @@
                 <nav class="cm-tabs" role="tablist">
                   <button class="cm-tab active" data-tab="content"  onclick="cmTab('content')">Content</button>
                   <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Lists</button>
-                  <button class="cm-tab"        data-tab="news"     onclick="cmTab('news')">News</button>
+                  <button class="cm-tab owner-only" data-tab="news" onclick="cmTab('news')" style="display:none">Site News</button>
                   <button class="cm-tab"        data-tab="feedback" onclick="cmTab('feedback')">Feedback</button>
                   <button class="cm-tab"        data-tab="inbox"    onclick="cmTab('inbox')">Inbox</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
@@ -889,6 +889,35 @@
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
                       <label class="cm-label">Sections to show</label>
                       <div id="pf-sections" style="display:flex;gap:14px;flex-wrap:wrap;"></div>
+                    </div>
+
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Your updates <span style="font-weight:normal;color:var(--text-mid)">(shown at the top of your page)</span></label>
+                      <div style="display:grid;gap:8px;">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                          <input type="date" id="pu-date" class="cm-input" style="flex:0 0 150px">
+                          <input id="pu-title" class="cm-input" style="flex:1 1 200px" placeholder="Headline" maxlength="140">
+                        </div>
+                        <textarea id="pu-body" class="cm-input" style="min-height:90px" maxlength="3000"
+                                  placeholder="What is new? Line breaks are kept, pasted links become links."></textarea>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                          <input id="pu-link" class="cm-input" style="flex:2 1 200px" placeholder="Link (optional)">
+                          <input id="pu-link-label" class="cm-input" style="flex:1 1 120px" placeholder="Button text" maxlength="40">
+                        </div>
+                        <input id="pu-image" class="cm-input" placeholder="Image (optional) — upload below or paste a URL">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pu-image-file').click()">Upload New</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pu-image','pu-img-status',false,'pu-uploads-host')">Choose from uploads</button>
+                          <span style="flex:1"></span>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="puClear()">Clear</button>
+                          <button type="button" class="cm-btn" id="pu-add-btn" onclick="puSubmit()">Add update</button>
+                        </div>
+                        <input type="file" id="pu-image-file" accept="image/*" style="display:none"
+                               onchange="cmUploadImage(this.files[0],'pu-image','pu-img-status',false);this.value=''">
+                        <span id="pu-img-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
+                        <div id="pu-uploads-host"></div>
+                      </div>
+                      <div id="pu-list" style="margin-top:12px;"></div>
                     </div>
 
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
@@ -3011,6 +3040,7 @@
       { key: 'noir',     label: 'Noir',     swatch: '#c9c9d2' },
     ];
     const PF_SECTIONS = [
+      { key: 'updates',  label: 'Updates' },
       { key: 'about',    label: 'About' },
       { key: 'works',    label: 'Works' },
       { key: 'links',    label: 'Find me' },
@@ -3019,6 +3049,8 @@
 
     let pfProfile = null;
     let pfLinks = [];
+    let pfUpdates = [];
+    let puEditingId = null;
 
     function pfMsg(text, good) {
       const el = document.getElementById('pf-msg');
@@ -3080,6 +3112,82 @@
       });
     }
 
+    // ── Your updates ────────────────────────────────────────────────────────
+    function puClear() {
+      puEditingId = null;
+      ['pu-title', 'pu-body', 'pu-link', 'pu-link-label', 'pu-image'].forEach(id => (document.getElementById(id).value = ''));
+      document.getElementById('pu-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('pu-add-btn').textContent = 'Add update';
+      document.getElementById('pu-img-status').textContent = '';
+    }
+
+    function puSubmit() {
+      const update = {
+        id: puEditingId || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)),
+        date: document.getElementById('pu-date').value,
+        title: document.getElementById('pu-title').value.trim(),
+        body: document.getElementById('pu-body').value.trim(),
+        link: document.getElementById('pu-link').value.trim(),
+        linkLabel: document.getElementById('pu-link-label').value.trim(),
+        image: document.getElementById('pu-image').value.trim(),
+      };
+      if (!update.title && !update.body && !update.image) {
+        pfMsg('An update needs a headline, some words, or a picture.');
+        return;
+      }
+      if (puEditingId) {
+        const at = pfUpdates.findIndex(u => u.id === puEditingId);
+        if (at > -1) pfUpdates[at] = update;
+      } else {
+        pfUpdates.unshift(update);
+      }
+      puClear();
+      puRender();
+      pfSave();
+    }
+
+    function puEdit(id) {
+      const u = pfUpdates.find(x => x.id === id);
+      if (!u) return;
+      puEditingId = id;
+      document.getElementById('pu-date').value = u.date || '';
+      document.getElementById('pu-title').value = u.title || '';
+      document.getElementById('pu-body').value = u.body || '';
+      document.getElementById('pu-link').value = u.link || '';
+      document.getElementById('pu-link-label').value = u.linkLabel || '';
+      document.getElementById('pu-image').value = u.image || '';
+      document.getElementById('pu-add-btn').textContent = 'Save update';
+      document.getElementById('pu-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function puDelete(id) {
+      if (!confirm('Delete this update?')) return;
+      pfUpdates = pfUpdates.filter(u => u.id !== id);
+      if (puEditingId === id) puClear();
+      puRender();
+      pfSave();
+    }
+
+    function puRender() {
+      const host = document.getElementById('pu-list');
+      if (!pfUpdates.length) {
+        host.innerHTML = '<div class="cm-collab-empty">No updates yet.</div>';
+        return;
+      }
+      host.innerHTML = pfUpdates.map(u => `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:0;flex:1 1 220px;">
+            <div style="color:var(--text-dim);font-size:0.75rem;">${cmEsc(u.date || '')}</div>
+            <div style="color:var(--text);word-break:break-word;">${cmEsc(u.title || '(no headline)')}</div>
+            <div style="color:var(--text-mid);font-size:0.82rem;word-break:break-word;">${cmEsc((u.body || '').slice(0, 90))}${(u.body || '').length > 90 ? '…' : ''}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button type="button" class="cm-btn cm-btn-sm" onclick="puEdit('${u.id}')">Edit</button>
+            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="puDelete('${u.id}')">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
     function pfFill(p) {
       pfProfile = p;
       // A creator who postdates site-config's artist list is still credited
@@ -3100,9 +3208,12 @@
       const link = document.getElementById('pf-url');
       link.href = url; link.textContent = location.origin + url;
       pfLinks = (p.links || []).slice();
+      pfUpdates = (p.updates || []).slice();
       pfRenderThemes();
       pfRenderSections(p.sections || {});
       pfRenderLinks();
+      puRender();
+      puClear();
       pfUpdatePreviews();
     }
 
@@ -3158,6 +3269,7 @@
         theme: pfProfile.theme,
         published: document.getElementById('pf-published').checked,
         links: pfLinks,
+        updates: pfUpdates,
         sections,
       };
       pfMsg('Saving…', true);

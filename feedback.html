@@ -472,6 +472,10 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 // ── Populate platform + audio pickers from the catalogue ────────────────────
 (function () {
   var CFG = window.SITE_CONFIG;
+  // A creator links here from their own page as ?for=<slug>; the form then
+  // asks about their work and files the response under them.
+  var FOR = (new URLSearchParams(location.search).get('for') || '')
+    .toLowerCase().replace(/[^a-z0-9-]/g, '');
   var PROVIDER_LABELS = {
     soundgasm: "Soundgasm", literotica: "Literotica", audiochan: "Audiochan",
     hotaudio: "HotAudio", whyp: "Whyp"
@@ -503,7 +507,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
       // Only work this site's owner is credited on — collaborators share the
       // content store, and nobody is giving feedback here on their solo work.
       var entries = (data.entries || [])
-        .filter(function (e) { return CFG.isOwnWork(e); })
+        .filter(function (e) { return FOR ? CFG.creditedIn(e, FOR) : CFG.isOwnWork(e); })
         .sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
 
       // Platforms actually used across the catalogue, then extras
@@ -585,7 +589,7 @@ form.addEventListener("submit", async function(e){
       fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: fields, botcheck: fd.get("botcheck") || "" })
+        body: JSON.stringify({ fields: fields, for: FOR, botcheck: fd.get("botcheck") || "" })
       }).catch(function () {});
     } catch (archiveErr) { /* archiving is best-effort */ }
 
