@@ -24,7 +24,10 @@ const KEY = "profiles";
 const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: CORS });
 
-const MAX = { name: 80, tagline: 140, bio: 4000, url: 500, label: 40, links: 12, color: 20 };
+const MAX = {
+  name: 80, tagline: 140, bio: 4000, url: 500, label: 40, links: 12, color: 20,
+  updateTitle: 140, updateBody: 3000, updates: 20,
+};
 
 // Strips control characters but keeps newlines, so a bio can have paragraphs.
 const clean = (v, max) =>
@@ -44,7 +47,7 @@ function safeUrl(v) {
 }
 
 export const THEMES = ["electric", "ember", "orchid", "moss", "noir"];
-export const SECTIONS = ["about", "works", "feedback", "links"];
+export const SECTIONS = ["updates", "about", "works", "feedback", "links"];
 
 /** What a profile looks like before anyone has edited it. */
 export function defaultProfile(slug, name) {
@@ -58,7 +61,10 @@ export function defaultProfile(slug, name) {
     theme: "electric",
     accent: "",
     links: [],
-    sections: { about: true, works: true, feedback: true, links: true },
+    // A creator's own news, shown on their page only. The site's News is the
+    // landing page and stays the owner's.
+    updates: [],
+    sections: { updates: true, about: true, works: true, feedback: true, links: true },
     published: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -87,6 +93,21 @@ function sanitize(input, base) {
       .map((l) => ({ label: clean(l && l.label, MAX.label), url: safeUrl(l && l.url) }))
       .filter((l) => l.label && l.url);
   }
+  if (Array.isArray(input.updates)) {
+    out.updates = input.updates
+      .slice(0, MAX.updates)
+      .map((u) => ({
+        id: clean(u && u.id, 40) || newId(),
+        date: clean(u && u.date, 10),
+        title: clean(u && u.title, MAX.updateTitle),
+        body: clean(u && u.body, MAX.updateBody),
+        image: safeUrl(u && u.image),
+        link: safeUrl(u && u.link),
+        linkLabel: clean(u && u.linkLabel, MAX.label),
+      }))
+      // An update with neither words nor a picture is not an update.
+      .filter((u) => u.title || u.body || u.image);
+  }
   if (input.sections && typeof input.sections === "object") {
     out.sections = {};
     for (const s of SECTIONS) out.sections[s] = input.sections[s] !== false;
@@ -95,6 +116,8 @@ function sanitize(input, base) {
   out.updatedAt = new Date().toISOString();
   return out;
 }
+
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 async function readAll() {
   const data = await siteStore("profiles").get(KEY, { type: "json" });
