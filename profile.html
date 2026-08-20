@@ -235,6 +235,7 @@
         // A creator who is not in site-config's artist list is still credited
         // under their display name, so teach the matcher that before asking.
         CFG.registerArtistName(p.slug, p.name);
+        (p.aliases || []).forEach(function (a) { CFG.registerArtistName(p.slug, a); });
         AudioGrid.init({ container: '#audio-grid', artist: p.slug });
       }
     }
