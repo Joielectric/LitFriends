@@ -27,6 +27,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 const MAX = {
   name: 80, tagline: 140, bio: 4000, url: 500, label: 40, links: 12, color: 20,
   updateTitle: 140, updateBody: 3000, updates: 20,
+  aliases: 12,
 };
 
 // Strips control characters but keeps newlines, so a bio can have paragraphs.
@@ -61,6 +62,10 @@ export function defaultProfile(slug, name) {
     theme: "electric",
     accent: "",
     links: [],
+    // Other names this person is credited under in the catalogue. Credits are
+    // free text and drift — a Reddit handle here, a display name there — so a
+    // creator's work is found by any name they answer to, not just this one.
+    aliases: [],
     // A creator's own news, shown on their page only. The site's News is the
     // landing page and stays the owner's.
     updates: [],
@@ -92,6 +97,18 @@ function sanitize(input, base) {
       .slice(0, MAX.links)
       .map((l) => ({ label: clean(l && l.label, MAX.label), url: safeUrl(l && l.url) }))
       .filter((l) => l.label && l.url);
+  }
+  if (Array.isArray(input.aliases)) {
+    const seen = new Set();
+    out.aliases = input.aliases
+      .map((a) => clean(a, MAX.name))
+      .filter((a) => {
+        const k = a.toLowerCase();
+        if (!a || seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .slice(0, MAX.aliases);
   }
   if (Array.isArray(input.updates)) {
     out.updates = input.updates

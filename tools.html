@@ -840,6 +840,10 @@
                       <label class="cm-label" style="font-size:0.7rem">Tagline</label>
                       <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="140"
                              placeholder="Voice Artist &middot; Writer &middot; Collaborator">
+                      <label class="cm-label" style="font-size:0.7rem">Also credited as <span style="font-weight:normal;color:var(--text-mid)">(other names used in the catalogue, comma separated)</span></label>
+                      <input id="pf-aliases" class="cm-input" style="width:100%;margin-bottom:10px" placeholder="u/their-handle, Their Old Name">
+                      <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:-6px 0 10px;"></div>
+
                       <label class="cm-label" style="font-size:0.7rem">About</label>
                       <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
                                 placeholder="Line breaks are kept. Pasted links become links."></textarea>
@@ -3123,6 +3127,20 @@
       pfLinks = labels.map((el, i) => ({ label: el.value, url: (urls[i] || {}).value || '' }));
     }
 
+    // Names are only useful if they match something, so say how many entries
+    // each profile is currently finding. A zero is the signal that a credit is
+    // spelled differently from every name on the profile.
+    function pfAliasHint(p) {
+      const el = document.getElementById('pf-alias-hint');
+      if (!el || !cmEntries.length) { if (el) el.textContent = ''; return; }
+      const n = cmEntries.filter(e => CFG.creditedIn(e, p.slug) || e.owner === p.slug).length;
+      const names = [p.name].concat(p.aliases || []).filter(Boolean).join(', ');
+      el.textContent = n
+        ? `Matching ${n} catalogue entr${n === 1 ? 'y' : 'ies'} as: ${names}.`
+        : `No catalogue entries match ${names} — add the name the credits actually use.`;
+      el.style.color = n ? 'var(--text-dim)' : '#e8a34f';
+    }
+
     function pfUpdatePreviews() {
       [['pf-avatar', 'pf-avatar-preview'], ['pf-banner', 'pf-banner-preview']].forEach(([field, img]) => {
         const url = (document.getElementById(field).value || '').trim();
@@ -3211,8 +3229,12 @@
     function pfFill(p) {
       pfProfile = p;
       // A creator who postdates site-config's artist list is still credited
-      // under their display name, so the entry picker needs to know it.
+      // under their display name, so the entry picker needs to know it — and
+      // any other name their credits use.
       CFG.registerArtistName(p.slug, p.name);
+      (p.aliases || []).forEach(a => CFG.registerArtistName(p.slug, a));
+      document.getElementById('pf-aliases').value = (p.aliases || []).join(', ');
+      pfAliasHint(p);
       if (p.slug === (cmWho.slug || '')) cmRenderEntries();
       document.getElementById('pf-editor').style.display = '';
       document.getElementById('pf-none').style.display = 'none';
@@ -3287,6 +3309,7 @@
         banner: document.getElementById('pf-banner').value,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
+        aliases: document.getElementById('pf-aliases').value.split(',').map(a => a.trim()).filter(Boolean),
         published: document.getElementById('pf-published').checked,
         links: pfLinks,
         updates: pfUpdates,
