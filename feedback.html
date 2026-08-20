@@ -474,13 +474,19 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 
 <script src="/js/site-config.js"></script>
 <script>
+// A creator links here from their own page as ?for=<slug>; the form then asks
+// about their work and files the response under them.
+//
+// Declared out here on purpose: the submit handler further down is outside the
+// setup function below, and reading FOR from in there used to throw — silently,
+// because the call it was part of was wrapped in a best-effort catch. Every
+// response was filed with no creator as a result.
+var FOR = (new URLSearchParams(location.search).get('for') || '')
+  .toLowerCase().replace(/[^a-z0-9-]/g, '');
+
 // ── Populate platform + audio pickers from the catalogue ────────────────────
 (function () {
   var CFG = window.SITE_CONFIG;
-  // A creator links here from their own page as ?for=<slug>; the form then
-  // asks about their work and files the response under them.
-  var FOR = (new URLSearchParams(location.search).get('for') || '')
-    .toLowerCase().replace(/[^a-z0-9-]/g, '');
   var PROVIDER_LABELS = {
     soundgasm: "Soundgasm", literotica: "Literotica", audiochan: "Audiochan",
     hotaudio: "HotAudio", whyp: "Whyp"
@@ -508,6 +514,50 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
 
   // Asked for a particular creator? Then their toggle decides whether the form
   // is offered at all, so a stale link cannot get round it.
+  // The page belongs to whoever it is collecting for. Left as the site's own
+  // when there is no creator in the URL.
+  function dressFor(p) {
+    document.title = "Feedback for " + p.name;
+
+    var banner = document.querySelector(".banner-frame");
+    if (banner) {
+      if (p.banner || p.avatar) {
+        var img = banner.querySelector("img");
+        img.src = p.banner || p.avatar;
+        img.alt = p.name;
+        // An avatar is square; do not stretch it across a banner frame.
+        if (!p.banner) img.style.cssText = "max-height:150px;width:auto;margin:0 auto;display:block;";
+      } else {
+        banner.style.display = "none";
+      }
+    }
+
+    var back = document.querySelector(".breadcrumb-nav a");
+    if (back) {
+      back.href = "/profile/" + encodeURIComponent(p.slug);
+      back.innerHTML = "&#8592; " + p.name;
+    }
+
+    var h1 = document.querySelector(".page-intro h1");
+    if (h1) h1.innerHTML = "Tell " + p.name + " <em>everything.</em>";
+
+    var intro = document.querySelector(".intro-text");
+    if (intro) {
+      intro.textContent = "If you've listened to " + p.name + "'s work, they'd really appreciate hearing what you thought. " +
+        "Feedback genuinely shapes what gets made next \u2014 what lands, what doesn't, and where things go from here. " +
+        "It only takes a couple of minutes.";
+    }
+
+    var footer = document.querySelector("footer p");
+    if (footer) footer.innerHTML = esc(p.name) + " &nbsp;&middot;&nbsp; Erotic Audio &nbsp;&middot;&nbsp; All submissions confidential";
+  }
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"]/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c];
+    });
+  }
+
   if (FOR) {
     fetch("/api/profile/" + encodeURIComponent(FOR))
       .then(function (r) { return r.json(); })
@@ -519,10 +569,7 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
           document.getElementById("feedback-closed").style.display = "";
           return;
         }
-        var intro = document.querySelector(".intro-text");
-        if (intro && p.name) {
-          intro.textContent = "Tell " + p.name + " what you thought. Feedback genuinely shapes what gets made next \u2014 what lands, what doesn't, and where things go from here.";
-        }
+        dressFor(p);
       })
       .catch(function () { /* leave the form as it is */ });
   }
@@ -605,28 +652,32 @@ form.addEventListener("submit", async function(e){
   try {
     var fd = new FormData(form);
 
-    // Archive a copy for the feedback portal (never blocks the real submit)
-    try {
-      var fields = {};
-      fd.forEach(function (v, k) {
-        if (k === "access_key") return;
-        fields[k] = (fields[k] === undefined) ? v : (fields[k] + ", " + v);
-      });
-      fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: fields, for: FOR, botcheck: fd.get("botcheck") || "" })
-      }).then(function (r) {
-        if (r.status === 403) {
-          document.getElementById("feedback-form").style.display = "none";
-          document.getElementById("feedback-closed").style.display = "";
-        }
-      }).catch(function () {});
-    } catch (archiveErr) { /* archiving is best-effort */ }
-
-    var res = await fetch(form.getAttribute("action"), {
-      method: "POST", body: fd
+    var fields = {};
+    fd.forEach(function (v, k) {
+      if (k === "access_key") return;
+      fields[k] = (fields[k] === undefined) ? v : (fields[k] + ", " + v);
     });
+
+    // Feedback left for a creator is filed against them and nothing else. The
+    // email goes to the site's own address, so sending it for someone else's
+    // page would put their listener's words in the wrong inbox.
+    var stored = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fields: fields, for: FOR, botcheck: fd.get("botcheck") || "" })
+    }).catch(function () { return { ok: false, status: 0 }; });
+
+    if (stored.status === 403) {
+      form.style.display = "none";
+      document.getElementById("feedback-closed").style.display = "";
+      return;
+    }
+
+    // The site's own form still emails as well as filing; a creator's does not.
+    var res = FOR
+      ? stored
+      : await fetch(form.getAttribute("action"), { method: "POST", body: fd });
+
     if (res.ok) {
       form.classList.add("hidden");
       thankYou.classList.add("active");
