@@ -1,12 +1,15 @@
 import { readCreators, findCreator, touchCreator } from "./_creators.js";
+import { cookieFromRequest, readSession } from "./_session.js";
 
 // Who is allowed to change things, and as whom.
 //
 // Two ways in, checked in this order:
 //
-//   1. A Google ID token in `Authorization: Bearer <jwt>`, whose verified email
+//   1. A session cookie this site issued (_session.js), which is how a signed-in
+//      person stays signed in — a Google token only lasts an hour.
+//   2. A Google ID token in `Authorization: Bearer <jwt>`, whose verified email
 //      appears in ADMIN_EMAILS or in the creator registry (_creators.js).
-//   2. The shared ADMIN_PASSWORD, in the body or the x-admin-password header.
+//   3. The shared ADMIN_PASSWORD, in the body or the x-admin-password header.
 //
 // The password is the fallback so a misconfigured OAuth origin cannot lock
 // anyone out of their own Content Manager. Drop it by clearing ADMIN_PASSWORD
@@ -136,14 +139,65 @@ export function adminEmails() {
 }
 
 /**
+ * Turn a verified email into what they may do. Shared by every way in, so the
+ * allowlist is applied once rather than once per entry point.
+ */
+export async function identify(rawEmail, name, via) {
+  const email = normEmail(rawEmail);
+  const isOwner = email === ownerEmail();
+
+  // ADMIN_EMAILS first: it is the bootstrap that works even if the registry
+  // cannot be read.
+  if (adminEmails().includes(email)) {
+    const rec = await touchCreator(email);
+    return {
+      ok: true, email, name: name || "", via, isOwner,
+      role: isOwner ? "owner" : (rec && rec.role) || "creator",
+      slug: (rec && rec.slug) || (isOwner ? OWNER_SLUG : ""),
+    };
+  }
+
+  const rec = findCreator(await readCreators(), email);
+  if (!rec) {
+    return {
+      ok: false,
+      error: `${rawEmail} has not been invited. Ask the site owner for access.`,
+      email,
+    };
+  }
+  if (rec.status === "suspended") {
+    return { ok: false, error: "That account's access has been turned off.", email };
+  }
+  await touchCreator(email);
+  return {
+    ok: true, email, name: name || rec.name || "", via, isOwner,
+    role: isOwner ? "owner" : rec.role || "creator",
+    slug: rec.slug || "",
+  };
+}
+
+/**
  * Decide whether a request may make changes.
  *
  * Returns { ok, email, name, via, role, slug, isOwner, error }. `via` is
- * "google" or "password", which lets a caller log who did what. `slug` is the
- * profile this person owns, and is what content gets scoped by.
+ * "session", "google" or "password", which lets a caller log who did what.
+ * `slug` is the profile this person owns, and is what content gets scoped by.
  */
 export async function authorize(req, body) {
   const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
+
+  // A session this site issued. Checked first because it is the common case
+  // once someone has signed in even once.
+  const sessionEmail = await readSession(cookieFromRequest(req));
+  if (sessionEmail) {
+    // Re-checked against the registry every request, so removing someone takes
+    // effect immediately rather than whenever their session happens to lapse.
+    const who = await identify(sessionEmail, "", "session");
+    if (who.ok) return who;
+    // A session for someone no longer allowed falls through rather than
+    // failing outright, so a password in the same request still works.
+  }
+
   const bearer = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") || "");
 
   if (bearer) {
@@ -154,37 +208,7 @@ export async function authorize(req, body) {
     } catch (err) {
       return { ok: false, error: `Sign-in failed: ${err.message}` };
     }
-    const email = normEmail(claims.email);
-    const isOwner = email === ownerEmail();
-
-    // ADMIN_EMAILS first: it is the bootstrap that works even if the registry
-    // cannot be read.
-    if (adminEmails().includes(email)) {
-      const rec = await touchCreator(email);
-      return {
-        ok: true, email, name: claims.name || "", via: "google", isOwner,
-        role: isOwner ? "owner" : (rec && rec.role) || "creator",
-        slug: (rec && rec.slug) || (isOwner ? OWNER_SLUG : ""),
-      };
-    }
-
-    const rec = findCreator(await readCreators(), email);
-    if (!rec) {
-      return {
-        ok: false,
-        error: `${claims.email} has not been invited. Ask the site owner for access.`,
-        email,
-      };
-    }
-    if (rec.status === "suspended") {
-      return { ok: false, error: "That account's access has been turned off.", email };
-    }
-    await touchCreator(email);
-    return {
-      ok: true, email, name: claims.name || rec.name || "", via: "google", isOwner,
-      role: isOwner ? "owner" : rec.role || "creator",
-      slug: rec.slug || "",
-    };
+    return identify(claims.email, claims.name, "google");
   }
 
   const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
