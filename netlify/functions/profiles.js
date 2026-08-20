@@ -76,7 +76,19 @@ export function defaultProfile(slug, name) {
   };
 }
 
-function sanitize(input, base) {
+// Every name already spoken for by somebody else — their display name and
+// anything they have adopted.
+function takenBy(slug, profiles) {
+  const taken = new Set();
+  Object.values(profiles || {}).forEach((p) => {
+    if (!p || p.slug === slug) return;
+    if (p.name) taken.add(String(p.name).toLowerCase());
+    (p.aliases || []).forEach((a) => taken.add(String(a).toLowerCase()));
+  });
+  return taken;
+}
+
+function sanitize(input, base, allProfiles) {
   const out = { ...base };
   if (input.name !== undefined) out.name = clean(input.name, MAX.name) || base.name;
   if (input.tagline !== undefined) out.tagline = clean(input.tagline, MAX.tagline);
@@ -100,15 +112,21 @@ function sanitize(input, base) {
   }
   if (Array.isArray(input.aliases)) {
     const seen = new Set();
+    const taken = takenBy(base.slug, allProfiles);
+    const refused = [];
     out.aliases = input.aliases
       .map((a) => clean(a, MAX.name))
       .filter((a) => {
         const k = a.toLowerCase();
         if (!a || seen.has(k)) return false;
+        // A credited name belongs to one person. Without this, adopting a name
+        // would quietly take another creator's work off their page.
+        if (taken.has(k)) { refused.push(a); return false; }
         seen.add(k);
         return true;
       })
       .slice(0, MAX.aliases);
+    if (refused.length) out.__refused = refused;
   }
   if (Array.isArray(input.updates)) {
     out.updates = input.updates
@@ -207,12 +225,20 @@ export default async (req) => {
   }
 
   if (body.action === "save") {
-    const base = all[slug] || defaultProfile(slug, auth.name || slug);
-    const profile = sanitize(body.profile || {}, base);
+    // Same naming as "mine": the invite is what the site calls them, so a
+    // profile created by a save is not named after whatever Google returned.
+    let base = all[slug];
+    if (!base) {
+      const rec = findCreator(await readCreators(), auth.email);
+      base = defaultProfile(slug, (rec && rec.name) || auth.name || slug);
+    }
+    const profile = sanitize(body.profile || {}, base, all);
     profile.slug = slug; // never movable by a save
+    const refused = profile.__refused;
+    delete profile.__refused;
     all[slug] = profile;
     await writeAll(all);
-    return json({ ok: true, profile });
+    return json({ ok: true, profile, refused: refused || [] });
   }
 
   return json({ error: "Unknown action" }, 400);
