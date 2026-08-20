@@ -255,6 +255,11 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
     <p class="intro-text">If you've listened to any of my work, I'd really appreciate hearing what you thought. Your feedback genuinely shapes the way I create &mdash; what lands, what doesn't, and where I take things next. It only takes a couple of minutes, and every response helps me make better audio for <em>you</em>.</p>
   </div>
 
+  <div id="feedback-closed" style="display:none;text-align:center;padding:2.5rem 1rem;color:var(--text-mid);">
+    <p style="margin-bottom:1rem;">This creator isn&rsquo;t taking feedback at the moment.</p>
+    <a href="/" style="color:var(--electric,#5b8de8);">Back to the site</a>
+  </div>
+
   <!-- FORM -->
   <form id="feedback-form" action="https://api.web3forms.com/submit" method="POST">
 
@@ -501,6 +506,27 @@ footer p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.12em; fo
     otherInput.required = isOther;
   });
 
+  // Asked for a particular creator? Then their toggle decides whether the form
+  // is offered at all, so a stale link cannot get round it.
+  if (FOR) {
+    fetch("/api/profile/" + encodeURIComponent(FOR))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var p = data && data.profile;
+        var off = !p || (p.sections && p.sections.feedback === false);
+        if (off) {
+          document.getElementById("feedback-form").style.display = "none";
+          document.getElementById("feedback-closed").style.display = "";
+          return;
+        }
+        var intro = document.querySelector(".intro-text");
+        if (intro && p.name) {
+          intro.textContent = "Tell " + p.name + " what you thought. Feedback genuinely shapes what gets made next \u2014 what lands, what doesn't, and where things go from here.";
+        }
+      })
+      .catch(function () { /* leave the form as it is */ });
+  }
+
   fetch("/api/content")
     .then(function (r) { return r.json(); })
     .then(function (data) {
@@ -590,6 +616,11 @@ form.addEventListener("submit", async function(e){
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fields: fields, for: FOR, botcheck: fd.get("botcheck") || "" })
+      }).then(function (r) {
+        if (r.status === 403) {
+          document.getElementById("feedback-form").style.display = "none";
+          document.getElementById("feedback-closed").style.display = "";
+        }
       }).catch(function () {});
     } catch (archiveErr) { /* archiving is best-effort */ }
 
