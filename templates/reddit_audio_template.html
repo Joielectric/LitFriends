@@ -302,6 +302,7 @@
                 <div class="title-preview" id="titlePreview">
                     [Gender Tag] Audio Title [Tags]
                 </div>
+                <div id="titleCount" style="font-size:0.78rem;color:var(--text-dim);margin-top:-6px;">0/300 characters</div>
             </div>
             
             <!-- Post Preview -->
@@ -338,33 +339,65 @@
             updateCopyrightPreview();
         }
         
-        function updateTitlePreview() {
+        // Reddit rejects a title over 300 characters, and a well-tagged audio can
+        // easily run past that. So tags are fitted one at a time and whatever
+        // does not fit is dropped from the title — the post body carries the
+        // full list, so nothing is actually lost.
+        const REDDIT_TITLE_MAX = 300;
+
+        function tagList() {
+            return document.getElementById('tags').value
+                .split(',').map(t => t.trim()).filter(Boolean);
+        }
+
+        function buildRedditTitle(placeholderTitle) {
             const genderTag = document.getElementById('genderTag').value;
-            const title = document.getElementById('audioTitle').value;
-            const tags = document.getElementById('tags').value.trim();
-            
-            // Build the title preview
-            let titlePreview = '';
-            if (genderTag) {
-                titlePreview += `[${genderTag}] `;
-            }
-            if (title) {
-                titlePreview += title;
-            } else {
-                titlePreview += 'Audio Title';
-            }
-            
-            // Add tags if they exist
-            if(tags) {
-                titlePreview += ' ';
-                const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-                const formattedTags = tagArray.map(tag => `[${tag}]`).join(' ');
-                titlePreview += formattedTags;
-            }
-            
-            document.getElementById('titlePreview').textContent = titlePreview;
+            const title = document.getElementById('audioTitle').value || placeholderTitle;
+
+            let head = '';
+            if (genderTag) head += `[${genderTag}] `;
+            head += title;
+
+            const all = tagList();
+            const kept = [], dropped = [];
+            let text = head;
+            all.forEach(tag => {
+                const candidate = `${text} [${tag}]`;
+                // A tag either fits whole or is left out; never half a tag.
+                if (candidate.length <= REDDIT_TITLE_MAX) { text = candidate; kept.push(tag); }
+                else dropped.push(tag);
+            });
+
+            // Only possible if the title alone is over the limit, which is the
+            // one case where something has to be cut mid-word.
+            if (text.length > REDDIT_TITLE_MAX) text = text.slice(0, REDDIT_TITLE_MAX);
+
+            return { text, kept, dropped, all };
+        }
+
+        function updateTitlePreview() {
+            const built = buildRedditTitle('Audio Title');
+            document.getElementById('titlePreview').textContent = built.text;
+
+            const count = document.getElementById('titleCount');
+            const over = built.text.length >= REDDIT_TITLE_MAX;
+            count.textContent = `${built.text.length}/${REDDIT_TITLE_MAX} characters` +
+                (built.dropped.length
+                    ? ` \u00b7 ${built.dropped.length} tag${built.dropped.length === 1 ? '' : 's'} moved to the post body`
+                    : '');
+            count.style.color = over ? '#e8a34f' : 'var(--text-dim)';
         }
         
+
+        // Every tag, including any the title could not hold.
+        function tagsBlock() {
+            const all = tagList();
+            const genderTag = document.getElementById('genderTag').value;
+            const shown = genderTag ? [genderTag, ...all] : all;
+            if (!shown.length) return '';
+            return `**Tags:** ${shown.map(t => `[${t}]`).join(' ')}\n\n`;
+        }
+
         function updatePostPreview() {
             const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
             const longDesc = document.getElementById('longDescription').value || '[Long description will appear here]';
@@ -388,7 +421,8 @@
             }
             
             // Build preview using your specified format
-            let preview = `**${shortDesc}**\n\n`;
+            let preview = tagsBlock();
+            preview += `**${shortDesc}**\n\n`;
             preview += `${longDesc}\n\n`;
 
             if (hasValidLinks) {
@@ -464,27 +498,13 @@
         
         // Copy title to clipboard
         function copyTitleToClipboard() {
-            const genderTag = document.getElementById('genderTag').value;
-            const title = document.getElementById('audioTitle').value || 'Audio Title';
-            const tags = document.getElementById('tags').value.trim();
-            
-            // Build the Reddit title
-            let redditTitle = '';
-            if (genderTag) {
-                redditTitle += `[${genderTag}] `;
-            }
-            redditTitle += title;
-            
-            // Add tags if they exist
-            if(tags) {
-                const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-                const formattedTags = tagArray.map(tag => `[${tag}]`).join(' ');
-                redditTitle += ` ${formattedTags}`;
-            }
-            
-            // Copy to clipboard
-            navigator.clipboard.writeText(redditTitle).then(function() {
-                showSuccessMessage('Title copied to clipboard! Ready to paste as Reddit title.');
+            const built = buildRedditTitle('Audio Title');
+            const note = built.dropped.length
+                ? ` ${built.dropped.length} tag${built.dropped.length === 1 ? '' : 's'} did not fit — they are in the post body.`
+                : '';
+
+            navigator.clipboard.writeText(built.text).then(function() {
+                showSuccessMessage(`Title copied (${built.text.length}/${REDDIT_TITLE_MAX}).${note}`);
             }).catch(function(err) {
                 console.error('Could not copy text: ', err);
                 alert('Failed to copy to clipboard. Please try again.');
@@ -515,7 +535,8 @@
             }
             
             // Build simplified format post
-            let markdown = `**${shortDesc}**\n\n`;
+            let markdown = tagsBlock();
+            markdown += `**${shortDesc}**\n\n`;
             markdown += `${longDesc}\n\n`;
             
             if (hasValidLinks) {
