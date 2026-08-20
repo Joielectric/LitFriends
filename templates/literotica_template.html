@@ -176,7 +176,7 @@
                 <select id="catalogSelect" class="form-select">
                     <option value="">— Select a published audio —</option>
                 </select>
-                <small style="color:#888;font-size:12px;">Auto-fills title, tags, gender, and description (with listen links + TRT). Contributor attribution still comes from the CSV.</small>
+                <small style="color:#888;font-size:12px;">Auto-fills title, tags, gender, description (with listen links + TRT) and the attribution block from the catalogue's credits.</small>
             </div>
 
             <!-- USERNAME SECTION -->
@@ -756,11 +756,77 @@
             document.getElementById('fullTags').value = tags.filter(t => t !== gender).join(', ');
             const linksBlock = catLinksBlock(catGetLinks(e), e.trt || '');
             document.getElementById('longDescription').value = (e.desc || '') + (linksBlock ? '\n\n' + linksBlock : '');
+            catApplyCredits(e);
             updatePreviews();
         }
+
+        // The catalogue already records who did what, so the attribution block
+        // is built from it rather than retyped. Credits are the source of
+        // truth; the CSV stays for anyone not in the catalogue yet.
+        const CAT_REASONS = {
+            voiceArtists: 'Voiced by',
+            writers:      'Written by',
+            producers:    'Produced by',
+            editors:      'Edited by',
+            musicians:    'Music by',
+        };
+
+        // Every credited name needs a row in contributorsData, because the
+        // generator looks people up by their index in it.
+        function catEnsureContributor(name) {
+            const key = String(name).trim().toLowerCase();
+            const found = contributorsData.findIndex(
+                c => String(c.username || '').trim().toLowerCase() === key
+            );
+            if (found !== -1) return found;
+            const collab = CAT_COLLABS[key];
+            contributorsData.push({
+                username: String(name).trim(),
+                profileUrl: (collab && collab.url) || '',
+                bannerUrl: '',
+            });
+            return contributorsData.length - 1;
+        }
+
+        function catApplyCredits(e) {
+            const credits = e.credits || {};
+            const rows = [];
+            Object.keys(CAT_REASONS).forEach(role => {
+                (credits[role] || []).forEach(name => {
+                    if (name) rows.push({ reason: CAT_REASONS[role], name });
+                });
+            });
+            // An entry with no credits leaves whatever is already filled in
+            // alone, rather than wiping a block that was typed by hand.
+            if (!rows.length) return;
+
+            rows.forEach(r => { r.index = catEnsureContributor(r.name); });
+            populateDropdowns();
+
+            document.getElementById('attributesContainer').innerHTML = '';
+            attributeCount = 0;
+            rows.forEach(() => addAttribute());
+
+            rows.forEach((r, i) => {
+                const reason = document.querySelector(`.attribute-reason[data-index="${i}"]`);
+                const name = document.querySelector(`.attribute-name[data-index="${i}"]`);
+                const url = document.querySelector(`.attribute-url[data-index="${i}"]`);
+                if (reason) reason.value = r.reason;
+                if (name) name.value = String(r.index);
+                if (url) url.value = contributorsData[r.index].profileUrl || '';
+            });
+        }
+        // name (lowercased) -> { name, url } from the Content Manager's
+        // collaborator table, so a credited name can bring its profile link.
+        let CAT_COLLABS = {};
+
         function catLoad() {
             fetch('/api/content').then(r => r.json()).then(d => {
                 catAdoptProviders(d.providers);
+                CAT_COLLABS = {};
+                (d.collaborators || []).forEach(c => {
+                    if (c && c.name) CAT_COLLABS[c.name.trim().toLowerCase()] = c;
+                });
                 // You only post your own work, so the picker offers only entries
                 // you are credited on — the store is shared with collaborators.
                 CATALOG = (d.entries || [])
