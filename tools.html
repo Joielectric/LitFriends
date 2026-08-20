@@ -680,13 +680,15 @@
                         <input id="cm-prov-label" class="cm-input" placeholder="Platform name, e.g. ScriptBin"
                             onkeydown="if(event.key==='Enter')cmProviderAdd()">
                         <select id="cm-prov-kind" class="cm-input" style="font-size:0.9rem;min-width:0;width:100%">
-                            <option value="audio">Audio</option>
-                            <option value="script">Script</option>
+                            <option value="audio">Follow the entry</option>
+                            <option value="script">Always “Read on”</option>
                         </select>
                         <button type="button" class="cm-btn" onclick="cmProviderAdd()">Add</button>
                     </div>
                     <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">
-                        Audio platforms read “Listen on …”, script platforms read “Read on …”.
+                        One entry per platform, whatever it hosts &mdash; a link&rsquo;s wording follows the entry it belongs to, so
+                        Literotica reads &ldquo;Open on&rdquo; for an audio and &ldquo;Read on&rdquo; for a story or poem.
+                        Choose <em>Always &ldquo;Read on&rdquo;</em> only for a platform that is never audio, like ScriptBin.
                     </div>
 
                     <!-- Edit an existing platform -->
@@ -699,8 +701,8 @@
                             <div style="display:grid;grid-template-columns:1fr 130px auto;gap:8px;">
                                 <input id="cm-prov-edit-label" class="cm-input" placeholder="Platform name">
                                 <select id="cm-prov-edit-kind" class="cm-input" style="font-size:0.9rem;min-width:0;width:100%">
-                                    <option value="audio">Audio</option>
-                                    <option value="script">Script</option>
+                                    <option value="audio">Follow the entry</option>
+                                    <option value="script">Always “Read on”</option>
                                 </select>
                                 <button type="button" class="cm-btn" onclick="cmProviderSaveEdit()">Save</button>
                             </div>
@@ -1473,7 +1475,7 @@
 
     function cmProviderOpts(selected) {
       return cmProviders.map(p =>
-        `<option value="${cmEsc(p.key)}"${p.key === selected ? ' selected' : ''}>${cmEsc(p.label)}${p.kind === 'script' ? ' (script)' : ''}</option>`
+        `<option value="${cmEsc(p.key)}"${p.key === selected ? ' selected' : ''}>${cmEsc(p.label)}${p.kind === 'script' ? ' (read)' : ''}</option>`
       ).join('');
     }
 
@@ -2313,7 +2315,7 @@
       const keep = cmEditingProvider || sel.value;
       sel.innerHTML = '<option value="">Select a platform…</option>'
         + cmProviders.map(p =>
-            `<option value="${cmEsc(p.key)}">${cmEsc(p.label)}${p.kind === 'script' ? ' (script)' : ''}</option>`
+            `<option value="${cmEsc(p.key)}">${cmEsc(p.label)}${p.kind === 'script' ? ' (read)' : ''}</option>`
           ).join('');
       if (keep && cmProviders.some(p => p.key === keep)) sel.value = keep;
     }
@@ -2376,7 +2378,10 @@
 
       const key = cmProviderKeyFor(label);
       if (!key) { cmShowMsg('That name has no letters or numbers to build a key from.', false); return; }
-      if (cmProviders.some(p => p.key === key)) { cmShowMsg(`“${label}” is already in the list.`, false); return; }
+      if (cmProviders.some(p => p.key === key)) {
+        cmShowMsg(`“${label}” is already listed — one entry covers everything it hosts. A link's wording follows the entry it is on.`, false);
+        return;
+      }
 
       cmProviders.push({ key, label, kind: document.getElementById('cm-prov-kind').value });
       labelEl.value = '';
