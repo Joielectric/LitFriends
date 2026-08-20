@@ -112,6 +112,11 @@ export default async (req) => {
 
   // ── Delete ──────────────────────────────────────────────────────────────
   if (body.action === "delete") {
+    // The image store is shared, and a creator has no way to see what a file
+    // is used for elsewhere on the site. Adding is fine; removing is not.
+    if (!auth.isOwner) {
+      return json({ error: "Only the site owner can delete uploaded images." }, 403);
+    }
     const key = String(body.key || "");
     if (!key || key === INDEX_KEY) return json({ error: "Missing image key" }, 400);
 

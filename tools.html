@@ -844,10 +844,35 @@
 
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
                       <label class="cm-label">Pictures</label>
-                      <label class="cm-label" style="font-size:0.7rem">Avatar URL</label>
-                      <input id="pf-avatar" class="cm-input" style="width:100%;margin-bottom:10px" placeholder="/images/your-icon.png">
-                      <label class="cm-label" style="font-size:0.7rem">Banner URL</label>
-                      <input id="pf-banner" class="cm-input" style="width:100%" placeholder="/images/your-banner.png">
+
+                      <label class="cm-label" style="font-size:0.7rem">Avatar <span style="font-weight:normal;color:var(--text-mid)">(square looks best)</span></label>
+                      <div style="display:flex;gap:10px;align-items:flex-start;">
+                        <img id="pf-avatar-preview" alt="" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--border-mid);background:var(--surface-2);">
+                        <div style="flex:1;min-width:0;">
+                          <input id="pf-avatar" class="cm-input" style="width:100%" placeholder="Upload below, or paste a URL" oninput="pfUpdatePreviews()">
+                          <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-avatar-file').click()">Upload New</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pf-avatar','pf-img-status',false,'pf-uploads-host')">Choose from uploads</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-avatar').value='';pfUpdatePreviews()">Remove</button>
+                          </div>
+                          <input type="file" id="pf-avatar-file" accept="image/*" style="display:none"
+                                 onchange="cmUploadImage(this.files[0],'pf-avatar','pf-img-status',false).then(pfUpdatePreviews);this.value=''">
+                        </div>
+                      </div>
+
+                      <label class="cm-label" style="font-size:0.7rem;margin-top:14px">Banner <span style="font-weight:normal;color:var(--text-mid)">(wide — sits behind the top of the page)</span></label>
+                      <img id="pf-banner-preview" alt="" style="display:none;width:100%;max-height:110px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border-mid);margin-bottom:6px;">
+                      <input id="pf-banner" class="cm-input" style="width:100%" placeholder="Upload below, or paste a URL" oninput="pfUpdatePreviews()">
+                      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-banner-file').click()">Upload New</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pf-banner','pf-img-status',false,'pf-uploads-host')">Choose from uploads</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-banner').value='';pfUpdatePreviews()">Remove</button>
+                      </div>
+                      <input type="file" id="pf-banner-file" accept="image/*" style="display:none"
+                             onchange="cmUploadImage(this.files[0],'pf-banner','pf-img-status',false).then(pfUpdatePreviews);this.value=''">
+
+                      <span id="pf-img-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:6px"></span>
+                      <div id="pf-uploads-host"></div>
                     </div>
 
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
@@ -2659,10 +2684,12 @@
       cmImgCtx = { field: field, status: status, preview: !!preview };
     }
 
-    function cmToggleUploads(field, status, preview) {
+    // There is one uploads panel, moved to whichever field asked for it. The
+    // host is named by the caller now that three tabs want it.
+    function cmToggleUploads(field, status, preview, hostId) {
       const target = field || 'cm-image';
       const panel = document.getElementById('cm-uploads-panel');
-      const host = document.getElementById(field ? 'cm-news-uploads-host' : 'cm-image-uploads-host');
+      const host = document.getElementById(hostId || (field ? 'cm-news-uploads-host' : 'cm-image-uploads-host'));
       // Switching which field the picker fills always opens it; only clicking
       // the same field's button again closes it. Otherwise borrowing the panel
       // from another tab would silently hide it.
@@ -2740,6 +2767,7 @@
       const f = document.getElementById(cmImgCtx.field);
       if (f) f.value = url;
       if (cmImgCtx.preview) cmUpdateImagePreview();
+      if (cmImgCtx.field.indexOf('pf-') === 0) pfUpdatePreviews();
       const st = document.getElementById(cmImgCtx.status);
       if (st) st.textContent = 'Selected. Remember to save.';
       cmRenderUploads();
@@ -3043,6 +3071,15 @@
       pfLinks = labels.map((el, i) => ({ label: el.value, url: (urls[i] || {}).value || '' }));
     }
 
+    function pfUpdatePreviews() {
+      [['pf-avatar', 'pf-avatar-preview'], ['pf-banner', 'pf-banner-preview']].forEach(([field, img]) => {
+        const url = (document.getElementById(field).value || '').trim();
+        const el = document.getElementById(img);
+        el.src = url;
+        el.style.display = url ? '' : 'none';
+      });
+    }
+
     function pfFill(p) {
       pfProfile = p;
       // A creator who postdates site-config's artist list is still credited
@@ -3066,6 +3103,7 @@
       pfRenderThemes();
       pfRenderSections(p.sections || {});
       pfRenderLinks();
+      pfUpdatePreviews();
     }
 
     function pfApi(payload, onOk) {
