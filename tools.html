@@ -380,8 +380,12 @@
 
 <div class="container" id="tools-main" style="display:none">
 
-  <nav class="back-nav">
+  <nav class="back-nav" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
     <a class="back-link" href="index.html">&#8592; Home</a>
+    <span style="display:flex;align-items:center;gap:10px;">
+      <span id="cm-whoami" style="color:var(--text-dim);font-size:0.8rem;"></span>
+      <button type="button" class="cm-btn cm-btn-sm" onclick="toolsSignOut()">Sign out</button>
+    </span>
   </nav>
 
   <div class="header">
@@ -1914,22 +1918,24 @@
     // Two ways in, and the server accepts either: a Google account on the
     // ADMIN_EMAILS list, or the shared password. The password stays so a
     // mistyped OAuth origin can never lock anyone out of their own site.
-    let cmIdToken = '';
+    // A Google token is only good for an hour, so it is exchanged once for a
+    // session cookie and then thrown away. The cookie rides on every request
+    // by itself, which is why nothing below has to carry a credential.
+    function toolsStartSession(creds) {
+      return fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(creds),
+      }).then(r => r.json());
+    }
 
-    // Rather than thread the token through the dozen fetch() calls below, it is
-    // attached here to every admin API call. The server prefers it over the
-    // password when both are present.
-    (function attachToken() {
-      const realFetch = window.fetch.bind(window);
-      window.fetch = function (input, init) {
-        const url = typeof input === 'string' ? input : (input && input.url) || '';
-        if (cmIdToken && url.indexOf('/api/') !== -1) {
-          init = Object.assign({}, init);
-          init.headers = Object.assign({}, init.headers, { Authorization: 'Bearer ' + cmIdToken });
-        }
-        return realFetch(input, init);
-      };
-    })();
+    function toolsSignOut() {
+      fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'out' }),
+      }).then(() => location.reload());
+    }
 
     function toolsGsiInit() {
       const cfg = (window.SITE_CONFIG && window.SITE_CONFIG.auth) || {};
@@ -1956,15 +1962,18 @@
 
     function toolsGoogleSignIn(resp) {
       if (!resp || !resp.credential) return;
-      cmIdToken = resp.credential;
       document.getElementById('tools-gate-msg').textContent = 'Signing in\u2026';
-      toolsVerify({}, function (data) {
-        if (data.ok) return;
-        // A verified Google account that is not on the list: say so plainly,
-        // because retyping the password will not help.
-        cmIdToken = '';
-        document.getElementById('tools-gate-msg').textContent =
-          data.error || 'That account does not have access.';
+      toolsStartSession({ credential: resp.credential }).then(data => {
+        if (!data.ok) {
+          // A verified Google account that is not on the list: say so plainly,
+          // because retyping the password will not help.
+          document.getElementById('tools-gate-msg').textContent =
+            data.error || 'That account does not have access.';
+          return;
+        }
+        toolsVerify({}, fail => {
+          document.getElementById('tools-gate-msg').textContent = fail.error || 'Could not load your content.';
+        });
       });
     }
 
@@ -1972,13 +1981,30 @@
     function toolsUnlock() {
       const pw = document.getElementById('tools-gate-pw').value.trim();
       if (!pw) return;
-      toolsVerify({ password: pw }, function (data) {
-        if (data.ok) return;
-        document.getElementById('tools-gate-msg').textContent = data.env_set === false
-          ? 'ADMIN_PASSWORD env var not found on server.'
-          : 'Incorrect password.';
+      toolsStartSession({ password: pw }).then(data => {
+        if (!data.ok) {
+          document.getElementById('tools-gate-msg').textContent = data.env_set === false
+            ? 'ADMIN_PASSWORD env var not found on server.'
+            : 'Incorrect password.';
+          return;
+        }
+        toolsVerify({}, fail => {
+          document.getElementById('tools-gate-msg').textContent = fail.error || 'Could not load your content.';
+        });
       });
     }
+
+    // Already signed in from a previous visit? Then never show the gate.
+    (function resumeSession() {
+      fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'who' }),
+      })
+        .then(r => r.json())
+        .then(data => { if (data.ok) toolsVerify({}, function () {}); })
+        .catch(function () { /* no session; the gate is already showing */ });
+    })();
 
     // Shared by both paths: confirm with the server, then open the page.
     function toolsVerify(creds, onFail) {
@@ -1996,6 +2022,8 @@
           cmPassword = creds.password || '';
           cmWho = data.who || {};
           // Seeing other people's entries is the owner's business alone.
+          const whoami = document.getElementById('cm-whoami');
+          if (whoami) whoami.textContent = cmWho.email ? 'Signed in as ' + cmWho.email : '';
           const allRow = document.getElementById('cm-all-creators-row');
           if (allRow) allRow.style.display = cmWho.isOwner ? 'flex' : 'none';
           document.querySelectorAll('.owner-only').forEach(el => {
