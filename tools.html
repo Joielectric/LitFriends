@@ -840,9 +840,13 @@
                       <label class="cm-label" style="font-size:0.7rem">Tagline</label>
                       <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="140"
                              placeholder="Voice Artist &middot; Writer &middot; Collaborator">
-                      <label class="cm-label" style="font-size:0.7rem">Also credited as <span style="font-weight:normal;color:var(--text-mid)">(other names used in the catalogue, comma separated)</span></label>
-                      <input id="pf-aliases" class="cm-input" style="width:100%;margin-bottom:10px" placeholder="u/their-handle, Their Old Name">
-                      <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:-6px 0 10px;"></div>
+                      <label class="cm-label" style="font-size:0.7rem">Also credited as <span style="font-weight:normal;color:var(--text-mid)">(claim the names the catalogue credits you under)</span></label>
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <select id="pf-alias-pick" class="cm-input" style="flex:1 1 220px"></select>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAdoptName()">Adopt</button>
+                      </div>
+                      <div id="pf-alias-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+                      <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:6px 0 10px;"></div>
 
                       <label class="cm-label" style="font-size:0.7rem">About</label>
                       <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
@@ -3127,6 +3131,69 @@
       pfLinks = labels.map((el, i) => ({ label: el.value, url: (urls[i] || {}).value || '' }));
     }
 
+    let pfAliases = [];
+
+    // Every name the catalogue actually credits, with how much work is under
+    // it. Offering only real names means an adopted name can never be a typo
+    // that silently matches nothing.
+    function pfCreditedNames() {
+      const counts = {};
+      cmEntries.forEach(e => {
+        const credits = e.credits || {};
+        CFG.creditKeys.forEach(role => {
+          (credits[role] || []).forEach(n => {
+            const name = String(n || '').trim();
+            if (!name) return;
+            counts[name] = (counts[name] || 0) + 1;
+          });
+        });
+      });
+      // Collaborators with no credits yet are still worth offering.
+      cmCollaborators.forEach(c => { if (c && c.name && !counts[c.name]) counts[c.name] = 0; });
+      return counts;
+    }
+
+    function pfRenderAliasPicker() {
+      const sel = document.getElementById('pf-alias-pick');
+      if (!sel) return;
+      const counts = pfCreditedNames();
+      const mine = new Set([String((pfProfile && pfProfile.name) || '').toLowerCase()]
+        .concat(pfAliases.map(a => a.toLowerCase())));
+
+      const options = Object.keys(counts)
+        .filter(n => !mine.has(n.toLowerCase()))
+        .sort((a, b) => (counts[b] - counts[a]) || a.toLowerCase().localeCompare(b.toLowerCase()));
+
+      sel.innerHTML = '<option value="">' +
+        (options.length ? 'Choose a credited name…' : 'No other names in the catalogue') + '</option>' +
+        options.map(n => `<option value="${cmEsc(n)}">${cmEsc(n)}${counts[n] ? ` — ${counts[n]} entr${counts[n] === 1 ? 'y' : 'ies'}` : ' — no entries yet'}</option>`).join('');
+
+      const chips = document.getElementById('pf-alias-chips');
+      chips.innerHTML = pfAliases.length
+        ? pfAliases.map((a, i) => `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border-mid);border-radius:999px;padding:4px 10px;font-size:0.82rem;color:var(--text);">
+             ${cmEsc(a)}<button type="button" title="Release" onclick="pfReleaseName(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.9rem;line-height:1;padding:0">&times;</button></span>`).join('')
+        : '<span style="color:var(--text-dim);font-size:0.82rem;">No other names claimed.</span>';
+    }
+
+    function pfAdoptName() {
+      const sel = document.getElementById('pf-alias-pick');
+      const name = sel.value;
+      if (!name) return;
+      pfAliases.push(name);
+      CFG.registerArtistName(pfProfile.slug, name);
+      pfRenderAliasPicker();
+      pfAliasHint(Object.assign({}, pfProfile, { aliases: pfAliases }));
+      cmRenderEntries();
+      pfMsg('Adopted "' + name + '". Save to keep it.', true);
+    }
+
+    function pfReleaseName(i) {
+      pfAliases.splice(i, 1);
+      pfRenderAliasPicker();
+      pfAliasHint(Object.assign({}, pfProfile, { aliases: pfAliases }));
+      pfMsg('Released. Save to keep it.', true);
+    }
+
     // Names are only useful if they match something, so say how many entries
     // each profile is currently finding. A zero is the signal that a credit is
     // spelled differently from every name on the profile.
@@ -3233,7 +3300,8 @@
       // any other name their credits use.
       CFG.registerArtistName(p.slug, p.name);
       (p.aliases || []).forEach(a => CFG.registerArtistName(p.slug, a));
-      document.getElementById('pf-aliases').value = (p.aliases || []).join(', ');
+      pfAliases = (p.aliases || []).slice();
+      pfRenderAliasPicker();
       pfAliasHint(p);
       if (p.slug === (cmWho.slug || '')) cmRenderEntries();
       document.getElementById('pf-editor').style.display = '';
@@ -3309,7 +3377,7 @@
         banner: document.getElementById('pf-banner').value,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
-        aliases: document.getElementById('pf-aliases').value.split(',').map(a => a.trim()).filter(Boolean),
+        aliases: pfAliases,
         published: document.getElementById('pf-published').checked,
         links: pfLinks,
         updates: pfUpdates,
@@ -3319,7 +3387,14 @@
       // The server decides which profile this writes to, from who is signed in.
       const payload = { action: 'save', profile };
       if (cmWho.isOwner && pfProfile.slug) payload.slug = pfProfile.slug;
-      pfApi(payload, data => { pfFill(data.profile); pfMsg('Saved.', true); });
+      pfApi(payload, data => {
+        pfFill(data.profile);
+        if (data.refused && data.refused.length) {
+          pfMsg(`Saved, but ${data.refused.join(', ')} already belongs to another profile.`, false);
+        } else {
+          pfMsg('Saved.', true);
+        }
+      });
     }
 
     // ── Every profile page, static and dynamic (owner only) ─────────────────
