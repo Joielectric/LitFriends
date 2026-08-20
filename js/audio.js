@@ -464,7 +464,15 @@
     document.body.style.overflow = '';
   }
 
-  function platformBodyHtml(link) {
+  // Matches the catalogue: a link's own kind wins, so an audio can carry a
+  // link to the script for it without claiming you listen to it.
+  function linkVerb(link, entry) {
+    if (link && link.kind) return link.kind === 'script' ? 'Read on' : 'Listen on';
+    if (entry && CFG.isTextType(entry)) return 'Read on';
+    return (PROVIDERS[link.provider] || {}).kind === 'script' ? 'Read on' : 'Open on';
+  }
+
+  function platformBodyHtml(link, entry) {
     const embed = canEmbed(link.provider);
     const label = providerLabel(link.provider);
     return `
@@ -474,7 +482,7 @@
       }
       <a class="ag-modal-open-btn" href="${link.url}" target="_blank" rel="noopener noreferrer">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        Open on ${label}
+        ${linkVerb(link, entry)} ${label}
       </a>`;
   }
 
@@ -510,7 +518,7 @@
           ${entry.license ? `<div class="ag-track-license">${escHtml(entry.license)}</div>` : ''}
           ${safeUrl(entry.image) ? `<div class="ag-modal-frame"><img src="${safeUrl(entry.image)}" alt="${escHtml(entry.title || '')}" loading="lazy"></div>` : ''}
           ${entry.desc ? `<div class="ag-modal-desc">${richText(entry.desc)}</div>` : ''}
-          <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0]) : ''}</div>
+          <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0], entry) : ''}</div>
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
           ${creditsHtml(entry.credits)}
         </div>
@@ -521,7 +529,7 @@
       tab.addEventListener('click', () => {
         overlay.querySelectorAll('.ag-platform-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        overlay.querySelector('#ag-platform-content').innerHTML = platformBodyHtml(links[+tab.dataset.idx]);
+        overlay.querySelector('#ag-platform-content').innerHTML = platformBodyHtml(links[+tab.dataset.idx], entry);
       });
     });
 

@@ -334,6 +334,7 @@
       #cm-panel div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
       .cm-link-row { grid-template-columns: 1fr auto !important; }
       .cm-link-row select { width: 100% !important; }
+      .cm-link-row .cm-link-kind { grid-column: 1 / -1; }
       .cm-people-add { flex-direction: column; align-items: stretch; }
       .cm-people-add select, .cm-people-add button { width: 100%; max-width: none !important; }
       #cm-collab-from-entries, #cm-collab-edit-select, #cm-prov-edit-select, #fb-filter-title { max-width: none !important; width: 100%; }
@@ -2392,16 +2393,24 @@
 
     // ── Multi-link helpers ──────────────────────────────────────────────────
 
-    function cmAddLink(provider = '', url = '') {
+    // A link carries its own wording, because an audio entry can perfectly well
+    // link to the script for it — same platform, different thing on the end.
+    // "Auto" follows the entry's type, which is right almost always.
+    function cmAddLink(provider = '', url = '', kind = '') {
       const list = document.getElementById('cm-links-list');
       const row = document.createElement('div');
       row.className = 'cm-link-row';
-      row.style.cssText = 'display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:8px;';
+      row.style.cssText = 'display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;margin-bottom:8px;';
       row.innerHTML = `
         <select class="cm-input filter-select" style="width:150px;font-size:0.9rem">
           ${cmProviderOpts(provider)}
         </select>
         <input class="cm-input" placeholder="https://…" value="${cmEsc(url)}" style="width:100%">
+        <select class="cm-input cm-link-kind" style="width:120px;font-size:0.85rem" title="How this link is worded">
+          <option value=""       ${kind === ''       ? 'selected' : ''}>Auto</option>
+          <option value="audio"  ${kind === 'audio'  ? 'selected' : ''}>Listen on</option>
+          <option value="script" ${kind === 'script' ? 'selected' : ''}>Read on</option>
+        </select>
         <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="this.closest('.cm-link-row').remove()" style="padding:5px 10px">✕</button>
       `;
       const sel = row.querySelector('select');
@@ -2428,16 +2437,22 @@
     }
 
     function cmGetLinks() {
-      return Array.from(document.querySelectorAll('.cm-link-row')).map(row => ({
-        provider: row.querySelector('select').value,
-        url: row.querySelector('input').value.trim(),
-      })).filter(lk => lk.url);
+      return Array.from(document.querySelectorAll('.cm-link-row')).map(row => {
+        const link = {
+          provider: row.querySelector('select').value,
+          url: row.querySelector('input').value.trim(),
+        };
+        // Only stored when it is actually an override, so entries stay clean.
+        const kind = (row.querySelector('.cm-link-kind') || {}).value || '';
+        if (kind) link.kind = kind;
+        return link;
+      }).filter(lk => lk.url);
     }
 
     function cmSetLinks(links) {
       document.getElementById('cm-links-list').innerHTML = '';
       if (!links || !links.length) { cmAddLink(); return; }
-      links.forEach(lk => cmAddLink(lk.provider, lk.url));
+      links.forEach(lk => cmAddLink(lk.provider, lk.url, lk.kind || ''));
     }
 
     // ── Cover image upload ──────────────────────────────────────────────────

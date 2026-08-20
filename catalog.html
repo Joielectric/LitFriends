@@ -276,7 +276,11 @@
       PROVIDER_KIND[p.key] = p.kind === 'script' ? 'script' : 'audio';
     });
   }
-  function provVerb(key, entry){
+  // A link's own kind wins: an audio entry may link to the script for it, and
+  // only the link knows that. Otherwise the entry's type decides, and the
+  // platform's setting is the last word — for somewhere never audio.
+  function provVerb(key, entry, link){
+    if (link && link.kind) return link.kind === 'script' ? 'Read on ' : 'Listen on ';
     if (entry && isTextEntry(entry)) return 'Read on ';
     return PROVIDER_KIND[key] === 'script' ? 'Read on ' : 'Open on ';
   }
@@ -566,7 +570,7 @@
     var links = getLinks(e).map(function(l){
       return '<a class="modal-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
-        provVerb(l.provider, e) + esc(provLabel(l.provider)) + '</a>';
+        provVerb(l.provider, e, l) + esc(provLabel(l.provider)) + '</a>';
     }).join('');
     var tags = (e.tags||[]).map(function(t){ return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>'; }).join('');
     var related = relatedHtml(e);
