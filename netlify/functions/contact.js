@@ -58,6 +58,9 @@ export default async (req) => {
   if (body.action) {
     const auth = await authorize(req, body);
     if (!auth.ok) return json(unauthorized(auth), 401);
+    // The contact form and the alert list belong to the site, not to any one
+    // creator, so reading or changing them is the owner's alone.
+    if (!auth.isOwner) return json({ error: "Only the site owner can read the site inbox." }, 403);
     const inbox = await readInbox();
 
     if (body.action === "list") return json({ ok: true, ...inbox });

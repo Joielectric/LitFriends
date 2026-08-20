@@ -419,8 +419,8 @@
                   <button class="cm-tab active" data-tab="content"  onclick="cmTab('content')">Content</button>
                   <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Lists</button>
                   <button class="cm-tab owner-only" data-tab="news" onclick="cmTab('news')" style="display:none">Site News</button>
-                  <button class="cm-tab"        data-tab="feedback" onclick="cmTab('feedback')">Feedback</button>
-                  <button class="cm-tab"        data-tab="inbox"    onclick="cmTab('inbox')">Inbox</button>
+                  <button class="cm-tab owner-only" data-tab="feedback" onclick="cmTab('feedback')" style="display:none">Feedback</button>
+                  <button class="cm-tab owner-only" data-tab="inbox"    onclick="cmTab('inbox')" style="display:none">Inbox</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
                   <button class="cm-tab"        data-tab="projects" onclick="cmTab('projects')">Projects</button>
                   <button class="cm-tab"        data-tab="profile"  onclick="cmTab('profile')">My Profile</button>
@@ -2108,8 +2108,7 @@
           cmRebuildTagList();
           cmRenderCollabManager();
           cmRenderNews();
-          fbLoad();
-          inboxLoad();
+          if (cmWho.isOwner) { fbLoad(); inboxLoad(); }
           cmRestoreTab();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
@@ -2149,8 +2148,7 @@
           cmRebuildTagList();
           cmRenderCollabManager();
           cmRenderNews();
-          fbLoad();
-          inboxLoad();
+          if (cmWho.isOwner) { fbLoad(); inboxLoad(); }
           cmRestoreTab();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
