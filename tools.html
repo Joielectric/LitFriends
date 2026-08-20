@@ -624,6 +624,9 @@
                         <button type="button" class="cm-btn" onclick="cmCollabAddFromForm()">Add</button>
                     </div>
                     <div style="margin-top:8px;">
+                        <input id="cm-collab-banner" class="cm-input" style="width:100%" placeholder="https://banner-image (optional &mdash; used by the Literotica template)">
+                    </div>
+                    <div style="margin-top:8px;">
                         <select id="cm-collab-from-entries" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
                             <option value="">Or add a name already used in entries…</option>
                         </select>
@@ -641,9 +644,28 @@
                                 <input id="cm-collab-edit-url" class="cm-input" placeholder="https://profile-link (optional)">
                                 <button type="button" class="cm-btn" onclick="cmCollabSaveEdit()">Save</button>
                             </div>
+                            <input id="cm-collab-edit-banner" class="cm-input" style="width:100%;margin-top:8px" placeholder="https://banner-image (optional)">
                             <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmCollabDeleteEdit()">Delete collaborator</button>
                         </div>
                     </div>
+                </div>
+
+                <!-- One-off import, so the contributor sheet can be retired -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label" style="margin-bottom:6px">Import contributors</label>
+                    <p style="color:var(--text-mid);font-size:0.85rem;margin-bottom:10px;">
+                      Paste a CSV of <code style="color:var(--coral)">name, profile URL, banner URL</code> &mdash; a header row is fine.
+                      Existing collaborators keep their name; blank fields are filled in, and anything already set is left alone.
+                    </p>
+                    <textarea id="cm-import-csv" class="cm-input" style="width:100%;min-height:110px;font-family:monospace;font-size:0.8rem"
+                              placeholder="Name,Profile URL,Banner URL&#10;Lotus Kitty,https://…,https://…"></textarea>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+                        <input type="file" id="cm-import-file" accept=".csv,text/csv" style="display:none" onchange="cmImportFile(this)">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-import-file').click()">Load a .csv file</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmImportPreview()">Preview</button>
+                        <button type="button" class="cm-btn" onclick="cmImportApply()">Import</button>
+                    </div>
+                    <div id="cm-import-report" style="margin-top:10px;font-size:0.85rem;color:var(--text-mid);"></div>
                 </div>
 
                 <!-- Platforms -->
@@ -1724,6 +1746,7 @@
       cmEditingCollab = c.name;
       document.getElementById('cm-collab-edit-name').value = c.name;
       document.getElementById('cm-collab-edit-url').value = c.url || '';
+      document.getElementById('cm-collab-edit-banner').value = c.banner || '';
       box.style.display = 'block';
     }
     function cmCollabSaveEdit() {
@@ -1736,6 +1759,7 @@
       const other = cmFindCollab(newName);
       if (other && other !== c) { cmShowMsg('Another collaborator already has that name.', false); return; }
       c.name = newName; c.url = newUrl;
+      c.banner = document.getElementById('cm-collab-edit-banner').value.trim();
       cmEditingCollab = newName;
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator updated.', true); });
     }
@@ -1751,14 +1775,110 @@
       const sel = document.getElementById('cm-collab-edit-select'); if (sel) sel.value = '';
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator deleted.', true); });
     }
+    // ── Importing the old contributor sheet ─────────────────────────────────
+    // A one-off, but worth doing properly: names already in the table keep
+    // whatever they have, and only blank fields are filled in. Running it twice
+    // changes nothing the second time.
+
+    // Handles quoted fields, because a banner URL can contain a comma.
+    function cmParseCsvLine(line) {
+      const out = [];
+      let cur = '', quoted = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (quoted) {
+          if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (ch === '"') quoted = false;
+          else cur += ch;
+        } else if (ch === '"') quoted = true;
+        else if (ch === ',') { out.push(cur); cur = ''; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out.map(v => v.trim());
+    }
+
+    function cmImportRows() {
+      const text = document.getElementById('cm-import-csv').value || '';
+      const rows = [];
+      text.split(/\r?\n/).forEach((line, i) => {
+        if (!line.trim()) return;
+        const cells = cmParseCsvLine(line);
+        const name = cells[0] || '';
+        // Skip a header row rather than importing a collaborator called "Name".
+        if (i === 0 && /^(user\s*)?name$/i.test(name)) return;
+        if (!name) return;
+        rows.push({ name, url: cells[1] || '', banner: cells[2] || '' });
+      });
+      return rows;
+    }
+
+    function cmImportPlan() {
+      const add = [], fill = [], same = [];
+      cmImportRows().forEach(r => {
+        const existing = cmFindCollab(r.name);
+        if (!existing) { add.push(r); return; }
+        const gains = [];
+        if (r.url && !existing.url) gains.push('link');
+        if (r.banner && !existing.banner) gains.push('banner');
+        (gains.length ? fill : same).push({ ...r, gains });
+      });
+      return { add, fill, same };
+    }
+
+    function cmImportFile(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('cm-import-csv').value = e.target.result;
+        cmImportPreview();
+      };
+      reader.readAsText(file);
+      input.value = '';
+    }
+
+    function cmImportPreview() {
+      const { add, fill, same } = cmImportPlan();
+      const el = document.getElementById('cm-import-report');
+      if (!add.length && !fill.length && !same.length) {
+        el.innerHTML = 'Nothing to import &mdash; paste some CSV first.';
+        return;
+      }
+      const names = list => list.slice(0, 12).map(r => cmEsc(r.name)).join(', ') +
+        (list.length > 12 ? ` and ${list.length - 12} more` : '');
+      el.innerHTML =
+        `<div><strong style="color:var(--text)">${add.length} new</strong>${add.length ? ': ' + names(add) : ''}</div>` +
+        `<div><strong style="color:var(--text)">${fill.length} filled in</strong>${fill.length ? ': ' + names(fill) : ''}</div>` +
+        `<div>${same.length} already complete</div>`;
+    }
+
+    function cmImportApply() {
+      const { add, fill } = cmImportPlan();
+      if (!add.length && !fill.length) { cmImportPreview(); return; }
+      add.forEach(r => cmCollaborators.push({ name: r.name, url: r.url, banner: r.banner }));
+      fill.forEach(r => {
+        const c = cmFindCollab(r.name);
+        if (!c) return;
+        if (r.url && !c.url) c.url = r.url;
+        if (r.banner && !c.banner) c.banner = r.banner;
+      });
+      cmPersist(function () {
+        cmRenderCollabManager();
+        cmImportPreview();
+        cmShowMsg(`Imported ${add.length} new and updated ${fill.length}.`, true);
+      });
+    }
+
     function cmCollabAddFromForm() {
       const name = document.getElementById('cm-collab-name').value.trim();
       const url = document.getElementById('cm-collab-url').value.trim();
       if (!name) { cmShowMsg('Collaborator name is required.', false); return; }
       if (cmFindCollab(name)) { cmShowMsg('That collaborator already exists.', false); return; }
-      cmCollaborators.push({ name: name, url: url });
+      cmCollaborators.push({ name: name, url: url, banner: document.getElementById('cm-collab-banner').value.trim() });
       document.getElementById('cm-collab-name').value = '';
       document.getElementById('cm-collab-url').value = '';
+      document.getElementById('cm-collab-banner').value = '';
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator added.', true); });
     }
     // Distinct credit names used across entries that aren't collaborators yet
