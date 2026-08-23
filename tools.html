@@ -848,6 +848,24 @@
                       <div id="pf-alias-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
                       <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:6px 0 10px;"></div>
 
+                      <label class="cm-label" style="font-size:0.7rem">ScriptBin username <span style="font-weight:normal;color:var(--text-mid)">(to import your scripts)</span></label>
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                        <input id="pf-scriptbin" class="cm-input" style="flex:1 1 200px" placeholder="cuddle_with_me">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="sbCheck()">Check for scripts</button>
+                      </div>
+                      <div id="sb-status" style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px;"></div>
+                      <div id="sb-found" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                          <label class="cm-label" style="margin:0;font-size:0.75rem">New on ScriptBin</label>
+                          <div style="display:flex;gap:6px;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="sbAll(true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="sbAll(false)">None</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="sbImport()">Import selected</button>
+                          </div>
+                        </div>
+                        <div id="sb-list" style="max-height:280px;overflow-y:auto;"></div>
+                      </div>
+
                       <label class="cm-label" style="font-size:0.7rem">About</label>
                       <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
                                 placeholder="Line breaks are kept. Pasted links become links."></textarea>
@@ -3057,6 +3075,110 @@
     });
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
+    // ── Importing scripts from ScriptBin ────────────────────────────────────
+    // Only ever adds. A script already in the catalogue is left exactly as it
+    // is, because whatever has been done to it here — a date, a fill, an edited
+    // description — is worth more than the feed's version of it.
+    let sbWorks = [];
+
+    function sbStatus(text, tone) {
+      const el = document.getElementById('sb-status');
+      el.textContent = text || '';
+      el.style.color = tone === 'bad' ? '#e8a34f' : tone === 'good' ? '#6fe3c1' : 'var(--text-dim)';
+    }
+
+    // Already here? Match on the ScriptBin link, which is the one thing that
+    // cannot drift — a retitle on their side must not import a duplicate.
+    function sbKnownLinks() {
+      const seen = new Set();
+      cmEntries.forEach(e => {
+        (e.links || []).forEach(l => { if (l && l.url) seen.add(String(l.url).trim().toLowerCase()); });
+        if (e.sourceLink) seen.add(String(e.sourceLink).trim().toLowerCase());
+      });
+      return seen;
+    }
+
+    function sbCheck() {
+      const handle = document.getElementById('pf-scriptbin').value.trim();
+      if (!handle) return sbStatus('Enter your ScriptBin username first.', 'bad');
+      sbStatus('Asking ScriptBin\u2026');
+      fetch('/api/scriptbin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: cmPassword, handle }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) { sbStatus(data.error || 'That did not work.', 'bad'); return; }
+          const known = sbKnownLinks();
+          sbWorks = (data.works || []).filter(w => !known.has(String(w.sourceLink).toLowerCase()));
+          const already = (data.works || []).length - sbWorks.length;
+          sbRender();
+          sbStatus(
+            `${data.works.length} script${data.works.length === 1 ? '' : 's'} on ScriptBin` +
+            (already ? `, ${already} already in the catalogue` : '') +
+            (sbWorks.length ? `, ${sbWorks.length} new` : ' \u2014 nothing new'),
+            sbWorks.length ? 'good' : ''
+          );
+        })
+        .catch(() => sbStatus('Could not reach the server.', 'bad'));
+    }
+
+    function sbRender() {
+      const box = document.getElementById('sb-found');
+      const list = document.getElementById('sb-list');
+      if (!sbWorks.length) { box.style.display = 'none'; return; }
+      box.style.display = '';
+      list.innerHTML = sbWorks.map((w, i) => `
+        <label style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;">
+          <input type="checkbox" class="sb-pick" data-i="${i}" checked style="margin-top:4px;cursor:pointer">
+          <span style="min-width:0;">
+            <span style="color:var(--text);">${cmEsc(w.title)}</span>
+            ${w.sensitive ? '<span style="color:#e8a34f;font-size:0.72rem;margin-left:6px;">sensitive</span>' : ''}
+            <span style="display:block;color:var(--text-dim);font-size:0.76rem;">
+              ${w.tags.slice(0, 6).map(cmEsc).join(' &middot; ')}${w.tags.length > 6 ? ' &hellip;' : ''}
+              &nbsp;&mdash;&nbsp;${w.words.toLocaleString()} words
+            </span>
+          </span>
+        </label>`).join('');
+    }
+
+    function sbAll(on) {
+      document.querySelectorAll('.sb-pick').forEach(c => { c.checked = on; });
+    }
+
+    function sbImport() {
+      const picked = [...document.querySelectorAll('.sb-pick')]
+        .filter(c => c.checked).map(c => sbWorks[Number(c.dataset.i)]);
+      if (!picked.length) return sbStatus('Nothing selected.', 'bad');
+
+      picked.forEach(w => {
+        cmEntries.unshift({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          title: w.title,
+          type: 'script',
+          date: w.date,
+          tags: w.tags,
+          shortDesc: w.shortDesc,
+          desc: '',
+          links: w.links,
+          words: w.words,
+          credits: {},
+          source: w.source,
+          sourceId: w.sourceId,
+          sourceLink: w.sourceLink,
+        });
+      });
+
+      cmPersist(function () {
+        const n = picked.length;
+        sbWorks = sbWorks.filter(w => !picked.includes(w));
+        sbRender();
+        cmRenderEntries();
+        sbStatus(`Imported ${n} script${n === 1 ? '' : 's'}. They have no date yet \u2014 add one when you can.`, 'good');
+      });
+    }
+
     // ── My Profile ──────────────────────────────────────────────────────────
     const PF_THEMES = [
       { key: 'electric', label: 'Electric', swatch: '#5b8de8' },
@@ -3298,6 +3420,7 @@
       // any other name their credits use.
       CFG.registerArtistName(p.slug, p.name);
       (p.aliases || []).forEach(a => CFG.registerArtistName(p.slug, a));
+      document.getElementById('pf-scriptbin').value = p.scriptbin || '';
       pfAliases = (p.aliases || []).slice();
       pfRenderAliasPicker();
       pfAliasHint(p);
@@ -3376,6 +3499,7 @@
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         aliases: pfAliases,
+        scriptbin: document.getElementById('pf-scriptbin').value.trim(),
         published: document.getElementById('pf-published').checked,
         links: pfLinks,
         updates: pfUpdates,

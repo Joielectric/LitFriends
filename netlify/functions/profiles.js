@@ -66,6 +66,8 @@ export function defaultProfile(slug, name) {
     // free text and drift — a Reddit handle here, a display name there — so a
     // creator's work is found by any name they answer to, not just this one.
     aliases: [],
+    // Their username on ScriptBin, so their scripts can be pulled in.
+    scriptbin: "",
     // A creator's own news, shown on their page only. The site's News is the
     // landing page and stays the owner's.
     updates: [],
@@ -109,6 +111,9 @@ function sanitize(input, base, allProfiles) {
       .slice(0, MAX.links)
       .map((l) => ({ label: clean(l && l.label, MAX.label), url: safeUrl(l && l.url) }))
       .filter((l) => l.label && l.url);
+  }
+  if (input.scriptbin !== undefined) {
+    out.scriptbin = clean(input.scriptbin, 60).toLowerCase().replace(/[^a-z0-9_.-]/g, "");
   }
   if (Array.isArray(input.aliases)) {
     const seen = new Set();
