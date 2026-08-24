@@ -436,6 +436,51 @@
                         <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
                     </div>
                     <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
+                    <!-- Backup, and bulk work -->
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;">
+                      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <span style="color:var(--text-mid);font-size:0.85rem;">Backup &amp; bulk changes</span>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBackup()">Download backup</button>
+                          <button type="button" class="cm-btn cm-btn-sm owner-only" style="display:none" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleBulk()">Bulk edit</button>
+                        </div>
+                      </div>
+                      <input type="file" id="cm-restore-file" accept=".json,application/json" style="display:none" onchange="cmRestore(this)">
+
+                      <div id="cm-bulk" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+                        <p style="color:#e8a34f;font-size:0.8rem;margin-bottom:10px;">
+                          Take a backup before deleting. Nothing here can be undone from inside the site.
+                        </p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                          <input id="cm-bulk-search" class="cm-input cm-btn-sm" style="flex:1 1 160px" placeholder="Title, tag or creator…" oninput="cmRenderBulk()">
+                          <select id="cm-bulk-type" class="cm-input cm-btn-sm" style="flex:0 1 130px" onchange="cmRenderBulk()"></select>
+                          <select id="cm-bulk-source" class="cm-input cm-btn-sm" style="flex:0 1 150px" onchange="cmRenderBulk()">
+                            <option value="">Any source</option>
+                            <option value="scriptbin">Imported from ScriptBin</option>
+                            <option value="manual">Added by hand</option>
+                            <option value="uncredited">Nobody credited</option>
+                            <option value="nodate">No date</option>
+                          </select>
+                        </div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkPick(true)">Select all shown</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkPick(false)">None</button>
+                          <span id="cm-bulk-count" style="color:var(--text-mid);font-size:0.82rem;"></span>
+                        </div>
+                        <div id="cm-bulk-list" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;margin-bottom:10px;"></div>
+
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                          <input id="cm-bulk-tag" class="cm-input cm-btn-sm" style="flex:1 1 130px" placeholder="Tag">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkTag(true)">Add tag</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkTag(false)">Remove tag</button>
+                          <input type="date" id="cm-bulk-date" class="cm-input cm-btn-sm" style="flex:0 1 150px">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkDate()">Set date</button>
+                          <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmBulkDelete()">Delete selected</button>
+                        </div>
+                      </div>
+                    </div>
+
                     <div id="cm-unclaimed-box" style="display:none;border:1px solid rgba(232,163,79,0.4);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;background:rgba(232,163,79,0.06);">
                       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <span id="cm-unclaimed-count" style="color:#e8a34f;font-size:0.85rem;"></span>
@@ -3107,6 +3152,190 @@
     });
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
+    // ── Backup, restore, and bulk changes ───────────────────────────────────
+    // Bulk work is where a catalogue gets lost, so the backup sits next to it
+    // rather than somewhere sensible-but-elsewhere.
+
+    function cmDownload(name, text, type) {
+      const url = URL.createObjectURL(new Blob([text], { type: type || 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function cmBackup() {
+      const backup = {
+        savedAt: new Date().toISOString(),
+        site: location.host,
+        entries: cmEntries,
+        collaborators: cmCollaborators,
+        news: cmNews,
+        providers: cmProviders,
+      };
+      cmDownload('catalogue-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(backup, null, 2));
+      cmShowMsg(`Backed up ${cmEntries.length} entries.`, true);
+    }
+
+    function cmRestore(input) {
+      const file = input.files && input.files[0];
+      input.value = '';
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        let data;
+        try {
+          data = JSON.parse(e.target.result);
+        } catch {
+          cmShowMsg('That file is not readable JSON.', false);
+          return;
+        }
+        if (!Array.isArray(data.entries)) {
+          cmShowMsg('That file has no entries in it — is it a catalogue backup?', false);
+          return;
+        }
+        // Say what will be lost, in the numbers that make it real.
+        if (!confirm(
+          `Replace the catalogue with this backup?\n\n` +
+          `  now:    ${cmEntries.length} entries\n` +
+          `  backup: ${data.entries.length} entries` +
+          (data.savedAt ? `, saved ${new Date(data.savedAt).toLocaleString()}` : '') +
+          `\n\nAnything added since that backup will be gone.`
+        )) return;
+
+        cmEntries = data.entries;
+        if (Array.isArray(data.collaborators)) cmCollaborators = data.collaborators;
+        if (Array.isArray(data.news)) cmNews = data.news;
+        if (Array.isArray(data.providers)) cmSetProviders(data.providers);
+        cmPersist(function () {
+          cmRenderEntries();
+          cmRenderCollabManager();
+          cmRenderProviders();
+          cmShowMsg(`Restored ${cmEntries.length} entries.`, true);
+        });
+      };
+      reader.readAsText(file);
+    }
+
+    function cmToggleBulk() {
+      const box = document.getElementById('cm-bulk');
+      const open = box.style.display === 'none';
+      box.style.display = open ? 'block' : 'none';
+      if (open) {
+        const t = document.getElementById('cm-bulk-type');
+        if (!t.options.length) {
+          t.innerHTML = '<option value="">Any type</option>' +
+            CFG.entryTypes.map(x => `<option value="${x.key}">${cmEsc(x.plural)}</option>`).join('');
+        }
+        cmRenderBulk();
+      }
+    }
+
+    // Only ever offers what this person may actually change.
+    function cmBulkMatching() {
+      const q = (document.getElementById('cm-bulk-search').value || '').toLowerCase().trim();
+      const type = document.getElementById('cm-bulk-type').value;
+      const source = document.getElementById('cm-bulk-source').value;
+
+      return cmEntries.filter(e => {
+        if (!cmCanEdit(e)) return false;
+        if (q && !cmEntryHaystack(e).includes(q)) return false;
+        if (type && cmTypeOf(e) !== type) return false;
+        if (source === 'scriptbin' && e.source !== 'scriptbin') return false;
+        if (source === 'manual' && e.source) return false;
+        if (source === 'nodate' && e.date) return false;
+        if (source === 'uncredited') {
+          const c = e.credits || {};
+          if (CFG.creditKeys.some(r => (c[r] || []).some(n => String(n || '').trim()))) return false;
+        }
+        return true;
+      });
+    }
+
+    function cmRenderBulk() {
+      const list = cmBulkMatching();
+      const chosen = new Set(cmBulkChosen());
+      document.getElementById('cm-bulk-list').innerHTML = list.length
+        ? list.map(e => `
+          <label style="display:flex;gap:8px;align-items:center;padding:4px 0;cursor:pointer;">
+            <input type="checkbox" class="cm-bulk-pick" data-id="${cmEsc(e.id)}" ${chosen.has(e.id) ? 'checked' : ''} onchange="cmBulkCount()" style="cursor:pointer">
+            <span style="min-width:0;color:var(--text);font-size:0.88rem;">
+              ${cmTypeOf(e) === 'audio' ? '' : '[' + cmEsc(cmTypeLabel(e)) + '] '}${cmEsc(e.title || 'Untitled')}
+              <span style="color:var(--text-dim);">${e.date ? ' &middot; ' + cmEsc(e.date) : ' &middot; no date'}${e.source ? ' &middot; ' + cmEsc(e.source) : ''}</span>
+            </span>
+          </label>`).join('')
+        : '<div class="cm-collab-empty">Nothing matches.</div>';
+      cmBulkCount();
+    }
+
+    function cmBulkChosen() {
+      return [...document.querySelectorAll('.cm-bulk-pick')].filter(c => c.checked).map(c => c.dataset.id);
+    }
+    function cmBulkCount() {
+      const n = cmBulkChosen().length;
+      document.getElementById('cm-bulk-count').textContent =
+        `${n} selected of ${document.querySelectorAll('.cm-bulk-pick').length} shown`;
+    }
+    function cmBulkPick(on) {
+      document.querySelectorAll('.cm-bulk-pick').forEach(c => { c.checked = on; });
+      cmBulkCount();
+    }
+
+    // Apply a change to every chosen entry, then save once.
+    function cmBulkApply(what, change, done) {
+      const ids = cmBulkChosen();
+      if (!ids.length) { cmShowMsg('Nothing selected.', false); return; }
+      let n = 0;
+      ids.forEach(id => {
+        const e = cmEntries.find(x => x.id === id);
+        if (!e || !cmCanEdit(e)) return;
+        change(e); n++;
+      });
+      cmPersist(function () {
+        cmRenderBulk();
+        cmRenderEntries();
+        cmShowMsg(`${what} ${n} entr${n === 1 ? 'y' : 'ies'}.`, true);
+        if (done) done();
+      });
+    }
+
+    function cmBulkTag(add) {
+      const tag = document.getElementById('cm-bulk-tag').value.trim();
+      if (!tag) { cmShowMsg('Type a tag first.', false); return; }
+      const key = tag.toLowerCase();
+      cmBulkApply(add ? `Tagged` : `Untagged`, e => {
+        const tags = (e.tags || []).filter(t => String(t).toLowerCase() !== key);
+        e.tags = add ? tags.concat(tag) : tags;
+      });
+    }
+
+    function cmBulkDate() {
+      const date = document.getElementById('cm-bulk-date').value;
+      if (!date) { cmShowMsg('Pick a date first.', false); return; }
+      cmBulkApply('Dated', e => { e.date = date; });
+    }
+
+    function cmBulkDelete() {
+      const ids = cmBulkChosen();
+      if (!ids.length) { cmShowMsg('Nothing selected.', false); return; }
+      const titles = ids.map(id => (cmEntries.find(e => e.id === id) || {}).title).filter(Boolean);
+      // Deleting is the one action worth making someone read a sentence about.
+      if (!confirm(
+        `Delete ${ids.length} entr${ids.length === 1 ? 'y' : 'ies'}?\n\n` +
+        titles.slice(0, 8).join('\n') + (titles.length > 8 ? `\n…and ${titles.length - 8} more` : '') +
+        `\n\nThis cannot be undone. Download a backup first if you have not.`
+      )) return;
+
+      const gone = new Set(ids);
+      const before = cmEntries.length;
+      cmEntries = cmEntries.filter(e => !(gone.has(e.id) && cmCanEdit(e)));
+      cmPersist(function () {
+        cmRenderBulk();
+        cmRenderEntries();
+        cmShowMsg(`Deleted ${before - cmEntries.length} entries.`, true);
+      });
+    }
+
     // ── Work nobody is credited on ──────────────────────────────────────────
     // An entry with no credited names is invisible to everything that matches
     // by name: profile pages, the catalogue's creator filter, the picker. That
