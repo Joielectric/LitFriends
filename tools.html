@@ -436,6 +436,26 @@
                         <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
                     </div>
                     <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
+                    <div id="cm-unclaimed-box" style="display:none;border:1px solid rgba(232,163,79,0.4);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;background:rgba(232,163,79,0.06);">
+                      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <span id="cm-unclaimed-count" style="color:#e8a34f;font-size:0.85rem;"></span>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUnclaimed()">Show</button>
+                      </div>
+                      <div id="cm-unclaimed-body" style="display:none;margin-top:10px;">
+                        <p style="color:var(--text-mid);font-size:0.8rem;margin-bottom:8px;">
+                          Nobody is credited on these, so they do not appear on any profile. Claim them and the credit is added for you.
+                        </p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+                          <select id="cm-claim-as" class="cm-input cm-btn-sm" style="flex:1 1 160px"></select>
+                          <select id="cm-claim-role" class="cm-input cm-btn-sm" style="flex:0 1 140px"></select>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimAll(true)">All</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimAll(false)">None</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimSelected()">Claim selected</button>
+                        </div>
+                        <div id="cm-unclaimed-list" style="max-height:240px;overflow-y:auto;"></div>
+                      </div>
+                    </div>
+
                     <label id="cm-all-creators-row" style="display:none;align-items:center;gap:0.5rem;margin-bottom:8px;color:var(--text-mid);font-size:0.85rem;cursor:pointer;">
                       <input type="checkbox" id="cm-all-creators" onchange="cmRenderEntries()" style="cursor:pointer">
                       Show other creators&rsquo; entries
@@ -2994,6 +3014,7 @@
     }
 
     function cmRenderEntries() {
+      cmRenderUnclaimed();
       const q = (document.getElementById('cm-entry-search').value || '').toLowerCase().trim();
       const pool = cmPickable();
       const list = q ? pool.filter(e => cmEntryHaystack(e).includes(q)) : pool;
@@ -3075,6 +3096,105 @@
     });
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
+    // ── Work nobody is credited on ──────────────────────────────────────────
+    // An entry with no credited names is invisible to everything that matches
+    // by name: profile pages, the catalogue's creator filter, the picker. That
+    // is how an imported script arrives, and how a hand-added one arrives if
+    // the credits were left blank. Claiming adds the credit rather than
+    // inventing a second kind of ownership.
+    function cmUnclaimedEntries() {
+      return cmEntries.filter(e => {
+        if (!cmCanEdit(e)) return false;              // not ours to change
+        const credits = e.credits || {};
+        return !CFG.creditKeys.some(role => (credits[role] || []).some(n => String(n || '').trim()));
+      });
+    }
+
+    // Who a claim can name. A creator can only be themselves; the owner picks.
+    function cmClaimCandidates() {
+      // A creator can only claim as themselves, so there is nothing to choose.
+      if (!cmWho.isOwner) {
+        return [(pfProfile && pfProfile.name) || cmWho.slug].filter(Boolean);
+      }
+      const names = new Set();
+      Object.values(plProfilesById || {}).forEach(p => { if (p && p.name) names.add(p.name); });
+      (CFG.artists || []).forEach(a => names.add(a.name));
+      cmCollaborators.forEach(c => { if (c && c.name) names.add(c.name); });
+      return [...names].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    }
+
+    function cmRenderUnclaimed() {
+      const box = document.getElementById('cm-unclaimed-box');
+      if (!box) return;
+      const list = cmUnclaimedEntries();
+      if (!list.length) { box.style.display = 'none'; return; }
+      box.style.display = '';
+      document.getElementById('cm-unclaimed-count').textContent =
+        `${list.length} entr${list.length === 1 ? 'y has' : 'ies have'} nobody credited`;
+
+      const who = document.getElementById('cm-claim-as');
+      const keep = who.value;
+      const names = cmClaimCandidates();
+      // No default. Whoever is claiming has to say who for — a name that
+      // happened to sort first is not an answer, and crediting the wrong
+      // person is worse than one more click.
+      who.innerHTML = '<option value="">Claim for\u2026</option>' +
+        names.map(n => `<option value="${cmEsc(n)}">${cmEsc(n)}</option>`).join('');
+      who.value = keep && names.includes(keep) ? keep : (names.length === 1 ? names[0] : '');
+
+      const role = document.getElementById('cm-claim-role');
+      if (!role.options.length) {
+        role.innerHTML = CFG.creditRoles
+          .map(r => `<option value="${r.key}">${cmEsc(r.label)}</option>`).join('');
+        // A script has an author, so that is the sensible default.
+        role.value = 'writers';
+      }
+
+      document.getElementById('cm-unclaimed-list').innerHTML = list.map(e => `
+        <label style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;">
+          <input type="checkbox" class="cm-claim-pick" data-id="${cmEsc(e.id)}" checked style="cursor:pointer">
+          <span style="min-width:0;color:var(--text);">
+            ${cmTypeOf(e) === 'audio' ? '' : '[' + cmEsc(cmTypeLabel(e)) + '] '}${cmEsc(e.title || 'Untitled')}
+            <span style="color:var(--text-dim);font-size:0.78rem;">${e.date ? ' &middot; ' + cmEsc(e.date) : ' &middot; no date'}</span>
+          </span>
+        </label>`).join('');
+    }
+
+    function cmToggleUnclaimed() {
+      const body = document.getElementById('cm-unclaimed-body');
+      const open = body.style.display === 'none';
+      body.style.display = open ? 'block' : 'none';
+      document.querySelector('#cm-unclaimed-box button').textContent = open ? 'Hide' : 'Show';
+    }
+
+    function cmClaimAll(on) {
+      document.querySelectorAll('.cm-claim-pick').forEach(c => { c.checked = on; });
+    }
+
+    function cmClaimSelected() {
+      const name = document.getElementById('cm-claim-as').value;
+      const role = document.getElementById('cm-claim-role').value;
+      if (!name) { cmShowMsg('Choose who these belong to first.', false); return; }
+
+      const ids = [...document.querySelectorAll('.cm-claim-pick')].filter(c => c.checked).map(c => c.dataset.id);
+      if (!ids.length) { cmShowMsg('Nothing selected.', false); return; }
+
+      let claimed = 0;
+      ids.forEach(id => {
+        const e = cmEntries.find(x => x.id === id);
+        if (!e || !cmCanEdit(e)) return;
+        e.credits = e.credits || {};
+        e.credits[role] = [name];
+        claimed++;
+      });
+
+      cmPersist(function () {
+        cmRenderUnclaimed();
+        cmRenderEntries();
+        cmShowMsg(`Claimed ${claimed} entr${claimed === 1 ? 'y' : 'ies'} for ${name}.`, true);
+      });
+    }
+
     // ── Importing scripts from ScriptBin ────────────────────────────────────
     // Only ever adds. A script already in the catalogue is left exactly as it
     // is, because whatever has been done to it here — a date, a fill, an edited
@@ -3163,7 +3283,10 @@
           desc: '',
           links: w.links,
           words: w.words,
-          credits: {},
+          // Credit them as the writer. Without this the script has an owner but
+          // no credited name, so nothing that matches by name — their profile,
+          // the catalogue, the picker — can find it.
+          credits: pfProfile && pfProfile.name ? { writers: [pfProfile.name] } : {},
           source: w.source,
           sourceId: w.sourceId,
           sourceLink: w.sourceLink,
@@ -3525,10 +3648,12 @@
     // dynamic one is what its creator controls, so it is listed first and the
     // old page is still reachable underneath.
     let plRows = [];
+    let plProfilesById = {};
 
     function plLoad() {
       pfApi({ action: 'list' }, data => {
         const live = data.profiles || {};
+        plProfilesById = data.profiles || {};
         const rows = [];
         (CFG.artists || []).forEach(a => {
           const p = live[a.slug];
