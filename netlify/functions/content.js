@@ -22,14 +22,39 @@ function canEdit(storedEntry, auth) {
   return storedEntry.owner === auth.slug;
 }
 
+// What identifies an entry as being the same imported work: the id it came in
+// with, and the link it points at. Both are kept because a source can change
+// one — a retitle on ScriptBin moves the URL — and either match is enough.
+function sourceKeys(entry) {
+  const keys = [];
+  if (entry.sourceId) keys.push(`id:${String(entry.sourceId).trim().toLowerCase()}`);
+  const link = entry.sourceLink || (entry.links && entry.links[0] && entry.links[0].url);
+  if (link) keys.push(`url:${String(link).trim().toLowerCase()}`);
+  return keys;
+}
+
 function mergeEntries(incoming, stored, auth) {
   const byId = new Map(stored.map((e) => [e.id, e]));
   const mine = auth.isOwner ? OWNER_SLUG : auth.slug;
 
+  // Imported work already here, whoever imported it. The client checks this
+  // too, but only against what it happens to have loaded — two tabs, two
+  // people, or one impatient double-click all get past that.
+  const known = new Set();
+  stored.forEach((e) => { if (e.source) sourceKeys(e).forEach((k) => known.add(k)); });
+
   const accepted = [];
+  const skipped = [];
   for (const entry of incoming) {
     const prior = byId.get(entry.id);
     if (!canEdit(prior, auth)) continue;  // silently keep the stored copy
+
+    if (!prior && entry.source) {
+      const keys = sourceKeys(entry);
+      if (keys.some((k) => known.has(k))) { skipped.push(entry.title || entry.id); continue; }
+      keys.forEach((k) => known.add(k));   // and not twice within one request
+    }
+
     accepted.push({ ...entry, owner: (prior && prior.owner) || mine });
   }
 
@@ -38,7 +63,7 @@ function mergeEntries(incoming, stored, auth) {
   // omission is honoured for those and only those.
   const preserved = stored.filter((e) => !canEdit(e, auth));
   const keptIds = new Set(accepted.map((e) => e.id));
-  return [...accepted, ...preserved.filter((e) => !keptIds.has(e.id))];
+  return { entries: [...accepted, ...preserved.filter((e) => !keptIds.has(e.id))], skipped };
 }
 
 const CORS = {
@@ -94,7 +119,7 @@ export default async (req) => {
     const { data: existing } = await readJsonWithLegacy("content", "audio");
     const stored = (existing && existing.entries) || [];
 
-    const merged = mergeEntries(entries, stored, auth);
+    const { entries: merged, skipped } = mergeEntries(entries, stored, auth);
 
     // The shared lists — collaborators, news, platforms — belong to the site,
     // not to any one creator, so only the owner may change them. Everyone
@@ -107,7 +132,7 @@ export default async (req) => {
     const providers = keepOwn(body.providers, existing && existing.providers);
 
     await store.setJSON("audio", { entries: merged, collaborators, news, providers });
-    return new Response(JSON.stringify({ ok: true, entries: merged }), { status: 200, headers: CORS });
+    return new Response(JSON.stringify({ ok: true, entries: merged, skipped }), { status: 200, headers: CORS });
   }
 
   return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });
