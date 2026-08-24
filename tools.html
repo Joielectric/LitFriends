@@ -3073,7 +3073,7 @@
       cmDeleteEntry(id);
     }
 
-    function cmPersist(onSuccess) {
+    function cmPersist(onSuccess, onFail) {
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3081,10 +3081,21 @@
       })
         .then(r => r.json())
         .then(data => {
-          if (data.ok) onSuccess();
-          else cmShowMsg('Save failed: ' + (data.error || 'unknown error'), false);
+          if (!data.ok) {
+            cmShowMsg('Save failed: ' + (data.error || 'unknown error'), false);
+            if (onFail) onFail(data);
+            return;
+          }
+          // The server has the final say — it drops duplicates and refuses
+          // edits to other people's work — so take back what it actually
+          // stored rather than trusting what we sent.
+          if (Array.isArray(data.entries)) cmEntries = data.entries;
+          onSuccess(data);
         })
-        .catch(() => cmShowMsg('Network error — changes not saved.', false));
+        .catch(() => {
+          cmShowMsg('Network error — changes not saved.', false);
+          if (onFail) onFail();
+        });
     }
 
     // Add a person to a role when picked from its dropdown
@@ -3267,10 +3278,19 @@
       document.querySelectorAll('.sb-pick').forEach(c => { c.checked = on; });
     }
 
+    let sbImporting = false;
+
     function sbImport() {
+      // A second click before the save returns would send the same scripts
+      // again. The server refuses the duplicate, but not asking is better.
+      if (sbImporting) return;
+
       const picked = [...document.querySelectorAll('.sb-pick')]
         .filter(c => c.checked).map(c => sbWorks[Number(c.dataset.i)]);
       if (!picked.length) return sbStatus('Nothing selected.', 'bad');
+
+      sbImporting = true;
+      sbStatus('Importing\u2026');
 
       picked.forEach(w => {
         cmEntries.unshift({
@@ -3293,13 +3313,19 @@
         });
       });
 
-      cmPersist(function () {
-        const n = picked.length;
+      cmPersist(function (data) {
+        sbImporting = false;
+        const skipped = (data && data.skipped) || [];
+        const n = picked.length - skipped.length;
         sbWorks = sbWorks.filter(w => !picked.includes(w));
         sbRender();
         cmRenderEntries();
-        sbStatus(`Imported ${n} script${n === 1 ? '' : 's'}. They have no date yet \u2014 add one when you can.`, 'good');
-      });
+        sbStatus(
+          (n ? `Imported ${n} script${n === 1 ? '' : 's'}. They have no date yet \u2014 add one when you can.` : '') +
+          (skipped.length ? ` ${skipped.length} already in the catalogue, so ${skipped.length === 1 ? 'it was' : 'they were'} skipped.` : ''),
+          n ? 'good' : 'bad'
+        );
+      }, function () { sbImporting = false; });
     }
 
     // ── My Profile ──────────────────────────────────────────────────────────
