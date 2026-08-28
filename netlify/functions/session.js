@@ -1,10 +1,9 @@
-import { verifyGoogleToken, identify, unauthorized, ownerEmail, OWNER_SLUG } from "./_auth.js";
+import { verifyGoogleToken, identify, unauthorized } from "./_auth.js";
 import { createSession, sessionCookie, cookieFromRequest, readSession } from "./_session.js";
 
 // Starting and ending a session.
 //
 //   POST /api/session { credential }  -> sign in with a Google ID token
-//   POST /api/session { password }    -> sign in with the shared password
 //   POST /api/session { action: "who" }  -> who the current cookie says you are
 //   POST /api/session { action: "out" }  -> sign out
 //
@@ -68,13 +67,6 @@ export default async (req) => {
       return json({ error: `Sign-in failed: ${err.message}` }, 401);
     }
     who = await identify(claims.email, claims.name, "google");
-  } else if (body.password) {
-    const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
-    if (!envPassword || body.password.trim() !== envPassword) {
-      return json(unauthorized({ error: "Incorrect password." }), 401);
-    }
-    // Only the owner has the shared password.
-    who = { ok: true, email: ownerEmail(), name: "", via: "password", isOwner: true, role: "owner", slug: OWNER_SLUG };
   } else {
     return json({ error: "Nothing to sign in with." }, 400);
   }

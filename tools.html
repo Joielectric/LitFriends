@@ -362,16 +362,8 @@
     <p style="color:#c2cce0;font-size:0.9rem;margin-bottom:1.4rem;">Sign in to continue.</p>
 
     <div id="tools-gsi" style="display:flex;justify-content:center;min-height:44px;"></div>
-    <div id="tools-gsi-note" style="color:#8792ab;font-size:0.78rem;margin-top:0.6rem;display:none;">Sign-in is unavailable &mdash; use the password below.</div>
+    <div id="tools-gsi-note" style="color:#e8a34f;font-size:0.78rem;margin-top:0.6rem;display:none;">Sign-in could not load. Check that this page is not blocking accounts.google.com, then reload.</div>
 
-    <div style="display:flex;align-items:center;gap:0.7rem;margin:1.2rem 0;color:#8792ab;font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;">
-      <span style="flex:1;height:1px;background:rgba(180,195,225,0.24);"></span>or<span style="flex:1;height:1px;background:rgba(180,195,225,0.24);"></span>
-    </div>
-
-    <input type="password" id="tools-gate-pw" placeholder="Admin password"
-      onkeydown="if(event.key==='Enter')toolsUnlock()"
-      style="width:100%;max-width:260px;padding:0.7rem 0.9rem;border-radius:3px;border:1px solid rgba(180,195,225,0.5);background:#262d44;color:#f2f6ff;font-size:1rem;outline:none;margin-bottom:0.9rem;">
-    <div><button onclick="toolsUnlock()" style="font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.2em;text-transform:uppercase;color:#f2f6ff;background:transparent;border:1px solid #5b8de8;padding:0.7rem 1.6rem;border-radius:3px;cursor:pointer;">Unlock</button></div>
     <div id="tools-gate-msg" style="color:#e87a88;font-size:0.85rem;margin-top:0.8rem;min-height:1em;"></div>
   </div>
 </div>
@@ -399,17 +391,6 @@
         <div class="tools-section">
             <div class="section-title">Content Manager</div>
 
-            <!-- Lock screen -->
-            <div id="cm-lock-screen">
-                <p style="color:var(--text-mid);margin-bottom:14px;">Enter the admin password to manage audio content.</p>
-                <div class="cm-lock">
-                    <input type="password" id="cm-password" class="cm-input" placeholder="Admin password"
-                        style="max-width:260px;background:#fff;color:#1a1a0f;border:2px solid #ffcc00;"
-                        onkeydown="if(event.key==='Enter')cmUnlock()">
-                    <button class="cm-btn" onclick="cmUnlock()">Unlock</button>
-                    <span id="cm-lock-msg" style="color:#e74c3c;font-weight:bold;"></span>
-                </div>
-            </div>
 
             <!-- Admin panel -->
             <div id="cm-panel" style="display:none">
@@ -1546,7 +1527,6 @@
     let cmCollaborators = [];
     let cmNews = [];
     let cmProviders = [];
-    let cmPassword = '';
     let cmEditingId = null;
 
     // ── Platforms ─────────────────────────────────────────────────────────────
@@ -1657,7 +1637,7 @@
     function fbLoad() {
       fetch('/api/feedback', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, action: 'list' })
+        body: JSON.stringify({ action: 'list' })
       })
         .then(r => r.json())
         .then(d => {
@@ -1718,7 +1698,7 @@
       if (!confirm('Delete this response?')) return;
       fetch('/api/feedback', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, action: 'delete', id: id })
+        body: JSON.stringify({ action: 'delete', id: id })
       })
         .then(r => r.json())
         .then(d => { if (d.ok) { fbResponses = fbResponses.filter(r => r.id !== id); fbPopulateTitles(); fbRender(); cmShowMsg('Response deleted.', true); } })
@@ -1754,7 +1734,7 @@
     function inboxPost(payload, then) {
       fetch('/api/contact', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ password: cmPassword }, payload)),
+        body: JSON.stringify(payload),
       })
         .then(r => r.json())
         .then(d => {
@@ -2124,28 +2104,13 @@
             data.error || 'That account does not have access.';
           return;
         }
-        toolsVerify({}, fail => {
+        toolsVerify(fail => {
           document.getElementById('tools-gate-msg').textContent = fail.error || 'Could not load your content.';
         });
       });
     }
 
     // Full-page gate — password path
-    function toolsUnlock() {
-      const pw = document.getElementById('tools-gate-pw').value.trim();
-      if (!pw) return;
-      toolsStartSession({ password: pw }).then(data => {
-        if (!data.ok) {
-          document.getElementById('tools-gate-msg').textContent = data.env_set === false
-            ? 'ADMIN_PASSWORD env var not found on server.'
-            : 'Incorrect password.';
-          return;
-        }
-        toolsVerify({}, fail => {
-          document.getElementById('tools-gate-msg').textContent = fail.error || 'Could not load your content.';
-        });
-      });
-    }
 
     // Already signed in from a previous visit? Then never show the gate.
     (function resumeSession() {
@@ -2155,16 +2120,16 @@
         body: JSON.stringify({ action: 'who' }),
       })
         .then(r => r.json())
-        .then(data => { if (data.ok) toolsVerify({}, function () {}); })
+        .then(data => { if (data.ok) toolsVerify(function () {}); })
         .catch(function () { /* no session; the gate is already showing */ });
     })();
 
-    // Shared by both paths: confirm with the server, then open the page.
-    function toolsVerify(creds, onFail) {
+    // Confirm with the server, then open the page.
+    function toolsVerify(onFail) {
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ action: 'verify' }, creds)),
+        body: JSON.stringify({ action: 'verify' }),
       })
         .then(r => r.json())
         .then(data => {
@@ -2172,7 +2137,6 @@
           // Reveal the page
           document.getElementById('tools-gate').style.display = 'none';
           document.getElementById('tools-main').style.display = '';
-          cmPassword = creds.password || '';
           cmWho = data.who || {};
           // Seeing other people's entries is the owner's business alone.
           const whoami = document.getElementById('cm-whoami');
@@ -2189,8 +2153,6 @@
           cmNews = data.news || [];
           cmSetProviders(data.providers);
           cmRenderProviders();
-          const ls = document.getElementById('cm-lock-screen');
-          if (ls) ls.style.display = 'none';
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
@@ -2206,45 +2168,6 @@
         });
     }
 
-    function cmUnlock() {
-      const pw = document.getElementById('cm-password').value.trim();
-      if (!pw) return;
-
-      fetch('/api/content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw, action: 'verify' }),
-      })
-        .then(r => r.json())
-        .then(data => {
-          if (!data.ok) {
-            const msg = data.env_set === false
-              ? 'ADMIN_PASSWORD env var not found on server.'
-              : 'Incorrect password.';
-            document.getElementById('cm-lock-msg').textContent = msg;
-            return;
-          }
-          cmPassword = pw;
-          cmEntries = data.entries || [];
-          cmCollaborators = data.collaborators || [];
-          cmNews = data.news || [];
-          cmSetProviders(data.providers);
-          cmRenderProviders();
-          document.getElementById('cm-lock-screen').style.display = 'none';
-          document.getElementById('cm-panel').style.display = 'block';
-          cmRenderEntries();
-          cmRebuildTagList();
-          cmRenderCollabManager();
-          cmRenderNews();
-          if (cmWho.isOwner) { fbLoad(); inboxLoad(); }
-          cmRestoreTab();
-          cmSetLinks([]);
-          document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
-        })
-        .catch(() => {
-          document.getElementById('cm-lock-msg').textContent = 'Could not reach server.';
-        });
-    }
 
     const GENDER_TAGS_CM = CFG.audienceTags;
 
@@ -2614,7 +2537,6 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            password:    cmPassword,
             filename:    file.name,
             contentType: blob.type,
             data:        await cmBlobToBase64(blob),
@@ -2660,7 +2582,6 @@
           method: 'POST',
           headers: {
             'Content-Type': file.type,
-            'x-admin-password': cmPassword,
             'x-filename': file.name,
           },
           body: file,
@@ -2693,7 +2614,7 @@
       fetch('/api/track-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, action: 'list' }),
+        body: JSON.stringify({ action: 'list' }),
       })
         .then(r => r.json())
         .then(d => {
@@ -2746,7 +2667,7 @@
       fetch('/api/track-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, action: 'delete', key: key }),
+        body: JSON.stringify({ action: 'delete', key: key }),
       })
         .then(r => r.json())
         .then(d => {
@@ -2852,7 +2773,7 @@
       fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, action: 'list' }),
+        body: JSON.stringify({ action: 'list' }),
       })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
@@ -2926,7 +2847,7 @@
       fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, action: 'delete', key }),
+        body: JSON.stringify({ action: 'delete', key }),
       })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
@@ -3127,7 +3048,7 @@
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, entries: cmEntries, collaborators: cmCollaborators, news: cmNews, providers: cmProviders }),
+        body: JSON.stringify({ entries: cmEntries, collaborators: cmCollaborators, news: cmNews, providers: cmProviders }),
       })
         .then(r => r.json())
         .then(data => {
@@ -3470,7 +3391,7 @@
       fetch('/api/scriptbin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: cmPassword, handle }),
+        body: JSON.stringify({ handle }),
       })
         .then(r => r.json())
         .then(data => {
@@ -3835,7 +3756,7 @@
       fetch('/api/profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ password: cmPassword }, payload)),
+        body: JSON.stringify(payload),
       })
         .then(r => r.json())
         .then(data => {
@@ -4000,7 +3921,7 @@
       fetch('/api/creators', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ password: cmPassword }, payload)),
+        body: JSON.stringify(payload),
       })
         .then(r => r.json())
         .then(data => {

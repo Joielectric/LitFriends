@@ -9,18 +9,17 @@ import { cookieFromRequest, readSession } from "./_session.js";
 //      person stays signed in — a Google token only lasts an hour.
 //   2. A Google ID token in `Authorization: Bearer <jwt>`, whose verified email
 //      appears in ADMIN_EMAILS or in the creator registry (_creators.js).
-//   3. The shared ADMIN_PASSWORD, in the body or the x-admin-password header.
 //
-// The password is the fallback so a misconfigured OAuth origin cannot lock
-// anyone out of their own Content Manager. Drop it by clearing ADMIN_PASSWORD
-// once sign-in has been working for a while.
+// There used to be a third: a single shared password. It was the way in before
+// sign-in existed, and it was retired once sign-in proved itself. A secret
+// everybody knows cannot be revoked from one person, and it made every account
+// only as private as the least careful holder of it.
 //
 // Environment:
 //   GOOGLE_CLIENT_ID  the ...apps.googleusercontent.com id (public)
 //   ADMIN_EMAILS      comma-separated allowlist; empty means nobody signs in
 //   OWNER_EMAIL       whose site this is; defaults to the first ADMIN_EMAILS
 //                     entry. Owner-only powers hang off this.
-//   ADMIN_PASSWORD    shared password; empty disables the fallback
 //
 // The token is verified here rather than by calling Google's tokeninfo
 // endpoint, so an admin action costs no extra network round trip and does not
@@ -180,7 +179,7 @@ export async function identify(rawEmail, name, via) {
  * Decide whether a request may make changes.
  *
  * Returns { ok, email, name, via, role, slug, isOwner, error }. `via` is
- * "session", "google" or "password", which lets a caller log who did what.
+ * "session" or "google", which lets a caller log who did what.
  * `slug` is the profile this person owns, and is what content gets scoped by.
  */
 export async function authorize(req, body) {
@@ -194,8 +193,8 @@ export async function authorize(req, body) {
     // effect immediately rather than whenever their session happens to lapse.
     const who = await identify(sessionEmail, "", "session");
     if (who.ok) return who;
-    // A session for someone no longer allowed falls through rather than
-    // failing outright, so a password in the same request still works.
+    // A session for someone no longer allowed falls through to the token
+    // check rather than failing outright.
   }
 
   const bearer = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") || "");
@@ -211,15 +210,6 @@ export async function authorize(req, body) {
     return identify(claims.email, claims.name, "google");
   }
 
-  const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
-  const given = String(
-    (body && body.password) || req.headers.get("x-admin-password") || ""
-  ).trim();
-
-  if (envPassword && given && given === envPassword) {
-    // Only the owner has the shared password, so it grants owner rights.
-    return { ok: true, email: ownerEmail(), name: "", via: "password", isOwner: true, role: "owner", slug: OWNER_SLUG };
-  }
   return { ok: false, error: "Unauthorized" };
 }
 
@@ -227,7 +217,6 @@ export async function authorize(req, body) {
 export function unauthorized(auth) {
   return {
     error: (auth && auth.error) || "Unauthorized",
-    env_set: !!process.env.ADMIN_PASSWORD,
     google_configured: !!(process.env.GOOGLE_CLIENT_ID || "").trim(),
   };
 }
