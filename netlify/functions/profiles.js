@@ -68,6 +68,9 @@ export function defaultProfile(slug, name) {
     aliases: [],
     // Their username on ScriptBin, so their scripts can be pulled in.
     scriptbin: "",
+    // Which borders their posting templates draw around each section. Style
+    // only — the words always come from the catalogue entry.
+    postStyle: null,
     // A creator's own news, shown on their page only. The site's News is the
     // landing page and stays the owner's.
     updates: [],
@@ -111,6 +114,19 @@ function sanitize(input, base, allProfiles) {
       .slice(0, MAX.links)
       .map((l) => ({ label: clean(l && l.label, MAX.label), url: safeUrl(l && l.url) }))
       .filter((l) => l.label && l.url);
+  }
+  if (input.postStyle && typeof input.postStyle === "object") {
+    const ps = input.postStyle;
+    const name = (v) => clean(v, 24).replace(/[^a-z0-9-]/gi, "");
+    out.postStyle = {
+      frame: name(ps.frame),
+      divider: name(ps.divider),
+      // Their own art, kept as typed apart from control characters — it is
+      // drawn as text and never as markup.
+      frameTop: clean(ps.frameTop, 200),
+      frameBottom: clean(ps.frameBottom, 200),
+      dividerRaw: clean(ps.dividerRaw, 200),
+    };
   }
   if (input.scriptbin !== undefined) {
     out.scriptbin = clean(input.scriptbin, 60).toLowerCase().replace(/[^a-z0-9_.-]/g, "");
