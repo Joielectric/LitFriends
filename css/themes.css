@@ -1,0 +1,140 @@
+/* The five looks a creator can choose, in one place.
+ *
+ * These lived twice — once in profile.html, once in feedback.html — and the two
+ * copies had already drifted into different variable names for the same colour.
+ * Anything that shows a creator's work should link this file and put their
+ * chosen theme on <body data-theme="…">.
+ *
+ * Both naming sets are defined together on purpose. An alias declared elsewhere
+ * (--electric: var(--accent) in a page's own :root) would resolve against the
+ * value of --accent at :root, not the one the theme sets on <body> — so the
+ * alias would silently keep the default colour. Declaring both here, in the
+ * same rule, avoids that entirely.
+ *
+ * Each theme carries two text tones. The default pair is what the profile
+ * pages have always used; the -bright pair exists because the feedback form was
+ * deliberately lightened — nothing on it should read as dim — and a single
+ * value would have to spoil one page or the other.
+ *
+ * Adding a theme means adding a block here and its name to THEMES in
+ * netlify/functions/profiles.js, which decides what a profile may store.
+ */
+
+:root,
+body[data-theme="electric"] {
+  --bg: #151a2a;
+  --surface: #1e2438;
+  --surface-2: #262d44;
+  --surface-3: #2f3750;
+  --border: rgba(180,195,225,0.2);
+  --border-mid: rgba(180,195,225,0.42);
+  --border-hi: rgba(180,195,225,0.65);
+  --text: #f2f6ff;
+  --text-mid: #c2cce0;
+  --text-dim: #8792ab;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #dde5f5;
+  --text-dim-bright: #c3cee4;
+  --silver: #dde5f2;
+  --silver-hi: #f4f8ff;
+
+  --accent: #5b8de8;
+  --accent-soft: rgba(91,141,232,0.14);
+  --electric: #5b8de8;
+  --electric-dim: #2a4880;
+
+  --danger: #c0394a;
+  --radius: 2px;
+}
+
+body[data-theme="ember"] {
+  --bg: #140d0c;
+  --surface: #1e1412;
+  --surface-2: #291c19;
+  --surface-3: #33241f;
+  --border: rgba(217,116,63,0.24);
+  --border-mid: rgba(217,116,63,0.45);
+  --border-hi: rgba(217,116,63,0.7);
+  --text: #fdf3ee;
+  --text-mid: #e6c9b8;
+  --text-dim: #b08d78;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #f0ddd0;
+  --text-dim-bright: #d8bba6;
+  --silver: #f0ddd0;
+  --silver-hi: #fdf3ee;
+
+  --accent: #d9743f;
+  --accent-soft: rgba(217,116,63,0.14);
+  --electric: #d9743f;
+  --electric-dim: #7a3f20;
+}
+
+body[data-theme="orchid"] {
+  --bg: #150e1c;
+  --surface: #1f1529;
+  --surface-2: #2a1d37;
+  --surface-3: #352545;
+  --border: rgba(180,120,232,0.24);
+  --border-mid: rgba(180,120,232,0.45);
+  --border-hi: rgba(180,120,232,0.7);
+  --text: #f7f0fd;
+  --text-mid: #d6c4e8;
+  --text-dim: #a189b8;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #e6d8f5;
+  --text-dim-bright: #cbb6e2;
+  --silver: #e6d8f5;
+  --silver-hi: #f7f0fd;
+
+  --accent: #b478e8;
+  --accent-soft: rgba(180,120,232,0.14);
+  --electric: #b478e8;
+  --electric-dim: #5f3d7d;
+}
+
+body[data-theme="moss"] {
+  --bg: #0d1512;
+  --surface: #141f1a;
+  --surface-2: #1c2b24;
+  --surface-3: #24362d;
+  --border: rgba(95,191,148,0.24);
+  --border-mid: rgba(95,191,148,0.45);
+  --border-hi: rgba(95,191,148,0.7);
+  --text: #eefaf4;
+  --text-mid: #bcd8cb;
+  --text-dim: #85a394;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #d6ece1;
+  --text-dim-bright: #a9cbbb;
+  --silver: #d6ece1;
+  --silver-hi: #eefaf4;
+
+  --accent: #5fbf94;
+  --accent-soft: rgba(95,191,148,0.14);
+  --electric: #5fbf94;
+  --electric-dim: #2f6650;
+}
+
+body[data-theme="noir"] {
+  --bg: #101011;
+  --surface: #1a1a1c;
+  --surface-2: #242427;
+  --surface-3: #2e2e32;
+  --border: rgba(201,201,210,0.2);
+  --border-mid: rgba(201,201,210,0.4);
+  --border-hi: rgba(201,201,210,0.62);
+  --text: #f4f4f6;
+  --text-mid: #c4c4cc;
+  --text-dim: #8a8a94;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #dcdce2;
+  --text-dim-bright: #b6b6c0;
+  --silver: #dcdce2;
+  --silver-hi: #f4f4f6;
+
+  --accent: #c9c9d2;
+  --accent-soft: rgba(201,201,210,0.12);
+  --electric: #c9c9d2;
+  --electric-dim: #5c5c66;
+}

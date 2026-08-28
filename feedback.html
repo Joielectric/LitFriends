@@ -9,56 +9,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/themes.css">
 <style>
-:root {
-  --bg: #151a2a;
-  --surface: #1e2438;
-  --surface-2: #262d44;
-  --surface-3: #2f3750;
-  --border: rgba(180,195,225,0.24);
-  --border-mid: rgba(180,195,225,0.42);
-  --border-hi: rgba(180,195,225,0.65);
-  --text: #f4f8ff;
-  --text-mid: #dde5f5;
-  --text-dim: #c3cee4;
-  --silver: #dde5f2;
-  --silver-hi: #f4f8ff;
-  --electric: #5b8de8;
-  --electric-dim: #2a4880;
-  --danger: #c0394a;
+/* Palette and themes: css/themes.css
+ *
+ * This page reads brighter than the rest on purpose, so it takes each theme's
+ * brighter text pair. The selector outruns body[data-theme="…"] deliberately;
+ * a plain `body` rule would lose to it and the tones would silently revert.
+ */
+html body, html body[data-theme] {
+  --text-mid: var(--text-mid-bright);
+  --text-dim: var(--text-dim-bright);
   --radius: 2px;
-}
-
-/* Feedback left on a creator's page wears their colours, so arriving from
-   their profile does not feel like being handed off to somebody else. Same
-   five themes the profile pages offer, named for this page's variables. */
-body[data-theme="ember"] {
-  --bg: #140d0c; --surface: #1e1412; --surface-2: #291c19; --surface-3: #33241f;
-  --border: rgba(217,116,63,0.24); --border-mid: rgba(217,116,63,0.45); --border-hi: rgba(217,116,63,0.7);
-  --text: #fdf3ee; --text-mid: #f0ddd0; --text-dim: #d8bba6;
-  --silver: #f0ddd0; --silver-hi: #fdf3ee;
-  --electric: #d9743f; --electric-dim: #7a3f20;
-}
-body[data-theme="orchid"] {
-  --bg: #150e1c; --surface: #1f1529; --surface-2: #2a1d37; --surface-3: #352545;
-  --border: rgba(180,120,232,0.24); --border-mid: rgba(180,120,232,0.45); --border-hi: rgba(180,120,232,0.7);
-  --text: #f7f0fd; --text-mid: #e6d8f5; --text-dim: #cbb6e2;
-  --silver: #e6d8f5; --silver-hi: #f7f0fd;
-  --electric: #b478e8; --electric-dim: #5f3d7d;
-}
-body[data-theme="moss"] {
-  --bg: #0d1512; --surface: #141f1a; --surface-2: #1c2b24; --surface-3: #24362d;
-  --border: rgba(95,191,148,0.24); --border-mid: rgba(95,191,148,0.45); --border-hi: rgba(95,191,148,0.7);
-  --text: #eefaf4; --text-mid: #d6ece1; --text-dim: #a9cbbb;
-  --silver: #d6ece1; --silver-hi: #eefaf4;
-  --electric: #5fbf94; --electric-dim: #2f6650;
-}
-body[data-theme="noir"] {
-  --bg: #101011; --surface: #1a1a1c; --surface-2: #242427; --surface-3: #2e2e32;
-  --border: rgba(201,201,210,0.2); --border-mid: rgba(201,201,210,0.4); --border-hi: rgba(201,201,210,0.62);
-  --text: #f4f4f6; --text-mid: #dcdce2; --text-dim: #b6b6c0;
-  --silver: #dcdce2; --silver-hi: #f4f4f6;
-  --electric: #c9c9d2; --electric-dim: #5c5c66;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; overflow-x: hidden; }
