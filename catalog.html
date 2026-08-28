@@ -91,6 +91,28 @@
     .chip.active { background: var(--electric); border-color: var(--electric); color: #fff; }
     .chip.gender.active { background: var(--gender); border-color: var(--gender); color: #201400; }
     .chip.gender { color: var(--gender); border-color: rgba(232,164,79,0.4); }
+    .chip .chip-n { color: var(--text-dim); margin-left: 5px; font-size: 0.9em; }
+    .chip.active .chip-n { color: rgba(255,255,255,0.75); }
+
+    /* Browse all tags. The vocabulary runs to hundreds of entries, most of
+       them used once, so the panel is sorted by how much work carries a tag
+       rather than alphabetically, and the single use tail is folded away. */
+    .tag-browser {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--surface); padding: 0.8rem 0.9rem; margin-bottom: 0.8rem;
+    }
+    .tb-controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-bottom: 0.7rem; }
+    .tb-search {
+      flex: 1 1 12rem; min-width: 0; padding: 0.45rem 0.8rem;
+      background: var(--surface-2); border: 1px solid var(--border-mid);
+      border-radius: var(--radius); color: var(--text); font-size: 0.85rem;
+    }
+    .tb-search:focus { outline: none; border-color: var(--electric); }
+    .tb-rare { display: flex; align-items: center; gap: 0.4rem; color: var(--text-mid); font-size: 0.78rem; cursor: pointer; white-space: nowrap; }
+    .tb-rare input { cursor: pointer; }
+    .tb-count { color: var(--text-dim); font-size: 0.78rem; white-space: nowrap; }
+    .tb-list { display: flex; flex-wrap: wrap; gap: 5px; max-height: 15rem; overflow-y: auto; }
+    .tb-none { color: var(--text-dim); font-size: 0.82rem; font-style: italic; padding: 0.4rem 0; }
 
     .meta-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0 0.8rem; gap: 1rem; }
     .count { color: var(--text-dim); font-size: 0.8rem; }
@@ -239,6 +261,15 @@
 
   <div class="chip-row" id="audience-chips"></div>
   <div class="chip-row" id="tag-chips"></div>
+
+  <div class="tag-browser" id="tag-browser" hidden>
+    <div class="tb-controls">
+      <input class="tb-search" id="tb-search" type="search" placeholder="Filter tags…" autocomplete="off">
+      <label class="tb-rare"><input type="checkbox" id="tb-rare"> Include tags used once</label>
+      <span class="tb-count" id="tb-count"></span>
+    </div>
+    <div class="tb-list" id="tb-list"></div>
+  </div>
 
   <div class="meta-row">
     <span class="count" id="count"></span>
@@ -434,10 +465,16 @@
     tags: document.getElementById('tag-chips'),
     sort: document.getElementById('sort-by'),
     count: document.getElementById('count'),
-    clear: document.getElementById('clear')
+    clear: document.getElementById('clear'),
+    browser: document.getElementById('tag-browser'),
+    tbSearch: document.getElementById('tb-search'),
+    tbRare: document.getElementById('tb-rare'),
+    tbCount: document.getElementById('tb-count'),
+    tbList: document.getElementById('tb-list')
   };
 
   var ENTRIES = [];
+  var TAG_COUNT = {};
   var SHOW_ALL = /(?:^|[?&])all=1(?:&|$)/.test(location.search);
   var state ={ q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
 
@@ -471,12 +508,12 @@
     ENTRIES.forEach(function(e){ getLinks(e).forEach(function(l){ provs[l.provider] = 1; }); });
     Object.keys(provs).forEach(function(p){ var o = document.createElement('option'); o.value = p; o.textContent = provLabel(p); els.provider.appendChild(o); });
 
-    // Tag chips
-    var count = {};
-    ENTRIES.forEach(function(e){ (e.tags || []).forEach(function(t){ count[t] = (count[t]||0)+1; }); });
-    var all = Object.keys(count);
+    // Tag chips: the most used ones up front, the rest behind Browse all.
+    TAG_COUNT = {};
+    ENTRIES.forEach(function(e){ (e.tags || []).forEach(function(t){ TAG_COUNT[t] = (TAG_COUNT[t]||0)+1; }); });
+    var all = Object.keys(TAG_COUNT);
     var gender = all.filter(isGender);
-    var other = all.filter(function(t){ return !isGender(t); }).sort(function(a,b){ return count[b]-count[a]; }).slice(0, TOP_TAGS);
+    var other = all.filter(function(t){ return !isGender(t); }).sort(byCount).slice(0, TOP_TAGS);
 
     if (gender.length){
       els.audience.innerHTML = '<span class="chip-label">Audience</span>';
@@ -485,19 +522,80 @@
     if (other.length){
       els.tags.innerHTML = '<span class="chip-label">Tags</span>';
       other.forEach(function(t){ els.tags.appendChild(chip(t, false)); });
+      if (all.length > other.length + gender.length){
+        var open = chip('Browse all tags', false, true);
+        open.id = 'tb-toggle';
+        open.addEventListener('click', toggleBrowser);
+        els.tags.appendChild(open);
+      }
     }
+    renderBrowser();
   }
 
-  function chip(t, gender){
+  // Most used first, alphabetical within a count so the order is stable.
+  function byCount(a, b){
+    return (TAG_COUNT[b] - TAG_COUNT[a]) || a.toLowerCase().localeCompare(b.toLowerCase());
+  }
+
+  function toggleTag(t){
+    if (state.tags[t]) delete state.tags[t]; else state.tags[t] = 1;
+    syncChips();
+    apply();
+  }
+
+  // A tag can be switched on from the chip row or from the browser, so both
+  // read their state from one place rather than each tracking its own.
+  function syncChips(){
+    document.querySelectorAll('.chip[data-tag]').forEach(function(c){
+      c.classList.toggle('active', !!state.tags[c.dataset.tag]);
+    });
+  }
+
+  function chip(t, gender, plain){
     var b = document.createElement('button');
     b.className = 'chip' + (gender ? ' gender' : '');
     b.textContent = t;
-    b.addEventListener('click', function(){
-      if (state.tags[t]){ delete state.tags[t]; b.classList.remove('active'); }
-      else { state.tags[t] = 1; b.classList.add('active'); }
-      apply();
-    });
+    if (plain) return b;
+    b.dataset.tag = t;
+    if (state.tags[t]) b.classList.add('active');
+    b.addEventListener('click', function(){ toggleTag(t); });
     return b;
+  }
+
+  function toggleBrowser(){
+    var open = els.browser.hidden;
+    els.browser.hidden = !open;
+    var btn = document.getElementById('tb-toggle');
+    if (btn) btn.textContent = open ? 'Hide all tags' : 'Browse all tags';
+    if (open) els.tbSearch.focus();
+  }
+
+  // Most of the vocabulary is used on exactly one work, a long tail of dead
+  // ends to scroll past, so it stays behind the checkbox. An active tag is
+  // always listed, however rare, so it can be switched back off.
+  function renderBrowser(){
+    var q = els.tbSearch.value.toLowerCase().trim();
+    var rare = els.tbRare.checked;
+    var all = Object.keys(TAG_COUNT);
+    var shown = all.filter(function(t){
+      if (!rare && TAG_COUNT[t] < 2 && !state.tags[t]) return false;
+      return !q || t.toLowerCase().indexOf(q) !== -1;
+    }).sort(byCount);
+
+    els.tbCount.textContent = shown.length + ' of ' + all.length + ' tags';
+    els.tbList.innerHTML = '';
+    if (!shown.length){
+      els.tbList.innerHTML = '<div class="tb-none">No tag matches that.</div>';
+      return;
+    }
+    shown.forEach(function(t){
+      var b = chip(t, isGender(t));
+      var c = document.createElement('span');
+      c.className = 'chip-n';
+      c.textContent = TAG_COUNT[t];
+      b.appendChild(c);
+      els.tbList.appendChild(b);
+    });
   }
 
   function matches(e){
@@ -620,10 +718,13 @@
   els.name.addEventListener('change', function(e){ state.name = e.target.value; apply(); });
   els.provider.addEventListener('change', function(e){ state.provider = e.target.value; apply(); });
   els.sort.addEventListener('change', function(e){ state.sort = e.target.value; apply(); });
+  els.tbSearch.addEventListener('input', renderBrowser);
+  els.tbRare.addEventListener('change', renderBrowser);
   els.clear.addEventListener('click', function(){
     state = { q:'', type:'', name:'', provider:'', sort: state.sort, tags:{} };
     els.search.value = ''; els.type.value = ''; els.name.value = ''; els.provider.value = '';
-    document.querySelectorAll('.chip.active').forEach(function(c){ c.classList.remove('active'); });
+    syncChips();
+    renderBrowser();
     apply();
   });
 
