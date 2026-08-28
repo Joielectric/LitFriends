@@ -9,23 +9,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/themes.css">
 <style>
-:root {
-  --bg: #151a2a;
-  --surface: #1e2438;
-  --surface-2: #262d44;
-  --surface-3: #2f3750;
-  --border: rgba(180,195,225,0.24);
-  --border-mid: rgba(180,195,225,0.42);
-  --border-hi: rgba(180,195,225,0.65);
-  --text: #f4f8ff;
-  --text-mid: #dde5f5;
-  --text-dim: #c3cee4;
-  --silver: #dde5f2;
-  --silver-hi: #f4f8ff;
-  --electric: #5b8de8;
-  --electric-dim: #2a4880;
-  --danger: #c0394a;
+/* Palette and themes: css/themes.css
+ *
+ * This page reads brighter than the rest on purpose, so it takes each theme's
+ * brighter text pair. The selector outruns body[data-theme="…"] deliberately;
+ * a plain `body` rule would lose to it and the tones would silently revert.
+ */
+html body, html body[data-theme] {
+  --text-mid: var(--text-mid-bright);
+  --text-dim: var(--text-dim-bright);
   --radius: 2px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -518,6 +512,14 @@ var FOR = (new URLSearchParams(location.search).get('for') || '')
   // when there is no creator in the URL.
   function dressFor(p) {
     document.title = "Feedback for " + p.name;
+
+    // Their theme, and their accent if they set one — the same two things
+    // their profile page uses, so the two pages match.
+    if (p.theme) document.body.setAttribute("data-theme", p.theme);
+    if (p.accent) {
+      document.body.style.setProperty("--electric", p.accent);
+      document.body.style.setProperty("--silver-hi", p.accent);
+    }
 
     var banner = document.querySelector(".banner-frame");
     if (banner) {
