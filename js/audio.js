@@ -245,6 +245,14 @@
   background: rgba(232,99,79,.12);
 }
 .ag-own-tag.clear { border-style: dashed; }
+.ag-own-tag.more { border-style: dotted; }
+.ag-tag-search {
+  padding: 4px 11px; border-radius: 999px; font-size: 0.74rem;
+  background: var(--surface-2, #111);
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  color: var(--text, #eee); min-width: 9rem;
+}
+.ag-tag-search:focus { outline: none; border-color: var(--border-hi, rgba(255,255,255,.45)); }
 .ag-pager {
   display: flex; align-items: center; justify-content: center; gap: 1rem;
   margin-top: 1.2rem; font-size: 0.8rem; color: var(--text-dim, #888);
@@ -821,6 +829,10 @@
       return (counts[b] - counts[a]) || a.toLowerCase().localeCompare(b.toLowerCase());
     });
 
+    const TOP_TAGS = 20;
+    let showAllTags = false;
+    let tagQuery = '';
+
     const tagRow = document.createElement('div');
     tagRow.className = 'ag-own-tags';
     const grid = document.createElement('div');
@@ -848,11 +860,7 @@
         renderGrid(list.slice(page * perPage, (page + 1) * perPage), grid, false, false, null);
       }
 
-      tagRow.querySelectorAll('.ag-own-tag').forEach(b => {
-        if (b.dataset.tag) b.classList.toggle('active', active.has(b.dataset.tag));
-      });
-      const clear = tagRow.querySelector('.ag-own-tag.clear');
-      if (clear) clear.style.display = active.size ? '' : 'none';
+      drawTags();
 
       // A pager for one page of results is noise.
       pager.innerHTML = pages > 1
@@ -872,25 +880,80 @@
       });
     }
 
-    tags.forEach(t => {
+    // A long tagger ends up with a wall of chips that is harder to read than the
+    // list it filters. Show the ones carrying the most work, and let the rest be
+    // asked for. Anything already picked always stays visible, or turning it off
+    // again would mean hunting for it.
+    function visibleTags() {
+      if (tagQuery) {
+        const q = tagQuery.toLowerCase();
+        return tags.filter(t => t.toLowerCase().includes(q));
+      }
+      if (showAllTags || tags.length <= TOP_TAGS) return tags;
+      const top = tags.slice(0, TOP_TAGS);
+      const picked = [...active].filter(t => !top.includes(t));
+      return top.concat(picked);
+    }
+
+    function chip(text, cls, onClick) {
       const b = document.createElement('button');
-      b.className = 'ag-own-tag';
-      b.dataset.tag = t;
-      b.textContent = t;
-      b.addEventListener('click', () => {
-        active.has(t) ? active.delete(t) : active.add(t);
-        page = 0;               // a new filter starts at the top
-        draw();
+      b.className = 'ag-own-tag' + (cls ? ' ' + cls : '');
+      b.textContent = text;
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    function drawTags() {
+      tagRow.innerHTML = '';
+
+      // The search only earns its place once the list is long.
+      if (tags.length > TOP_TAGS) {
+        const box = document.createElement('input');
+        box.type = 'search';
+        box.className = 'ag-tag-search';
+        box.placeholder = 'Search tags…';
+        box.value = tagQuery;
+        box.addEventListener('input', () => {
+          tagQuery = box.value.trim();
+          drawTags();
+          // Keep typing without losing the caret.
+          const again = tagRow.querySelector('.ag-tag-search');
+          if (again) { again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
+        });
+        tagRow.appendChild(box);
+      }
+
+      const shown = visibleTags();
+      shown.forEach(t => {
+        const b = chip(t, active.has(t) ? 'active' : '', () => {
+          active.has(t) ? active.delete(t) : active.add(t);
+          page = 0;             // a new filter starts at the top
+          draw();
+        });
+        b.dataset.tag = t;
+        tagRow.appendChild(b);
       });
-      tagRow.appendChild(b);
-    });
-    if (tags.length) {
-      const clear = document.createElement('button');
-      clear.className = 'ag-own-tag clear';
-      clear.textContent = 'Clear';
-      clear.style.display = 'none';
-      clear.addEventListener('click', () => { active.clear(); page = 0; draw(); });
-      tagRow.appendChild(clear);
+
+      if (!tagQuery && tags.length > TOP_TAGS) {
+        const hidden = tags.length - shown.length;
+        if (showAllTags) {
+          tagRow.appendChild(chip('Show fewer', 'more', () => { showAllTags = false; drawTags(); }));
+        } else if (hidden > 0) {
+          tagRow.appendChild(chip('+' + hidden + ' more', 'more', () => { showAllTags = true; drawTags(); }));
+        }
+      }
+      if (tagQuery && !shown.length) {
+        const none = document.createElement('span');
+        none.style.cssText = 'color:var(--text-dim,#888);font-size:0.78rem;align-self:center;';
+        none.textContent = 'No tag matches that.';
+        tagRow.appendChild(none);
+      }
+
+      if (active.size) {
+        tagRow.appendChild(chip('Clear', 'clear', () => {
+          active.clear(); page = 0; tagQuery = ''; draw();
+        }));
+      }
     }
 
     draw();
