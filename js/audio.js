@@ -231,6 +231,33 @@
   font-weight: 600;
   letter-spacing: .04em;
 }
+.ag-own-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
+.ag-own-tag {
+  background: none; cursor: pointer;
+  border: 1px solid var(--border-mid, rgba(255,255,255,.25));
+  color: var(--text-mid, #999); border-radius: 999px;
+  padding: 4px 11px; font-size: 0.74rem; letter-spacing: .04em;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.ag-own-tag:hover { border-color: var(--border-hi, rgba(255,255,255,.45)); color: var(--silver-hi, #f5f0ea); }
+.ag-own-tag.active {
+  border-color: var(--coral, #e8634f); color: var(--coral, #e8634f);
+  background: rgba(232,99,79,.12);
+}
+.ag-own-tag.clear { border-style: dashed; }
+.ag-pager {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  margin-top: 1.2rem; font-size: 0.8rem; color: var(--text-dim, #888);
+}
+.ag-pager button {
+  background: none; cursor: pointer;
+  border: 1px solid var(--border-mid, rgba(255,255,255,.25));
+  color: var(--text-mid, #999); border-radius: 2px;
+  padding: 6px 14px; font-size: 0.72rem; letter-spacing: .1em; text-transform: uppercase;
+  transition: border-color .15s, color .15s;
+}
+.ag-pager button:hover:not(:disabled) { border-color: var(--coral, #e8634f); color: var(--coral, #e8634f); }
+.ag-pager button:disabled { opacity: .35; cursor: default; }
 .ag-tag[data-filterable] { cursor: pointer; }
 .ag-tag[data-filterable]:hover { border-color: var(--border-hi, rgba(255,255,255,.45)); color: var(--silver-hi, #f5f0ea); }
 .ag-row-platforms {
@@ -777,9 +804,101 @@
     applyFilters();
   }
 
+  // A creator's own page shows their work and nothing else, so the filters are
+  // just their tags — no artist strip, no platform list. Ten at a time, because
+  // a long back catalogue buries everything under the first screenful.
+  function renderPaged(entries, container, perPage) {
+    const active = new Set();
+    let page = 0;
+
+    // Their tags, most used first, audience tags kept at the front where they
+    // are the thing people actually filter by.
+    const counts = {};
+    entries.forEach(e => (e.tags || []).forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
+    const tags = Object.keys(counts).sort((a, b) => {
+      const ga = isGenderTag(a), gb = isGenderTag(b);
+      if (ga !== gb) return ga ? -1 : 1;
+      return (counts[b] - counts[a]) || a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+
+    const tagRow = document.createElement('div');
+    tagRow.className = 'ag-own-tags';
+    const grid = document.createElement('div');
+    const pager = document.createElement('div');
+    pager.className = 'ag-pager';
+    container.append(tagRow, grid, pager);
+
+    function matching() {
+      if (!active.size) return entries;
+      return entries.filter(e => {
+        const has = (e.tags || []).map(t => String(t).toLowerCase());
+        return [...active].every(t => has.includes(t.toLowerCase()));
+      });
+    }
+
+    function draw() {
+      const list = matching();
+      const pages = Math.max(1, Math.ceil(list.length / perPage));
+      if (page >= pages) page = pages - 1;
+
+      grid.innerHTML = '';
+      if (!list.length) {
+        grid.innerHTML = '<div class="ag-empty">Nothing with those tags.</div>';
+      } else {
+        renderGrid(list.slice(page * perPage, (page + 1) * perPage), grid, false, false, null);
+      }
+
+      tagRow.querySelectorAll('.ag-own-tag').forEach(b => {
+        if (b.dataset.tag) b.classList.toggle('active', active.has(b.dataset.tag));
+      });
+      const clear = tagRow.querySelector('.ag-own-tag.clear');
+      if (clear) clear.style.display = active.size ? '' : 'none';
+
+      // A pager for one page of results is noise.
+      pager.innerHTML = pages > 1
+        ? `<button ${page === 0 ? 'disabled' : ''} data-go="prev">&larr; Newer</button>
+           <span>${page * perPage + 1}&ndash;${Math.min((page + 1) * perPage, list.length)} of ${list.length}</span>
+           <button ${page >= pages - 1 ? 'disabled' : ''} data-go="next">Older &rarr;</button>`
+        : (list.length ? `<span>${list.length} ${list.length === 1 ? 'work' : 'works'}</span>` : '');
+
+      pager.querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => {
+          page += b.dataset.go === 'next' ? 1 : -1;
+          draw();
+          // Far enough down the page that new results would otherwise appear
+          // off-screen.
+          container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    tags.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'ag-own-tag';
+      b.dataset.tag = t;
+      b.textContent = t;
+      b.addEventListener('click', () => {
+        active.has(t) ? active.delete(t) : active.add(t);
+        page = 0;               // a new filter starts at the top
+        draw();
+      });
+      tagRow.appendChild(b);
+    });
+    if (tags.length) {
+      const clear = document.createElement('button');
+      clear.className = 'ag-own-tag clear';
+      clear.textContent = 'Clear';
+      clear.style.display = 'none';
+      clear.addEventListener('click', () => { active.clear(); page = 0; draw(); });
+      tagRow.appendChild(clear);
+    }
+
+    draw();
+  }
+
   // ── Public API ─────────────────────────────────────────────────────────────
   window.AudioGrid = {
-    init({ container, artist, showFilters, limit }) {
+    init({ container, artist, showFilters, limit, perPage }) {
       injectStyles();
       const el = typeof container === 'string' ? document.querySelector(container) : container;
       if (!el) return;
@@ -800,8 +919,11 @@
           el.innerHTML = '';
           if (showFilters) {
             initFilters(entries, el);
-          } else {
+          } else if (limit) {
+            // A "latest few" list is a taster, not a browse.
             renderGrid(entries, el, false, false, null);
+          } else {
+            renderPaged(entries, el, perPage || 10);
           }
           // Auto-open entry from URL hash: #play=ENCODED_TITLE
           const hash = decodeURIComponent(location.hash.replace(/^#play=/, ''));
