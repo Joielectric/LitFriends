@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../images/JOI_Favicon.png">
+  <link rel="apple-touch-icon" href="../images/JOI_Favicon.png">
+  <title>HotAudio Description Generator &mdash; JOI Electric</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+
+    :root {
+      --bg: #151a2a; --surface: #1e2438; --surface-2: #262d44; --surface-3: #2f3750;
+      --border: rgba(180,195,225,0.24); --border-mid: rgba(180,195,225,0.42); --border-hi: rgba(180,195,225,0.65);
+      --text: #f2f6ff; --text-mid: #c2cce0; --text-dim: #8792ab;
+      --silver: #c4cfe0; --silver-hi: #eaf0fa;
+      --coral: #5b8de8; --rose: #7aa6ec; --radius: 2px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 17px; line-height: 1.7;
+      max-width: 1200px; margin: 0 auto; padding: 20px;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(91,141,232,0.09) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 90% 90%, rgba(30,20,50,0.35) 0%, transparent 60%);
+    }
+    .navigation-header {
+      position: relative; z-index: 1;
+      background: var(--surface); border: 1px solid var(--border-mid);
+      border-top: 2px solid var(--coral);
+      padding: 20px 25px; margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-title {
+      font-family: "Cinzel", serif; font-weight: 300; font-size: 1.5rem; letter-spacing: .12em;
+      background: linear-gradient(160deg, #eaf2ff 0%, var(--coral) 45%, #8fb4f2 80%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .back-button {
+      padding: 9px 20px; background: transparent;
+      border: 1px solid var(--border-mid); color: var(--silver);
+      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .12em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none; transition: border-color .2s, color .2s;
+      border-radius: var(--radius); display: inline-block;
+    }
+    .back-button:hover { border-color: var(--coral); color: var(--silver-hi); }
+    .main-container {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; position: relative; z-index: 1;
+    }
+    .editor-panel, .preview-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 25px; border-radius: var(--radius);
+    }
+    .panel-title {
+      font-family: "Cinzel", serif; font-size: 0.9rem; font-weight: 600; letter-spacing: .32em;
+      text-transform: uppercase; color: var(--text-dim);
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 20px;
+    }
+    .panel-title::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
+    .section-header {
+      font-family: "Cinzel", serif; font-size: 0.78rem; font-weight: 600; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--silver);
+      margin: 22px 0 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-mid);
+    }
+    .section-header:first-child { margin-top: 0; }
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-family: "Cinzel", serif; font-size: 0.72rem;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--silver);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-textarea, .tag-select {
+      width: 100%; padding: 10px 12px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: "Cormorant Garamond", Georgia, serif; font-size: 1rem;
+      box-sizing: border-box; transition: border-color .2s;
+    }
+    .tag-select option { background: var(--surface-2); color: var(--text); }
+    .form-input:focus, .form-textarea:focus, .tag-select:focus {
+      outline: none; border-color: var(--coral);
+      box-shadow: 0 0 0 2px rgba(91,141,232,0.15);
+    }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .copy-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .copy-button {
+      flex: 1; padding: 12px; background: transparent;
+      border: 1px solid var(--coral); color: var(--coral);
+      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .12em; text-transform: uppercase;
+      cursor: pointer; transition: background .2s, color .2s; border-radius: var(--radius);
+    }
+    .copy-button:hover { background: var(--coral); color: #fff; }
+    .copy-button.secondary { border-color: var(--rose); color: var(--rose); }
+    .copy-button.secondary:hover { background: var(--rose); color: #fff; }
+    .audio-link-group {
+      background: var(--surface-2); padding: 16px; border-radius: var(--radius);
+      border-left: 2px solid var(--coral); margin-bottom: 12px;
+    }
+    .readonly-section {
+      background: var(--surface-2); padding: 16px; border-radius: var(--radius);
+      border-left: 2px solid var(--border-mid); margin-bottom: 12px;
+    }
+    .readonly-section-title {
+      font-family: "Cinzel", serif; font-size: 0.68rem; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--text-mid); margin-bottom: 6px;
+    }
+    .readonly-field { color: var(--text-mid); font-style: italic; font-size: 0.95rem; }
+    .success-message {
+      background: rgba(91,141,232,0.15); border: 1px solid var(--coral); color: var(--silver-hi);
+      padding: 10px; border-radius: var(--radius); margin-top: 10px;
+      display: none; text-align: center;
+      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .1em;
+    }
+    .preview-section {
+      margin-bottom: 20px; background: var(--surface-2); padding: 18px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+    }
+    .preview-section-title {
+      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--silver); margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-mid); padding-bottom: 6px;
+    }
+    .title-preview {
+      font-size: 1.15rem; color: var(--silver-hi); font-weight: 400;
+      margin-bottom: 12px; word-break: break-word;
+      padding: 12px; background: var(--surface); border: 1px solid var(--border-mid);
+      border-radius: var(--radius);
+    }
+    .post-preview {
+      font-family: 'Courier New', monospace; font-size: 0.82rem;
+      white-space: pre-wrap; max-height: 400px; overflow-y: auto;
+      background: var(--surface); padding: 16px; border-radius: var(--radius);
+      color: var(--text); border: 1px solid var(--border);
+    }
+    .usage-tips {
+      margin-top: 16px; padding: 16px; background: var(--surface-2);
+      border-radius: var(--radius); border: 1px solid var(--border);
+      color: var(--text-mid); font-size: 0.95rem;
+    }
+    .usage-tips strong { color: var(--silver); }
+    .usage-tips ul { margin: 8px 0 0 18px; }
+    .usage-tips li { margin-bottom: 6px; }
+    small { color: var(--text-dim) !important; font-size: 0.82rem !important; }
+    @media (max-width: 1000px) {
+      .main-container { grid-template-columns: 1fr; }
+      body { padding: 10px; }
+      .navigation-header { flex-direction: column; gap: 12px; text-align: center; }
+      .copy-buttons { flex-direction: column; }
+    }
+  
+    .orn-preview {
+      font-family: 'Courier New', monospace; font-size: 0.72rem; color: var(--text-mid);
+      white-space: pre; overflow-x: auto; padding: 6px 8px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius); margin-top: 4px;
+    }
+    .sec-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .sec-row select { flex: 0 1 170px; }
+    .sec-row span { flex: 1; color: var(--text); font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="navigation-header">
+    <div class="nav-title">HotAudio Description</div>
+    <a href="../tools.html" class="back-button">&#8592; Content Manager</a>
+  </div>
+
+  <div class="main-container">
+    <div class="editor-panel">
+      <div class="panel-title">Build</div>
+
+      <div class="form-group">
+        <label class="form-label">Audio</label>
+        <select id="catalogSelect" class="tag-select">
+          <option value="">&mdash; Select a published audio &mdash;</option>
+        </select>
+        <small>Everything comes from the catalogue entry. Edit it there, not here.</small>
+      </div>
+
+      <div class="section-header">Your borders</div>
+      <div class="form-group">
+        <label class="form-label">Frame &mdash; wraps the opening line</label>
+        <select id="frameStyle" class="tag-select" onchange="render()"></select>
+        <div class="orn-preview" id="framePreview"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Divider &mdash; between sections</label>
+        <select id="dividerStyle" class="tag-select" onchange="render()"></select>
+        <div class="orn-preview" id="dividerPreview"></div>
+      </div>
+
+      <div id="customBox" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Your frame &mdash; top line</label>
+          <input type="text" id="customFrameTop" class="form-input" oninput="render()">
+          <label class="form-label" style="margin-top:8px">Your frame &mdash; bottom line</label>
+          <input type="text" id="customFrameBottom" class="form-input" oninput="render()">
+          <label class="form-label" style="margin-top:8px">Your divider</label>
+          <input type="text" id="customDivider" class="form-input" oninput="render()">
+          <small id="ornWarn" style="color:#e8a34f"></small>
+        </div>
+      </div>
+
+      <div class="section-header">Sections</div>
+      <div id="sections"></div>
+
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label">Opening line</label>
+        <input type="text" id="tagline" class="form-input" oninput="render()"
+               placeholder="Taken from the short description">
+        <label class="form-label" style="margin-top:8px">Pull quote <span style="text-transform:none;letter-spacing:0">(optional &mdash; a line from the script)</span></label>
+        <textarea id="excerpt" class="form-textarea" oninput="render()"></textarea>
+      </div>
+
+      <div class="copy-buttons">
+        <button class="copy-button" onclick="copyOut()">Copy description</button>
+        <button class="copy-button secondary" onclick="saveStyle()">Save my borders</button>
+      </div>
+      <div id="successMessage" class="success-message"></div>
+    </div>
+
+    <div class="preview-panel">
+      <div class="panel-title">Preview</div>
+      <div class="preview-section">
+        <div class="preview-section-title">What HotAudio will show</div>
+        <div class="post-preview" id="preview"></div>
+      </div>
+      <div class="usage-tips">
+        <strong>Notes</strong>
+        <ul>
+          <li>Line breaks survive on HotAudio, except around links &mdash; so a blank line is put around every link line for you.</li>
+          <li>Borders sit on their own line. Some border characters are right-to-left and would scramble text sharing their line.</li>
+          <li>The opening line sits in a code block, which forces an even width. Links never go inside one &mdash; they stop working.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/site-config.js"></script>
+  <script>
+
+  (function () {
+    'use strict';
+    var CFG = window.SITE_CONFIG;
+
+    // Borders are the only thing a creator styles here. Everything else comes
+    // from the catalogue entry, so a description can never drift from it.
+    //
+    // A frame is a top and a bottom line with no verticals: nothing has to line
+    // up down the page, so it survives a proportional font. A divider is one
+    // line between sections. Both are built the same way — an anchor and a
+    // repeating unit — because that is the shape people actually make.
+    var ORNAMENTS = {
+      'joi':    { label: 'Stars & arcs (JOI)',
+                  top: '╭' + '─'.repeat(46) + '.★..─╮',
+                  bottom: '╰─..★.' + '─'.repeat(46) + '╯',
+                  divider: repeatUnit('ﮩ٨', 'ـ'.repeat(20), 5) },
+      'missy':  { label: 'Braille & stars',
+                  top: null, bottom: null,
+                  divider: repeatUnit('☆', ' ⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂ ⠂⠄⠄⠂', 2) },
+      'clean':  { label: 'Clean line',
+                  top: '┌' + '─'.repeat(48) + '┐',
+                  bottom: '└' + '─'.repeat(48) + '┘',
+                  divider: '─'.repeat(50) },
+      'hearts': { label: 'Hearts',
+                  top: '♥' + '·'.repeat(48) + '♥',
+                  bottom: '♥' + '·'.repeat(48) + '♥',
+                  divider: repeatUnit('♥', '········', 5) },
+      'waves':  { label: 'Waves',
+                  top: '❀' + '∿'.repeat(46) + '❀',
+                  bottom: '❀' + '∿'.repeat(46) + '❀',
+                  divider: repeatUnit('❀', '∿∿∿∿∿∿∿∿', 5) },
+      'none':   { label: 'No border', top: null, bottom: null, divider: null },
+      'custom': { label: 'My own…', top: '', bottom: '', divider: '' }
+    };
+
+    function repeatUnit(anchor, unit, times) {
+      var out = anchor;
+      for (var i = 0; i < times; i++) out += unit + anchor;
+      return out;
+    }
+
+    // Markdown steals some lines outright. Art that trips it is not art.
+    function ornamentWarning(s) {
+      if (!s) return '';
+      var t = s.trim();
+      if (/^[-*_ ]{3,}$/.test(t)) return 'A line of only dashes, stars or underscores becomes a horizontal rule.';
+      if (/^#{1,6}\s/.test(t)) return 'A line starting with # becomes a heading.';
+      if (/^(```|~~~)/.test(t)) return 'That opens a code block.';
+      if (/^>/.test(t)) return 'A line starting with > becomes a quote.';
+      if (/^={2,}$/.test(t)) return 'A line of = turns the line above into a heading.';
+      return '';
+    }
+
+    var SECTIONS = [
+      { key: 'tagline',  label: 'Opening line',  on: true },
+      { key: 'body',     label: 'Description',   on: true },
+      { key: 'excerpt',  label: 'Pull quote',    on: false },
+      { key: 'tags',     label: 'Tags',          on: true },
+      { key: 'credits',  label: 'Credits',       on: true },
+      { key: 'listen',   label: 'Listen links',  on: true }
+    ];
+
+    var CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan',
+                          hotaudio:'HotAudio', whyp:'Whyp', scriptbin:'ScriptBin', ellipsus:'Ellipsus' };
+    var CATALOG = [], entry = null, mySlug = '';
+
+    function el(id) { return document.getElementById(id); }
+
+    function ornament(which) {
+      var key = el(which === 'divider' ? 'dividerStyle' : 'frameStyle').value;
+      if (key !== 'custom') return ORNAMENTS[key] ? ORNAMENTS[key][which === 'divider' ? 'divider' : null] : null;
+      return null;
+    }
+    function frameLines() {
+      var key = el('frameStyle').value;
+      if (key === 'custom') return { top: el('customFrameTop').value, bottom: el('customFrameBottom').value };
+      var o = ORNAMENTS[key] || {};
+      return { top: o.top, bottom: o.bottom };
+    }
+    function dividerLine() {
+      var key = el('dividerStyle').value;
+      if (key === 'custom') return el('customDivider').value;
+      return (ORNAMENTS[key] || {}).divider;
+    }
+
+    function sectionOn(key) {
+      var box = document.querySelector('.sec-on[data-key="' + key + '"]');
+      return box ? box.checked : false;
+    }
+
+    function creditLine(e) {
+      var c = (e && e.credits) || {}, parts = [];
+      CFG.creditRoles.forEach(function (r) {
+        var names = c[r.key] || [];
+        if (names.length) parts.push('**' + r.postLabel + ':** ' + names.join(', '));
+      });
+      return parts.join('\n');
+    }
+
+    function listenLines(e) {
+      var links = (e && e.links) || [];
+      if (!links.length && e && e.provider && e.url) links = [{ provider: e.provider, url: e.url }];
+      var trt = (e && e.trt) ? ' ' + e.trt : '';
+      return links.map(function (l) {
+        var label = CAT_PROVIDERS[l.provider] || l.provider || 'Listen';
+        return '[🎧Listen Here' + trt + ' — ' + label + '](' + l.url + ')';
+      });
+    }
+
+    function build() {
+      if (!entry) return '';
+      var f = frameLines(), div = dividerLine();
+      var blocks = [];
+
+      if (sectionOn('tagline')) {
+        var line = el('tagline').value.trim() || entry.shortDesc || '';
+        if (line) {
+          var framed = [];
+          if (f.top) framed.push(f.top);
+          // A fence forces an even width. Never put a link in one.
+          framed.push('```\n' + line + '\n```');
+          if (f.bottom) framed.push(f.bottom);
+          blocks.push(framed.join('\n'));
+        }
+      }
+      if (sectionOn('body') && entry.desc) blocks.push(entry.desc.trim());
+      if (sectionOn('excerpt')) {
+        var q = el('excerpt').value.trim();
+        if (q) blocks.push(q);
+      }
+      if (sectionOn('tags') && (entry.tags || []).length) {
+        blocks.push('**Tags:** ' + entry.tags.join(' · '));
+      }
+      if (sectionOn('credits')) {
+        var c = creditLine(entry);
+        if (c) blocks.push(c);
+      }
+      if (sectionOn('listen')) {
+        var lines = listenLines(entry);
+        if (lines.length) blocks.push(lines.join('\n\n'));   // links need air
+      }
+
+      var out = blocks.join(div ? '\n\n' + div + '\n\n' : '\n\n');
+      // Line breaks survive except around links, so give every link line its own space.
+      return out.split('\n').reduce(function (acc, line, i, all) {
+        var isLink = line.indexOf('](') !== -1;
+        var prevBlank = acc.length === 0 || acc[acc.length - 1] === '';
+        if (isLink && !prevBlank) acc.push('');
+        acc.push(line);
+        if (isLink && all[i + 1] !== undefined && all[i + 1] !== '') acc.push('');
+        return acc;
+      }, []).join('\n');
+    }
+
+    function render() {
+      var f = frameLines(), div = dividerLine();
+      el('framePreview').textContent = f.top ? f.top + '\n' + (f.bottom || '') : '(none)';
+      el('dividerPreview').textContent = div || '(none)';
+      el('customBox').style.display =
+        (el('frameStyle').value === 'custom' || el('dividerStyle').value === 'custom') ? '' : 'none';
+
+      var warn = [f.top, f.bottom, div].map(ornamentWarning).filter(Boolean);
+      el('ornWarn').textContent = warn.length ? warn[0] : '';
+
+      el('preview').textContent = entry ? build() : 'Choose an audio to see it.';
+    }
+    window.render = render;
+
+    function copyOut() {
+      var text = build();
+      if (!text) { flash('Choose an audio first.'); return; }
+      navigator.clipboard.writeText(text).then(function () {
+        flash('Description copied — paste it into HotAudio.');
+      });
+    }
+    window.copyOut = copyOut;
+
+    function flash(msg) {
+      var m = el('successMessage');
+      m.textContent = msg; m.style.display = 'block';
+      setTimeout(function () { m.style.display = 'none'; }, 4000);
+    }
+
+    // ── Their borders, remembered on their profile ────────────────────────
+    function saveStyle() {
+      var style = {
+        frame: el('frameStyle').value,
+        divider: el('dividerStyle').value,
+        frameTop: el('customFrameTop').value,
+        frameBottom: el('customFrameBottom').value,
+        dividerRaw: el('customDivider').value
+      };
+      fetch('/api/profiles', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save', profile: { postStyle: style } })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        flash(d.ok ? 'Borders saved to your profile.' : (d.error || 'Could not save.'));
+      }).catch(function () { flash('Could not reach the server.'); });
+    }
+    window.saveStyle = saveStyle;
+
+    function applyStyle(style) {
+      if (!style) return;
+      if (style.frame) el('frameStyle').value = style.frame;
+      if (style.divider) el('dividerStyle').value = style.divider;
+      el('customFrameTop').value = style.frameTop || '';
+      el('customFrameBottom').value = style.frameBottom || '';
+      el('customDivider').value = style.dividerRaw || '';
+    }
+
+    // ── Setup ─────────────────────────────────────────────────────────────
+    function fillSelects() {
+      var frame = el('frameStyle'), divider = el('dividerStyle');
+      Object.keys(ORNAMENTS).forEach(function (k) {
+        var o = ORNAMENTS[k];
+        if (o.top !== null || k === 'none' || k === 'custom') {
+          frame.appendChild(new Option(o.label, k));
+        }
+        divider.appendChild(new Option(o.label, k));
+      });
+      frame.value = 'joi'; divider.value = 'joi';
+
+      el('sections').innerHTML = SECTIONS.map(function (s) {
+        return '<label class="sec-row"><input type="checkbox" class="sec-on" data-key="' + s.key + '"' +
+               (s.on ? ' checked' : '') + ' onchange="render()"><span>' + s.label + '</span></label>';
+      }).join('');
+    }
+
+    function pick() {
+      entry = CATALOG[el('catalogSelect').value] || null;
+      if (entry) el('tagline').value = entry.shortDesc || '';
+      render();
+    }
+
+    fillSelects();
+    el('catalogSelect').addEventListener('change', pick);
+
+    fetch('/api/content').then(function (r) { return r.json(); }).then(function (d) {
+      (d.providers || []).forEach(function (p) { if (p && p.key) CAT_PROVIDERS[p.key] = p.label || p.key; });
+      CATALOG = (d.entries || [])
+        .filter(function (e) { return !CFG || CFG.isOwnWork(e); })
+        .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      var sel = el('catalogSelect');
+      CATALOG.forEach(function (e, i) {
+        sel.appendChild(new Option((e.date ? e.date + ' — ' : '') + (e.title || 'Untitled'), i));
+      });
+      render();
+    }).catch(function () { el('preview').textContent = 'Could not load the catalogue.'; });
+
+    // Their saved borders, if they are signed in.
+    fetch('/api/profiles', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'mine' })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok && d.profile) { applyStyle(d.profile.postStyle); render(); }
+    }).catch(function () { /* not signed in; the defaults are fine */ });
+  })();
+  </script>
+</body>
+</html>
