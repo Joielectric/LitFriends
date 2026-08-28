@@ -399,6 +399,7 @@
                 <nav class="cm-tabs" role="tablist">
                   <button class="cm-tab active" data-tab="content"  onclick="cmTab('content')">Content</button>
                   <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Lists</button>
+                  <button class="cm-tab"        data-tab="tags"     onclick="cmTab('tags')">Tags</button>
                   <button class="cm-tab owner-only" data-tab="news" onclick="cmTab('news')" style="display:none">Site News</button>
                   <button class="cm-tab owner-only" data-tab="feedback" onclick="cmTab('feedback')" style="display:none">Feedback</button>
                   <button class="cm-tab owner-only" data-tab="inbox"    onclick="cmTab('inbox')" style="display:none">Inbox</button>
@@ -755,6 +756,47 @@
                             </div>
                             <div id="cm-prov-edit-usage" style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;"></div>
                             <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmProviderDeleteEdit()">Remove platform</button>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-tags" hidden>
+
+                <!-- Tags are typed by hand on every entry, so the vocabulary
+                     drifts: casing, spacing and near synonyms pile up. This is
+                     where they get pulled back together. -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <label class="cm-label" style="margin-bottom:6px">Tag Vocabulary</label>
+                    <div id="cm-tag-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:12px;"></div>
+
+                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">Likely duplicates <span style="font-weight:normal">(same tag, different casing or spacing)</span></label>
+                    <div id="cm-tag-dupes" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:16px;"></div>
+
+                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">All tags</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;">
+                        <input id="cm-tag-search" class="cm-input cm-btn-sm" style="flex:1 1 180px" placeholder="Filter tags…" oninput="cmRenderTagList()">
+                        <select id="cm-tag-sort" class="cm-input cm-btn-sm" style="flex:0 1 150px" onchange="cmRenderTagList()">
+                            <option value="count">Most used first</option>
+                            <option value="name">A to Z</option>
+                            <option value="rare">Least used first</option>
+                        </select>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmTagSelectShown()">Select shown</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmTagClearSelection()">Clear</button>
+                    </div>
+                    <div id="cm-tag-list" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:10px;"></div>
+
+                    <div style="border-top:1px solid var(--border);padding-top:12px;">
+                        <div id="cm-tag-selected" style="color:var(--text-mid);font-size:0.86rem;margin-bottom:8px;">Nothing selected.</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                            <input id="cm-tag-target" class="cm-input cm-btn-sm" style="flex:1 1 200px" placeholder="Keep this spelling…" list="cm-tag-target-list">
+                            <datalist id="cm-tag-target-list"></datalist>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="cmTagMerge()">Merge selected</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmTagRemove()">Remove selected</button>
+                        </div>
+                        <div style="color:var(--text-dim);font-size:0.8rem;margin-top:8px;">
+                            Merging rewrites every entry that carries the selected tags. Entries you cannot edit are left alone by the server.
                         </div>
                     </div>
                 </div>
@@ -2156,6 +2198,7 @@
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
+          cmRenderTags();
           cmRenderCollabManager();
           cmRenderNews();
           if (cmWho.isOwner) { fbLoad(); inboxLoad(); }
@@ -3042,6 +3085,187 @@
       const e = cmEntries.find(x => x.id === id);
       if (!cmCanEdit(e)) return cmDenyEdit(e);
       cmDeleteEntry(id);
+    }
+
+
+    // ── Tags ──────────────────────────────────────────────────────────────────
+    // Tags are free text on every entry, so the same idea arrives spelled three
+    // ways. These tools count what is actually in use and fold the variants
+    // back together.
+    let cmTagSelection = new Set();
+
+    function cmTagCounts() {
+      const count = {};
+      cmEntries.forEach(e => (e.tags || []).forEach(t => { count[t] = (count[t] || 0) + 1; }));
+      return count;
+    }
+
+    // What counts as the same tag for the duplicate finder: letters and digits
+    // only, so casing, spaces, slashes and hyphens all fall away.
+    function cmTagKey(t) {
+      return String(t).toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    function cmTagClusters(count) {
+      const by = {};
+      Object.keys(count).forEach(t => {
+        const k = cmTagKey(t);
+        if (!k) return;
+        (by[k] = by[k] || []).push(t);
+      });
+      return Object.values(by)
+        .filter(v => v.length > 1)
+        .map(v => v.slice().sort((a, b) => count[b] - count[a]))
+        .sort((a, b) => {
+          const na = a.reduce((n, t) => n + count[t], 0);
+          const nb = b.reduce((n, t) => n + count[t], 0);
+          return nb - na;
+        });
+    }
+
+    function cmRenderTags() {
+      const count = cmTagCounts();
+      const tags = Object.keys(count);
+      const once = tags.filter(t => count[t] === 1).length;
+      const clusters = cmTagClusters(count);
+      document.getElementById('cm-tag-summary').textContent =
+        `${tags.length} tags across ${cmEntries.length} entries. ` +
+        `${once} used once. ${clusters.length} likely duplicate ${clusters.length === 1 ? 'group' : 'groups'}.`;
+      cmRenderTagDupes(count, clusters);
+      cmRenderTagList(count);
+    }
+
+    function cmRenderTagDupes(count, clusters) {
+      const box = document.getElementById('cm-tag-dupes');
+      if (!clusters.length) {
+        box.innerHTML = '<div style="color:var(--text-dim);font-size:0.86rem;padding:4px 0;">Nothing looks duplicated.</div>';
+        return;
+      }
+      box.innerHTML = clusters.map(group => {
+        const keep = group[0];
+        const parts = group.map((t, i) =>
+          `<span style="color:${i === 0 ? 'var(--text)' : 'var(--text-mid)'}">${cmEsc(t)}` +
+          `<span style="color:var(--text-dim);font-size:0.82em"> ${count[t]}</span></span>`
+        ).join('<span style="color:var(--text-dim)"> · </span>');
+        return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.88rem;">
+          <div style="min-width:0">${parts}</div>
+          <button type="button" class="cm-btn cm-btn-sm" style="flex:none" onclick="cmTagMergeGroup(${cmEsc(JSON.stringify(JSON.stringify(group)))})">Keep &ldquo;${cmEsc(keep)}&rdquo;</button>
+        </div>`;
+      }).join('');
+    }
+
+    function cmRenderTagList() {
+      const count = cmTagCounts();
+      const q = (document.getElementById('cm-tag-search').value || '').toLowerCase().trim();
+      const sort = document.getElementById('cm-tag-sort').value;
+      let tags = Object.keys(count).filter(t => !q || t.toLowerCase().indexOf(q) !== -1);
+      if (sort === 'name') tags.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+      else if (sort === 'rare') tags.sort((a, b) => (count[a] - count[b]) || a.localeCompare(b));
+      else tags.sort((a, b) => (count[b] - count[a]) || a.toLowerCase().localeCompare(b.toLowerCase()));
+
+      const box = document.getElementById('cm-tag-list');
+      box.innerHTML = tags.length
+        ? tags.map(t => {
+            const on = cmTagSelection.has(t) ? ' checked' : '';
+            return `<label style="display:inline-flex;align-items:center;gap:5px;margin:0 12px 4px 0;font-size:0.86rem;cursor:pointer;">
+              <input type="checkbox"${on} data-tag="${cmEsc(t)}" onchange="cmTagToggle(this)" style="cursor:pointer">
+              <span>${cmEsc(t)}</span><span style="color:var(--text-dim);font-size:0.82em">${count[t]}</span>
+            </label>`;
+          }).join('')
+        : '<div style="color:var(--text-dim);font-size:0.86rem;padding:4px 0;">No tag matches that.</div>';
+      cmRenderTagSelection();
+    }
+
+    function cmTagToggle(box) {
+      const t = box.dataset.tag;
+      if (box.checked) cmTagSelection.add(t); else cmTagSelection.delete(t);
+      cmRenderTagSelection();
+    }
+
+    function cmTagSelectShown() {
+      document.querySelectorAll('#cm-tag-list input[data-tag]').forEach(b => {
+        b.checked = true;
+        cmTagSelection.add(b.dataset.tag);
+      });
+      cmRenderTagSelection();
+    }
+
+    function cmTagClearSelection() {
+      cmTagSelection.clear();
+      document.querySelectorAll('#cm-tag-list input[data-tag]').forEach(b => { b.checked = false; });
+      cmRenderTagSelection();
+    }
+
+    // The spelling to keep is offered as the most used of the selected tags,
+    // but it is a plain field: a merge can land on a name that is not in the
+    // list at all.
+    function cmRenderTagSelection() {
+      const picked = [...cmTagSelection];
+      const label = document.getElementById('cm-tag-selected');
+      const target = document.getElementById('cm-tag-target');
+      const list = document.getElementById('cm-tag-target-list');
+      if (!picked.length) {
+        label.textContent = 'Nothing selected.';
+        list.innerHTML = '';
+        return;
+      }
+      const count = cmTagCounts();
+      picked.sort((a, b) => (count[b] || 0) - (count[a] || 0));
+      const works = cmEntries.filter(e => (e.tags || []).some(t => cmTagSelection.has(t))).length;
+      label.textContent = `${picked.length} selected, on ${works} ${works === 1 ? 'entry' : 'entries'}: ` +
+        picked.slice(0, 8).join(', ') + (picked.length > 8 ? ', …' : '');
+      list.innerHTML = picked.map(t => `<option value="${cmEsc(t)}">`).join('');
+      if (!target.value || cmTagSelection.has(target.value) === false) target.value = picked[0];
+    }
+
+    function cmTagMergeGroup(json) {
+      const group = JSON.parse(json);
+      cmTagApply(group, group[0]);
+    }
+
+    function cmTagMerge() {
+      const picked = [...cmTagSelection];
+      const target = (document.getElementById('cm-tag-target').value || '').trim();
+      if (!picked.length) { cmShowMsg('Select the tags to merge first.', false); return; }
+      if (!target) { cmShowMsg('Type the spelling to keep.', false); return; }
+      cmTagApply(picked, target);
+    }
+
+    function cmTagRemove() {
+      const picked = [...cmTagSelection];
+      if (!picked.length) { cmShowMsg('Select the tags to remove first.', false); return; }
+      const works = cmEntries.filter(e => (e.tags || []).some(t => picked.indexOf(t) !== -1)).length;
+      if (!confirm(`Remove ${picked.length} tag(s) from ${works} entries?\n\n${picked.join(', ')}`)) return;
+      cmTagApply(picked, '');
+    }
+
+    // One pass over every entry: each of `from` becomes `to`, or is dropped
+    // when `to` is empty. Order is kept and an entry never ends up with the
+    // same tag twice.
+    function cmTagApply(from, to) {
+      const drop = new Set(from);
+      let touched = 0;
+      cmEntries.forEach(e => {
+        const tags = e.tags || [];
+        if (!tags.some(t => drop.has(t))) return;
+        const out = [], seen = new Set();
+        tags.forEach(t => {
+          const next = drop.has(t) ? to : t;
+          if (!next || seen.has(next)) return;
+          seen.add(next);
+          out.push(next);
+        });
+        e.tags = out;
+        touched++;
+      });
+      if (!touched) { cmShowMsg('No entries carried those tags.', false); return; }
+      cmPersist(function () {
+        cmTagSelection.clear();
+        document.getElementById('cm-tag-target').value = '';
+        cmRenderTags();
+        cmRenderEntries();
+        cmShowMsg(to ? `Merged into "${to}" across ${touched} entries.` : `Removed from ${touched} entries.`, true);
+      });
     }
 
     function cmPersist(onSuccess, onFail) {
@@ -3983,6 +4207,7 @@
       document.querySelectorAll('.cm-tab-panel').forEach(function (p) {
         p.hidden = (p.id !== 'tabp-' + name);
       });
+      if (name === 'tags') cmRenderTags();
       try { sessionStorage.setItem('cm_tab', name); } catch (e) {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
