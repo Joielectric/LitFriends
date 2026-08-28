@@ -3,8 +3,8 @@ import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, dele
 
 // Music-track upload, listing and serving, backed by Netlify Blobs.
 //
-//   POST /api/track-upload      raw audio body + x-admin-password,
-//                               x-filename, content-type      -> { url }
+//   POST /api/track-upload      raw audio body + x-filename,
+//                               content-type                  -> { url }
 //   POST /api/track-upload      { password, action: "list" }   -> { tracks, totalBytes }
 //   POST /api/track-upload      { password, action: "delete", key } -> { ok }
 //   GET  /api/track/:key                                       -> the bytes
@@ -76,7 +76,7 @@ export default async (req) => {
       status: 200,
       headers: {
         ...JSON_HEADERS,
-        "Access-Control-Allow-Headers": "content-type,x-admin-password,x-filename,authorization",
+        "Access-Control-Allow-Headers": "content-type,x-filename,authorization",
         "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       },
     });
