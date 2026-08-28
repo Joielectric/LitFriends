@@ -46,10 +46,6 @@
     return [];
   }
 
-  function getArtists(entry) {
-    return entry.artists || (entry.artist ? [entry.artist] : []);
-  }
-
   function artistInEntry(entry, artistId) {
     return CFG.creditedIn(entry, artistId);
   }
@@ -85,11 +81,25 @@
     return u.replace(/"/g, '%22');
   }
 
-  function collabHtml(name) {
+  function collabHtml(name, inRow) {
     const c = COLLAB[normName(name)];
     const label = c ? c.name : name;
-    if (c && c.url) return '<a class="ag-collab-link" href="' + escHtml(c.url) + '" target="_blank" rel="noopener noreferrer">' + escHtml(label) + '</a>';
+    const stop = inRow ? ' data-stop="1"' : '';
+    const page = CFG.profilePage(name, label);
+    if (page) return '<a class="ag-collab-link" href="' + escHtml(page) + '"' + stop + '>' + escHtml(label) + '</a>';
+    if (c && c.url) return '<a class="ag-collab-link" href="' + escHtml(c.url) + '" target="_blank" rel="noopener noreferrer"' + stop + '>' + escHtml(label) + '</a>';
     return escHtml(label);
+  }
+
+  // Every credited name, in role order, without repeats.
+  function creditNames(entry) {
+    const out = [], seen = {};
+    const c = entry.credits || {};
+    CFG.creditKeys.forEach(role => (c[role] || []).forEach(name => {
+      const k = String(name).toLowerCase();
+      if (!seen[k]) { seen[k] = 1; out.push(name); }
+    }));
+    return out;
   }
 
   function canEmbed(key) {
@@ -102,6 +112,12 @@
     const s = document.createElement('style');
     s.id = 'ag-styles';
     s.textContent = `
+/* Every page that hosts a works list names its accent differently, so it is
+   resolved once here and used as --ag-accent throughout. */
+body {
+  --ag-accent: var(--accent, var(--electric, #5b8de8));
+  --ag-gender: var(--gender, #e8a44f);
+}
 .ag-filters {
   display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.6rem; align-items: center;
 }
@@ -176,58 +192,75 @@
   overflow: hidden;
   max-width: 100%;
 }
+/* Four columns, as the catalogue has them: date, work, creators, links. */
+.ag-thead {
+  display: grid;
+  grid-template-columns: 92px 2fr 1.1fr 1.6fr;
+  gap: 0.8rem;
+  padding: 0.7rem 1rem;
+  background: var(--surface-2, #111);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+  font-family: "Cinzel", serif;
+  font-size: 0.58rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--text-dim, #888);
+}
 .ag-row {
   display: grid;
-  grid-template-columns: 6rem 1fr auto auto;
-  align-items: center;
-  gap: 0 1.2rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border, rgba(255,255,255,.07));
-  background: var(--surface-2, #111);
+  grid-template-columns: 92px 2fr 1.1fr 1.6fr;
+  gap: 0.8rem;
+  padding: 0.85rem 1rem;
+  align-items: start;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+  background: var(--surface, #111);
   cursor: pointer;
-  transition: background .12s;
+  transition: background .15s;
 }
 .ag-row:last-child { border-bottom: none; }
-.ag-row:hover { background: var(--surface-3, #181518); }
+.ag-row:hover { background: var(--surface-2, #181518); }
 
 .ag-row-date {
-  color: #e0d0c8;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: .02em;
+  color: var(--text-dim, #888);
+  font-size: 0.78rem;
   white-space: nowrap;
+  padding-top: 2px;
+}
+.ag-row-trt {
+  color: var(--ag-accent);
+  font-size: 0.72rem; letter-spacing: .03em;
+  margin-top: 3px;
 }
 .ag-row-main { min-width: 0; }
 .ag-row-title {
   color: var(--silver-hi, #f5f0ea);
-  font-size: 0.92rem;
-  line-height: 1.35;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: 0.2rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  line-height: 1.3;
 }
 .ag-row-desc {
-  color: var(--text-mid, #b09090);
-  font-size: 0.78rem;
-  font-style: italic;
-  line-height: 1.4;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: 0.2rem;
-  opacity: 0.85;
+  color: var(--text-dim, #888);
+  font-size: 0.82rem;
+  margin-top: 3px;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ag-row-artist {
+  color: var(--text-mid, #999);
+  font-size: 0.84rem; line-height: 1.4;
+  min-width: 0;
 }
 .ag-tags {
-  display: flex; flex-wrap: wrap; gap: 3px;
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
 }
 .ag-tag {
-  padding: 1px 6px;
+  padding: 1px 7px;
   border: 1px solid var(--border-mid, rgba(255,255,255,.18));
-  border-radius: 2px;
-  color: var(--silver, #d8c8c0); font-size: 0.65rem;
+  border-radius: 12px;
+  color: var(--text-mid, #999); font-size: 0.66rem; letter-spacing: .03em;
   cursor: default;
 }
 .ag-tag-gender {
-  border-color: var(--border-hi, rgba(232,99,79,.45));
-  color: var(--coral, #e8634f);
+  border-color: var(--ag-gender);
+  color: var(--ag-gender);
   font-weight: 600;
   letter-spacing: .04em;
 }
@@ -269,37 +302,23 @@
 .ag-tag[data-filterable] { cursor: pointer; }
 .ag-tag[data-filterable]:hover { border-color: var(--border-hi, rgba(255,255,255,.45)); color: var(--silver-hi, #f5f0ea); }
 .ag-row-platforms {
-  display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end;
+  display: flex; flex-wrap: wrap; gap: 5px;
 }
-.ag-platform-pill {
-  font-size: 0.6rem; letter-spacing: .1em; text-transform: uppercase;
-  padding: 2px 7px;
-  border: 1px solid var(--border-mid, rgba(255,255,255,.18));
-  border-radius: 2px;
-  color: var(--text-mid, #999);
-  white-space: nowrap;
-}
-.ag-listen-btn {
-  padding: 0.38rem 0.9rem;
-  background: transparent;
-  border: 1px solid var(--border-mid, rgba(255,255,255,.2));
-  border-radius: var(--radius, 3px);
-  color: var(--silver, #ccc);
-  cursor: pointer; font-size: 0.65rem; letter-spacing: .1em; text-transform: uppercase;
-  display: flex; align-items: center; gap: 5px;
-  transition: border-color .12s, color .12s;
-  white-space: nowrap;
-}
-.ag-listen-btn:hover {
-  border-color: var(--border-hi, rgba(255,255,255,.45));
+/* A platform is somewhere to go, so the pill goes there. The row behind it
+   still opens the work, which is what the Play button used to be for. */
+.ag-plink {
+  font-family: "Cinzel", serif;
+  font-size: 0.56rem; letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 11px;
+  border: 1px solid var(--ag-accent);
+  border-radius: 999px;
   color: var(--silver-hi, #f5f0ea);
+  text-decoration: none; white-space: nowrap;
+  background: rgba(91,141,232,0.18);
+  background: color-mix(in srgb, var(--ag-accent) 18%, transparent);
+  transition: background .18s, color .18s;
 }
-.ag-artist-badge {
-  display: inline-block; padding: 1px 7px;
-  border: 1px solid var(--border-mid, rgba(255,255,255,.18));
-  border-radius: 12px;
-  color: var(--text-mid, #999); font-size: 0.66rem;
-}
+.ag-plink:hover { background: var(--ag-accent); color: var(--bg, #111); }
 .ag-filter-chip {
   padding: 3px 10px;
   background: transparent;
@@ -338,10 +357,11 @@
   color: var(--text-dim, #555); text-align: center;
   padding: 2.5rem 1rem; font-size: 0.88rem;
 }
-@media (max-width: 540px) {
-  .ag-row { grid-template-columns: 1fr auto; }
-  .ag-row-date { display: none; }
-  .ag-row-platforms { display: none; }
+@media (max-width: 720px) {
+  .ag-thead { display: none; }
+  .ag-row { grid-template-columns: 1fr; gap: 0.4rem; padding: 1rem; }
+  .ag-row-date { padding-top: 0; }
+  .ag-row-artist::before { content: "Feat. "; color: var(--text-dim, #888); }
 }
 
 /* Modal */
@@ -489,7 +509,7 @@
       .map(([k, label]) => `
         <div class="ag-credit-row">
           <span class="ag-credit-label">${label}</span>
-          <span class="ag-credit-names">${credits[k].map(collabHtml).join(', ')}</span>
+          <span class="ag-credit-names">${credits[k].map(name => collabHtml(name)).join(', ')}</span>
         </div>`).join('');
     return rows ? `<div class="ag-modal-credits">${rows}</div>` : '';
   }
@@ -578,47 +598,47 @@
   }
 
   // ── Row ────────────────────────────────────────────────────────────────────
-  function rowHtml(entry, showArtists, filterable) {
-    const links = getLinks(entry);
-    const platformPills = links.map(lk =>
-      `<span class="ag-platform-pill">${providerLabel(lk.provider)}</span>`
+  function rowHtml(entry, filterable) {
+    const links = getLinks(entry).map(lk =>
+      `<a class="ag-plink" href="${escHtml(safeUrl(lk.url))}" target="_blank" rel="noopener noreferrer" data-stop="1">${providerLabel(lk.provider)}</a>`
     ).join('');
-    const tagsHtml = (entry.tags || []).slice(0, 8).map(t => {
+    const tagsHtml = (entry.tags || []).slice(0, 6).map(t => {
       const gender = isGenderTag(t);
       const classes = ['ag-tag', gender ? 'ag-tag-gender' : ''].filter(Boolean).join(' ');
       const attrs = filterable ? ` data-filterable="1" data-tag="${t}"` : '';
       return `<span class="${classes}"${attrs}>${t}</span>`;
     }).join('');
-    const artistBadges = showArtists
-      ? getArtists(entry).map(a => `<span class="ag-artist-badge">${ARTIST_LABELS[a] || a}</span>`).join('')
-      : '';
+    // Voice first, as the catalogue has it: that is who a listener came for.
+    const voices = (entry.credits || {}).voiceArtists || [];
+    const names = voices.length ? voices : creditNames(entry).slice(0, 2);
+    const artists = names.length ? names.map(name => collabHtml(name, true)).join(', ') : '&middot;';
 
     return `
       <div class="ag-row">
-        <div class="ag-row-date">${entry.date || ''}</div>
+        <div class="ag-row-date">${entry.date || ''}${entry.trt ? `<div class="ag-row-trt">&#9201; ${escHtml(entry.trt)}</div>` : ''}</div>
         <div class="ag-row-main">
-          <div class="ag-row-title">${typeBadge(entry)}${entry.title}${artistBadges ? ' <span style="font-weight:400;opacity:.6;font-size:.8em">&middot; ' + artistBadges + '</span>' : ''}</div>
+          <div class="ag-row-title">${typeBadge(entry)}${entry.title}</div>
           ${entry.shortDesc ? `<div class="ag-row-desc">${entry.shortDesc}</div>` : ''}
           ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
         </div>
-        <div class="ag-row-platforms">${platformPills}</div>
-        <button class="ag-listen-btn">
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Play
-        </button>
+        <div class="ag-row-artist">${artists}</div>
+        <div class="ag-row-platforms">${links || '<span class="ag-row-date">&middot;</span>'}</div>
       </div>`;
   }
 
   // ── Render list ────────────────────────────────────────────────────────────
-  function renderGrid(entries, container, showArtists, filterable, onTagClick) {
+  function renderGrid(entries, container, filterable, onTagClick) {
     if (!entries.length) {
-      container.innerHTML = '<div class="ag-empty">No audio found.</div>';
+      container.innerHTML = '<div class="ag-empty">No works found.</div>';
       return;
     }
-    container.innerHTML = `<div class="ag-grid">${entries.map(e => rowHtml(e, showArtists, filterable)).join('')}</div>`;
+    container.innerHTML = '<div class="ag-grid">' +
+      '<div class="ag-thead"><div>Date</div><div>Title</div><div>Creators</div><div>Links</div></div>' +
+      entries.map(e => rowHtml(e, filterable)).join('') + '</div>';
     container.querySelectorAll('.ag-row').forEach((row, i) => {
       row.addEventListener('click', e => {
-        if (e.target.dataset.filterable) return; // tag click handled below
+        if (e.target.closest('[data-stop]')) return; // a link inside the row
+        if (e.target.dataset.filterable) return;     // tag click handled below
         openModal(entries[i]);
       });
     });
@@ -793,7 +813,7 @@
         return true;
       });
       document.getElementById('ag-count').textContent = `${filtered.length} of ${allEntries.length} works`;
-      renderGrid(filtered, gridWrap, true, true, tag => {
+      renderGrid(filtered, gridWrap, true, tag => {
         toggleTagByValue(tag);
       });
     }
@@ -857,7 +877,7 @@
       if (!list.length) {
         grid.innerHTML = '<div class="ag-empty">Nothing with those tags.</div>';
       } else {
-        renderGrid(list.slice(page * perPage, (page + 1) * perPage), grid, false, false, null);
+        renderGrid(list.slice(page * perPage, (page + 1) * perPage), grid, false, null);
       }
 
       drawTags();
@@ -984,7 +1004,7 @@
             initFilters(entries, el);
           } else if (limit) {
             // A "latest few" list is a taster, not a browse.
-            renderGrid(entries, el, false, false, null);
+            renderGrid(entries, el, false, null);
           } else {
             renderPaged(entries, el, perPage || 10);
           }
