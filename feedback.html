@@ -28,6 +28,38 @@
   --danger: #c0394a;
   --radius: 2px;
 }
+
+/* Feedback left on a creator's page wears their colours, so arriving from
+   their profile does not feel like being handed off to somebody else. Same
+   five themes the profile pages offer, named for this page's variables. */
+body[data-theme="ember"] {
+  --bg: #140d0c; --surface: #1e1412; --surface-2: #291c19; --surface-3: #33241f;
+  --border: rgba(217,116,63,0.24); --border-mid: rgba(217,116,63,0.45); --border-hi: rgba(217,116,63,0.7);
+  --text: #fdf3ee; --text-mid: #f0ddd0; --text-dim: #d8bba6;
+  --silver: #f0ddd0; --silver-hi: #fdf3ee;
+  --electric: #d9743f; --electric-dim: #7a3f20;
+}
+body[data-theme="orchid"] {
+  --bg: #150e1c; --surface: #1f1529; --surface-2: #2a1d37; --surface-3: #352545;
+  --border: rgba(180,120,232,0.24); --border-mid: rgba(180,120,232,0.45); --border-hi: rgba(180,120,232,0.7);
+  --text: #f7f0fd; --text-mid: #e6d8f5; --text-dim: #cbb6e2;
+  --silver: #e6d8f5; --silver-hi: #f7f0fd;
+  --electric: #b478e8; --electric-dim: #5f3d7d;
+}
+body[data-theme="moss"] {
+  --bg: #0d1512; --surface: #141f1a; --surface-2: #1c2b24; --surface-3: #24362d;
+  --border: rgba(95,191,148,0.24); --border-mid: rgba(95,191,148,0.45); --border-hi: rgba(95,191,148,0.7);
+  --text: #eefaf4; --text-mid: #d6ece1; --text-dim: #a9cbbb;
+  --silver: #d6ece1; --silver-hi: #eefaf4;
+  --electric: #5fbf94; --electric-dim: #2f6650;
+}
+body[data-theme="noir"] {
+  --bg: #101011; --surface: #1a1a1c; --surface-2: #242427; --surface-3: #2e2e32;
+  --border: rgba(201,201,210,0.2); --border-mid: rgba(201,201,210,0.4); --border-hi: rgba(201,201,210,0.62);
+  --text: #f4f4f6; --text-mid: #dcdce2; --text-dim: #b6b6c0;
+  --silver: #dcdce2; --silver-hi: #f4f4f6;
+  --electric: #c9c9d2; --electric-dim: #5c5c66;
+}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; overflow-x: hidden; }
 body {
@@ -518,6 +550,14 @@ var FOR = (new URLSearchParams(location.search).get('for') || '')
   // when there is no creator in the URL.
   function dressFor(p) {
     document.title = "Feedback for " + p.name;
+
+    // Their theme, and their accent if they set one — the same two things
+    // their profile page uses, so the two pages match.
+    if (p.theme) document.body.setAttribute("data-theme", p.theme);
+    if (p.accent) {
+      document.body.style.setProperty("--electric", p.accent);
+      document.body.style.setProperty("--silver-hi", p.accent);
+    }
 
     var banner = document.querySelector(".banner-frame");
     if (banner) {
