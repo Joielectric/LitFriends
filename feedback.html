@@ -560,6 +560,10 @@ var FOR = (new URLSearchParams(location.search).get('for') || '')
     });
   }
 
+  // The catalogue is fetched after the profile when there is one, because the
+  // profile carries the names this creator is credited under. Ask first and a
+  // creator who postdates site-config's artist list matches nothing but their
+  // own slug, and their picker comes back empty.
   if (FOR) {
     fetch("/api/profile/" + encodeURIComponent(FOR))
       .then(function (r) { return r.json(); })
@@ -572,10 +576,16 @@ var FOR = (new URLSearchParams(location.search).get('for') || '')
           return;
         }
         dressFor(p);
+        CFG.registerArtistName(p.slug, p.name);
+        (p.aliases || []).forEach(function (a) { CFG.registerArtistName(p.slug, a); });
+        loadCatalogue();
       })
-      .catch(function () { /* leave the form as it is */ });
+      .catch(function () { loadCatalogue(); });   // no profile, but the form still works
+  } else {
+    loadCatalogue();
   }
 
+  function loadCatalogue() {
   fetch("/api/content")
     .then(function (r) { return r.json(); })
     .then(function (data) {
@@ -584,6 +594,12 @@ var FOR = (new URLSearchParams(location.search).get('for') || '')
       var entries = (data.entries || [])
         .filter(function (e) { return FOR ? CFG.creditedIn(e, FOR) : CFG.isOwnWork(e); })
         .sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
+
+      // Platform names come with the payload; the map above is only a seed, so
+      // a platform added in the Content Manager is not shown as its bare key.
+      (data.providers || []).forEach(function (pr) {
+        if (pr && pr.key) PROVIDER_LABELS[pr.key] = pr.label || pr.key;
+      });
 
       // Platforms actually used across the catalogue, then extras
       var used = {};
@@ -613,6 +629,7 @@ var FOR = (new URLSearchParams(location.search).get('for') || '')
       audioSel.value = "Other / not listed";
       audioSel.dispatchEvent(new Event("change"));
     });
+  }
 })();
 
 var toneSlider = document.getElementById("tone-slider");
