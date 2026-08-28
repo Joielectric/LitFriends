@@ -347,13 +347,37 @@
       return parts.join('\n');
     }
 
+    // A link to another HotAudio track is written relative — t/61155, not the
+    // whole address. The id is already in the catalogue inside the link, so it
+    // is taken from there rather than asked for a second time and kept in step
+    // by hand.
+    function hotAudioPath(url) {
+      var u = String(url || '').trim();
+      if (!u) return '';
+      if (!/^https?:\/\//i.test(u)) return u.replace(/^\/+/, '');   // already relative
+      try {
+        return new URL(u).pathname.replace(/^\/+/, '') || u;
+      } catch (err) {
+        return u;
+      }
+    }
+
     function listenLines(e) {
       var links = (e && e.links) || [];
       if (!links.length && e && e.provider && e.url) links = [{ provider: e.provider, url: e.url }];
-      var trt = (e && e.trt) ? ' ' + e.trt : '';
+      var trt = (e && e.trt) ? ' TRT-' + e.trt : '';
+
       return links.map(function (l) {
-        var label = CAT_PROVIDERS[l.provider] || l.provider || 'Listen';
-        return '[🎧Listen Here' + trt + ' — ' + label + '](' + l.url + ')';
+        var isHere = l.provider === 'hotaudio';
+        var href = isHere ? hotAudioPath(l.url) : l.url;
+        var line = '[🎧 Listen Here' + trt + '](' + href + ')';
+        // With more than one, say which is which — otherwise every line reads
+        // the same and the reader has to guess.
+        if (links.length > 1) {
+          var which = l.label || CAT_PROVIDERS[l.provider] || l.provider || '';
+          if (which) line = which + ': ' + line;
+        }
+        return line;
       });
     }
 

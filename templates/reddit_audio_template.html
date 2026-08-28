@@ -269,6 +269,7 @@
             <div class="form-group">
                 <label class="form-label">Creator Name (for Copyright)</label>
                 <input type="text" id="creatorName" class="form-input" placeholder="Your name or handle for copyright notice">
+                <small id="creatorNameNote" style="display:none"></small>
             </div>
             
             <div class="readonly-section">
@@ -442,8 +443,32 @@
                 `© ${CURRENT_YEAR} ${creatorName}. All rights reserved. Do not repost, redistribute, or train models on this work without permission.`;
         }
         
+        // The person filling this in is the one claiming the copyright, so the
+        // name comes from their profile rather than being typed every time.
+        // Still editable — a post can be published under another name.
+        function loadCreatorName() {
+            fetch('/api/profiles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'mine' })
+            })
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.ok || !d.profile || !d.profile.name) return;
+                    const field = document.getElementById('creatorName');
+                    if (field.value.trim()) return;           // never overwrite a typed name
+                    field.value = d.profile.name;
+                    const note = document.getElementById('creatorNameNote');
+                    note.textContent = 'From your profile. Change it here if this post is under another name.';
+                    note.style.display = '';
+                    updatePreviews();
+                })
+                .catch(function () { /* not signed in — type it as before */ });
+        }
+
         // Add event listeners
         document.addEventListener('DOMContentLoaded', function() {
+            loadCreatorName();
             const inputs = document.querySelectorAll('.form-input, .form-textarea, .tag-select');
             inputs.forEach(input => {
                 input.addEventListener('input', updatePreviews);
