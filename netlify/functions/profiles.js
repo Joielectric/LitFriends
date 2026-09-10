@@ -128,8 +128,9 @@ function sanitize(input, base, allProfiles) {
       dividerRaw: clean(ps.dividerRaw, 200),
     };
   }
+  // Kept as typed: ScriptBin finds MsKittenSK and not mskittensk.
   if (input.scriptbin !== undefined) {
-    out.scriptbin = clean(input.scriptbin, 60).toLowerCase().replace(/[^a-z0-9_.-]/g, "");
+    out.scriptbin = clean(input.scriptbin, 60).replace(/[^A-Za-z0-9_.-]/g, "");
   }
   if (Array.isArray(input.aliases)) {
     const seen = new Set();

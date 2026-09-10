@@ -20,10 +20,11 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 
 const SOURCE = "https://scriptbin.works/u/";
 
-// Their handles are lowercase words and underscores; anything else is not a
-// handle and must not be pasted into a URL.
+// Their handles are letters, digits and underscores; anything else is not a
+// handle and must not be pasted into a URL. Case matters to ScriptBin:
+// MsKittenSK is found and mskittensk is not, so the handle is kept as typed.
 export const cleanHandle = (v) =>
-  String(v == null ? "" : v).trim().toLowerCase().replace(/[^a-z0-9_.-]/g, "").slice(0, 60);
+  String(v == null ? "" : v).trim().replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 60);
 
 /**
  * One ScriptBin work as a catalogue entry.
@@ -103,10 +104,16 @@ export default async (req) => {
   try {
     const res = await fetch(`${SOURCE}${encodeURIComponent(handle)}.json`, {
       headers: { accept: "application/json", "user-agent": "joielectric.com catalogue import" },
+      // An unknown user is sent to their home page, which sits behind a terms
+      // of access form; following it would turn "no such user" into a page of
+      // HTML that fails to parse.
+      redirect: "manual",
       signal: AbortSignal.timeout(15000),
     });
-    if (res.status === 404) {
-      return json({ error: `ScriptBin has no user called "${handle}".` }, 404);
+    if (res.status === 404 || (res.status >= 300 && res.status < 400)) {
+      return json({
+        error: `ScriptBin has no user called "${handle}". Usernames are case sensitive, so check the capitals against the address of the ScriptBin profile.`,
+      }, 404);
     }
     if (!res.ok) {
       return json({ error: `ScriptBin answered ${res.status}. Try again later.` }, 502);
