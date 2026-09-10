@@ -33,6 +33,9 @@ function sourceKeys(entry) {
   return keys;
 }
 
+// The shape of a profile slug, which is all an owner field may hold.
+const OWNER_FIELD = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+
 function mergeEntries(incoming, stored, auth) {
   const byId = new Map(stored.map((e) => [e.id, e]));
   const mine = auth.isOwner ? OWNER_SLUG : auth.slug;
@@ -55,7 +58,11 @@ function mergeEntries(incoming, stored, auth) {
       keys.forEach((k) => known.add(k));   // and not twice within one request
     }
 
-    accepted.push({ ...entry, owner: (prior && prior.owner) || mine });
+    // The site owner may hand an entry to another creator, which is how work
+    // imported under the wrong name reaches the right one. Nobody else can
+    // move anything, so for them the stored owner always wins.
+    const handedTo = auth.isOwner && typeof entry.owner === "string" && OWNER_FIELD.test(entry.owner) ? entry.owner : "";
+    accepted.push({ ...entry, owner: handedTo || (prior && prior.owner) || mine });
   }
 
   // Anything the caller could not have edited survives untouched, including

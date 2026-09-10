@@ -460,6 +460,15 @@
                           <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkDate()">Set date</button>
                           <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmBulkDelete()">Delete selected</button>
                         </div>
+                        <div class="owner-only" style="display:none;margin-top:8px;">
+                          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                            <select id="cm-bulk-owner" class="cm-input cm-btn-sm" style="flex:1 1 180px"></select>
+                            <label style="display:flex;align-items:center;gap:5px;color:var(--text-mid);font-size:0.8rem;cursor:pointer;">
+                              <input type="checkbox" id="cm-bulk-owner-credit" checked style="cursor:pointer"> Swap the credited name too
+                            </label>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkMove()">Move to creator</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -3013,7 +3022,8 @@
 
     function cmEntryHaystack(e) {
       const names = Object.values(e.credits || {}).flat().join(' ');
-      return [e.title, e.date, (e.tags || []).join(' '), names, e.type || 'audio'].join(' ').toLowerCase();
+      // sourceId carries the ScriptBin username, so a search for it finds that account's imports.
+      return [e.title, e.date, (e.tags || []).join(' '), names, e.type || 'audio', e.sourceId || ''].join(' ').toLowerCase();
     }
 
     // The store is shared with collaborators, so the picker shows your work by
@@ -3377,6 +3387,7 @@
           t.innerHTML = '<option value="">Any type</option>' +
             CFG.entryTypes.map(x => `<option value="${x.key}">${cmEsc(x.plural)}</option>`).join('');
         }
+        if (cmWho.isOwner) cmBulkFillOwners();
         cmRenderBulk();
       }
     }
@@ -3463,6 +3474,49 @@
       const date = document.getElementById('cm-bulk-date').value;
       if (!date) { cmShowMsg('Pick a date first.', false); return; }
       cmBulkApply('Dated', e => { e.date = date; });
+    }
+
+    // Who an entry can be handed to: every profile, every invited creator, and
+    // the artists site-config knows, named the way their page names them.
+    function cmOwnerChoices() {
+      const bySlug = {};
+      (CFG.artists || []).forEach(a => { bySlug[a.slug] = a.name || a.slug; });
+      (crCreators || []).forEach(c => { if (c.slug) bySlug[c.slug] = c.name || bySlug[c.slug] || c.slug; });
+      Object.values(plProfilesById || {}).forEach(p => { if (p && p.slug) bySlug[p.slug] = p.name || bySlug[p.slug] || p.slug; });
+      return Object.keys(bySlug).map(slug => ({ slug, name: bySlug[slug] }))
+        .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    }
+
+    function cmBulkFillOwners() {
+      const sel = document.getElementById('cm-bulk-owner');
+      const was = sel.value;
+      sel.innerHTML = '<option value="">Move to…</option>' +
+        cmOwnerChoices().map(c => `<option value="${cmEsc(c.slug)}">${cmEsc(c.name)} (${cmEsc(c.slug)})</option>`).join('');
+      sel.value = was;
+    }
+
+    // Hand entries to another creator. The owner decides who may edit them and
+    // the credit decides whose page shows them, so both move together unless
+    // the old name really belongs on the work.
+    function cmBulkMove() {
+      const slug = document.getElementById('cm-bulk-owner').value;
+      if (!slug) { cmShowMsg('Pick who they should belong to first.', false); return; }
+      const choice = cmOwnerChoices().find(c => c.slug === slug);
+      const name = (choice && choice.name) || slug;
+      const swap = document.getElementById('cm-bulk-owner-credit').checked;
+      cmBulkApply('Moved to ' + name + ':', e => {
+        const from = e.owner || CFG.identity.owner;
+        if (swap && from !== slug) {
+          const old = CFG.artistNames[from] || [cmNorm(from)];
+          const credits = e.credits || {};
+          Object.keys(credits).forEach(role => {
+            const swapped = (credits[role] || []).map(n => old.includes(cmNorm(n)) ? name : n);
+            credits[role] = swapped.filter((n, i) => swapped.findIndex(m => cmNorm(m) === cmNorm(n)) === i);
+          });
+          e.credits = credits;
+        }
+        e.owner = slug;
+      }, cmBulkFillOwners);
     }
 
     function cmBulkDelete() {
@@ -3686,6 +3740,9 @@
           // no credited name, so nothing that matches by name — their profile,
           // the catalogue, the picker — can find it.
           credits: pfProfile && pfProfile.name ? { writers: [pfProfile.name] } : {},
+          // And make it theirs, not whoever clicked Import. Only the site owner's
+          // save can set this; for anyone else the server makes it their own.
+          owner: pfProfile && pfProfile.slug ? pfProfile.slug : undefined,
           source: w.source,
           sourceId: w.sourceId,
           sourceLink: w.sourceLink,
