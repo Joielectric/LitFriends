@@ -417,18 +417,27 @@
     return out;
   }
 
+  // Linked entries are found in the whole store, not just what this catalogue
+  // lists: an audio here can fill another creator's script, and one of ours
+  // can be filled by someone else's audio.
   function entryById(id){
     if (!id) return null;
-    for (var i = 0; i < ENTRIES.length; i++) if (ENTRIES[i].id === id) return ENTRIES[i];
+    for (var i = 0; i < ALL.length; i++) if (ALL[i].id === id) return ALL[i];
     return null;
   }
   // An audio stores the script it filled; the script side is derived, so the
   // two directions can never disagree.
   function fillsOf(scriptId){
-    return ENTRIES.filter(function(e){ return e.fills && e.fills === scriptId; });
+    return ALL.filter(function(e){ return e.fills && e.fills === scriptId; });
   }
   function relLink(e){
-    return '<a class="collab-link" href="#" data-goto="' + esc(e.id) + '">' + esc(e.title || 'Untitled') + '</a>';
+    var link = '<a class="collab-link" href="#" data-goto="' + esc(e.id) + '">' + esc(e.title || 'Untitled') + '</a>';
+    if (SHOW_ALL || CFG.isOwnWork(e)) return link;
+    // Someone else's work names them, since nothing else on this page will.
+    var c = e.credits || {};
+    var who = typeOf(e) === 'script' ? (c.writers || []) : voiceNames(e);
+    if (!who.length) who = allNames(e);
+    return who.length ? link + ' by ' + esc(who.join(', ')) : link;
   }
   function relatedHtml(e){
     if (typeOf(e) === 'script') {
@@ -474,6 +483,7 @@
   };
 
   var ENTRIES = [];
+  var ALL = [];        // the whole store, for following links out of ENTRIES
   var TAG_COUNT = {};
   var SHOW_ALL = /(?:^|[?&])all=1(?:&|$)/.test(location.search);
   var state ={ q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
@@ -486,6 +496,7 @@
       // pages, so this catalogue shows only work the site's owner is credited
       // on. ?all=1 lifts that for checking the full store.
       var all = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      ALL = all;
       ENTRIES = SHOW_ALL ? all : all.filter(function(e){ return CFG.isOwnWork(e); });
       COLLAB = {};
       (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });

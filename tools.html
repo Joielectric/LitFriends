@@ -531,10 +531,15 @@
 
                     <!-- Script fill: audio entries only -->
                     <div class="cm-full" id="cm-fills-row">
-                        <label class="cm-label">Script Filled <span style="font-weight:normal;color:var(--text-mid)">(optional — a script entry in this catalogue)</span></label>
-                        <select id="cm-fills" class="cm-input" style="width:100%;min-width:0"></select>
+                        <label class="cm-label">Script Filled <span style="font-weight:normal;color:var(--text-mid)">(optional, any creator’s script in the catalogue)</span></label>
+                        <input type="hidden" id="cm-fills">
+                        <div id="cm-fills-current" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;"></div>
+                        <input id="cm-fills-search" class="cm-input" style="width:100%;min-width:0" autocomplete="off"
+                               placeholder="Search scripts by title, tag, writer or ScriptBin username…"
+                               oninput="cmRenderFillsResults()" onkeydown="cmFillsKey(event)">
+                        <div id="cm-fills-results" style="max-height:260px;overflow-y:auto;margin-top:6px;"></div>
                         <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">
-                            Only for scripts that have their own entry here. To credit someone else’s script, add a script platform link above instead.
+                            Every creator’s scripts are searchable here. For a script with no entry anywhere in the catalogue, add a script platform link above instead.
                         </div>
                     </div>
 
@@ -2734,6 +2739,13 @@
     // An audio may fill at most one script, stored as that script entry's id.
     // The reverse ("which audios filled this script") is derived, so there is
     // only ever one field to keep straight.
+    //
+    // The store is shared, so the script can be anyone's: a creator voicing
+    // someone else's script links to that writer's entry instead of making a
+    // second copy. With every creator's scripts in play that is too many for a
+    // list, so it is a search.
+
+    const CM_FILLS_SHOWN = 25;
 
     function cmScriptEntries() {
       return cmEntries
@@ -2741,24 +2753,101 @@
         .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
     }
 
+    // Who wrote it, which is what tells two scripts with one title apart.
+    function cmScriptWriter(e) {
+      const c = e.credits || {};
+      const names = ((c.writers && c.writers.length) ? c.writers : Object.values(c).flat()).filter(Boolean);
+      if (names.length) return names.join(', ');
+      return e.owner ? (CFG.artistLabels[e.owner] || e.owner) : '';
+    }
+
+    function cmFillsLine(e) {
+      const who = cmScriptWriter(e);
+      return `<span style="color:var(--text);">${cmEsc(e.title || 'Untitled')}</span>` +
+        `<span style="color:var(--text-dim);font-size:0.8rem;">` +
+        (who ? ' &middot; ' + cmEsc(who) : '') +
+        (e.date ? ' &middot; ' + cmEsc(e.date) : '') +
+        (e.words ? ' &middot; ' + Number(e.words).toLocaleString() + ' words' : '') +
+        `</span>`;
+    }
+
+    // Called with an id when an entry is opened or cleared, and without one
+    // when only the surroundings changed.
     function cmRenderFillsOptions(selected) {
-      const sel = document.getElementById('cm-fills');
-      if (!sel) return;
-      const keep = selected !== undefined ? selected : sel.value;
-      const scripts = cmScriptEntries();
-
-      sel.innerHTML = '<option value="">— none —</option>'
-        + scripts.map(e =>
-            `<option value="${cmEsc(e.id)}">${cmEsc(e.title || 'Untitled')}${e.date ? ' (' + cmEsc(e.date) + ')' : ''}</option>`
-          ).join('');
-
-      // A script that was deleted or retyped must not silently detach the audio.
-      if (keep && !scripts.some(e => e.id === keep)) {
-        const gone = cmEntries.find(e => e.id === keep);
-        sel.insertAdjacentHTML('beforeend',
-          `<option value="${cmEsc(keep)}">${cmEsc(gone ? (gone.title || 'Untitled') : 'Missing script')} (unavailable)</option>`);
+      const input = document.getElementById('cm-fills');
+      if (!input) return;
+      if (selected !== undefined) {
+        input.value = selected || '';
+        document.getElementById('cm-fills-search').value = '';
       }
-      sel.value = keep || '';
+      cmRenderFillsCurrent();
+      cmRenderFillsResults();
+    }
+
+    function cmRenderFillsCurrent() {
+      const id = document.getElementById('cm-fills').value;
+      const box = document.getElementById('cm-fills-current');
+      if (!id) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      // A script that was deleted or retyped must not silently detach the audio,
+      // so it stays linked and says so until someone unlinks it.
+      const e = cmEntries.find(x => x.id === id);
+      const usable = e && (e.type || 'audio') === 'script';
+      box.style.display = 'flex';
+      box.innerHTML =
+        `<span style="color:var(--text-mid);font-size:0.8rem;">Linked:</span>` +
+        `<span style="min-width:0;flex:1 1 200px;">` +
+          (e ? cmFillsLine(e) : '<span style="color:var(--text);">Missing script</span>') +
+          (usable ? '' : ' <span style="color:#e8a34f;font-size:0.8rem;">(unavailable)</span>') +
+        `</span>` +
+        `<button type="button" class="cm-btn cm-btn-sm" onclick="cmPickFill('')">Unlink</button>`;
+    }
+
+    function cmFillsHits() {
+      const q = cmNorm(document.getElementById('cm-fills-search').value);
+      const words = q.split(' ').filter(Boolean);
+      if (!words.length) return [];
+      const current = document.getElementById('cm-fills').value;
+      return cmScriptEntries()
+        .filter(e => {
+          if (e.id === current) return false;
+          const hay = cmEntryHaystack(e) + ' ' + (e.owner || '') + ' ' + cmNorm(CFG.artistLabels[e.owner] || '');
+          return words.every(w => hay.includes(w));
+        })
+        // A title match first, then the alphabetical order they arrived in.
+        .map((e, i) => ({ e, i, rank: cmNorm(e.title).includes(q) ? 0 : 1 }))
+        .sort((a, b) => a.rank - b.rank || a.i - b.i)
+        .map(x => x.e);
+    }
+
+    function cmRenderFillsResults() {
+      const box = document.getElementById('cm-fills-results');
+      if (!box) return;
+      if (!document.getElementById('cm-fills-search').value.trim()) { box.innerHTML = ''; return; }
+      const hits = cmFillsHits();
+      if (!hits.length) { box.innerHTML = '<div class="cm-collab-empty">No script matches.</div>'; return; }
+      box.innerHTML = hits.slice(0, CM_FILLS_SHOWN).map(e => `
+        <button type="button" data-id="${cmEsc(e.id)}" onclick="cmPickFill(this.dataset.id)"
+                style="display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:6px 4px;cursor:pointer;font:inherit;">
+          ${cmFillsLine(e)}
+        </button>`).join('') +
+        (hits.length > CM_FILLS_SHOWN
+          ? `<div style="color:var(--text-dim);font-size:0.78rem;padding:6px 4px;">${hits.length - CM_FILLS_SHOWN} more. Keep typing to narrow it down.</div>`
+          : '');
+    }
+
+    // Enter takes the top match, and must never submit the entry.
+    function cmFillsKey(ev) {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      const top = cmFillsHits()[0];
+      if (top) cmPickFill(top.id);
+    }
+
+    function cmPickFill(id) {
+      document.getElementById('cm-fills').value = id || '';
+      document.getElementById('cm-fills-search').value = '';
+      cmRenderFillsCurrent();
+      cmRenderFillsResults();
     }
 
     (function cmBuildTypeOptions() {
