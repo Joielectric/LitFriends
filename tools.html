@@ -2761,6 +2761,58 @@
       return e.owner ? (CFG.artistLabels[e.owner] || e.owner) : '';
     }
 
+    // Names to credit as writer when an audio fills this script. The owner
+    // stands in only when they have a real display name to credit.
+    function cmScriptWriterNames(e) {
+      const writers = ((e.credits || {}).writers || []).filter(n => String(n || '').trim());
+      if (writers.length) return writers;
+      const owner = e.owner ? (CFG.artistLabels[e.owner] || '') : '';
+      return owner ? [owner] : [];
+    }
+
+    // What picking a script put into this form, so choosing another or
+    // unlinking takes back exactly that and never a writer or tag someone chose
+    // by hand. Opening or clearing an entry starts it empty.
+    let cmFillsAdded = { writers: [], tags: [] };
+
+    // Filling a script means the audio shares its writer and, as a rule, its
+    // tags, so a pick copies both into the form. Nothing is saved until Save,
+    // and the script entry itself is never touched.
+    function cmFillsCarryOver(id) {
+      cmFillsAdded.writers.forEach(n => cmCreditRemove('writers', n));
+      const tagsEl = document.getElementById('cm-tags');
+      const drop = new Set(cmFillsAdded.tags.map(t => t.toLowerCase()));
+      const tags = cmNormalizeTagList(tagsEl.value).filter(t => !drop.has(t.toLowerCase()));
+      cmFillsAdded = { writers: [], tags: [] };
+
+      const script = id && cmEntries.find(e => e.id === id);
+      if (script) {
+        cmScriptWriterNames(script).forEach(raw => {
+          // A collaborator's own spelling, so the credit links to their page.
+          const collab = cmFindCollab(raw);
+          const name = collab ? collab.name : raw;
+          if (cmCredits.writers.some(n => cmNorm(n) === cmNorm(name))) return;
+          cmCreditAdd('writers', name);
+          cmFillsAdded.writers.push(name);
+        });
+        const have = new Set(tags.map(t => t.toLowerCase()));
+        (script.tags || []).map(t => cmNormalizeTag(String(t || ''))).filter(Boolean).forEach(t => {
+          if (have.has(t.toLowerCase())) return;
+          have.add(t.toLowerCase());
+          tags.push(t);
+          cmFillsAdded.tags.push(t);
+        });
+      }
+
+      // Same order the bracket importer keeps: audience tags first.
+      if (drop.size || cmFillsAdded.tags.length) {
+        tagsEl.value = [
+          ...tags.filter(t => GENDER_TAGS_CM.includes(t)),
+          ...tags.filter(t => !GENDER_TAGS_CM.includes(t)),
+        ].join(', ');
+      }
+    }
+
     function cmFillsLine(e) {
       const who = cmScriptWriter(e);
       return `<span style="color:var(--text);">${cmEsc(e.title || 'Untitled')}</span>` +
@@ -2779,6 +2831,7 @@
       if (selected !== undefined) {
         input.value = selected || '';
         document.getElementById('cm-fills-search').value = '';
+        cmFillsAdded = { writers: [], tags: [] };
       }
       cmRenderFillsCurrent();
       cmRenderFillsResults();
@@ -2792,6 +2845,11 @@
       // so it stays linked and says so until someone unlinks it.
       const e = cmEntries.find(x => x.id === id);
       const usable = e && (e.type || 'audio') === 'script';
+      const w = cmFillsAdded.writers, t = cmFillsAdded.tags;
+      const carried = [
+        w.length ? (w.length === 1 ? 'writer ' : 'writers ') + w.join(', ') : '',
+        t.length ? t.length + (t.length === 1 ? ' tag' : ' tags') : '',
+      ].filter(Boolean).join(' and ');
       box.style.display = 'flex';
       box.innerHTML =
         `<span style="color:var(--text-mid);font-size:0.8rem;">Linked:</span>` +
@@ -2799,7 +2857,10 @@
           (e ? cmFillsLine(e) : '<span style="color:var(--text);">Missing script</span>') +
           (usable ? '' : ' <span style="color:#e8a34f;font-size:0.8rem;">(unavailable)</span>') +
         `</span>` +
-        `<button type="button" class="cm-btn cm-btn-sm" onclick="cmPickFill('')">Unlink</button>`;
+        `<button type="button" class="cm-btn cm-btn-sm" onclick="cmPickFill('')">Unlink</button>` +
+        (carried
+          ? `<div style="flex-basis:100%;color:#6fe3c1;font-size:0.76rem;">Added from the script: ${cmEsc(carried)}. Unlink or pick another to take them back.</div>`
+          : '');
     }
 
     function cmFillsHits() {
@@ -2846,6 +2907,7 @@
     function cmPickFill(id) {
       document.getElementById('cm-fills').value = id || '';
       document.getElementById('cm-fills-search').value = '';
+      cmFillsCarryOver(id);
       cmRenderFillsCurrent();
       cmRenderFillsResults();
     }
