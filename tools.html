@@ -785,7 +785,10 @@
                     <label class="cm-label" style="margin-bottom:6px">Tag Vocabulary</label>
                     <div id="cm-tag-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:12px;"></div>
 
-                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">Likely duplicates <span style="font-weight:normal">(same tag, different casing or spacing)</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin:0">Likely duplicates <span style="font-weight:normal">(same tag, different casing or spacing)</span></label>
+                        <button type="button" id="cm-tag-merge-all" class="cm-btn cm-btn-sm cm-btn-primary" onclick="cmTagMergeAll()" hidden>Merge all</button>
+                    </div>
                     <div id="cm-tag-dupes" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:16px;"></div>
 
                     <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">All tags</label>
@@ -2268,13 +2271,33 @@
       // Gender tags always uppercase canonical form
       const g = GENDER_TAGS_CM.find(gt => gt.toLowerCase() === lower);
       if (g) return g;
-      if (TAG_ALIASES[lower]) return TAG_ALIASES[lower];
+      if (Object.hasOwn(TAG_ALIASES, lower)) return TAG_ALIASES[lower];
       return trimmed;
     }
 
+    // A tag typed as "Soft Spoken" when the catalogue already says
+    // "soft spoken" takes the spelling in use, so new entries stop feeding the
+    // duplicate list. Audience tags and alias targets already have a fixed form.
+    const TAG_ALIAS_TARGETS = new Set(Object.values(TAG_ALIASES));
+
+    function cmTagSpellings() {
+      const count = cmTagCounts(), best = Object.create(null);
+      Object.keys(count).forEach(t => {
+        const k = cmTagKey(t);
+        if (k && (!best[k] || count[t] > count[best[k]])) best[k] = t;
+      });
+      return best;
+    }
+
+    function cmSnapTag(t, spellings) {
+      if (GENDER_TAGS_CM.includes(t) || TAG_ALIAS_TARGETS.has(t)) return t;
+      return spellings[cmTagKey(t)] || t;
+    }
+
     function cmNormalizeTagList(raw) {
+      const spellings = cmTagSpellings();
       const seen = new Map(); // lowercased -> canonical (dedupe, keep order)
-      raw.split(',').map(cmNormalizeTag).filter(Boolean).forEach(t => {
+      raw.split(',').map(cmNormalizeTag).filter(Boolean).map(t => cmSnapTag(t, spellings)).forEach(t => {
         const key = t.toLowerCase();
         if (!seen.has(key)) seen.set(key, t);
       });
@@ -3256,7 +3279,7 @@
     let cmTagSelection = new Set();
 
     function cmTagCounts() {
-      const count = {};
+      const count = Object.create(null);
       cmEntries.forEach(e => (e.tags || []).forEach(t => { count[t] = (count[t] || 0) + 1; }));
       return count;
     }
@@ -3268,7 +3291,7 @@
     }
 
     function cmTagClusters(count) {
-      const by = {};
+      const by = Object.create(null);
       Object.keys(count).forEach(t => {
         const k = cmTagKey(t);
         if (!k) return;
@@ -3298,6 +3321,7 @@
 
     function cmRenderTagDupes(count, clusters) {
       const box = document.getElementById('cm-tag-dupes');
+      document.getElementById('cm-tag-merge-all').hidden = !clusters.length;
       if (!clusters.length) {
         box.innerHTML = '<div style="color:var(--text-dim);font-size:0.86rem;padding:4px 0;">Nothing looks duplicated.</div>';
         return;
@@ -3384,6 +3408,18 @@
       cmTagApply(group, group[0]);
     }
 
+    // Every duplicate group folds into its most used spelling in one save.
+    function cmTagMergeAll() {
+      const clusters = cmTagClusters(cmTagCounts());
+      if (!clusters.length) { cmShowMsg('Nothing looks duplicated.', false); return; }
+      const map = new Map();
+      clusters.forEach(group => group.slice(1).forEach(t => map.set(t, group[0])));
+      const works = cmEntries.filter(e => (e.tags || []).some(t => map.has(t))).length;
+      if (!confirm(`Merge ${clusters.length} duplicate ${clusters.length === 1 ? 'group' : 'groups'} across ${works} ${works === 1 ? 'entry' : 'entries'}? Each keeps its most used spelling.`)) return;
+      cmTagRewrite(map, touched =>
+        `Merged ${clusters.length} ${clusters.length === 1 ? 'group' : 'groups'} across ${touched} ${touched === 1 ? 'entry' : 'entries'}.`);
+    }
+
     function cmTagMerge() {
       const picked = [...cmTagSelection];
       const target = (document.getElementById('cm-tag-target').value || '').trim();
@@ -3400,18 +3436,24 @@
       cmTagApply(picked, '');
     }
 
-    // One pass over every entry: each of `from` becomes `to`, or is dropped
-    // when `to` is empty. Order is kept and an entry never ends up with the
-    // same tag twice.
+    // Each of `from` becomes `to`, or is dropped when `to` is empty.
     function cmTagApply(from, to) {
-      const drop = new Set(from);
+      const map = new Map(from.map(t => [t, to]));
+      cmTagRewrite(map, touched =>
+        to ? `Merged into "${to}" across ${touched} entries.` : `Removed from ${touched} entries.`);
+    }
+
+    // One pass over every entry: a tag named in `map` becomes its value, or is
+    // dropped when the value is empty. Order is kept and an entry never ends
+    // up with the same tag twice.
+    function cmTagRewrite(map, message) {
       let touched = 0;
       cmEntries.forEach(e => {
         const tags = e.tags || [];
-        if (!tags.some(t => drop.has(t))) return;
+        if (!tags.some(t => map.has(t))) return;
         const out = [], seen = new Set();
         tags.forEach(t => {
-          const next = drop.has(t) ? to : t;
+          const next = map.has(t) ? map.get(t) : t;
           if (!next || seen.has(next)) return;
           seen.add(next);
           out.push(next);
@@ -3425,7 +3467,7 @@
         document.getElementById('cm-tag-target').value = '';
         cmRenderTags();
         cmRenderEntries();
-        cmShowMsg(to ? `Merged into "${to}" across ${touched} entries.` : `Removed from ${touched} entries.`, true);
+        cmShowMsg(message(touched), true);
       });
     }
 
@@ -3612,11 +3654,12 @@
     }
 
     function cmBulkTag(add) {
-      const tag = document.getElementById('cm-bulk-tag').value.trim();
-      if (!tag) { cmShowMsg('Type a tag first.', false); return; }
-      const key = tag.toLowerCase();
+      const typed = cmNormalizeTag(document.getElementById('cm-bulk-tag').value);
+      if (!typed) { cmShowMsg('Type a tag first.', false); return; }
+      const tag = cmSnapTag(typed, cmTagSpellings());
+      const key = cmTagKey(tag);
       cmBulkApply(add ? `Tagged` : `Untagged`, e => {
-        const tags = (e.tags || []).filter(t => String(t).toLowerCase() !== key);
+        const tags = (e.tags || []).filter(t => cmTagKey(t) !== key);
         e.tags = add ? tags.concat(tag) : tags;
       });
     }
