@@ -270,6 +270,55 @@
     .cm-tab:hover { color: var(--text); border-color: var(--coral); }
     .cm-tab.active { color: #fff; background: rgba(91,141,232,0.25); border-color: var(--coral); box-shadow: 0 0 14px rgba(91,141,232,0.3); }
     .cm-tab-panel[hidden] { display: none; }
+
+    /* Import */
+    .im-intro { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin: 1.2rem 0 1rem; }
+    .im-steps { margin: 0; padding-left: 1.3rem; color: var(--text-mid); font-size: 0.9rem; line-height: 1.7; }
+    .im-steps b { color: var(--text); font-weight: 600; }
+    .im-hint { color: var(--text-dim); font-size: 0.8rem; margin: 6px 0 10px; }
+    .im-segs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .im-seg {
+      font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--text-mid); background: transparent; border: 1px solid var(--border-mid);
+      border-radius: var(--radius); padding: 0.55rem 1rem; cursor: pointer; min-height: 40px;
+    }
+    .im-seg:hover { color: var(--text); border-color: var(--coral); }
+    .im-seg.active { color: #fff; border-color: var(--coral); background: rgba(232,99,79,.1); }
+    .im-sec[hidden], .im-found[hidden] { display: none; }
+    .im-find { display: flex; gap: 8px; flex-wrap: wrap; }
+    .im-find .cm-input { flex: 1 1 240px; min-width: 0; }
+    .im-status { font-size: 0.82rem; color: var(--text-dim); margin: 8px 0; min-height: 1.2em; }
+    .im-found { border: 1px solid var(--border); border-radius: var(--radius); margin-top: 6px; }
+    .im-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    .im-spacer { flex: 1 1 auto; }
+    .im-list { max-height: 70vh; overflow-y: auto; }
+    .im-row { border-bottom: 1px solid var(--border); padding: 9px 10px; }
+    .im-row:last-child { border-bottom: none; }
+    .im-row.picked { background: rgba(232,99,79,.05); }
+    .im-row-head { display: flex; gap: 10px; align-items: flex-start; }
+    .im-row-head input[type=checkbox] { margin-top: 4px; cursor: pointer; flex: none; }
+    .im-row-text { flex: 1 1 auto; min-width: 0; }
+    .im-row-title { color: var(--text); overflow-wrap: anywhere; }
+    .im-row-meta { color: var(--text-dim); font-size: 0.76rem; overflow-wrap: anywhere; }
+    .im-note { color: #e8a34f; font-size: 0.72rem; margin-left: 6px; }
+    .im-editor { margin: 10px 0 4px 24px; padding: 12px; border: 1px solid var(--border-mid); border-radius: var(--radius); background: var(--surface-2); }
+    .im-grid { display: grid; grid-template-columns: 160px 1fr; gap: 10px; }
+    .im-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; margin: 0; }
+    .im-field > span { font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+    .im-field em { font-style: normal; text-transform: none; letter-spacing: 0; }
+    .im-field .cm-input { width: 100%; min-width: 0; }
+    .im-full { grid-column: 1 / -1; }
+    .im-block { margin-top: 12px; }
+    .im-link { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.8rem; padding: 3px 0; }
+    .im-link b { color: var(--text-mid); font-weight: normal; min-width: 80px; }
+    .im-link a { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; color: var(--text-mid); }
+    .im-credits { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+    .im-role-label { font-size: 0.8rem; color: var(--text-mid); margin-bottom: 4px; }
+    .im-role .cm-people-add .cm-input { flex: 1; min-width: 0; }
+    @media (max-width: 768px) {
+      .im-grid { grid-template-columns: 1fr; }
+      .im-editor { margin-left: 0; }
+    }
     @media (max-width: 768px) {
       .cm-tabs { gap: 5px; }
       .cm-tab { flex: 1 1 auto; padding: 0.5rem 0.7rem; font-size: 0.6rem; letter-spacing: .1em; }
@@ -399,6 +448,7 @@
 
                 <nav class="cm-tabs" role="tablist">
                   <button class="cm-tab active" data-tab="content"  onclick="cmTab('content')">Content</button>
+                  <button class="cm-tab"        data-tab="import"   onclick="cmTab('import')">Import</button>
                   <button class="cm-tab"        data-tab="collab"   onclick="cmTab('collab')">Lists</button>
                   <button class="cm-tab"        data-tab="tags"     onclick="cmTab('tags')">Tags</button>
                   <button class="cm-tab owner-only" data-tab="news" onclick="cmTab('news')" style="display:none">Site News</button>
@@ -679,6 +729,68 @@
 
                 </div>
 
+                <div class="cm-tab-panel" id="tabp-import" hidden>
+                <!-- Bringing in work already published elsewhere. The code is
+                     under "Import" in the script below. -->
+                <div class="im-intro">
+                    <label class="cm-label" style="margin-bottom:8px">Import your work</label>
+                    <ol class="im-steps">
+                        <li><b>Find</b> it by your username on that site.</li>
+                        <li><b>Review</b> what was found. Use <b>Edit</b> on any line to fix its details and credits.</li>
+                        <li><b>Import</b> the lines you tick. Nothing is saved before that.</li>
+                    </ol>
+                    <div class="owner-only" style="display:none;margin-top:12px;">
+                        <label class="cm-label" style="font-size:0.7rem">Importing for</label>
+                        <select id="im-who" class="cm-input" style="width:100%;max-width:360px" onchange="imWhoChanged()"></select>
+                    </div>
+                    <div id="im-who-note" class="im-hint" style="margin-bottom:0"></div>
+                </div>
+
+                <div class="im-segs">
+                    <button type="button" class="im-seg active" data-sec="scriptbin" onclick="imSection('scriptbin')">Scripts from ScriptBin</button>
+                    <button type="button" class="im-seg" data-sec="reddit" onclick="imSection('reddit')">Audios from Reddit</button>
+                </div>
+                <datalist id="im-names"></datalist>
+
+                <section class="im-sec" data-sec="scriptbin">
+                    <p class="im-hint">Your public scripts on scriptbin.works. Usernames there are case sensitive, so match the capitals in your profile address.</p>
+                    <div class="im-find">
+                        <input id="im-scriptbin-handle" class="cm-input" placeholder="ScriptBin username, like cuddle_with_me"
+                               onkeydown="if (event.key === 'Enter') imCheckScriptbin()">
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckScriptbin()">Check for scripts</button>
+                    </div>
+                    <div id="im-scriptbin-status" class="im-status"></div>
+                    <div id="im-scriptbin-found" class="im-found" hidden>
+                        <div class="im-toolbar">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('scriptbin', true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('scriptbin', false)">None</button>
+                            <span class="im-spacer"></span>
+                            <button type="button" id="im-scriptbin-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('scriptbin')" disabled>Import selected</button>
+                        </div>
+                        <div id="im-scriptbin-list" class="im-list"></div>
+                    </div>
+                </section>
+
+                <section class="im-sec" data-sec="reddit" hidden>
+                    <p class="im-hint">Your audio posts on Reddit, found through GWASI, with links and descriptions from your Soundgasm and HotAudio pages under the same name. A post whose audio is on neither is offered with just its Reddit link.</p>
+                    <div class="im-find">
+                        <input id="im-reddit-handle" class="cm-input" placeholder="Reddit username, like u/cuddle_with_me"
+                               onkeydown="if (event.key === 'Enter') imCheckReddit()">
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckReddit()">Check for audios</button>
+                    </div>
+                    <div id="im-reddit-status" class="im-status"></div>
+                    <div id="im-reddit-found" class="im-found" hidden>
+                        <div class="im-toolbar">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('reddit', true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('reddit', false)">None</button>
+                            <span class="im-spacer"></span>
+                            <button type="button" id="im-reddit-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('reddit')" disabled>Import selected</button>
+                        </div>
+                        <div id="im-reddit-list" class="im-list"></div>
+                    </div>
+                </section>
+                </div>
+
                 <div class="cm-tab-panel" id="tabp-collab" hidden>
                 <!-- Collaborators -->
                 <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
@@ -954,40 +1066,9 @@
                       <div id="pf-alias-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
                       <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:6px 0 10px;"></div>
 
-                      <label class="cm-label" style="font-size:0.7rem">ScriptBin username <span style="font-weight:normal;color:var(--text-mid)">(to import your scripts)</span></label>
-                      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-                        <input id="pf-scriptbin" class="cm-input" style="flex:1 1 200px" placeholder="cuddle_with_me">
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="sbCheck()">Check for scripts</button>
-                      </div>
-                      <div id="sb-status" style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px;"></div>
-                      <div id="sb-found" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-                          <label class="cm-label" style="margin:0;font-size:0.75rem">New on ScriptBin</label>
-                          <div style="display:flex;gap:6px;">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="sbAll(true)">Select all</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="sbAll(false)">None</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="sbImport()">Import selected</button>
-                          </div>
-                        </div>
-                        <div id="sb-list" style="max-height:280px;overflow-y:auto;"></div>
-                      </div>
-
-                      <label class="cm-label" style="font-size:0.7rem">Reddit username <span style="font-weight:normal;color:var(--text-mid)">(to import your audios from Reddit, Soundgasm and HotAudio)</span></label>
-                      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-                        <input id="pf-reddit" class="cm-input" style="flex:1 1 200px" placeholder="u/cuddle_with_me">
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="rdCheck()">Check for audios</button>
-                      </div>
-                      <div id="rd-status" style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px;"></div>
-                      <div id="rd-found" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-                          <label class="cm-label" style="margin:0;font-size:0.75rem">Audios not in the catalogue yet</label>
-                          <div style="display:flex;gap:6px;">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="rdAll(true)">Select all</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="rdAll(false)">None</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="rdImport()">Import selected</button>
-                          </div>
-                        </div>
-                        <div id="rd-list" style="max-height:340px;overflow-y:auto;"></div>
+                      <div class="im-hint" style="margin:0 0 12px;">
+                        To bring in your scripts from ScriptBin or your audios from Reddit, use the
+                        <a href="#" onclick="cmTab('import'); return false;">Import</a> tab.
                       </div>
 
                       <label class="cm-label" style="font-size:0.7rem">About</label>
@@ -2235,6 +2316,7 @@
           document.getElementById('cm-panel').style.display = 'block';
           cmRenderEntries();
           cmRebuildTagList();
+          imInit();
           cmRenderTags();
           cmRenderCollabManager();
           cmRenderNews();
@@ -3853,148 +3935,108 @@
       });
     }
 
-    // ── Importing scripts from ScriptBin ────────────────────────────────────
-    // Only ever adds. A script already in the catalogue is left exactly as it
-    // is, because whatever has been done to it here — a date, a fill, an edited
-    // description — is worth more than the feed's version of it.
-    let sbWorks = [];
+    // ── Import ────────────────────────────────────────────────────────────────
+    // Bringing in work already published elsewhere, one source at a time: find
+    // it by username, look it over and fill in what the source did not say,
+    // then import the lines ticked. Nothing is saved before Import, and nothing
+    // starts ticked, because an import is easier to get right than to undo.
+    //
+    // Only ever adds. Work already in the catalogue is left exactly as it is,
+    // because whatever has been done to it here (a date, a fill, an edited
+    // description) is worth more than the source's version of it.
+    //
+    // Everything is credited to whoever it is imported for: the signed in
+    // creator, or for the site owner the creator picked at the top of the tab.
 
-    function sbStatus(text, tone) {
-      const el = document.getElementById('sb-status');
+    const IM_SOURCES = {
+      scriptbin: { input: 'im-scriptbin-handle', field: 'scriptbin', noun: 'script' },
+      reddit:    { input: 'im-reddit-handle',    field: 'reddit',    noun: 'audio' },
+    };
+    const imState = {
+      scriptbin: { drafts: [], open: -1, busy: false },
+      reddit:    { drafts: [], open: -1, busy: false },
+    };
+    let imProfiles = {};      // every profile by slug, for the site owner
+    let imOwnProfile = null;  // the signed in creator's own
+
+    function imInit() {
+      let sec = 'scriptbin';
+      try { sec = sessionStorage.getItem('im_sec') || sec; } catch (e) {}
+      imSection(IM_SOURCES[sec] ? sec : 'scriptbin');
+      imFillWho();
+    }
+
+    function imSection(key) {
+      document.querySelectorAll('.im-seg').forEach(b => b.classList.toggle('active', b.dataset.sec === key));
+      document.querySelectorAll('.im-sec').forEach(s => { s.hidden = s.dataset.sec !== key; });
+      try { sessionStorage.setItem('im_sec', key); } catch (e) {}
+    }
+
+    // Who the import is for, and the name their credits go under.
+    function imTarget() {
+      const sel = document.getElementById('im-who');
+      const slug = (cmWho.isOwner && sel && sel.value) || cmWho.slug || '';
+      const profile = imProfiles[slug] ||
+        (imOwnProfile && imOwnProfile.slug === slug ? imOwnProfile : null) ||
+        (pfProfile && pfProfile.slug === slug ? pfProfile : null);
+      return { slug, profile, name: (profile && profile.name) || CFG.artistLabels[slug] || slug };
+    }
+
+    function imFillWho() {
+      const sel = document.getElementById('im-who');
+      if (sel && cmWho.isOwner) {
+        const slugs = Object.keys(imProfiles).sort();
+        if (cmWho.slug && !slugs.includes(cmWho.slug)) slugs.unshift(cmWho.slug);
+        const keep = sel.value || cmWho.slug;
+        sel.innerHTML = slugs.map(sg => {
+          const name = imProfiles[sg] && imProfiles[sg].name;
+          return `<option value="${cmEsc(sg)}">${cmEsc(name && name !== sg ? `${name} (${sg})` : sg)}</option>`;
+        }).join('');
+        sel.value = slugs.includes(keep) ? keep : (slugs[0] || '');
+      }
+      imPrefill(false);
+      imRenderWho();
+    }
+
+    // Drafts already found would be credited to the wrong person.
+    function imWhoChanged() {
+      Object.keys(imState).forEach(key => {
+        imState[key].drafts = [];
+        imState[key].open = -1;
+        imRender(key);
+        imStatus(key, '');
+      });
+      imPrefill(true);
+      imRenderWho();
+    }
+
+    // Fill in the usernames saved on the profile, without overwriting one
+    // being typed unless the person it is for has changed.
+    function imPrefill(force) {
+      const t = imTarget();
+      Object.values(IM_SOURCES).forEach(s => {
+        const el = document.getElementById(s.input);
+        if (el && (force || !el.value)) el.value = (t.profile && t.profile[s.field]) || '';
+      });
+    }
+
+    function imRenderWho() {
+      const el = document.getElementById('im-who-note');
+      const t = imTarget();
+      if (el) el.textContent = t.slug
+        ? `Imports are credited to ${t.name}. You can change the credits on any line before importing.`
+        : '';
+    }
+
+    function imStatus(key, text, tone) {
+      const el = document.getElementById(`im-${key}-status`);
+      if (!el) return;
       el.textContent = text || '';
       el.style.color = tone === 'bad' ? '#e8a34f' : tone === 'good' ? '#6fe3c1' : 'var(--text-dim)';
     }
 
-    // Already here? Match on the ScriptBin link, which is the one thing that
-    // cannot drift — a retitle on their side must not import a duplicate.
-    function sbKnownLinks() {
-      const seen = new Set();
-      cmEntries.forEach(e => {
-        (e.links || []).forEach(l => { if (l && l.url) seen.add(String(l.url).trim().toLowerCase()); });
-        if (e.sourceLink) seen.add(String(e.sourceLink).trim().toLowerCase());
-      });
-      return seen;
-    }
-
-    function sbCheck() {
-      const handle = document.getElementById('pf-scriptbin').value.trim();
-      if (!handle) return sbStatus('Enter your ScriptBin username first.', 'bad');
-      sbStatus('Asking ScriptBin\u2026');
-      fetch('/api/scriptbin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ handle }),
-      })
-        .then(r => r.json())
-        .then(data => {
-          if (!data.ok) { sbStatus(data.error || 'That did not work.', 'bad'); return; }
-          const known = sbKnownLinks();
-          sbWorks = (data.works || []).filter(w => !known.has(String(w.sourceLink).toLowerCase()));
-          const already = (data.works || []).length - sbWorks.length;
-          sbRender();
-          sbStatus(
-            `${data.works.length} script${data.works.length === 1 ? '' : 's'} on ScriptBin` +
-            (already ? `, ${already} already in the catalogue` : '') +
-            (sbWorks.length ? `, ${sbWorks.length} new` : ' \u2014 nothing new'),
-            sbWorks.length ? 'good' : ''
-          );
-        })
-        .catch(() => sbStatus('Could not reach the server.', 'bad'));
-    }
-
-    function sbRender() {
-      const box = document.getElementById('sb-found');
-      const list = document.getElementById('sb-list');
-      if (!sbWorks.length) { box.style.display = 'none'; return; }
-      box.style.display = '';
-      list.innerHTML = sbWorks.map((w, i) => `
-        <label style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;">
-          <input type="checkbox" class="sb-pick" data-i="${i}" checked style="margin-top:4px;cursor:pointer">
-          <span style="min-width:0;">
-            <span style="color:var(--text);">${cmEsc(w.title)}</span>
-            ${w.sensitive ? '<span style="color:#e8a34f;font-size:0.72rem;margin-left:6px;">sensitive</span>' : ''}
-            <span style="display:block;color:var(--text-dim);font-size:0.76rem;">
-              ${w.tags.slice(0, 6).map(cmEsc).join(' &middot; ')}${w.tags.length > 6 ? ' &hellip;' : ''}
-              &nbsp;&mdash;&nbsp;${w.words.toLocaleString()} words
-            </span>
-          </span>
-        </label>`).join('');
-    }
-
-    function sbAll(on) {
-      document.querySelectorAll('.sb-pick').forEach(c => { c.checked = on; });
-    }
-
-    let sbImporting = false;
-
-    function sbImport() {
-      // A second click before the save returns would send the same scripts
-      // again. The server refuses the duplicate, but not asking is better.
-      if (sbImporting) return;
-
-      const picked = [...document.querySelectorAll('.sb-pick')]
-        .filter(c => c.checked).map(c => sbWorks[Number(c.dataset.i)]);
-      if (!picked.length) return sbStatus('Nothing selected.', 'bad');
-
-      sbImporting = true;
-      sbStatus('Importing\u2026');
-
-      picked.forEach(w => {
-        cmEntries.unshift({
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-          title: w.title,
-          type: 'script',
-          date: w.date,
-          tags: w.tags,
-          shortDesc: w.shortDesc,
-          desc: '',
-          links: w.links,
-          words: w.words,
-          // Credit them as the writer. Without this the script has an owner but
-          // no credited name, so nothing that matches by name — their profile,
-          // the catalogue, the picker — can find it.
-          credits: pfProfile && pfProfile.name ? { writers: [pfProfile.name] } : {},
-          // And make it theirs, not whoever clicked Import. Only the site owner's
-          // save can set this; for anyone else the server makes it their own.
-          owner: pfProfile && pfProfile.slug ? pfProfile.slug : undefined,
-          source: w.source,
-          sourceId: w.sourceId,
-          sourceLink: w.sourceLink,
-        });
-      });
-
-      cmPersist(function (data) {
-        sbImporting = false;
-        const skipped = (data && data.skipped) || [];
-        const n = picked.length - skipped.length;
-        sbWorks = sbWorks.filter(w => !picked.includes(w));
-        sbRender();
-        cmRenderEntries();
-        sbStatus(
-          (n ? `Imported ${n} script${n === 1 ? '' : 's'}. They have no date yet \u2014 add one when you can.` : '') +
-          (skipped.length ? ` ${skipped.length} already in the catalogue, so ${skipped.length === 1 ? 'it was' : 'they were'} skipped.` : ''),
-          n ? 'good' : 'bad'
-        );
-      }, function () { sbImporting = false; });
-    }
-
-    // ── Reddit audios ─────────────────────────────────────────────────────────
-    // A creator's back catalogue is in their Reddit posts, but Reddit will not
-    // answer a server that is not signed in. /api/reddit reads GWASI's index
-    // of those posts and the audio hosts, one source per request, and
-    // js/reddit-import.js turns the answers into drafts to review here.
-    let rdDrafts = [];
-    let rdBusy = false;
-    let rdImporting = false;
-
-    function rdStatus(text, tone) {
-      const el = document.getElementById('rd-status');
-      el.textContent = text || '';
-      el.style.color = tone === 'bad' ? '#e8a34f' : tone === 'good' ? '#6fe3c1' : 'var(--text-dim)';
-    }
-
-    function rdApi(payload) {
-      return fetch('/api/reddit', {
+    function imApi(url, payload) {
+      return fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -4006,120 +4048,429 @@
         });
     }
 
-    function rdTags(list) {
-      const tags = cmNormalizeTagList(list.join(','));
+    // People paste "u/name" or a whole profile address as often as the name.
+    function imHandle(key) {
+      return String(document.getElementById(IM_SOURCES[key].input).value || '')
+        .trim()
+        .replace(/^https?:\/\/[^/]+\/(?:u|user)\//i, '')
+        .replace(/^@/, '')
+        .replace(/^\/?u\//i, '')
+        .split(/[/?#\s]/)[0];
+    }
+
+    // Remember a username that worked, so it is filled in next time. Only
+    // into an empty field: someone checking another name must not replace
+    // the one already saved.
+    function imRemember(key, handle, target) {
+      const field = IM_SOURCES[key].field;
+      if (!target.slug || !handle || (target.profile && target.profile[field])) return;
+      const payload = { action: 'save', profile: { [field]: handle } };
+      if (cmWho.isOwner) payload.slug = target.slug;
+      fetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok || !data.profile) return;
+          if (imProfiles[target.slug]) imProfiles[target.slug] = data.profile;
+          if (imOwnProfile && imOwnProfile.slug === target.slug) imOwnProfile = data.profile;
+          if (pfProfile && pfProfile.slug === target.slug) pfProfile[field] = handle;
+        })
+        .catch(() => {});
+    }
+
+    // ScriptBin only finds a username with its capitals as registered, so the
+    // server is also given the spellings of it this site already knows.
+    function imSpellings(handle) {
+      const want = handle.toLowerCase();
+      const found = new Set();
+      const consider = n => {
+        const bare = String(n || '').trim().replace(/^\/?u\//i, '');
+        if (bare && bare !== handle && bare.toLowerCase() === want) found.add(bare);
+      };
+      cmCollaborators.forEach(c => consider(c.name));
+      cmEntries.forEach(e => {
+        consider(String(e.sourceId || '').split('/')[0]);
+        Object.values(e.credits || {}).forEach(list => (list || []).forEach(consider));
+      });
+      Object.values(imProfiles).concat(imOwnProfile || []).forEach(p => {
+        [p.name, p.scriptbin, p.reddit].concat(p.aliases || []).forEach(consider);
+      });
+      return [...found].slice(0, 5);
+    }
+
+    function imKnownLinks() {
+      const seen = new Set();
+      cmEntries.forEach(e => {
+        (e.links || []).forEach(l => { if (l && l.url) seen.add(String(l.url).trim().toLowerCase()); });
+        if (e.sourceLink) seen.add(String(e.sourceLink).trim().toLowerCase());
+      });
+      return seen;
+    }
+
+    function imTags(list) {
+      const tags = cmNormalizeTagList((list || []).join(','));
       return [
         ...tags.filter(t => GENDER_TAGS_CM.includes(t)),
         ...tags.filter(t => !GENDER_TAGS_CM.includes(t)),
       ];
     }
 
-    async function rdCheck() {
-      if (rdBusy || !pfProfile) return;
-      const handle = document.getElementById('pf-reddit').value.trim().replace(/^\/?u\//i, '');
-      if (!handle) return rdStatus('Enter the Reddit username first.', 'bad');
-      const slug = pfProfile.slug;
-      rdBusy = true;
-      rdDrafts = [];
-      rdRender();
+    function imCredits(partial) {
+      const out = {};
+      CM_ROLES.forEach(role => { out[role] = ((partial && partial[role]) || []).slice(); });
+      return out;
+    }
+
+    // The catalogue's short description holds 100 characters.
+    function imShort(text) {
+      const s = String(text || '').trim();
+      if (s.length <= 100) return s;
+      const cut = s.slice(0, 99);
+      const space = cut.lastIndexOf(' ');
+      return (space > 60 ? cut.slice(0, space) : cut).trim() + '…';
+    }
+
+    // ── Finding ──
+
+    async function imCheckScriptbin() {
+      const st = imState.scriptbin;
+      if (st.busy) return;
+      const handle = imHandle('scriptbin');
+      if (!handle) return imStatus('scriptbin', 'Enter the ScriptBin username first.', 'bad');
+      const target = imTarget();
+      st.busy = true;
+      st.drafts = [];
+      st.open = -1;
+      imRender('scriptbin');
+      imStatus('scriptbin', 'Asking ScriptBin…');
+      try {
+        const data = await imApi('/api/scriptbin', { handle, spellings: imSpellings(handle) });
+        if (imTarget().slug !== target.slug) return;
+        const works = data.works || [];
+        const known = imKnownLinks();
+        st.drafts = works
+          .filter(w => !known.has(String(w.sourceLink).toLowerCase()))
+          .map(w => ({
+            checked: false,
+            note: w.sensitive ? 'marked sensitive on ScriptBin' : '',
+            entry: {
+              title: w.title,
+              type: 'script',
+              date: w.date || '',
+              trt: '',
+              tags: imTags(w.tags),
+              shortDesc: imShort(w.shortDesc),
+              desc: '',
+              links: w.links || [],
+              words: w.words || 0,
+              fills: '',
+              credits: imCredits({ writers: [target.name] }),
+              source: w.source,
+              sourceId: w.sourceId,
+              sourceLink: w.sourceLink,
+            },
+          }));
+        const used = data.handle || handle;
+        imRemember('scriptbin', used, target);
+        if (used !== handle) document.getElementById('im-scriptbin-handle').value = used;
+        imRender('scriptbin');
+        const already = works.length - st.drafts.length;
+        imStatus('scriptbin',
+          `${works.length} script${works.length === 1 ? '' : 's'} on ScriptBin under ${used}` +
+          (already ? `, ${already} already in the catalogue` : '') +
+          (st.drafts.length ? `, ${st.drafts.length} to review. Nothing is selected yet.` : '. Nothing new.'),
+          st.drafts.length ? 'good' : '');
+      } catch (err) {
+        imStatus('scriptbin', err.message, 'bad');
+      } finally {
+        st.busy = false;
+      }
+    }
+
+    async function imCheckReddit() {
+      const st = imState.reddit;
+      if (st.busy) return;
+      const handle = imHandle('reddit');
+      if (!handle) return imStatus('reddit', 'Enter the Reddit username first.', 'bad');
+      const target = imTarget();
+      st.busy = true;
+      st.drafts = [];
+      st.open = -1;
+      imRender('reddit');
       const failed = [];
       try {
-        rdStatus('Reading GWASI… this takes a little while.');
-        const posts = await rdApi({ source: 'gwasi', handle })
+        imStatus('reddit', 'Reading GWASI… this takes a little while.');
+        const posts = await imApi('/api/reddit', { source: 'gwasi', handle })
           .then(d => d.posts || [])
           .catch(err => { failed.push(err.message); return []; });
 
         // Links and descriptions come from the hosts, under the same name.
-        rdStatus(`${posts.length} posts found. Checking Soundgasm and HotAudio…`);
+        imStatus('reddit', `${posts.length} posts found. Checking Soundgasm and HotAudio…`);
         const uploads = [];
-        await Promise.all(['soundgasm', 'hotaudio'].map(provider => rdApi({ source: provider, handle })
-          .then(d => (d.items || []).forEach(i => uploads.push({ ...i, provider })))
+        await Promise.all(['soundgasm', 'hotaudio'].map(provider => imApi('/api/reddit', { source: provider, handle })
+          .then(d => (d.items || []).forEach(item => uploads.push({ ...item, provider })))
           .catch(err => failed.push(err.message))));
 
-        // They moved to another profile while this ran.
-        if (!pfProfile || pfProfile.slug !== slug) return;
-
+        if (imTarget().slug !== target.slug) return;
         const { drafts, stats } = RedditImport.buildDrafts({
           posts, uploads, handle,
-          name: pfProfile.name,
+          name: target.name,
           catalogue: cmEntries,
           parseBracketed: cmParseBracketed,
-          normalizeTags: rdTags,
+          normalizeTags: imTags,
         });
-        rdDrafts = drafts;
-        rdRender();
-        rdStatus(
-          `${stats.audioPosts} audio posts and ${stats.uploads} uploads` +
+        st.drafts = drafts.map(d => ({
+          checked: false,
+          note: d.note,
+          entry: { ...d.entry, shortDesc: imShort(d.entry.shortDesc) },
+        }));
+        if (posts.length || uploads.length) imRemember('reddit', handle, target);
+        imRender('reddit');
+        imStatus('reddit',
+          `${stats.audioPosts} audio post${stats.audioPosts === 1 ? '' : 's'} and ${stats.uploads} upload${stats.uploads === 1 ? '' : 's'}` +
           (stats.already ? `, ${stats.already} already in the catalogue` : '') +
-          (drafts.length ? `, ${drafts.length} to review.` : '. Nothing new.') +
+          (drafts.length ? `, ${drafts.length} to review. Nothing is selected yet.` : '. Nothing new.') +
           (failed.length ? ' Not everything answered: ' + failed.join(' ') : ''),
-          failed.length ? 'bad' : drafts.length ? 'good' : ''
-        );
+          failed.length ? 'bad' : drafts.length ? 'good' : '');
       } finally {
-        rdBusy = false;
+        st.busy = false;
       }
     }
 
-    function rdRender() {
-      const box = document.getElementById('rd-found');
-      const list = document.getElementById('rd-list');
-      if (!rdDrafts.length) { box.style.display = 'none'; list.innerHTML = ''; return; }
-      box.style.display = '';
-      list.innerHTML = rdDrafts.map((d, i) => {
+    // ── Reviewing ──
+
+    function imRender(key) {
+      const st = imState[key];
+      const box = document.getElementById(`im-${key}-found`);
+      const list = document.getElementById(`im-${key}-list`);
+      if (!box || !list) return;
+      box.hidden = !st.drafts.length;
+      if (st.drafts.length) imNames();
+      list.innerHTML = st.drafts.map((d, i) => imRow(key, d, i)).join('');
+      imCount(key);
+    }
+
+    function imRow(key, d, i) {
+      const e = d.entry;
+      const open = imState[key].open === i;
+      const where = (e.links || []).map(l => cmProviderLabel(l.provider)).join(' + ');
+      const facts = [cmTypeLabel(e), e.date || 'no date', e.trt, e.words ? e.words.toLocaleString() + ' words' : '', where]
+        .filter(Boolean).map(cmEsc).join(' &middot; ');
+      const people = CM_ROLES
+        .filter(role => (e.credits[role] || []).length)
+        .map(role => `${cmEsc(CFG.creditLabels[role])}: ${e.credits[role].map(cmEsc).join(', ')}`)
+        .join(' &middot; ');
+      return `
+        <div class="im-row${d.checked ? ' picked' : ''}" id="im-${key}-row-${i}">
+          <div class="im-row-head">
+            <input type="checkbox"${d.checked ? ' checked' : ''} onchange="imPick('${key}', ${i}, this.checked)" aria-label="Select ${cmEsc(e.title)}">
+            <div class="im-row-text">
+              <div class="im-row-title">${cmEsc(e.title || 'Untitled')}${d.note ? `<span class="im-note">${cmEsc(d.note)}</span>` : ''}</div>
+              <div class="im-row-meta">${facts}</div>
+              <div class="im-row-meta">${people || 'Nobody credited'}</div>
+            </div>
+            <button type="button" class="cm-btn cm-btn-sm" onclick="imToggleEdit('${key}', ${i})">${open ? 'Done' : 'Edit'}</button>
+          </div>
+          ${open ? imEditor(key, d, i) : ''}
+        </div>`;
+    }
+
+    function imEditor(key, d, i) {
+      const e = d.entry;
+      const on = field => `oninput="imField('${key}', ${i}, '${field}', this.value)"`;
+      const types = ENTRY_TYPES.map(t => `<option value="${cmEsc(t.key)}"${t.key === e.type ? ' selected' : ''}>${cmEsc(t.label)}</option>`).join('');
+      const links = (e.links || []).map((l, j) => `
+        <div class="im-link">
+          <b>${cmEsc(cmProviderLabel(l.provider))}</b>
+          <a href="${cmEsc(l.url)}" target="_blank" rel="noopener noreferrer">${cmEsc(l.url)}</a>
+          <button type="button" class="cm-btn cm-btn-sm" onclick="imLinkRemove('${key}', ${i}, ${j})">Remove</button>
+        </div>`).join('') || '<div class="cm-collab-empty">No links left. An entry needs at least one.</div>';
+      const filled = e.fills ? cmEntries.find(x => x.id === e.fills) : null;
+      return `
+        <div class="im-editor">
+          <div class="im-grid">
+            <label class="im-field"><span>Type</span>
+              <select class="cm-input" onchange="imField('${key}', ${i}, 'type', this.value, true)">${types}</select></label>
+            <label class="im-field"><span>Title</span>
+              <input class="cm-input" value="${cmEsc(e.title)}" ${on('title')}></label>
+            <label class="im-field"><span>Date</span>
+              <input type="date" class="cm-input" value="${cmEsc(e.date)}" ${on('date')}></label>
+            <label class="im-field"><span>Run time <em>(optional)</em></span>
+              <input class="cm-input" value="${cmEsc(e.trt)}" placeholder="14:32" ${on('trt')}></label>
+            <label class="im-field im-full"><span>Tags <em>(comma separated)</em></span>
+              <input class="cm-input" list="cm-tag-suggestions" value="${cmEsc((e.tags || []).join(', '))}" ${on('tags')}></label>
+            <label class="im-field im-full"><span>Short description <em>(up to 100 characters)</em></span>
+              <input class="cm-input" maxlength="100" value="${cmEsc(e.shortDesc)}" ${on('shortDesc')}></label>
+            <label class="im-field im-full"><span>Long description <em>(optional)</em></span>
+              <textarea class="cm-input" rows="4" style="resize:vertical" ${on('desc')}>${cmEsc(e.desc)}</textarea></label>
+          </div>
+          <div class="im-field im-block"><span>Links</span>${links}</div>
+          ${filled ? `
+          <div class="im-field im-block"><span>Script filled</span>
+            <div class="im-link"><a>${cmEsc(filled.title)}</a>
+              <button type="button" class="cm-btn cm-btn-sm" onclick="imField('${key}', ${i}, 'fills', '', true)">Remove</button></div>
+          </div>` : ''}
+          <div class="im-field im-block"><span>Credits</span>
+            <div class="im-credits">${CM_ROLES.map(role => imRole(key, i, e, role)).join('')}</div>
+          </div>
+        </div>`;
+    }
+
+    function imRole(key, i, e, role) {
+      const names = e.credits[role] || [];
+      const add = `imCredit('${key}', ${i}, '${role}', -1, this.parentNode.querySelector('input').value)`;
+      return `
+        <div class="im-role">
+          <div class="im-role-label">${cmEsc(CFG.creditLabels[role])}</div>
+          <div class="cm-people">${names.map((n, j) =>
+            `<span class="cm-chip">${cmEsc(n)}<button type="button" title="Remove" onclick="imCredit('${key}', ${i}, '${role}', ${j})">&times;</button></span>`
+          ).join('')}</div>
+          <div class="cm-people-add">
+            <input class="cm-input cm-btn-sm" list="im-names" placeholder="Add a name"
+                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); ${add}; }">
+            <button type="button" class="cm-btn cm-btn-sm" onclick="${add}">Add</button>
+          </div>
+        </div>`;
+    }
+
+    // Names to pick from: collaborators, creators with a page, and anyone
+    // already credited somewhere in the catalogue.
+    function imNames() {
+      const list = document.getElementById('im-names');
+      if (!list) return;
+      const names = new Map();
+      const add = n => { const s = String(n || '').trim(); if (s && !names.has(cmNorm(s))) names.set(cmNorm(s), s); };
+      cmCollaborators.forEach(c => add(c.name));
+      Object.values(CFG.artistLabels).forEach(add);
+      Object.values(imProfiles).forEach(p => add(p.name));
+      cmEntries.forEach(e => Object.values(e.credits || {}).forEach(l => (l || []).forEach(add)));
+      list.innerHTML = [...names.values()]
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+        .map(n => `<option value="${cmEsc(n)}">`).join('');
+    }
+
+    // Redraw one line, keeping its place on screen.
+    function imRedraw(key, i) {
+      const row = document.getElementById(`im-${key}-row-${i}`);
+      if (row) row.outerHTML = imRow(key, imState[key].drafts[i], i);
+    }
+
+    function imToggleEdit(key, i) {
+      const st = imState[key];
+      const was = st.open;
+      st.open = was === i ? -1 : i;
+      if (was > -1 && was !== i) imRedraw(key, was);
+      imRedraw(key, i);
+      const row = document.getElementById(`im-${key}-row-${i}`);
+      if (row && st.open === i) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    // Typing updates the draft without redrawing, so the field keeps focus.
+    // A change that alters what the line shows (type, a removed fill) redraws.
+    function imField(key, i, field, value, redraw) {
+      const e = imState[key].drafts[i].entry;
+      if (field === 'tags') e.tags = String(value).split(',').map(s => s.trim()).filter(Boolean);
+      else e[field] = value;
+      if (field === 'type' && value !== 'audio') e.fills = '';
+      if (redraw) imRedraw(key, i);
+    }
+
+    function imLinkRemove(key, i, j) {
+      const e = imState[key].drafts[i].entry;
+      e.links = (e.links || []).filter((l, n) => n !== j);
+      imRedraw(key, i);
+    }
+
+    function imCredit(key, i, role, j, name) {
+      const e = imState[key].drafts[i].entry;
+      const list = e.credits[role] = e.credits[role] || [];
+      if (j > -1) list.splice(j, 1);
+      else {
+        const n = String(name || '').trim();
+        if (!n || list.some(x => cmNorm(x) === cmNorm(n))) return;
+        list.push(n);
+      }
+      imRedraw(key, i);
+    }
+
+    function imPick(key, i, on) {
+      imState[key].drafts[i].checked = on;
+      const row = document.getElementById(`im-${key}-row-${i}`);
+      if (row) row.classList.toggle('picked', on);
+      imCount(key);
+    }
+
+    function imAll(key, on) {
+      imState[key].drafts.forEach(d => { d.checked = on; });
+      imRender(key);
+    }
+
+    function imCount(key) {
+      const btn = document.getElementById(`im-${key}-import`);
+      if (!btn) return;
+      const n = imState[key].drafts.filter(d => d.checked).length;
+      btn.disabled = !n;
+      btn.textContent = n ? `Import ${n} selected` : 'Import selected';
+    }
+
+    // ── Importing ──
+
+    function imImport(key) {
+      const st = imState[key];
+      if (st.busy) return;
+      const picked = st.drafts.filter(d => d.checked);
+      if (!picked.length) return imStatus(key, 'Tick the lines to import first.', 'bad');
+      const incomplete = picked.find(d => !String(d.entry.title || '').trim() || !(d.entry.links || []).length);
+      if (incomplete) {
+        return imStatus(key, `"${incomplete.entry.title || 'Untitled'}" needs a title and at least one link. Use Edit to fix it.`, 'bad');
+      }
+
+      const target = imTarget();
+      st.busy = true;
+      imStatus(key, 'Importing…');
+      const added = picked.map(d => {
         const e = d.entry;
-        const where = e.links.map(l => cmProviderLabel(l.provider)).join(' + ');
-        const facts = [e.date || 'no date', e.trt, where].filter(Boolean).map(cmEsc).join(' &middot; ');
-        const writers = (e.credits.writers || []).length ? ' &middot; written by ' + e.credits.writers.map(cmEsc).join(', ') : '';
-        return `
-        <label style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;">
-          <input type="checkbox" class="rd-pick" data-i="${i}"${d.checked ? ' checked' : ''} style="margin-top:4px;cursor:pointer">
-          <span style="min-width:0;">
-            <span style="color:var(--text);">${cmEsc(e.title)}</span>
-            ${d.note ? `<span style="color:#e8a34f;font-size:0.72rem;margin-left:6px;">${cmEsc(d.note)}</span>` : ''}
-            <span style="display:block;color:var(--text-dim);font-size:0.76rem;">${facts}${writers}</span>
-            <span style="display:block;color:var(--text-dim);font-size:0.76rem;">
-              ${e.tags.slice(0, 6).map(cmEsc).join(' &middot; ')}${e.tags.length > 6 ? ' &hellip;' : ''}
-            </span>
-          </span>
-        </label>`;
-      }).join('');
-    }
-
-    function rdAll(on) {
-      document.querySelectorAll('.rd-pick').forEach(c => { c.checked = on; });
-    }
-
-    function rdImport() {
-      if (rdImporting || !pfProfile) return;
-      const picked = [...document.querySelectorAll('.rd-pick')]
-        .filter(c => c.checked).map(c => rdDrafts[Number(c.dataset.i)]);
-      if (!picked.length) return rdStatus('Nothing selected.', 'bad');
-
-      rdImporting = true;
-      rdStatus('Importing…');
-      picked.forEach(d => {
-        cmEntries.unshift({
+        return {
+          ...e,
           id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-          ...d.entry,
+          title: String(e.title).trim(),
+          tags: imTags(e.tags),
+          shortDesc: imShort(e.shortDesc),
+          desc: String(e.desc || '').trim(),
+          trt: String(e.trt || '').trim(),
+          fills: (e.type || 'audio') === 'audio' ? (e.fills || '') : '',
+          credits: imCredits(e.credits),
           // Theirs, not whoever clicked Import. Only the site owner's save can
           // set this; for anyone else the server makes it their own.
-          owner: pfProfile.slug || undefined,
-        });
+          owner: target.slug || undefined,
+        };
       });
+      cmEntries.unshift(...added);
 
       cmPersist(function (data) {
-        rdImporting = false;
+        st.busy = false;
         const skipped = (data && data.skipped) || [];
-        const n = picked.length - skipped.length;
-        rdDrafts = rdDrafts.filter(d => !picked.includes(d));
-        rdRender();
+        const n = added.length - skipped.length;
+        st.drafts = st.drafts.filter(d => !picked.includes(d));
+        st.open = -1;
+        imRender(key);
         cmRenderEntries();
-        rdStatus(
-          (n ? `Imported ${n} audio${n === 1 ? '' : 's'}. Check descriptions and credits in the catalogue when you can.` : '') +
-          (skipped.length ? ` ${skipped.length} already in the catalogue, so ${skipped.length === 1 ? 'it was' : 'they were'} skipped.` : ''),
-          n ? 'good' : 'bad'
-        );
-      }, function () { rdImporting = false; });
+        cmRebuildTagList();
+        const noun = IM_SOURCES[key].noun;
+        imStatus(key,
+          (n ? `Imported ${n} ${noun}${n === 1 ? '' : 's'} for ${target.name}.` : '') +
+          (skipped.length ? ` ${skipped.length} ${skipped.length === 1 ? 'was' : 'were'} already in the catalogue, so skipped.` : ''),
+          n ? 'good' : 'bad');
+      }, function () {
+        st.busy = false;
+        // Take back what was added, so a later save does not send it anyway.
+        const ids = new Set(added.map(e => e.id));
+        cmEntries = cmEntries.filter(e => !ids.has(e.id));
+        imStatus(key, 'The import was not saved. Your selection is still here to try again.', 'bad');
+      });
     }
 
     // ── My Profile ──────────────────────────────────────────────────────────
@@ -4363,12 +4714,11 @@
       // any other name their credits use.
       CFG.registerArtistName(p.slug, p.name);
       (p.aliases || []).forEach(a => CFG.registerArtistName(p.slug, a));
-      document.getElementById('pf-scriptbin').value = p.scriptbin || '';
-      document.getElementById('pf-reddit').value = p.reddit || '';
-      // Drafts found for the last profile would be imported as this one's.
-      rdDrafts = [];
-      rdRender();
-      rdStatus('');
+      // The Import tab fills in the usernames saved on a profile.
+      if (p.slug === cmWho.slug) imOwnProfile = p;
+      if (imProfiles[p.slug]) imProfiles[p.slug] = p;
+      imPrefill(false);
+      imRenderWho();
       pfAliases = (p.aliases || []).slice();
       pfRenderAliasPicker();
       pfAliasHint(p);
@@ -4430,6 +4780,8 @@
         if (cmWho.slug && !slugs.includes(cmWho.slug)) slugs.unshift(cmWho.slug);
         sel.innerHTML = slugs.map(sg => `<option value="${cmEsc(sg)}">${cmEsc(sg)}</option>`).join('');
         sel.value = (pfProfile && pfProfile.slug) || cmWho.slug || slugs[0] || '';
+        imProfiles = data.profiles || {};
+        imFillWho();
       });
     }
 
@@ -4447,8 +4799,6 @@
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         aliases: pfAliases,
-        scriptbin: document.getElementById('pf-scriptbin').value.trim(),
-        reddit: document.getElementById('pf-reddit').value.trim(),
         published: document.getElementById('pf-published').checked,
         links: pfLinks,
         updates: pfUpdates,

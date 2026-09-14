@@ -2,7 +2,7 @@ import { authorize, unauthorized } from "./_auth.js";
 
 // Reading a creator's script list from ScriptBin.
 //
-//   POST /api/scriptbin { handle: "cuddle_with_me" } -> { works: [...] }
+//   POST /api/scriptbin { handle: "cuddle_with_me", spellings: [...] } -> { handle, works: [...] }
 //
 // The browser cannot fetch scriptbin.works directly — it is another origin and
 // sends no CORS headers — so the request is made here and the result handed
@@ -12,8 +12,8 @@ import { authorize, unauthorized } from "./_auth.js";
 // It can change shape or vanish without warning, so every field is treated as
 // missing until proven otherwise and a failure says so rather than throwing.
 //
-// Admin-only: it is an editor's tool, and it keeps this site from being used
-// to hammer someone else's.
+// Signed in only: it is an editor's tool, and it keeps this site from being
+// used to hammer someone else's.
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: CORS });
@@ -21,10 +21,20 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 const SOURCE = "https://scriptbin.works/u/";
 
 // Their handles are letters, digits and underscores; anything else is not a
-// handle and must not be pasted into a URL. Case matters to ScriptBin:
-// MsKittenSK is found and mskittensk is not, so the handle is kept as typed.
+// handle and must not be pasted into a URL. People type the Reddit form
+// ("u/name") or paste the whole profile address, so both are unwrapped first.
+// Case matters to ScriptBin: MsKittenSK is found and mskittensk is not, so
+// the handle is kept as typed.
 export const cleanHandle = (v) =>
-  String(v == null ? "" : v).trim().replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 60);
+  String(v == null ? "" : v)
+    .trim()
+    .replace(/^https?:\/\/(?:www\.)?scriptbin\.works\/u\//i, "")
+    .replace(/^@/, "")
+    .replace(/^\/?u\//i, "")
+    .split(/[/?#\s]/)[0]
+    .replace(/\.json$/i, "")
+    .replace(/[^A-Za-z0-9_.-]/g, "")
+    .slice(0, 60);
 
 /**
  * One ScriptBin work as a catalogue entry.
@@ -78,6 +88,39 @@ export function normalizeWork(raw) {
   };
 }
 
+class ScriptBinError extends Error {}
+
+// One user's script list, or null when ScriptBin has nobody by that exact name.
+async function fetchWorks(handle) {
+  let res;
+  try {
+    res = await fetch(`${SOURCE}${encodeURIComponent(handle)}.json`, {
+      headers: { accept: "application/json", "user-agent": "joielectric.com catalogue import" },
+      // An unknown user is sent to their home page, which sits behind a terms
+      // of access form; following it would turn "no such user" into a page of
+      // HTML that fails to parse.
+      redirect: "manual",
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (err) {
+    // Their site being slow or changed must not look like a bug in ours.
+    throw new ScriptBinError(`Could not reach ScriptBin: ${err.message}`);
+  }
+  if (res.status === 404 || (res.status >= 300 && res.status < 400)) return null;
+  if (!res.ok) throw new ScriptBinError(`ScriptBin answered ${res.status}. Try again later.`);
+
+  let raw;
+  try {
+    raw = await res.json();
+  } catch {
+    raw = null;
+  }
+  if (!Array.isArray(raw)) {
+    throw new ScriptBinError("ScriptBin returned something unexpected. The format may have changed.");
+  }
+  return raw;
+}
+
 export default async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("", {
@@ -100,36 +143,28 @@ export default async (req) => {
   const handle = cleanHandle(body.handle);
   if (!handle) return json({ error: "Which ScriptBin username?" }, 400);
 
-  let raw;
+  // A name typed with the wrong capitals is not found, so after the name as
+  // typed, try the spellings of it the site already knows (from credits and
+  // earlier imports). The page sends those; a few is plenty.
+  const spellings = (Array.isArray(body.spellings) ? body.spellings : []).map(cleanHandle);
+  const tries = [handle, ...spellings]
+    .filter((h, i, all) => h && h.toLowerCase() === handle.toLowerCase() && all.indexOf(h) === i)
+    .slice(0, 6);
+
   try {
-    const res = await fetch(`${SOURCE}${encodeURIComponent(handle)}.json`, {
-      headers: { accept: "application/json", "user-agent": "joielectric.com catalogue import" },
-      // An unknown user is sent to their home page, which sits behind a terms
-      // of access form; following it would turn "no such user" into a page of
-      // HTML that fails to parse.
-      redirect: "manual",
-      signal: AbortSignal.timeout(15000),
-    });
-    if (res.status === 404 || (res.status >= 300 && res.status < 400)) {
-      return json({
-        error: `ScriptBin has no user called "${handle}". Usernames are case sensitive, so check the capitals against the address of the ScriptBin profile.`,
-      }, 404);
+    for (const name of tries) {
+      const raw = await fetchWorks(name);
+      if (!raw) continue;
+      const works = raw.map(normalizeWork).filter(Boolean);
+      return json({ ok: true, handle: name, works, total: raw.length });
     }
-    if (!res.ok) {
-      return json({ error: `ScriptBin answered ${res.status}. Try again later.` }, 502);
-    }
-    raw = await res.json();
   } catch (err) {
-    // Their site being slow or changed must not look like a bug in ours.
-    return json({ error: `Could not reach ScriptBin: ${err.message}` }, 502);
+    return json({ error: err.message }, 502);
   }
 
-  if (!Array.isArray(raw)) {
-    return json({ error: "ScriptBin returned something unexpected. The format may have changed." }, 502);
-  }
-
-  const works = raw.map(normalizeWork).filter(Boolean);
-  return json({ ok: true, handle, works, total: raw.length });
+  return json({
+    error: `ScriptBin has no user called "${handle}". Usernames are case sensitive, so check the capitals against the address of the ScriptBin profile.`,
+  }, 404);
 };
 
 export const config = { path: "/api/scriptbin" };
