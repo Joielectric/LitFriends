@@ -370,6 +370,7 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
+<script src="/js/reddit-import.js"></script>
 
 <div class="container" id="tools-main" style="display:none">
 
@@ -969,6 +970,24 @@
                           </div>
                         </div>
                         <div id="sb-list" style="max-height:280px;overflow-y:auto;"></div>
+                      </div>
+
+                      <label class="cm-label" style="font-size:0.7rem">Reddit username <span style="font-weight:normal;color:var(--text-mid)">(to import your audios from Reddit, Soundgasm and HotAudio)</span></label>
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                        <input id="pf-reddit" class="cm-input" style="flex:1 1 200px" placeholder="u/cuddle_with_me">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="rdCheck()">Check for audios</button>
+                      </div>
+                      <div id="rd-status" style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px;"></div>
+                      <div id="rd-found" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                          <label class="cm-label" style="margin:0;font-size:0.75rem">Audios not in the catalogue yet</label>
+                          <div style="display:flex;gap:6px;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="rdAll(true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="rdAll(false)">None</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="rdImport()">Import selected</button>
+                          </div>
+                        </div>
+                        <div id="rd-list" style="max-height:340px;overflow-y:auto;"></div>
                       </div>
 
                       <label class="cm-label" style="font-size:0.7rem">About</label>
@@ -1575,6 +1594,7 @@
       { key: 'audiochan',  label: 'Audiochan',  kind: 'audio'  },
       { key: 'hotaudio',   label: 'HotAudio',   kind: 'audio'  },
       { key: 'whyp',       label: 'Whyp',       kind: 'audio'  },
+      { key: 'reddit',     label: 'Reddit',     kind: 'audio'  },
       { key: 'scriptbin',  label: 'ScriptBin',  kind: 'script' },
       { key: 'ellipsus',   label: 'Ellipsus',   kind: 'script' },
     ];
@@ -3958,6 +3978,150 @@
       }, function () { sbImporting = false; });
     }
 
+    // ── Reddit audios ─────────────────────────────────────────────────────────
+    // A creator's back catalogue is in their Reddit posts, but Reddit will not
+    // answer a server that is not signed in. /api/reddit reads GWASI's index
+    // of those posts and the audio hosts, one source per request, and
+    // js/reddit-import.js turns the answers into drafts to review here.
+    let rdDrafts = [];
+    let rdBusy = false;
+    let rdImporting = false;
+
+    function rdStatus(text, tone) {
+      const el = document.getElementById('rd-status');
+      el.textContent = text || '';
+      el.style.color = tone === 'bad' ? '#e8a34f' : tone === 'good' ? '#6fe3c1' : 'var(--text-dim)';
+    }
+
+    function rdApi(payload) {
+      return fetch('/api/reddit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+        .then(r => r.json().catch(() => ({ error: 'The server answered ' + r.status + '.' })))
+        .then(data => {
+          if (!data.ok) throw new Error(data.error || 'That did not work.');
+          return data;
+        });
+    }
+
+    function rdTags(list) {
+      const tags = cmNormalizeTagList(list.join(','));
+      return [
+        ...tags.filter(t => GENDER_TAGS_CM.includes(t)),
+        ...tags.filter(t => !GENDER_TAGS_CM.includes(t)),
+      ];
+    }
+
+    async function rdCheck() {
+      if (rdBusy || !pfProfile) return;
+      const handle = document.getElementById('pf-reddit').value.trim().replace(/^\/?u\//i, '');
+      if (!handle) return rdStatus('Enter the Reddit username first.', 'bad');
+      const slug = pfProfile.slug;
+      rdBusy = true;
+      rdDrafts = [];
+      rdRender();
+      const failed = [];
+      try {
+        rdStatus('Reading GWASI… this takes a little while.');
+        const posts = await rdApi({ source: 'gwasi', handle })
+          .then(d => d.posts || [])
+          .catch(err => { failed.push(err.message); return []; });
+
+        // Links and descriptions come from the hosts, under the same name.
+        rdStatus(`${posts.length} posts found. Checking Soundgasm and HotAudio…`);
+        const uploads = [];
+        await Promise.all(['soundgasm', 'hotaudio'].map(provider => rdApi({ source: provider, handle })
+          .then(d => (d.items || []).forEach(i => uploads.push({ ...i, provider })))
+          .catch(err => failed.push(err.message))));
+
+        // They moved to another profile while this ran.
+        if (!pfProfile || pfProfile.slug !== slug) return;
+
+        const { drafts, stats } = RedditImport.buildDrafts({
+          posts, uploads, handle,
+          name: pfProfile.name,
+          catalogue: cmEntries,
+          parseBracketed: cmParseBracketed,
+          normalizeTags: rdTags,
+        });
+        rdDrafts = drafts;
+        rdRender();
+        rdStatus(
+          `${stats.audioPosts} audio posts and ${stats.uploads} uploads` +
+          (stats.already ? `, ${stats.already} already in the catalogue` : '') +
+          (drafts.length ? `, ${drafts.length} to review.` : '. Nothing new.') +
+          (failed.length ? ' Not everything answered: ' + failed.join(' ') : ''),
+          failed.length ? 'bad' : drafts.length ? 'good' : ''
+        );
+      } finally {
+        rdBusy = false;
+      }
+    }
+
+    function rdRender() {
+      const box = document.getElementById('rd-found');
+      const list = document.getElementById('rd-list');
+      if (!rdDrafts.length) { box.style.display = 'none'; list.innerHTML = ''; return; }
+      box.style.display = '';
+      list.innerHTML = rdDrafts.map((d, i) => {
+        const e = d.entry;
+        const where = e.links.map(l => cmProviderLabel(l.provider)).join(' + ');
+        const facts = [e.date || 'no date', e.trt, where].filter(Boolean).map(cmEsc).join(' &middot; ');
+        const writers = (e.credits.writers || []).length ? ' &middot; written by ' + e.credits.writers.map(cmEsc).join(', ') : '';
+        return `
+        <label style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;">
+          <input type="checkbox" class="rd-pick" data-i="${i}"${d.checked ? ' checked' : ''} style="margin-top:4px;cursor:pointer">
+          <span style="min-width:0;">
+            <span style="color:var(--text);">${cmEsc(e.title)}</span>
+            ${d.note ? `<span style="color:#e8a34f;font-size:0.72rem;margin-left:6px;">${cmEsc(d.note)}</span>` : ''}
+            <span style="display:block;color:var(--text-dim);font-size:0.76rem;">${facts}${writers}</span>
+            <span style="display:block;color:var(--text-dim);font-size:0.76rem;">
+              ${e.tags.slice(0, 6).map(cmEsc).join(' &middot; ')}${e.tags.length > 6 ? ' &hellip;' : ''}
+            </span>
+          </span>
+        </label>`;
+      }).join('');
+    }
+
+    function rdAll(on) {
+      document.querySelectorAll('.rd-pick').forEach(c => { c.checked = on; });
+    }
+
+    function rdImport() {
+      if (rdImporting || !pfProfile) return;
+      const picked = [...document.querySelectorAll('.rd-pick')]
+        .filter(c => c.checked).map(c => rdDrafts[Number(c.dataset.i)]);
+      if (!picked.length) return rdStatus('Nothing selected.', 'bad');
+
+      rdImporting = true;
+      rdStatus('Importing…');
+      picked.forEach(d => {
+        cmEntries.unshift({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          ...d.entry,
+          // Theirs, not whoever clicked Import. Only the site owner's save can
+          // set this; for anyone else the server makes it their own.
+          owner: pfProfile.slug || undefined,
+        });
+      });
+
+      cmPersist(function (data) {
+        rdImporting = false;
+        const skipped = (data && data.skipped) || [];
+        const n = picked.length - skipped.length;
+        rdDrafts = rdDrafts.filter(d => !picked.includes(d));
+        rdRender();
+        cmRenderEntries();
+        rdStatus(
+          (n ? `Imported ${n} audio${n === 1 ? '' : 's'}. Check descriptions and credits in the catalogue when you can.` : '') +
+          (skipped.length ? ` ${skipped.length} already in the catalogue, so ${skipped.length === 1 ? 'it was' : 'they were'} skipped.` : ''),
+          n ? 'good' : 'bad'
+        );
+      }, function () { rdImporting = false; });
+    }
+
     // ── My Profile ──────────────────────────────────────────────────────────
     const PF_THEMES = [
       { key: 'electric', label: 'Electric', swatch: '#5b8de8' },
@@ -4200,6 +4364,11 @@
       CFG.registerArtistName(p.slug, p.name);
       (p.aliases || []).forEach(a => CFG.registerArtistName(p.slug, a));
       document.getElementById('pf-scriptbin').value = p.scriptbin || '';
+      document.getElementById('pf-reddit').value = p.reddit || '';
+      // Drafts found for the last profile would be imported as this one's.
+      rdDrafts = [];
+      rdRender();
+      rdStatus('');
       pfAliases = (p.aliases || []).slice();
       pfRenderAliasPicker();
       pfAliasHint(p);
@@ -4279,6 +4448,7 @@
         theme: pfProfile.theme,
         aliases: pfAliases,
         scriptbin: document.getElementById('pf-scriptbin').value.trim(),
+        reddit: document.getElementById('pf-reddit').value.trim(),
         published: document.getElementById('pf-published').checked,
         links: pfLinks,
         updates: pfUpdates,
