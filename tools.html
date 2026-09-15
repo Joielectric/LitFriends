@@ -287,6 +287,8 @@
     .im-sec[hidden], .im-found[hidden] { display: none; }
     .im-find { display: flex; gap: 8px; flex-wrap: wrap; }
     .im-find .cm-input { flex: 1 1 240px; min-width: 0; }
+    .im-kinds { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.86rem; color: var(--text-mid); }
+    .im-kinds label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
     .im-status { font-size: 0.82rem; color: var(--text-dim); margin: 8px 0; min-height: 1.2em; }
     .im-found { border: 1px solid var(--border); border-radius: var(--radius); margin-top: 6px; }
     .im-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border); }
@@ -749,8 +751,33 @@
                 <div class="im-segs">
                     <button type="button" class="im-seg active" data-sec="scriptbin" onclick="imSection('scriptbin')">Scripts from ScriptBin</button>
                     <button type="button" class="im-seg" data-sec="reddit" onclick="imSection('reddit')">Audios from Reddit</button>
+                    <button type="button" class="im-seg" data-sec="literotica" onclick="imSection('literotica')">Works from Literotica</button>
                 </div>
                 <datalist id="im-names"></datalist>
+
+                <section class="im-sec" data-sec="literotica" hidden>
+                    <p class="im-hint">Your audio, stories and poems on literotica.com, read from your public works pages. Titles, descriptions, categories, dates and series come across. The tags on each work's own page do not, so add those with Edit.</p>
+                    <div class="im-find">
+                        <input id="im-literotica-handle" class="cm-input" placeholder="Literotica username, like JOI_Electric"
+                               onkeydown="if (event.key === 'Enter') imCheckLiterotica()">
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckLiterotica()">Check for works</button>
+                    </div>
+                    <div class="im-kinds">
+                        <label><input type="checkbox" class="im-lit-kind" value="audio" checked> Audio</label>
+                        <label><input type="checkbox" class="im-lit-kind" value="stories" checked> Stories</label>
+                        <label><input type="checkbox" class="im-lit-kind" value="poetry" checked> Poems</label>
+                    </div>
+                    <div id="im-literotica-status" class="im-status"></div>
+                    <div id="im-literotica-found" class="im-found" hidden>
+                        <div class="im-toolbar">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('literotica', true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('literotica', false)">None</button>
+                            <span class="im-spacer"></span>
+                            <button type="button" id="im-literotica-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('literotica')" disabled>Import selected</button>
+                        </div>
+                        <div id="im-literotica-list" class="im-list"></div>
+                    </div>
+                </section>
 
                 <section class="im-sec" data-sec="scriptbin">
                     <p class="im-hint">Your public scripts on scriptbin.works. Usernames there are case sensitive, so match the capitals in your profile address.</p>
@@ -3951,11 +3978,15 @@
     const IM_SOURCES = {
       scriptbin: { input: 'im-scriptbin-handle', field: 'scriptbin', noun: 'script' },
       reddit:    { input: 'im-reddit-handle',    field: 'reddit',    noun: 'audio' },
+      literotica: { input: 'im-literotica-handle', field: 'literotica', noun: 'work' },
     };
     const imState = {
-      scriptbin: { drafts: [], open: -1, busy: false },
-      reddit:    { drafts: [], open: -1, busy: false },
+      scriptbin:  { drafts: [], open: -1, busy: false },
+      reddit:     { drafts: [], open: -1, busy: false },
+      literotica: { drafts: [], open: -1, busy: false },
     };
+    // Literotica's three works pages, with the singular and plural for each.
+    const IM_LIT_KINDS = { audio: ['audio', 'audio'], stories: ['story', 'stories'], poetry: ['poem', 'poems'] };
     let imProfiles = {};      // every profile by slug, for the site owner
     let imOwnProfile = null;  // the signed in creator's own
 
@@ -4052,7 +4083,7 @@
     function imHandle(key) {
       return String(document.getElementById(IM_SOURCES[key].input).value || '')
         .trim()
-        .replace(/^https?:\/\/[^/]+\/(?:u|user)\//i, '')
+        .replace(/^https?:\/\/[^/]+\/(?:u|user|authors)\//i, '')
         .replace(/^@/, '')
         .replace(/^\/?u\//i, '')
         .split(/[/?#\s]/)[0];
@@ -4101,11 +4132,18 @@
       return [...found].slice(0, 5);
     }
 
+    // The same page can be linked with or without www, a trailing slash or a
+    // query, so links are compared without them.
+    function imUrlKey(u) {
+      return String(u || '').trim().toLowerCase()
+        .replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/\/+$/, '');
+    }
+
     function imKnownLinks() {
       const seen = new Set();
       cmEntries.forEach(e => {
-        (e.links || []).forEach(l => { if (l && l.url) seen.add(String(l.url).trim().toLowerCase()); });
-        if (e.sourceLink) seen.add(String(e.sourceLink).trim().toLowerCase());
+        (e.links || []).forEach(l => { if (l && l.url) seen.add(imUrlKey(l.url)); });
+        if (e.sourceLink) seen.add(imUrlKey(e.sourceLink));
       });
       return seen;
     }
@@ -4152,7 +4190,7 @@
         const works = data.works || [];
         const known = imKnownLinks();
         st.drafts = works
-          .filter(w => !known.has(String(w.sourceLink).toLowerCase()))
+          .filter(w => !known.has(imUrlKey(w.sourceLink)))
           .map(w => ({
             checked: false,
             note: w.sensitive ? 'marked sensitive on ScriptBin' : '',
@@ -4240,6 +4278,72 @@
       }
     }
 
+    async function imCheckLiterotica() {
+      const st = imState.literotica;
+      if (st.busy) return;
+      const handle = imHandle('literotica');
+      if (!handle) return imStatus('literotica', 'Enter the Literotica username first.', 'bad');
+      const kinds = [...document.querySelectorAll('.im-lit-kind:checked')].map(b => b.value);
+      if (!kinds.length) return imStatus('literotica', 'Tick at least one of audio, stories or poems.', 'bad');
+      const target = imTarget();
+      st.busy = true;
+      st.drafts = [];
+      st.open = -1;
+      imRender('literotica');
+      imStatus('literotica', 'Reading Literotica…');
+      try {
+        const data = await imApi('/api/literotica', { handle, kinds });
+        if (imTarget().slug !== target.slug) return;
+        const works = data.works || [];
+        const known = imKnownLinks();
+        const titles = new Set(cmEntries.map(e => RedditImport.titleKey(e.title)).filter(Boolean));
+        st.drafts = works
+          .filter(w => !known.has(imUrlKey(w.sourceLink)))
+          .map(w => ({
+            checked: false,
+            note: titles.has(RedditImport.titleKey(w.title)) ? 'a similar title is already in the catalogue' : '',
+            info: w.info || '',
+            entry: {
+              title: w.title,
+              type: w.type,
+              date: w.date || '',
+              trt: '',
+              tags: imTags(w.tags),
+              shortDesc: imShort(w.shortDesc),
+              desc: w.desc || '',
+              links: w.links || [],
+              fills: '',
+              // A voice on an audio, a writer on anything read.
+              credits: imCredits({ [w.type === 'audio' ? 'voiceArtists' : 'writers']: [target.name] }),
+              source: w.source,
+              sourceId: w.sourceId,
+              sourceLink: w.sourceLink,
+            },
+          }));
+        const used = data.handle || handle;
+        imRemember('literotica', used, target);
+        imRender('literotica');
+        const counts = Object.entries(data.counts || {})
+          .map(([kind, n]) => `${n} ${IM_LIT_KINDS[kind] ? IM_LIT_KINDS[kind][n === 1 ? 0 : 1] : kind}`)
+          .join(', ');
+        const already = works.length - st.drafts.length;
+        // A long list may not have been read in full; say so rather than
+        // leave it looking complete.
+        const short = (data.partial || [])
+          .map(p => ` Literotica lists ${p.listed} ${IM_LIT_KINDS[p.kind] ? IM_LIT_KINDS[p.kind][1] : p.kind} but only ${p.read} could be read.`)
+          .join('');
+        imStatus('literotica',
+          `Found ${counts || works.length + ' works'} under ${used}` +
+          (already ? `, ${already} already in the catalogue` : '') +
+          (st.drafts.length ? `, ${st.drafts.length} to review. Nothing is selected yet.` : '. Nothing new.') + short,
+          short ? 'bad' : st.drafts.length ? 'good' : '');
+      } catch (err) {
+        imStatus('literotica', err.message, 'bad');
+      } finally {
+        st.busy = false;
+      }
+    }
+
     // ── Reviewing ──
 
     function imRender(key) {
@@ -4257,7 +4361,7 @@
       const e = d.entry;
       const open = imState[key].open === i;
       const where = (e.links || []).map(l => cmProviderLabel(l.provider)).join(' + ');
-      const facts = [cmTypeLabel(e), e.date || 'no date', e.trt, e.words ? e.words.toLocaleString() + ' words' : '', where]
+      const facts = [cmTypeLabel(e), e.date || 'no date', e.trt, e.words ? e.words.toLocaleString() + ' words' : '', where, d.info]
         .filter(Boolean).map(cmEsc).join(' &middot; ');
       const people = CM_ROLES
         .filter(role => (e.credits[role] || []).length)

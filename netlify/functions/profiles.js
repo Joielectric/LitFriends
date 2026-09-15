@@ -70,6 +70,8 @@ export function defaultProfile(slug, name) {
     scriptbin: "",
     // Their Reddit username, so their audio posts can be pulled in.
     reddit: "",
+    // Their Literotica username, so their audio, stories and poems can be pulled in.
+    literotica: "",
     // Which borders their posting templates draw around each section. Style
     // only — the words always come from the catalogue entry.
     postStyle: null,
@@ -133,6 +135,9 @@ function sanitize(input, base, allProfiles) {
   // Kept as typed: ScriptBin finds MsKittenSK and not mskittensk.
   if (input.scriptbin !== undefined) {
     out.scriptbin = clean(input.scriptbin, 60).replace(/[^A-Za-z0-9_.-]/g, "");
+  }
+  if (input.literotica !== undefined) {
+    out.literotica = clean(input.literotica, 60).replace(/[^A-Za-z0-9_.-]/g, "");
   }
   if (input.reddit !== undefined) {
     out.reddit = clean(input.reddit, 60).replace(/^\/?u\//i, "").replace(/[^A-Za-z0-9_-]/g, "");
