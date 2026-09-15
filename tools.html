@@ -376,8 +376,21 @@
     .cm-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-3); border: 1px solid var(--border-mid); border-radius: 999px; padding: 3px 6px 3px 12px; font-size: 0.84rem; color: var(--text); }
     .cm-chip button { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.05rem; line-height: 1; padding: 0 2px; }
     .cm-chip button:hover { color: var(--rose); }
-    .cm-people-add { display: flex; gap: 6px; margin-top: 6px; }
-    .cm-people-add select { flex: 1; }
+    /* A picker plus its "+ New" button. The picker may shrink below the usual
+       input minimum, and the button wraps under it when there is no room,
+       so a narrow column never pushes past its panel. */
+    .cm-people-add { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .cm-people-add select, .cm-people-add .cm-input { flex: 1 1 140px; min-width: 0; max-width: 100%; }
+    .cm-people-add .cm-btn { flex: none; }
+    .cm-chip { max-width: 100%; overflow-wrap: anywhere; }
+    /* Credits: two roles side by side, but only while each still has 240px.
+       The column never goes below half the row, so it stays at two on wide
+       screens and drops to one on its own, before anything is squeezed. */
+    .cm-credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(240px, calc(50% - 7px)), 1fr)); gap: 14px; }
+    .cm-credits-grid > div { min-width: 0; }
+    /* Grid cells default to their content's width, which lets one wide
+       control stretch a whole column past the page. */
+    .cm-form-grid > * { min-width: 0; }
     .cm-collab-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px; margin-bottom: 6px; align-items: center; }
     .cm-collab-empty { color: var(--text-dim); font-style: italic; font-size: 0.86rem; padding: 6px 0; }
     .cm-entries-list { margin-top: 1.6rem; }
@@ -712,7 +725,7 @@
                     <!-- Credits (pick from collaborators) -->
                     <div class="cm-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
                         <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(pick collaborators)</span></label>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                        <div class="cm-credits-grid">
                             <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Voice Artist(s)</label>
                                 <div class="cm-people" id="cm-people-voiceArtists"></div>
                                 <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="voiceArtists"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('voiceArtists')">+ New</button></div>
