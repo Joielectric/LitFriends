@@ -317,6 +317,38 @@
     .im-credits { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
     .im-role-label { font-size: 0.8rem; color: var(--text-mid); margin-bottom: 4px; }
     .im-role .cm-people-add .cm-input { flex: 1; min-width: 0; }
+
+    /* Tag helper */
+    .tg-field { display: flex; gap: 6px; align-items: stretch; min-width: 0; }
+    .tg-field > .cm-input { flex: 1 1 auto; min-width: 0; width: auto !important; margin: 0 !important; }
+    .tg-field > .tg-open { flex: none; white-space: nowrap; }
+    .tg-dialog {
+      /* The page reset zeroes margins, which would pin the dialog to a corner. */
+      margin: auto;
+      width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
+      padding: 0; border: 1px solid var(--border-mid); border-radius: var(--radius);
+      background: var(--surface); color: var(--text);
+    }
+    .tg-dialog::backdrop { background: rgba(5, 8, 14, .72); }
+    .tg-body { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; }
+    .tg-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .tg-head h2 { margin: 0; }
+    .tg-x { background: none; border: none; color: var(--text-dim); font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0 4px; }
+    .tg-x:hover { color: var(--text); }
+    .tg-found { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .tg-found:empty { display: none; }
+    .tg-found .im-hint { margin: 0; }
+    .tg-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tg-scroll { max-height: 190px; overflow-y: auto; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+    .tg-pill { font: inherit; padding: 3px 10px; background: transparent; border: 1px solid var(--border-mid); border-radius: 999px; color: var(--silver); font-size: 0.78rem; cursor: pointer; }
+    .tg-pill small { color: var(--text-dim); font-size: 0.7rem; }
+    .tg-pill:hover { border-color: var(--border-hi); color: var(--text); }
+    .tg-pill.on { background: rgba(232,99,79,.16); border-color: var(--coral); color: #fff; }
+    .tg-pill.tg-aud { font-family: "Cinzel", serif; letter-spacing: .05em; color: var(--coral); border-color: rgba(232,99,79,.35); }
+    .tg-pill.tg-aud.on { color: #fff; }
+    .cm-chip.tg-aud { border-color: rgba(232,99,79,.55); }
+    .tg-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 12px; }
+    .tg-actions .im-hint { flex: 1 1 200px; margin: 0; }
     @media (max-width: 768px) {
       .im-grid { grid-template-columns: 1fr; }
       .im-editor { margin-left: 0; }
@@ -389,7 +421,6 @@
       .cm-people-add { flex-direction: column; align-items: stretch; }
       .cm-people-add select, .cm-people-add button { width: 100%; max-width: none !important; }
       #cm-collab-from-entries, #cm-collab-edit-select, #cm-prov-edit-select, #fb-filter-title { max-width: none !important; width: 100%; }
-      #cm-existing-tags { max-height: 120px; }
       /* Entry / news rows: give the text the full width, wrap controls below */
       .cm-entry-row { flex-wrap: wrap; align-items: flex-start; gap: 8px; }
       .cm-entry-info { flex: 1 0 100%; min-width: 100%; }
@@ -506,9 +537,9 @@
                         <div id="cm-bulk-list" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;margin-bottom:10px;"></div>
 
                         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-                          <input id="cm-bulk-tag" class="cm-input cm-btn-sm" style="flex:1 1 130px" placeholder="Tag">
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkTag(true)">Add tag</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkTag(false)">Remove tag</button>
+                          <input id="cm-bulk-tag" class="cm-input cm-btn-sm" data-tags style="flex:1 1 220px" placeholder="Tags">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkTag(true)">Add tags</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkTag(false)">Remove tags</button>
                           <input type="date" id="cm-bulk-date" class="cm-input cm-btn-sm" style="flex:0 1 150px">
                           <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkDate()">Set date</button>
                           <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="cmBulkDelete()">Delete selected</button>
@@ -597,28 +628,10 @@
                     </div>
 
                     <div class="cm-full">
-                        <label class="cm-label">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma-separated)</span></label>
-
-                        <!-- Bracketed-title importer: paste "[M4F] Title [Tag] [Tag]" -> tags + title -->
-                        <div style="border:1px dashed var(--border-mid);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-                                <span style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.08em">Paste bracketed title &mdash; e.g. [M4F] My Title [Tag] [Tag]</span>
-                                <span style="display:flex;gap:6px;">
-                                    <button type="button" class="cm-btn cm-btn-sm" onclick="cmExtractBracketTags()">Extract Tags</button>
-                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-bracket-src').value=''">Clear</button>
-                                </span>
-                            </div>
-                            <textarea id="cm-bracket-src" class="cm-input" rows="2"
-                                placeholder="[M4F] Dark Fantasy Date Night [Script Fill] [Halloween] [CNC]"
-                                style="width:100%;resize:vertical;font-family:inherit"
-                                onpaste="setTimeout(cmExtractBracketTags, 0)"></textarea>
-                        </div>
-
-                        <input id="cm-tags" class="cm-input" list="cm-tag-suggestions" placeholder="GFE, soft, comfort" style="width:100%;margin-bottom:8px">
+                        <label class="cm-label" for="cm-tags">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma separated)</span></label>
+                        <input id="cm-tags" class="cm-input" data-tags data-tags-title="#cm-title" placeholder="GFE, soft, comfort" style="width:100%">
                         <datalist id="cm-tag-suggestions"></datalist>
-                        <div id="cm-gender-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"></div>
-                        <button type="button" id="cm-tags-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleExistingTags()">Browse existing tags</button>
-                        <div id="cm-existing-tags" style="display:none;flex-wrap:wrap;gap:5px;margin-top:8px;max-height:150px;overflow-y:auto;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);"></div>
+                        <div class="im-hint" style="margin-bottom:0">Tag helper reads a pasted bracketed title (and can fill in the title), and offers audience tags and the tags already in use.</div>
                     </div>
                     <div class="cm-full">
                         <label class="cm-label">Short Description <span style="font-weight:normal;color:var(--text-mid)">(optional, max 100 chars)</span></label>
@@ -2360,24 +2373,6 @@
 
     const GENDER_TAGS_CM = CFG.audienceTags;
 
-    function cmAddTag(tag) {
-      const el = document.getElementById('cm-tags');
-      const canon = cmNormalizeTag(tag);
-      if (!canon) return;
-      const current = el.value.split(',').map(t => t.trim()).filter(Boolean);
-      if (current.some(t => t.toLowerCase() === canon.toLowerCase())) return;
-      const isGender = GENDER_TAGS_CM.includes(canon);
-      el.value = (isGender ? [canon, ...current] : [...current, canon]).join(', ');
-    }
-
-    (function cmBuildGenderTags() {
-      const wrap = document.getElementById('cm-gender-tags');
-      if (!wrap) return;
-      wrap.innerHTML = '<span style="font-family:\'Cinzel\',serif;font-size:0.7rem;color:var(--text-dim);align-self:center;margin-right:2px;letter-spacing:.08em">Audience:</span>'
-        + GENDER_TAGS_CM.map(tag =>
-          `<button type="button" onclick="cmAddTag('${tag}')" style="padding:2px 9px;background:transparent;border:1px solid rgba(232,99,79,.35);border-radius:2px;color:var(--coral);font-size:0.7rem;letter-spacing:.05em;cursor:pointer;font-family:'Cinzel',serif">${tag}</button>`
-        ).join('');
-    })();
 
     // ── Tag normalization & reuse ────────────────────────────────────────────
     // Map known misspellings / variants to a single canonical spelling. Keys are
@@ -2453,37 +2448,222 @@
       return { tags, title };
     }
 
-    function cmExtractBracketTags() {
-      const src = document.getElementById('cm-bracket-src');
-      const raw = src.value;
-      if (!raw.trim()) { cmShowMsg('Paste a bracketed title first.', false); return; }
+    // ── Tag helper ────────────────────────────────────────────────────────────
+    // One place to build a list of tags, opened from any field that takes
+    // them. Mark a field with data-tags and it gets a "Tag helper" button. Add
+    // data-tags-title="<selector>" and a pasted title can fill that title
+    // field too; the selector is looked up inside the nearest
+    // [data-tags-scope], or the whole page when there is none.
+    //
+    // The helper writes the tags back as a comma separated list and fires the
+    // field's input and change events, so whatever listens to it updates.
+    const tg = { input: null, title: null, tags: [], found: null };
 
-      const { tags, title } = cmParseBracketed(raw);
-      if (!tags.length) { cmShowMsg('No [bracketed] tags found in that text.', false); return; }
+    // Audience codes such as M4F or MF4A, bracketed or not.
+    const TG_AUDIENCE = /\b[MFATNB]{1,3}4[MFATNB]{1,3}\b/gi;
 
-      // Merge into whatever is already in the Tags field, deduped, gender first.
-      const tagsEl = document.getElementById('cm-tags');
-      const before = cmNormalizeTagList(tagsEl.value);
-      const merged = new Map();
-      [...before, ...tags].forEach(t => {
-        const key = t.toLowerCase();
-        if (!merged.has(key)) merged.set(key, t);
-      });
-      const all = [...merged.values()];
-      tagsEl.value = [
-        ...all.filter(t => GENDER_TAGS_CM.includes(t)),
-        ...all.filter(t => !GENDER_TAGS_CM.includes(t)),
-      ].join(', ');
-
-      const added = all.length - before.length;
-      const skipped = tags.length - added;
-      const titleEl = document.getElementById('cm-title');
-      let note = '';
-      if (title && !titleEl.value.trim()) { titleEl.value = title; note = ' Title set.'; }
-      else if (title) { note = ` Title left as-is (found "${title}").`; }
-
-      cmShowMsg(`Added ${added} tag${added === 1 ? '' : 's'}${skipped ? `, skipped ${skipped} duplicate${skipped === 1 ? '' : 's'}` : ''}.${note}`, true);
+    // Cleaned, deduped, spelled as the catalogue spells them, audience first.
+    function tgOrder(list) {
+      const tags = cmNormalizeTagList(list.join(','));
+      return [
+        ...tags.filter(t => GENDER_TAGS_CM.includes(t)),
+        ...tags.filter(t => !GENDER_TAGS_CM.includes(t)),
+      ];
     }
+
+    // What a paste holds. A bracketed title gives its tags and its title; any
+    // other text is read as a list split on commas, semicolons, new lines or #.
+    function tgParse(raw) {
+      const text = RedditImport.fixBrackets(String(raw || ''));
+      if (!text.trim()) return { tags: [], title: '' };
+      if (/\[[^\]]*\]/.test(text)) {
+        const parsed = cmParseBracketed(text);
+        const audience = (text.replace(/\[[^\]]*\]/g, ' ').match(TG_AUDIENCE) || []).map(t => t.toUpperCase());
+        const title = RedditImport.titleOf(text, parsed.title)
+          .replace(/\s*\(\s*[MFATNB]{1,3}4[MFATNB]{1,3}\s*\)\s*/gi, ' ').replace(/\s+/g, ' ').trim();
+        return { tags: tgOrder(parsed.tags.concat(audience)), title };
+      }
+      const parts = text.split(/[,;\n]+|(?:^|\s)#/)
+        .map(s => s.trim().replace(/^#/, '').replace(/^\((.*)\)$/, '$1').trim())
+        .filter(Boolean);
+      return { tags: tgOrder(parts), title: '' };
+    }
+
+    function tgOpen(input) {
+      if (!input) return;
+      tg.input = input;
+      const sel = input.getAttribute('data-tags-title');
+      const scope = input.closest('[data-tags-scope]') || document;
+      try { tg.title = sel ? scope.querySelector(sel) : null; } catch (e) { tg.title = null; }
+      tg.tags = tgOrder(String(input.value || '').split(','));
+      tg.found = null;
+      ['tg-paste', 'tg-add', 'tg-filter'].forEach(id => { document.getElementById(id).value = ''; });
+      tgNote('');
+      tgRender();
+      const dialog = document.getElementById('tg-dialog');
+      if (typeof dialog.showModal === 'function') { if (!dialog.open) dialog.showModal(); }
+      else dialog.setAttribute('open', '');
+      document.getElementById('tg-paste').focus();
+    }
+
+    function tgClose() {
+      const dialog = document.getElementById('tg-dialog');
+      if (dialog.open && typeof dialog.close === 'function') dialog.close();
+      else dialog.removeAttribute('open');
+      if (tg.input && document.contains(tg.input)) tg.input.focus();
+    }
+
+    function tgApply() {
+      if (!tg.input) return tgClose();
+      // A tag typed but not yet added is meant to be kept.
+      if (document.getElementById('tg-add').value.trim()) tgAddTyped();
+      tg.input.value = tg.tags.join(', ');
+      tg.input.dispatchEvent(new Event('input', { bubbles: true }));
+      tg.input.dispatchEvent(new Event('change', { bubbles: true }));
+      tgClose();
+    }
+
+    function tgNote(text) {
+      document.getElementById('tg-note').textContent = text || '';
+    }
+
+    function tgHas(tag) {
+      const k = cmTagKey(tag);
+      return tg.tags.some(t => cmTagKey(t) === k);
+    }
+
+    function tgSet(list) {
+      tg.tags = tgOrder(list);
+      tgRender();
+    }
+
+    function tgToggle(tag) {
+      if (tgHas(tag)) tgSet(tg.tags.filter(t => cmTagKey(t) !== cmTagKey(tag)));
+      else tgSet(tg.tags.concat(tag));
+    }
+
+    function tgRemove(i) {
+      tgSet(tg.tags.filter((t, n) => n !== i));
+    }
+
+    function tgAddTyped() {
+      const el = document.getElementById('tg-add');
+      const parts = String(el.value).split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+      if (!parts.length) return;
+      tgSet(tg.tags.concat(parts));
+      el.value = '';
+      el.focus();
+    }
+
+    // Read a paste as it is typed. Pasting adds what was found straight away,
+    // since that is almost always what the paste is for.
+    function tgPasteChanged(pasted) {
+      tg.found = tgParse(document.getElementById('tg-paste').value);
+      if (pasted && tg.found.tags.length) return tgAddFound();
+      tgRenderFound();
+    }
+
+    function tgAddFound() {
+      const found = tg.found;
+      if (!found || !found.tags.length) return;
+      const before = tg.tags.length;
+      tgSet(tg.tags.concat(found.tags));
+      const added = tg.tags.length - before;
+      const had = found.tags.length - added;
+      tgNote(`Added ${added} tag${added === 1 ? '' : 's'}${had ? `, ${had} already there` : ''}.`);
+    }
+
+    function tgUseTitle() {
+      if (!tg.title || !tg.found || !tg.found.title) return;
+      tg.title.value = tg.found.title;
+      tg.title.dispatchEvent(new Event('input', { bubbles: true }));
+      tg.title.dispatchEvent(new Event('change', { bubbles: true }));
+      tgNote(`Title set to "${tg.found.title}".`);
+      tgRenderFound();
+    }
+
+    function tgRender() {
+      document.getElementById('tg-count').textContent = tg.tags.length ? `(${tg.tags.length})` : '';
+      document.getElementById('tg-chips').innerHTML = tg.tags.map((t, i) =>
+        `<span class="cm-chip${GENDER_TAGS_CM.includes(t) ? ' tg-aud' : ''}">${cmEsc(t)}<button type="button" title="Remove" onclick="tgRemove(${i})">&times;</button></span>`
+      ).join('');
+      document.getElementById('tg-audience').innerHTML = GENDER_TAGS_CM.map(t => {
+        const on = tgHas(t);
+        return `<button type="button" class="tg-pill tg-aud${on ? ' on' : ''}" aria-pressed="${on}" onclick="tgToggle('${cmEsc(t)}')">${cmEsc(t)}</button>`;
+      }).join('');
+      tgRenderExisting();
+      tgRenderFound();
+    }
+
+    function tgRenderFound() {
+      const box = document.getElementById('tg-found');
+      const f = tg.found;
+      const typed = document.getElementById('tg-paste').value.trim();
+      if (!f || (!f.tags.length && !f.title)) {
+        box.innerHTML = typed ? '<span class="im-hint">No tags found in that.</span>' : '';
+        return;
+      }
+      const missing = f.tags.filter(t => !tgHas(t));
+      let title = '';
+      if (f.title && tg.title) {
+        title = cmNorm(tg.title.value) === cmNorm(f.title)
+          ? '<span class="im-hint">The title matches.</span>'
+          : `<button type="button" class="cm-btn cm-btn-sm" onclick="tgUseTitle()">Use &ldquo;${cmEsc(f.title)}&rdquo; as the title</button>`;
+      } else if (f.title) {
+        title = `<span class="im-hint">Title: ${cmEsc(f.title)}</span>`;
+      }
+      box.innerHTML =
+        `<span class="im-hint">Found ${f.tags.length} tag${f.tags.length === 1 ? '' : 's'}${missing.length ? `, ${missing.length} not added yet` : ', all added'}.</span>` +
+        (missing.length ? '<button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="tgAddFound()">Add them</button>' : '') +
+        title;
+    }
+
+    // Tags already in the catalogue, most used first, so the helper leans
+    // toward the spellings in use rather than new ones.
+    function tgRenderExisting() {
+      const box = document.getElementById('tg-existing');
+      const scroll = box.scrollTop;
+      const q = cmNorm(document.getElementById('tg-filter').value);
+      const count = cmTagCounts();
+      const tags = Object.keys(count)
+        .filter(t => !GENDER_TAGS_CM.includes(t) && (!q || cmNorm(t).includes(q)))
+        .sort((a, b) => (count[b] - count[a]) || a.toLowerCase().localeCompare(b.toLowerCase()));
+      const shown = tags.slice(0, 200);
+      box.innerHTML = shown.length
+        ? shown.map(t => {
+            const on = tgHas(t);
+            return `<button type="button" class="tg-pill${on ? ' on' : ''}" aria-pressed="${on}" data-tag="${cmEsc(t)}" onclick="tgToggle(this.dataset.tag)">${cmEsc(t)} <small>${count[t]}</small></button>`;
+          }).join('') + (tags.length > shown.length ? `<span class="im-hint">${tags.length - shown.length} more. Filter to find them.</span>` : '')
+        : `<span class="im-hint">${q ? 'No tags match.' : 'No tags in the catalogue yet.'}</span>`;
+      box.scrollTop = scroll;
+    }
+
+    // Give every field marked data-tags its button, now and whenever one is
+    // drawn later, such as the tags field in an import line's editor.
+    function tgAttach(root) {
+      if (!root || root.nodeType !== 1) return;
+      const fields = (root.matches('[data-tags]') ? [root] : []).concat([...root.querySelectorAll('[data-tags]')]);
+      fields.forEach(input => {
+        if (input.dataset.tagsReady) return;
+        input.dataset.tagsReady = '1';
+        if (!input.getAttribute('list')) input.setAttribute('list', 'cm-tag-suggestions');
+        const wrap = document.createElement('span');
+        wrap.className = 'tg-field';
+        if (input.style.flex) { wrap.style.flex = input.style.flex; input.style.flex = ''; }
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cm-btn cm-btn-sm tg-open';
+        btn.textContent = 'Tag helper';
+        btn.title = 'Paste a title, pick audience tags, or reuse tags already in use';
+        btn.addEventListener('click', () => tgOpen(input));
+        wrap.appendChild(btn);
+      });
+    }
+    tgAttach(document.body);
+    new MutationObserver(records => records.forEach(r => r.addedNodes.forEach(tgAttach)))
+      .observe(document.body, { childList: true, subtree: true });
 
     // Collect every non-gender tag already used, normalized + deduped, for reuse.
     function cmAllExistingTags() {
@@ -2498,29 +2678,12 @@
       return [...seen.values()].sort((a, b) => a.localeCompare(b));
     }
 
+    // Suggestions for every tag field, from the tags already in use.
     function cmRebuildTagList() {
-      const tags = cmAllExistingTags();
       const dl = document.getElementById('cm-tag-suggestions');
-      if (dl) dl.innerHTML = tags.map(t => `<option value="${t.replace(/"/g, '&quot;')}">`).join('');
-      const wrap = document.getElementById('cm-existing-tags');
-      const toggle = document.getElementById('cm-tags-toggle');
-      if (!wrap) return;
-      if (toggle) {
-        toggle.style.display = tags.length ? '' : 'none';
-        const open = wrap.style.display !== 'none';
-        toggle.textContent = (open ? 'Hide existing tags' : 'Browse existing tags') + ' (' + tags.length + ')';
-      }
-      if (!tags.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-      wrap.innerHTML = tags.map(t =>
-        `<button type="button" onclick="cmAddTag(this.dataset.tag)" data-tag="${t.replace(/"/g, '&quot;')}" style="padding:2px 9px;background:transparent;border:1px solid var(--border-mid);border-radius:2px;color:var(--silver);font-size:0.7rem;letter-spacing:.03em;cursor:pointer;font-family:'Cinzel',serif">${t}</button>`
-      ).join('');
-    }
-
-    function cmToggleExistingTags() {
-      const wrap = document.getElementById('cm-existing-tags');
-      if (!wrap) return;
-      wrap.style.display = (wrap.style.display === 'none') ? 'flex' : 'none';
-      cmRebuildTagList();
+      if (dl) dl.innerHTML = cmAllExistingTags().map(t => `<option value="${cmEsc(t)}">`).join('');
+      const dialog = document.getElementById('tg-dialog');
+      if (dialog && dialog.open) tgRenderExisting();
     }
 
     // ── Platform management ─────────────────────────────────────────────────
@@ -3312,7 +3475,7 @@
       cmSetLinks([]);
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-bracket-src','cm-short-desc','cm-desc','cm-trt','cm-image','cm-track','cm-tempo','cm-use','cm-license'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt','cm-image','cm-track','cm-tempo','cm-use','cm-license'].forEach(id => document.getElementById(id).value = '');
       cmUpdateImagePreview();
       document.getElementById('cm-image-status').textContent = '';
       document.getElementById('cm-type').value = 'audio';
@@ -3782,14 +3945,14 @@
       });
     }
 
+    // One tag or a comma separated list, spelled as the catalogue spells them.
     function cmBulkTag(add) {
-      const typed = cmNormalizeTag(document.getElementById('cm-bulk-tag').value);
-      if (!typed) { cmShowMsg('Type a tag first.', false); return; }
-      const tag = cmSnapTag(typed, cmTagSpellings());
-      const key = cmTagKey(tag);
+      const tags = cmNormalizeTagList(document.getElementById('cm-bulk-tag').value);
+      if (!tags.length) { cmShowMsg('Type a tag first.', false); return; }
+      const keys = new Set(tags.map(cmTagKey));
       cmBulkApply(add ? `Tagged` : `Untagged`, e => {
-        const tags = (e.tags || []).filter(t => cmTagKey(t) !== key);
-        e.tags = add ? tags.concat(tag) : tags;
+        const kept = (e.tags || []).filter(t => !keys.has(cmTagKey(t)));
+        e.tags = add ? kept.concat(tags) : kept;
       });
     }
 
@@ -4394,18 +4557,18 @@
         </div>`).join('') || '<div class="cm-collab-empty">No links left. An entry needs at least one.</div>';
       const filled = e.fills ? cmEntries.find(x => x.id === e.fills) : null;
       return `
-        <div class="im-editor">
+        <div class="im-editor" data-tags-scope>
           <div class="im-grid">
             <label class="im-field"><span>Type</span>
               <select class="cm-input" onchange="imField('${key}', ${i}, 'type', this.value, true)">${types}</select></label>
             <label class="im-field"><span>Title</span>
-              <input class="cm-input" value="${cmEsc(e.title)}" ${on('title')}></label>
+              <input class="cm-input" data-field="title" value="${cmEsc(e.title)}" ${on('title')}></label>
             <label class="im-field"><span>Date</span>
               <input type="date" class="cm-input" value="${cmEsc(e.date)}" ${on('date')}></label>
             <label class="im-field"><span>Run time <em>(optional)</em></span>
               <input class="cm-input" value="${cmEsc(e.trt)}" placeholder="14:32" ${on('trt')}></label>
             <label class="im-field im-full"><span>Tags <em>(comma separated)</em></span>
-              <input class="cm-input" list="cm-tag-suggestions" value="${cmEsc((e.tags || []).join(', '))}" ${on('tags')}></label>
+              <input class="cm-input" data-tags data-tags-title="[data-field=title]" value="${cmEsc((e.tags || []).join(', '))}" ${on('tags')}></label>
             <label class="im-field im-full"><span>Short description <em>(up to 100 characters)</em></span>
               <input class="cm-input" maxlength="100" value="${cmEsc(e.shortDesc)}" ${on('shortDesc')}></label>
             <label class="im-field im-full"><span>Long description <em>(optional)</em></span>
@@ -5100,6 +5263,46 @@
       setTimeout(() => { el.className = 'cm-msg'; }, 3000);
     }
     </script>
+
+<!-- Tag helper, opened from any field marked data-tags. See "Tag helper" in the script. -->
+<dialog id="tg-dialog" class="tg-dialog" aria-labelledby="tg-heading">
+  <div class="tg-body">
+    <div class="tg-head">
+      <h2 id="tg-heading" class="cm-label">Tag helper</h2>
+      <button type="button" class="tg-x" onclick="tgClose()" aria-label="Close">&times;</button>
+    </div>
+
+    <label class="im-field"><span>Paste a bracketed title or a list of tags</span>
+      <textarea id="tg-paste" class="cm-input" rows="2" style="resize:vertical;font-family:inherit"
+                placeholder="[M4F] Dark Fantasy Date Night [Script Fill] [Halloween]   or   GFE, soft, comfort"
+                oninput="tgPasteChanged(false)" onpaste="setTimeout(function () { tgPasteChanged(true); }, 0)"></textarea></label>
+    <div id="tg-found" class="tg-found"></div>
+
+    <div class="im-field"><span>Tags <em id="tg-count"></em></span>
+      <div id="tg-chips" class="cm-people"></div>
+      <div class="cm-people-add">
+        <input id="tg-add" class="cm-input" list="cm-tag-suggestions" placeholder="Type a tag and press Enter"
+               onkeydown="if (event.key === 'Enter') { event.preventDefault(); tgAddTyped(); }">
+        <button type="button" class="cm-btn cm-btn-sm" onclick="tgAddTyped()">Add</button>
+      </div>
+    </div>
+
+    <div class="im-field"><span>Audience</span>
+      <div id="tg-audience" class="tg-pills"></div>
+    </div>
+
+    <div class="im-field"><span>Tags already in use <em>(most used first)</em></span>
+      <input id="tg-filter" class="cm-input cm-btn-sm" placeholder="Filter tags" oninput="tgRenderExisting()">
+      <div id="tg-existing" class="tg-pills tg-scroll"></div>
+    </div>
+
+    <div class="tg-actions">
+      <span id="tg-note" class="im-hint" role="status"></span>
+      <button type="button" class="cm-btn cm-btn-sm" onclick="tgClose()">Cancel</button>
+      <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="tgApply()">Use these tags</button>
+    </div>
+  </div>
+</dialog>
 
 <footer>
   JOI Electric &mdash; Content Manager &mdash; 18+ only

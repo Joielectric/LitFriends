@@ -215,7 +215,7 @@
     return { drafts, stats };
   }
 
-  const api = { isAudioPost, buildDrafts, titleKey };
+  const api = { isAudioPost, buildDrafts, titleKey, titleOf, fixBrackets };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.RedditImport = api;
 })(typeof window !== 'undefined' ? window : this);
