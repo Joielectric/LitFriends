@@ -104,6 +104,37 @@
     return out;
   }
 
+  // Who is signed in, if anyone. Every page carrying a works list is public,
+  // so this is asked once and quietly: a visitor gets nothing back and sees
+  // nothing new.
+  let WHO = null;
+  function whoAmI() {
+    return fetch('/api/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'who' }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { WHO = (d && d.ok && d.who) || null; return WHO; })
+      .catch(function () { return null; });
+  }
+
+  // The server decides this as well. Here it only decides whether to offer the
+  // button. Work with no owner is the site owner's, from before creators kept
+  // their own.
+  function canEditEntry(entry) {
+    if (!WHO || !entry) return false;
+    if (WHO.isOwner) return true;
+    return !!entry.owner && entry.owner === WHO.slug;
+  }
+
+  function editLinkHtml(entry, extraClass) {
+    if (!canEditEntry(entry)) return '';
+    const href = '/tools.html#edit=' + encodeURIComponent(entry.id || '');
+    return '<a class="ag-edit' + (extraClass ? ' ' + extraClass : '') + '" href="' + href +
+      '" data-stop="1" title="Open this in the Content Manager">Edit</a>';
+  }
+
   function canEmbed(key) {
     return !!(PROVIDERS[key] || {}).canEmbed;
   }
@@ -308,6 +339,17 @@ body {
 }
 /* A platform is somewhere to go, so the pill goes there. The row behind it
    still opens the work, which is what the Play button used to be for. */
+.ag-edit {
+  font-family: "Cinzel", serif;
+  font-size: 0.56rem; letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 11px;
+  border: 1px dashed var(--border-mid, rgba(255,255,255,.28));
+  border-radius: 999px;
+  color: var(--text-mid, #999);
+  text-decoration: none; white-space: nowrap; background: transparent;
+}
+.ag-edit:hover { color: var(--coral, #e8634f); border-color: var(--coral, #e8634f); }
+.ag-modal-edit { margin-left: auto; }
 .ag-plink {
   font-family: "Cinzel", serif;
   font-size: 0.56rem; letter-spacing: .08em; text-transform: uppercase;
@@ -565,6 +607,7 @@ body {
         <div class="ag-modal-header">
           <div class="ag-modal-title">${typeBadge(entry)}${entry.title}</div>
           ${entry.date ? `<div class="ag-modal-date">${entry.date}</div>` : ''}
+          ${editLinkHtml(entry, 'ag-modal-edit')}
           <button class="ag-modal-close" aria-label="Close">&times;</button>
         </div>
         ${tabsHtml}
@@ -624,7 +667,7 @@ body {
           ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
         </div>
         <div class="ag-row-artist">${artists}</div>
-        <div class="ag-row-platforms">${links || '<span class="ag-row-date">&middot;</span>'}</div>
+        <div class="ag-row-platforms">${links || '<span class="ag-row-date">&middot;</span>'}${editLinkHtml(entry)}</div>
       </div>`;
   }
 
@@ -990,9 +1033,8 @@ body {
 
       el.innerHTML = '<div class="ag-loading">Loading audio…</div>';
 
-      fetch('/api/content')
-        .then(r => r.json())
-        .then(data => {
+      Promise.all([fetch('/api/content').then(r => r.json()), whoAmI()])
+        .then(([data]) => {
           adoptProviders(data.providers);
           let entries = (data.entries || []).slice().sort((a, b) =>
             (b.date || '').localeCompare(a.date || '')

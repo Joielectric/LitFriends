@@ -2406,6 +2406,7 @@
           cmRenderNews();
           if (cmWho.isOwner) { fbLoad(); inboxLoad(); }
           cmRestoreTab();
+          cmOpenFromHash();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
@@ -3599,6 +3600,30 @@
     }
     function cmDenyEdit(e) {
       cmShowMsg('"' + (e.title || 'That entry') + '" belongs to someone else. You can see it because you are credited on it, but only its creator or the site owner can change it.', false);
+    }
+
+    // Arriving from the catalogue: /tools.html#edit=<id> opens that entry in
+    // the form. The hash is dropped once it has been read, so a later reload
+    // is an ordinary visit.
+    function cmOpenFromHash() {
+      const found = String(location.hash || '').match(/^#edit=(.+)$/);
+      if (!found) return;
+      const id = decodeURIComponent(found[1]);
+      history.replaceState(null, '', location.pathname + location.search);
+      const e = cmEntries.find(x => x.id === id);
+      if (!e) { cmShowMsg('That entry is not in the catalogue any more.', false); return; }
+      if (!cmCanEdit(e)) return cmDenyEdit(e);
+      cmTab('content');
+      // The picker shows your own work by default, so the site owner opening
+      // someone else's from the catalogue is shown theirs as well.
+      const all = document.getElementById('cm-all-creators');
+      if (cmWho.isOwner && all && !all.checked && !cmPickable().some(x => x.id === id)) {
+        all.checked = true;
+        cmRenderEntries();
+      }
+      const sel = document.getElementById('cm-entry-select');
+      if (sel) { sel.value = id; cmEntrySelected(); }
+      cmEditEntry(id);
     }
 
     function cmEditSelected() {

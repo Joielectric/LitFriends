@@ -176,6 +176,13 @@
       color: #cfe0ff; text-decoration: none; white-space: nowrap; transition: all 0.18s; background: rgba(91,141,232,0.18);
     }
     .plink:hover { background: var(--electric); color: #fff; border-color: var(--electric); }
+    .edit-link {
+      font-family: "Cinzel", serif; font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 4px 11px; border-radius: 999px; border: 1px dashed var(--border-mid, rgba(180,195,225,0.42));
+      color: var(--text-mid); text-decoration: none; white-space: nowrap; background: transparent; transition: all 0.18s;
+    }
+    .edit-link:hover { color: #fff; border-color: var(--electric); }
+    .modal-head .edit-link { margin-left: auto; }
 
     .empty, .loading { padding: 2.5rem 1rem; text-align: center; color: var(--text-dim); font-style: italic; }
 
@@ -488,9 +495,41 @@
   var SHOW_ALL = /(?:^|[?&])all=1(?:&|$)/.test(location.search);
   var state ={ q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
 
+  // Who is signed in, if anyone. The catalogue is public, so this is asked
+  // once and quietly: a visitor gets nothing back and sees nothing new.
+  var WHO = null;
+  function whoAmI(){
+    return fetch('/api/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'who' })
+    }).then(function(r){ return r.json(); })
+      .then(function(d){ WHO = (d && d.ok && d.who) || null; return WHO; })
+      .catch(function(){ return null; });
+  }
+
+  // The server decides this as well. Here it only decides whether to offer the
+  // button. Work with no owner is the site owner's, from before creators kept
+  // their own.
+  function canEdit(e){
+    if (!WHO || !e) return false;
+    if (WHO.isOwner) return true;
+    return !!e.owner && e.owner === WHO.slug;
+  }
+
+  function editLink(e, cls){
+    if (!canEdit(e)) return '';
+    return '<a class="edit-link' + (cls ? ' ' + cls : '') + '" href="/tools.html#edit=' +
+      encodeURIComponent(e.id || '') + '" data-stop="1" title="Open this in the Content Manager">Edit</a>';
+  }
+
   function fetchData(){
     var url = window.__CATALOG_SRC__ || '/api/content';
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    Promise.all([
+      fetch(url).then(function(r){ return r.json(); }),
+      whoAmI()
+    ]).then(function(both){
+      var data = both[0];
       adoptProviders(data.providers);
       // The content store is shared with collaborators building their own
       // pages, so this catalogue shows only work the site's owner is credited
@@ -648,7 +687,7 @@
         (tags ? '<div class="c-tags">' + tags + '</div>' : '') +
       '</div>' +
       '<div class="c-artist">' + artistStr + '</div>' +
-      '<div class="c-links">' + (links || '<span class="c-date">&middot;</span>') + '</div>' +
+      '<div class="c-links">' + (links || '<span class="c-date">&middot;</span>') + editLink(e) + '</div>' +
     '</div>';
   }
 
@@ -698,6 +737,7 @@
 
     overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' +
       '<div class="modal-head"><div class="modal-title">' + typeBadge(e) + esc(e.title||'Untitled') + '</div>' +
+        editLink(e) +
         '<button class="modal-close" aria-label="Close">&times;</button></div>' +
       (meta ? '<div class="modal-meta">' + meta + '</div>' : '') +
       (safeUrl(e.track) ? '<div class="track-player"><audio controls preload="none" src="' + safeUrl(e.track) + '"></audio></div>' : '') +
