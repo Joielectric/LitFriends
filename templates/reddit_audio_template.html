@@ -52,6 +52,8 @@
       border-radius: var(--radius); display: inline-block;
     }
     .back-button:hover { border-color: var(--coral); color: var(--silver-hi); }
+    .template-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    @media (max-width: 1000px) { .template-links { justify-content: center; } }
     .main-container {
       display: grid; grid-template-columns: 1fr 1fr; gap: 20px; position: relative; z-index: 1;
     }
@@ -162,7 +164,12 @@
     <!-- Navigation Header -->
     <div class="navigation-header">
         <h1 class="nav-title">Reddit Audio Post Template</h1>
-        <a href="../tools.html" class="back-button">← Back to Dashboard</a>
+        <nav class="template-links" aria-label="Go to">
+          <a href="../tools.html" class="back-button">&#8592; Content Manager</a>
+          <a href="https://hotaudio.net" class="back-button" target="_blank" rel="noopener noreferrer">HotAudio</a>
+          <a href="https://www.literotica.com" class="back-button" target="_blank" rel="noopener noreferrer">Literotica</a>
+          <a href="https://www.reddit.com" class="back-button" target="_blank" rel="noopener noreferrer">Reddit</a>
+        </nav>
     </div>
 
     <div class="main-container">
