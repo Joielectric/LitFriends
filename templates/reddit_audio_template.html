@@ -672,6 +672,9 @@
         // other place the audio lives is on the catalogue page.
         function catPostLinks(e) {
             const links = catGetLinks(e);
+            // A HotAudio track number, t/2983, is that site's own shorthand and
+            // only leads anywhere from inside it, so a link kept in that form
+            // is written out in full here.
             const whole = u => (/^https?:\/\//i.test(u) ? u : 'https://hotaudio.net/' + String(u).replace(/^\/+/, ''));
             const trt = e.trt ? ' TRT - ' + e.trt : '';
             const out = [];
@@ -680,28 +683,13 @@
             const offer = links.find(l => l && l.provider === 'scriptoffer' && l.url);
             if (offer) out.push({ provider: 'scriptoffer', url: offer.url, text: '📜Script Offer' });
 
-            // Every version of the audio on HotAudio, each with a number of
-            // its own, said by its label so a reader knows which is which.
-            const versions = (Array.isArray(e.hotaudioTracks) ? e.hotaudioTracks : [])
-                .map(v => ({
-                    label: String((v && v.label) || '').trim(),
-                    track: String((v && v.track) || '').trim().replace(/^\/+/, ''),
-                }))
-                .filter(v => /^t\/\d+$/i.test(v.track));
-
-            const audio = versions.map(v => ({
-                provider: 'hotaudio',
-                url: 'https://hotaudio.net/' + v.track.toLowerCase(),
-                text: '🎧' + (v.label || 'Listen Here') + trt,
-            }));
-
-            // And wherever else it is up: Soundgasm, Audiochan and the rest.
-            // Scripts are left out; the offer above is the script side of it.
+            // Wherever the audio is up: its page on HotAudio, on Soundgasm, on
+            // Audiochan, and so on, one line each. Scripts are left out; the
+            // offer above is the script side of it.
+            const audio = [];
             links.forEach(l => {
                 if (!l || !l.url || l.provider === 'scriptoffer') return;
                 if (l.kind === 'script' || catIsScript(l.provider)) return;
-                // The versions above are the same audio on the same site.
-                if (l.provider === 'hotaudio' && versions.length) return;
                 audio.push({
                     provider: l.provider,
                     url: whole(l.url),
@@ -710,7 +698,7 @@
             });
 
             // One place to listen needs no telling apart from the others.
-            if (audio.length === 1 && !versions.length) audio[0].text = '🎧Listen Here' + trt;
+            if (audio.length === 1) audio[0].text = '🎧Listen Here' + trt;
 
             return out.concat(audio);
         }
