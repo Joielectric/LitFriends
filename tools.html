@@ -288,15 +288,8 @@
     .im-find { display: flex; gap: 8px; flex-wrap: wrap; }
     .im-find .cm-input { flex: 1 1 240px; min-width: 0; }
     .im-kinds { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.86rem; color: var(--text-mid); }
-    .of-filters { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; align-items: flex-end; }
-    .of-filters label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-    .of-filters label > span { font-family: "Cinzel", serif; font-size: 0.64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
-    .of-filters .cm-input { min-width: 0; }
-    .of-range { display: flex; gap: 6px; }
-    .of-range .cm-input { width: 88px; }
-    .of-check { flex-direction: row !important; align-items: center; gap: 6px; font-size: 0.86rem; color: var(--text-mid); cursor: pointer; padding-bottom: 8px; }
-    .of-row-title a { color: var(--text); text-decoration: none; }
-    .of-row-title a:hover { color: var(--coral); text-decoration: underline; }
+    .cm-offer-title a { color: var(--text); text-decoration: none; }
+    .cm-offer-title a:hover { color: var(--coral); text-decoration: underline; }
     .im-kinds label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
     .im-status { font-size: 0.82rem; color: var(--text-dim); margin: 8px 0; min-height: 1.2em; }
     .im-found { border: 1px solid var(--border); border-radius: var(--radius); margin-top: 6px; }
@@ -649,6 +642,21 @@
                         </div>
                     </div>
 
+                    <!-- The offer on Reddit the script was posted in, which a
+                         Reddit post of this audio prints beside the audio. -->
+                    <div class="cm-full" id="cm-offer-row">
+                        <label class="cm-label">Script Offer on Reddit <span style="font-weight:normal;color:var(--text-mid)">(optional, kept as a Script Offer link)</span></label>
+                        <div id="cm-offer-current" class="im-hint" style="margin:0 0 8px"></div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <input id="cm-offer-src" class="cm-input" style="flex:1 1 280px"
+                                   placeholder="Paste the Reddit link of your fill, or leave this empty to search by title"
+                                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmOfferFind()">Find the offer</button>
+                        </div>
+                        <div id="cm-offer-status" class="im-status"></div>
+                        <div id="cm-offer-results" class="im-list" style="max-height:280px"></div>
+                    </div>
+
                     <div class="cm-full">
                         <label class="cm-label" for="cm-tags">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma separated)</span></label>
                         <input id="cm-tags" class="cm-input" data-tags data-tags-title="#cm-title" placeholder="GFE, soft, comfort" style="width:100%">
@@ -792,41 +800,8 @@
                     <button type="button" class="im-seg active" data-sec="scriptbin" onclick="imSection('scriptbin')">Scripts from ScriptBin</button>
                     <button type="button" class="im-seg" data-sec="reddit" onclick="imSection('reddit')">Audios from Reddit</button>
                     <button type="button" class="im-seg" data-sec="literotica" onclick="imSection('literotica')">Works from Literotica</button>
-                    <button type="button" class="im-seg" data-sec="offers" onclick="imSection('offers')">Scripts to fill</button>
                 </div>
                 <datalist id="im-names"></datalist>
-
-                <section class="im-sec" data-sec="offers" hidden>
-                    <p class="im-hint">Scripts people have offered on Reddit for anyone to fill, from GWASI's index of the audio subreddits. The index holds no post body, so the ScriptBin link is in the post itself: open a script to read it. Start an entry keeps the offer as the Script Offer link, which is the one a Reddit post of yours prints.</p>
-                    <div class="im-find">
-                        <input id="of-text" class="cm-input" placeholder="Words in the title or its tags, like comfort or vampire"
-                               onkeydown="if (event.key === 'Enter') ofSearch()">
-                        <button type="button" class="cm-btn cm-btn-primary" onclick="ofSearch()">Find scripts</button>
-                    </div>
-                    <div class="of-filters">
-                        <label><span>Audience</span>
-                            <select id="of-audience" class="cm-input cm-btn-sm"></select></label>
-                        <label><span>Writer</span>
-                            <input id="of-writer" class="cm-input cm-btn-sm" style="width:160px" placeholder="u/name"></label>
-                        <label><span>Posted</span>
-                            <select id="of-days" class="cm-input cm-btn-sm">
-                                <option value="30">Last month</option>
-                                <option value="90" selected>Last 3 months</option>
-                                <option value="365">Last year</option>
-                                <option value="0">Any time</option>
-                            </select></label>
-                        <label><span>Words</span>
-                            <span class="of-range">
-                                <input id="of-min" class="cm-input cm-btn-sm" type="number" min="0" step="100" placeholder="from">
-                                <input id="of-max" class="cm-input cm-btn-sm" type="number" min="0" step="100" placeholder="to">
-                            </span></label>
-                        <label class="of-check"><input type="checkbox" id="of-unfilled" checked> Nobody has filled it yet</label>
-                    </div>
-                    <div id="of-status" class="im-status"></div>
-                    <div id="of-found" class="im-found" hidden>
-                        <div id="of-list" class="im-list"></div>
-                    </div>
-                </section>
 
                 <section class="im-sec" data-sec="literotica" hidden>
                     <p class="im-hint">Your audio, stories and poems on literotica.com, read from your public works pages. Titles, descriptions, categories, dates and series come across. The tags on each work's own page do not, so add those with Edit.</p>
@@ -3324,9 +3299,126 @@
       const t = document.getElementById('cm-type').value;
       const isAudio = t === 'audio';
       document.getElementById('cm-fills-row').style.display = isAudio ? '' : 'none';
+      document.getElementById('cm-offer-row').style.display = isAudio ? '' : 'none';
       const music = document.getElementById('cm-music-fields');
       if (music) music.style.display = (t === 'music') ? 'block' : 'none';
       if (isAudio) cmRenderFillsOptions();
+    }
+
+    // ── The script offer behind a fill ────────────────────────────────────────
+    // A Reddit post of a fill prints the offer it came from, so an entry keeps
+    // that offer as a Script Offer link. GWASI records which fills belong to
+    // which offer, so the link can be pulled from the fill's own post. With no
+    // post to go on, the offers are searched by this entry's title.
+    let cmOfferHits = [];
+    let cmOfferBusy = false;
+
+    function cmOfferStatus(text, tone) {
+      const el = document.getElementById('cm-offer-status');
+      if (!el) return;
+      el.textContent = text || '';
+      el.style.color = tone === 'bad' ? '#e8a34f' : tone === 'good' ? '#6fe3c1' : 'var(--text-dim)';
+    }
+
+    function cmOfferLinkRow() {
+      return [...document.querySelectorAll('#cm-links-list .cm-link-row')]
+        .find(row => row.querySelector('select').value === 'scriptoffer') || null;
+    }
+
+    // What the entry has now, so it is plain whether anything needs finding.
+    function cmOfferShowCurrent() {
+      const el = document.getElementById('cm-offer-current');
+      if (!el) return;
+      const row = cmOfferLinkRow();
+      const url = row ? row.querySelector('input').value.trim() : '';
+      el.innerHTML = url
+        ? 'On this entry: <a href="' + cmEsc(url) + '" target="_blank" rel="noopener noreferrer">' + cmEsc(url) + '</a>'
+        : 'Nothing yet. Paste the Reddit link of your fill, or search by title.';
+    }
+
+    function cmOfferClear() {
+      cmOfferHits = [];
+      const src = document.getElementById('cm-offer-src');
+      if (src) src.value = '';
+      cmOfferRender();
+      cmOfferStatus('');
+      cmOfferShowCurrent();
+    }
+
+    async function cmOfferFind() {
+      if (cmOfferBusy) return;
+      const typed = document.getElementById('cm-offer-src').value.trim();
+      const title = document.getElementById('cm-title').value.trim();
+      const writer = ((cmCredits.writers || [])[0] || '').replace(/^\/?u\//i, '');
+      cmOfferBusy = true;
+      cmOfferHits = [];
+      cmOfferRender();
+      try {
+        if (typed) {
+          cmOfferStatus('Asking GWASI which offer that post filled\u2026 the first look takes a little while.');
+          const data = await imApi('/api/reddit', { source: 'offer', post: typed });
+          cmOfferHits = data.offer ? [data.offer] : [];
+          cmOfferRender();
+          cmOfferStatus(
+            data.error ? data.error
+              : cmOfferHits.length ? (data.wasOffer ? 'That post is the offer itself.' : 'Found the offer it filled.')
+              : 'GWASI has no offer recorded behind that post. Try leaving the box empty to search by title.',
+            cmOfferHits.length ? 'good' : 'bad');
+          return;
+        }
+        if (!title) { cmOfferStatus('Give the entry a title first, or paste the link of your fill.', 'bad'); return; }
+        cmOfferStatus('Searching the offers by title\u2026 the first look takes a little while.');
+        const ask = q => imApi('/api/reddit', { source: 'offers', query: q }).then(d => d.offers || []);
+        cmOfferHits = writer ? await ask({ text: title, writer, days: 0, limit: 20 }) : [];
+        // The writer as credited here may not be their name on Reddit.
+        if (!cmOfferHits.length) cmOfferHits = await ask({ text: title, days: 0, limit: 20 });
+        cmOfferRender();
+        cmOfferStatus(cmOfferHits.length
+          ? cmOfferHits.length + (cmOfferHits.length === 1 ? ' offer looks close. Check it is the right one.' : ' offers look close. Pick the right one.')
+          : 'No offer matches that title. Paste the Reddit link of your fill instead.',
+          cmOfferHits.length ? 'good' : 'bad');
+      } catch (err) {
+        cmOfferStatus(err.message, 'bad');
+      } finally {
+        cmOfferBusy = false;
+      }
+    }
+
+    function cmOfferRender() {
+      const list = document.getElementById('cm-offer-results');
+      if (!list) return;
+      list.innerHTML = cmOfferHits.map((offer, i) => {
+        const when = new Date(offer.created * 1000).toISOString().slice(0, 10);
+        const facts = [when, 'r/' + offer.subreddit, offer.words ? offer.words.toLocaleString() + ' words' : '',
+          offer.fills ? offer.fills + (offer.fills === 1 ? ' fill' : ' fills') : 'not filled yet']
+          .filter(Boolean).map(cmEsc).join(' &middot; ');
+        return `
+        <div class="im-row">
+          <div class="im-row-head">
+            <div class="im-row-text">
+              <div class="im-row-title cm-offer-title">
+                <a href="${cmEsc(offer.url)}" target="_blank" rel="noopener noreferrer">${cmEsc(offer.title)}</a>
+              </div>
+              <div class="im-row-meta">by u/${cmEsc(offer.author)} &middot; ${facts}</div>
+            </div>
+            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="cmOfferUse(${i})">Use this</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function cmOfferUse(i) {
+      const offer = cmOfferHits[i];
+      if (!offer) return;
+      // One offer to an entry: an existing link is replaced rather than joined.
+      const row = cmOfferLinkRow();
+      if (row) row.querySelector('input').value = offer.url;
+      else cmAddLink('scriptoffer', offer.url, 'script');
+      if (!(cmCredits.writers || []).length) cmCreditAdd('writers', 'u/' + offer.author);
+      cmOfferHits = [];
+      cmOfferRender();
+      cmOfferShowCurrent();
+      cmOfferStatus('Kept as this entry\u2019s Script Offer link. Save the entry to keep it.', 'good');
     }
 
     // ── Uploaded image library ──────────────────────────────────────────────
@@ -3532,6 +3624,7 @@
       cmTypeChanged();
       const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
       cmSetLinks(links);
+      cmOfferClear();
       document.getElementById('cm-tags').value       = (e.tags || []).join(', ');
       document.getElementById('cm-short-desc').value = e.shortDesc || '';
       document.getElementById('cm-desc').value       = e.desc || '';
@@ -3569,6 +3662,7 @@
     function cmClearForm() {
       cmEditingId = null;
       cmSetLinks([]);
+      cmOfferClear();
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
       ['cm-title','cm-tags','cm-hotaudio-track','cm-short-desc','cm-desc','cm-trt','cm-image','cm-track','cm-tempo','cm-use','cm-license'].forEach(id => document.getElementById(id).value = '');
@@ -4276,12 +4370,7 @@
     function imInit() {
       let sec = 'scriptbin';
       try { sec = sessionStorage.getItem('im_sec') || sec; } catch (e) {}
-      imSection(IM_SOURCES[sec] || sec === 'offers' ? sec : 'scriptbin');
-      const audience = document.getElementById('of-audience');
-      if (audience) {
-        audience.innerHTML = '<option value="">Any audience</option>' +
-          GENDER_TAGS_CM.map(t => `<option value="${cmEsc(t)}">${cmEsc(t)}</option>`).join('');
-      }
+      imSection(IM_SOURCES[sec] ? sec : 'scriptbin');
       imFillWho();
     }
 
@@ -4630,117 +4719,6 @@
       } finally {
         st.busy = false;
       }
-    }
-
-    // ── Scripts to fill ───────────────────────────────────────────────────────
-    // Offers other people have posted, searched through GWASI's index. Nothing
-    // here is imported: an offer is someone else's script, so the only thing
-    // kept is its link, as the Script Offer link on an entry of your own, which
-    // is what a Reddit post prints beside the audio.
-    let ofResults = [];
-    let ofBusy = false;
-
-    function ofStatus(text, tone) {
-      const el = document.getElementById('of-status');
-      if (!el) return;
-      el.textContent = text || '';
-      el.style.color = tone === 'bad' ? '#e8a34f' : tone === 'good' ? '#6fe3c1' : 'var(--text-dim)';
-    }
-
-    async function ofSearch() {
-      if (ofBusy) return;
-      const query = {
-        text: document.getElementById('of-text').value.trim(),
-        audience: document.getElementById('of-audience').value,
-        writer: document.getElementById('of-writer').value.trim(),
-        days: Number(document.getElementById('of-days').value) || 0,
-        minWords: Number(document.getElementById('of-min').value) || 0,
-        maxWords: Number(document.getElementById('of-max').value) || 0,
-        unfilled: document.getElementById('of-unfilled').checked,
-        limit: 150,
-      };
-      ofBusy = true;
-      ofStatus('Reading GWASI\u2026 the first search of the day takes a little while.');
-      try {
-        const data = await imApi('/api/reddit', { source: 'offers', query });
-        ofResults = data.offers || [];
-        ofRender();
-        ofStatus(ofResults.length
-          ? `${data.total} script${data.total === 1 ? '' : 's'} match` +
-            (data.total > ofResults.length ? `. The newest ${ofResults.length} are here; narrow the search for the rest.` : '.')
-          : 'Nothing matches that. Try fewer words, a wider stretch of time, or no length.',
-          ofResults.length ? 'good' : '');
-      } catch (err) {
-        ofStatus(err.message, 'bad');
-      } finally {
-        ofBusy = false;
-      }
-    }
-
-    function ofRender() {
-      const box = document.getElementById('of-found');
-      const list = document.getElementById('of-list');
-      if (!box || !list) return;
-      box.hidden = !ofResults.length;
-      list.innerHTML = ofResults.map((o, i) => {
-        const when = new Date(o.created * 1000).toISOString().slice(0, 10);
-        const facts = [
-          when,
-          'r/' + o.subreddit,
-          o.words ? o.words.toLocaleString() + ' words' : 'length not known',
-          o.fills ? o.fills + (o.fills === 1 ? ' fill' : ' fills') : 'not filled yet',
-          o.score + (Math.abs(o.score) === 1 ? ' point' : ' points'),
-        ].map(cmEsc).join(' &middot; ');
-        return `
-        <div class="im-row">
-          <div class="im-row-head">
-            <div class="im-row-text">
-              <div class="im-row-title of-row-title">
-                <a href="${cmEsc(o.url)}" target="_blank" rel="noopener noreferrer">${cmEsc(o.title)}</a>
-              </div>
-              <div class="im-row-meta">by u/${cmEsc(o.author)} &middot; ${facts}</div>
-            </div>
-            <button type="button" class="cm-btn cm-btn-sm" onclick="ofCopy(${i})">Copy link</button>
-            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="ofStart(${i})">Start an entry</button>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    function ofCopy(i) {
-      const offer = ofResults[i];
-      if (!offer) return;
-      navigator.clipboard.writeText(offer.url)
-        .then(() => ofStatus('Link copied. Paste it into a Script Offer link on the entry.', 'good'))
-        .catch(() => ofStatus('Could not copy that link.', 'bad'));
-    }
-
-    // An entry of your own for the fill you are about to record, with the offer
-    // kept as its Script Offer link and its writer credited. Nothing is saved
-    // until you press Save Entry.
-    function ofStart(i) {
-      const offer = ofResults[i];
-      if (!offer) return;
-      const target = imTarget();
-      cmTab('content');
-      cmClearForm();
-      const parsed = cmParseBracketed(RedditImport.fixBrackets(offer.title));
-      document.getElementById('cm-title').value = RedditImport.titleOf(offer.title, parsed.title);
-      // The offer is tagged as an offer; what you are making from it is a fill.
-      const tags = imTags(parsed.tags).filter(t => !/offer/i.test(t)).concat('Script Fill');
-      document.getElementById('cm-tags').value = imTags(tags).join(', ');
-      document.getElementById('cm-type').value = 'audio';
-      cmTypeChanged();
-      cmSetLinks([{ provider: 'scriptoffer', url: offer.url, kind: 'script' }]);
-      cmCredits = {
-        voiceArtists: target.name ? [target.name] : [],
-        writers: ['u/' + offer.author],
-        producers: [], editors: [], musicians: [],
-      };
-      cmRenderCredits();
-      cmShowMsg('Started from that offer. Add your audio link when it is up, then Save.', true);
-      const panel = document.getElementById('cm-panel');
-      if (panel) window.scrollTo({ top: panel.offsetTop, behavior: 'smooth' });
     }
 
     // ── Reviewing ──

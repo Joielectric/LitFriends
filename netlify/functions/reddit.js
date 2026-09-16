@@ -1,10 +1,11 @@
 import { authorize, unauthorized } from "./_auth.js";
-import { SourceError, cleanHandle, fromGwasi, fromSoundgasm, fromHotAudio, fromOffers } from "./_reddit.js";
+import { SourceError, cleanHandle, fromGwasi, fromSoundgasm, fromHotAudio, fromOffers, offerBehind } from "./_reddit.js";
 
 // Finding a creator's audios from their Reddit history.
 //
 //   POST /api/reddit { source: "gwasi",     handle } -> { posts }
 //   POST /api/reddit { source: "offers",    query }  -> { offers, total }
+//   POST /api/reddit { source: "offer",     post }   -> { offer }
 //   POST /api/reddit { source: "soundgasm", handle } -> { items }
 //   POST /api/reddit { source: "hotaudio",  handle } -> { items }
 //
@@ -39,10 +40,12 @@ export default async (req) => {
 
   const source = String(body.source || "");
 
-  // Searching the offers is about nobody in particular, so it asks for no name.
-  if (source === "offers") {
+  // Both of these are about a script rather than a person, so neither asks
+  // for a name.
+  if (source === "offers" || source === "offer") {
     try {
-      return json({ ok: true, source, ...(await fromOffers(body.query)) });
+      const found = source === "offers" ? await fromOffers(body.query) : await offerBehind(body.post);
+      return json({ ok: true, source, ...found });
     } catch (err) {
       const message = err instanceof SourceError ? err.message : `${source} failed: ${err.message}`;
       return json({ error: message }, 502);

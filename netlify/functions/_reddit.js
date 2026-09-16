@@ -160,7 +160,7 @@ export async function fromGwasi(handle) {
 // every search in that time is answered from them.
 
 const OFFER_TTL = 30 * 60 * 1000;
-let offerCache = { base: "", at: 0, offers: [] };
+let offerCache = { base: "", at: 0, offers: [], behind: new Map() };
 
 /** The offers among a set of index rows, with how many fills each one has. */
 export function extractOffers(entries, fills, removed) {
@@ -233,7 +233,7 @@ async function loadOffers() {
   if (!delta || typeof delta.base !== "string" || !/^[a-z0-9]+$/i.test(delta.base)) {
     throw new SourceError("GWASI returned something unexpected. The format may have changed.");
   }
-  if (offerCache.base === delta.base && Date.now() - offerCache.at < OFFER_TTL) return offerCache.offers;
+  if (offerCache.base === delta.base && Date.now() - offerCache.at < OFFER_TTL) return offerCache;
 
   const res = await get(`https://gwasi.com/base_${delta.base}.json`, { ms: 25000 });
   if (!res.ok) throw new SourceError(`GWASI answered ${res.status}. Try again later.`);
@@ -249,12 +249,43 @@ async function loadOffers() {
     .concat(extractOffers(delta.entries, fills, removed));
   // The newest day's rows repeat some of the index's.
   const byId = new Map(offers.map((o) => [o.id, o]));
-  offerCache = { base: delta.base, at: Date.now(), offers: [...byId.values()] };
-  return offerCache.offers;
+
+  // Which offer a fill belongs to, which is how a fill's own post leads back
+  // to the script it came from.
+  const behind = new Map();
+  Object.keys(fills).forEach((offerId) => {
+    (fills[offerId] || []).forEach((fillId) => { if (!behind.has(fillId)) behind.set(fillId, offerId); });
+  });
+
+  offerCache = { base: delta.base, at: Date.now(), offers: [...byId.values()], behind, byId };
+  return offerCache;
 }
 
 export async function fromOffers(query) {
-  return searchOffers(await loadOffers(), query);
+  const cache = await loadOffers();
+  return searchOffers(cache.offers, query);
+}
+
+/** A Reddit post id out of a link, or out of the id on its own. */
+export function postId(v) {
+  const raw = String(v == null ? "" : v).trim();
+  const inLink = raw.match(/\/comments\/([a-z0-9]{4,10})/i) || raw.match(/redd\.it\/([a-z0-9]{4,10})/i);
+  const id = inLink ? inLink[1] : raw;
+  return /^[a-z0-9]{4,10}$/i.test(id) ? id.toLowerCase() : "";
+}
+
+/**
+ * The offer a post came from: the one whose fills include it. A post that is
+ * itself an offer is its own answer, so pasting either link works.
+ */
+export async function offerBehind(post) {
+  const id = postId(post);
+  if (!id) return { offer: null, error: "That does not look like a Reddit post link." };
+  const cache = await loadOffers();
+  if (cache.byId.has(id)) return { offer: cache.byId.get(id), wasOffer: true };
+  const offerId = cache.behind.get(id);
+  if (!offerId) return { offer: null };
+  return { offer: cache.byId.get(offerId) || null };
 }
 
 // ── Hosts ────────────────────────────────────────────────────────────────────
