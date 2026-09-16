@@ -288,6 +288,8 @@
     .im-find { display: flex; gap: 8px; flex-wrap: wrap; }
     .im-find .cm-input { flex: 1 1 240px; min-width: 0; }
     .im-kinds { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.86rem; color: var(--text-mid); }
+    .cm-track-row { display: grid; grid-template-columns: 1fr 150px auto; gap: 8px; align-items: center; margin-bottom: 6px; }
+    @media (max-width: 768px) { .cm-track-row { grid-template-columns: 1fr; } }
     .cm-offer-title a { color: var(--text); text-decoration: none; }
     .cm-offer-title a:hover { color: var(--coral); text-decoration: underline; }
     .im-kinds label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
@@ -741,10 +743,13 @@
                         <label class="cm-label">Total Run Time <span style="font-weight:normal;color:var(--text-mid)">(TRT, optional)</span></label>
                         <input id="cm-trt" class="cm-input" placeholder="e.g. 14:32" style="width:100%">
                     </div>
-                    <div>
-                        <label class="cm-label">HotAudio track number <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
-                        <input id="cm-hotaudio-track" class="cm-input" placeholder="t/2983" style="width:100%">
-                        <div class="im-hint" style="margin:6px 0 0">What HotAudio calls the audio on its own site. Its description links to this, and it is kept apart from the HotAudio link above.</div>
+                    <div class="cm-full">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                            <label class="cm-label" style="margin:0">HotAudio versions <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddTrack()">+ Add version</button>
+                        </div>
+                        <div id="cm-hotaudio-tracks"></div>
+                        <div class="im-hint" style="margin:6px 0 0">What HotAudio calls each version on its own site, like t/2983 with music and t/2984 voice only. Its description links to each of them, and these are kept apart from the HotAudio link above.</div>
                     </div>
 
                     <!-- Credits (pick from collaborators) -->
@@ -3606,11 +3611,42 @@
         .catch(err => cmShowMsg(err.message, false));
     }
 
-    // HotAudio calls an audio t/2983 on its own site. Stored that way, so
-    // "2983", "t/2983" or the address it was copied from all come out alike.
+    // HotAudio calls each version of an audio t/2983 on its own site, with a
+    // number apiece for the one with music and the one without. Stored that
+    // way, so "2983", "t/2983" or the address it was copied from come out
+    // alike, and a label says which version is which.
     function cmTrackNumber(value) {
       const digits = String(value || '').match(/\d{2,}/);
       return digits ? 't/' + digits[0] : '';
+    }
+
+    function cmAddTrack(label = '', track = '') {
+      const row = document.createElement('div');
+      row.className = 'cm-track-row';
+      row.innerHTML = `
+        <input class="cm-input cm-track-label" placeholder="With music" style="min-width:0">
+        <input class="cm-input cm-track-number" placeholder="t/2983" style="min-width:0">
+        <button type="button" class="cm-btn cm-btn-sm" title="Remove this version">&times;</button>`;
+      row.querySelector('.cm-track-label').value = label;
+      row.querySelector('.cm-track-number').value = track;
+      row.querySelector('button').addEventListener('click', () => row.remove());
+      document.getElementById('cm-hotaudio-tracks').appendChild(row);
+    }
+
+    function cmSetTracks(list) {
+      const host = document.getElementById('cm-hotaudio-tracks');
+      host.innerHTML = '';
+      const kept = Array.isArray(list) ? list : [];
+      kept.forEach(t => cmAddTrack(String((t && t.label) || ''), cmTrackNumber(t && t.track)));
+    }
+
+    function cmGetTracks() {
+      return [...document.querySelectorAll('#cm-hotaudio-tracks .cm-track-row')]
+        .map(row => ({
+          label: row.querySelector('.cm-track-label').value.trim(),
+          track: cmTrackNumber(row.querySelector('.cm-track-number').value),
+        }))
+        .filter(t => t.track);
     }
 
     // ── Save / Edit ─────────────────────────────────────────────────────────
@@ -3621,6 +3657,7 @@
       if (!title) { cmShowMsg('Title is required.', false); return; }
       if (!links.length) { cmShowMsg('Add at least one platform link.', false); return; }
 
+      const tracks = cmGetTracks();
       const entry = {
         id:    cmEditingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
         links,
@@ -3633,7 +3670,9 @@
         desc:      document.getElementById('cm-desc').value.trim(),
         date:    document.getElementById('cm-date').value,
         trt:     document.getElementById('cm-trt').value.trim(),
-        hotaudioTrack: cmTrackNumber(document.getElementById('cm-hotaudio-track').value),
+        hotaudioTracks: tracks,
+        // Kept in step for anything still reading a single number.
+        hotaudioTrack: (tracks[0] || {}).track || '',
         image:   document.getElementById('cm-image').value.trim(),
         track:   document.getElementById('cm-track').value.trim(),
         tempo:   document.getElementById('cm-tempo').value.trim(),
@@ -3690,7 +3729,9 @@
       cmOfferClear();
       document.getElementById('cm-date').value = e.date || '';
       document.getElementById('cm-trt').value = e.trt || '';
-      document.getElementById('cm-hotaudio-track').value = e.hotaudioTrack || '';
+      cmSetTracks(Array.isArray(e.hotaudioTracks) && e.hotaudioTracks.length
+        ? e.hotaudioTracks
+        : (e.hotaudioTrack ? [{ label: '', track: e.hotaudioTrack }] : []));
       document.getElementById('cm-image').value = e.image || '';
       cmUpdateImagePreview();
       document.getElementById('cm-image-status').textContent = '';
@@ -3713,10 +3754,11 @@
     function cmClearForm() {
       cmEditingId = null;
       cmSetLinks([]);
+      cmSetTracks([]);
       cmOfferClear();
       document.getElementById('cm-save-btn').textContent = 'Save Entry';
       document.getElementById('cm-save-btn').style.borderColor = '';
-      ['cm-title','cm-tags','cm-hotaudio-track','cm-short-desc','cm-desc','cm-trt','cm-image','cm-track','cm-tempo','cm-use','cm-license'].forEach(id => document.getElementById(id).value = '');
+      ['cm-title','cm-tags','cm-short-desc','cm-desc','cm-trt','cm-image','cm-track','cm-tempo','cm-use','cm-license'].forEach(id => document.getElementById(id).value = '');
       cmUpdateImagePreview();
       document.getElementById('cm-image-status').textContent = '';
       document.getElementById('cm-type').value = 'audio';

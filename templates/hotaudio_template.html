@@ -172,6 +172,8 @@
       padding: 4px 10px; border-radius: var(--radius); cursor: pointer; transition: border-color .2s, color .2s;
     }
     .mini-copy:hover { border-color: var(--coral); color: var(--coral); }
+    .version-row { display: grid; grid-template-columns: 1fr 120px auto; gap: 6px; align-items: center; margin-bottom: 6px; }
+    @media (max-width: 1000px) { .version-row { grid-template-columns: 1fr; } }
     .sec-row select { flex: 0 1 170px; }
     .sec-row span { flex: 1; color: var(--text); font-size: 0.95rem; }
   </style>
@@ -219,10 +221,13 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">HotAudio track number</label>
-        <input type="text" id="trackNumber" class="form-input" placeholder="t/2983" oninput="render()">
-        <small style="color:#888">The number HotAudio gives the audio once it is uploaded. The listen line points at it.</small>
-        <button class="copy-button secondary" style="margin-top:8px" onclick="saveTrack()">Save number to the catalogue</button>
+        <div class="field-copy">
+          <label class="form-label">HotAudio versions</label>
+          <button class="mini-copy" onclick="addVersion()">Add version</button>
+        </div>
+        <div id="versions"></div>
+        <small style="color:#888">The number HotAudio gives each version once it is uploaded, like t/2983 with music and t/2984 voice only. The label is what its listen line says. One version with no label reads Listen Here.</small>
+        <button class="copy-button secondary" style="margin-top:8px" onclick="saveTrack()">Save versions to the catalogue</button>
       </div>
 
       <div class="section-header">Sections</div>
@@ -420,36 +425,69 @@
       return found;
     }
 
-    // The number HotAudio gives an audio once it is uploaded: t/2983. It is
-    // kept on the entry in a field of its own, apart from the HotAudio link,
-    // which stays the address a post elsewhere would send someone to.
-    function trackFromEntry(e) {
-      var digits = String((e && e.hotaudioTrack) || '').match(/\d{2,}/);
+    // HotAudio knows each version of an audio by a number of its own, t/2983
+    // and t/2984 say, so a post can offer more than one: with music and voice
+    // only. They are kept on the entry apart from the HotAudio link, which
+    // stays the address a post elsewhere would send someone to.
+    function trackNumber(v) {
+      var digits = String(v == null ? '' : v).match(/\d{2,}/);
       return digits ? 't/' + digits[0] : '';
     }
 
-    // What the listen line points at: the number typed here, then the one on
-    // the entry, and failing both whatever HotAudio link the entry carries.
-    function trackPath() {
-      var typed = el('trackNumber').value.trim();
-      if (typed) {
-        var digits = typed.match(/\d{2,}/);
-        return digits ? 't/' + digits[0] : '';
-      }
-      var saved = trackFromEntry(entry);
-      if (saved) return saved;
-      var link = hotAudioLink(entry);
-      return link ? hotAudioPath(link.url) : '';
+    function versionsFromEntry(e) {
+      var kept = (e && Array.isArray(e.hotaudioTracks)) ? e.hotaudioTracks : [];
+      var out = kept
+        .map(function (v) { return { label: String((v && v.label) || ''), track: trackNumber(v && v.track) }; })
+        .filter(function (v) { return v.track; });
+      // Entries from before there were versions carry a single number.
+      if (!out.length && e && e.hotaudioTrack) out = [{ label: '', track: trackNumber(e.hotaudioTrack) }];
+      return out;
     }
 
-    // The description sits on the audio's own page, so the only link worth
-    // printing is the audio itself. Everywhere else it lives is on the
-    // catalogue page rather than here.
+    function addVersion(label, track) {
+      var row = document.createElement('div');
+      row.className = 'version-row';
+      row.innerHTML = '<input type="text" class="form-input v-label" placeholder="With music">' +
+        '<input type="text" class="form-input v-track" placeholder="t/2983">' +
+        '<button type="button" class="mini-copy v-drop">Remove</button>';
+      row.querySelector('.v-label').value = label || '';
+      row.querySelector('.v-track').value = track || '';
+      Array.prototype.forEach.call(row.querySelectorAll('.form-input'), function (input) {
+        input.addEventListener('input', render);
+      });
+      row.querySelector('.v-drop').addEventListener('click', function () { row.remove(); render(); });
+      el('versions').appendChild(row);
+      render();
+    }
+    window.addVersion = function () { addVersion('', ''); };
+
+    function setVersions(list) {
+      el('versions').innerHTML = '';
+      (list || []).forEach(function (v) { addVersion(v.label, v.track); });
+      if (!list || !list.length) addVersion('', '');
+    }
+
+    function versions() {
+      return Array.prototype.map.call(document.querySelectorAll('#versions .version-row'), function (row) {
+        return {
+          label: row.querySelector('.v-label').value.trim(),
+          track: trackNumber(row.querySelector('.v-track').value),
+        };
+      }).filter(function (v) { return v.track; });
+    }
+
+    // The description sits on the audio's own page, so the only links worth
+    // printing are the audio itself and its other versions. Everywhere else it
+    // lives is on the catalogue page rather than here.
     function listenLines(e) {
-      var path = trackPath();
-      if (!path) return [];
       var trt = (e && e.trt) ? ' TRT-' + e.trt : '';
-      return ['[🎧 Listen Here' + trt + '](' + path + ')'];
+      var list = versions();
+      if (list.length) {
+        return list.map(function (v) { return '[🎧 ' + (v.label || 'Listen Here') + trt + '](' + v.track + ')'; });
+      }
+      var link = hotAudioLink(e);
+      var path = link ? hotAudioPath(link.url) : '';
+      return path ? ['[🎧 Listen Here' + trt + '](' + path + ')'] : [];
     }
 
     function build() {
@@ -604,26 +642,30 @@
       entry = CATALOG[el('catalogSelect').value] || null;
       if (entry) {
         el('tagline').value = entry.shortDesc || '';
-        el('trackNumber').value = trackFromEntry(entry);
+        setVersions(versionsFromEntry(entry));
       }
       fillFormFields(entry);
       render();
     }
 
-    // Kept on the entry in its own field, so the HotAudio link stays the
-    // address that works everywhere else. The whole list is sent back because
-    // a save is the list: an entry left out of one is taken to have been
-    // deleted.
+    // Kept on the entry in fields of their own, so the HotAudio link stays
+    // the address that works everywhere else. The whole list of entries is
+    // sent back because a save is the list: an entry left out of one is taken
+    // to have been deleted.
     function saveTrack() {
       if (!entry) { flash('Choose an audio first.'); return; }
-      var path = trackPath();
-      if (!/^t\/\d+$/.test(path)) { flash('Enter the track number, like t/2983.'); return; }
-      entry.hotaudioTrack = path;
+      var list = versions();
+      if (!list.length) { flash('Add a version number first, like t/2983.'); return; }
+      entry.hotaudioTracks = list;
+      // Kept in step for anything still reading a single number.
+      entry.hotaudioTrack = list[0].track;
       fetch('/api/content', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries: ALL_ENTRIES })
       }).then(function (r) { return r.json(); }).then(function (d) {
-        flash(d.ok ? 'Saved. The catalogue remembers ' + path + ' for this audio.' : (d.error || 'Could not save.'));
+        flash(d.ok
+          ? 'Saved. The catalogue remembers ' + list.length + (list.length === 1 ? ' version' : ' versions') + ' of this audio.'
+          : (d.error || 'Could not save.'));
         render();
       }).catch(function () { flash('Could not reach the server.'); });
     }
