@@ -406,7 +406,7 @@
         function updatePostPreview() {
             const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
             const longDesc = document.getElementById('longDescription').value || '[Long description will appear here]';
-            const credits = document.getElementById('credits').value || '[Credits will appear here]';
+            const credits = catHardBreaks(document.getElementById('credits').value) || '[Credits will appear here]';
             const creatorName = document.getElementById('creatorName').value || 'YourName';
             
             // Get audio links
@@ -544,7 +544,7 @@
         function copyPostToClipboard() {
             const shortDesc = document.getElementById('shortDescription').value || 'Short Description';
             const longDesc = document.getElementById('longDescription').value || 'Long description content';
-            const credits = document.getElementById('credits').value || 'Credits information';
+            const credits = catHardBreaks(document.getElementById('credits').value) || 'Credits information';
             const creatorName = document.getElementById('creatorName').value || 'YourName';
             
             // Get audio links
@@ -634,6 +634,20 @@
                 ? SITE_CONFIG.redditName(n, { collaborators: CAT_COLLABS, profiles: CAT_PROFILES })
                 : n;
         }
+        // Reddit keeps a line break only where the line before it ends in two
+        // spaces, so every line with another under it gets them. A blank line
+        // already breaks the paragraph and is left as it is. Running this over
+        // text that already has them changes nothing.
+        function catHardBreaks(text) {
+            const lines = String(text || '').split('\n');
+            return lines.map((line, i) => {
+                const bare = line.replace(/\s+$/, '');
+                const next = lines[i + 1];
+                if (!bare || next === undefined || !next.trim()) return bare;
+                return bare + '  ';
+            }).join('\n');
+        }
+
         function catFormatCredits(c) {
             if (!c) return '';
             const lines = [];
@@ -641,7 +655,7 @@
                 const names = (c[k] || []).map(catCreditName);
                 if (names.length) lines.push('**' + label + ':** ' + names.join(', '));
             });
-            return lines.join('\n');
+            return catHardBreaks(lines.join('\n'));
         }
         // Switching the names over rewrites the credits, unless they have been
         // edited by hand, which is theirs to keep.
