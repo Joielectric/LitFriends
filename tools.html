@@ -648,8 +648,11 @@
                         <label class="cm-label">Script Offer on Reddit <span style="font-weight:normal;color:var(--text-mid)">(optional, kept as a Script Offer link)</span></label>
                         <div id="cm-offer-current" class="im-hint" style="margin:0 0 8px"></div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <input id="cm-offer-src" class="cm-input" style="flex:1 1 280px"
+                            <input id="cm-offer-src" class="cm-input" style="flex:1 1 260px"
                                    placeholder="Paste the Reddit link of your fill, or leave this empty to search by title"
+                                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
+                            <input id="cm-offer-writer" class="cm-input" style="flex:0 1 180px"
+                                   placeholder="Writer on Reddit"
                                    onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
                             <button type="button" class="cm-btn cm-btn-sm" onclick="cmOfferFind()">Find the offer</button>
                         </div>
@@ -3336,10 +3339,37 @@
         : 'Nothing yet. Paste the Reddit link of your fill, or search by title.';
     }
 
+    // Most offers are searched for by their writer, but the name credited
+    // here is the catalogue's, which is rarely their name on Reddit. The one
+    // kept on their collaborator entry or their profile is, so that is used
+    // unless a name is typed in the box.
+    function cmOfferWriter() {
+      const box = document.getElementById('cm-offer-writer');
+      const typed = box ? box.value.trim().replace(/^\/?u\//i, '') : '';
+      if (typed) return typed;
+      const credited = (cmCredits.writers || [])[0] || '';
+      if (!credited) return '';
+      const profiles = Object.values(imProfiles || {}).concat(imOwnProfile ? [imOwnProfile] : []);
+      const known = (window.SITE_CONFIG && SITE_CONFIG.redditHandle)
+        ? SITE_CONFIG.redditHandle(credited, { collaborators: cmCollaborators, profiles })
+        : '';
+      return known || credited.replace(/^\/?u\//i, '');
+    }
+
+    // Show whose offers will be searched, so a wrong guess is obvious.
+    function cmOfferFillWriter() {
+      const box = document.getElementById('cm-offer-writer');
+      if (!box) return;
+      box.value = '';
+      const guess = cmOfferWriter();
+      if (guess) box.value = 'u/' + guess;
+    }
+
     function cmOfferClear() {
       cmOfferHits = [];
       const src = document.getElementById('cm-offer-src');
       if (src) src.value = '';
+      cmOfferFillWriter();
       cmOfferRender();
       cmOfferStatus('');
       cmOfferShowCurrent();
@@ -3349,7 +3379,7 @@
       if (cmOfferBusy) return;
       const typed = document.getElementById('cm-offer-src').value.trim();
       const title = document.getElementById('cm-title').value.trim();
-      const writer = ((cmCredits.writers || [])[0] || '').replace(/^\/?u\//i, '');
+      const writer = cmOfferWriter();
       cmOfferBusy = true;
       cmOfferHits = [];
       cmOfferRender();
@@ -3366,16 +3396,35 @@
             cmOfferHits.length ? 'good' : 'bad');
           return;
         }
-        if (!title) { cmOfferStatus('Give the entry a title first, or paste the link of your fill.', 'bad'); return; }
-        cmOfferStatus('Searching the offers by title\u2026 the first look takes a little while.');
+        if (!title && !writer) {
+          cmOfferStatus('Give the entry a title, name the writer, or paste the link of your fill.', 'bad');
+          return;
+        }
+        cmOfferStatus('Searching the offers\u2026 the first look takes a little while.');
         const ask = q => imApi('/api/reddit', { source: 'offers', query: q }).then(d => d.offers || []);
-        cmOfferHits = writer ? await ask({ text: title, writer, days: 0, limit: 20 }) : [];
-        // The writer as credited here may not be their name on Reddit.
-        if (!cmOfferHits.length) cmOfferHits = await ask({ text: title, days: 0, limit: 20 });
+        let how = '';
+        if (title && writer) {
+          cmOfferHits = await ask({ text: title, writer, days: 0, limit: 20 });
+          how = `by u/${writer}`;
+        }
+        // Everything that writer has offered, when the title does not match
+        // theirs: a fill is often retitled, and their list is short enough to
+        // look down.
+        if (!cmOfferHits.length && writer) {
+          cmOfferHits = await ask({ writer, days: 0, limit: 40 });
+          how = `by u/${writer}, any title`;
+        }
+        // And failing that, the title from anyone at all.
+        if (!cmOfferHits.length && title) {
+          cmOfferHits = await ask({ text: title, days: 0, limit: 20 });
+          how = 'matching that title';
+        }
         cmOfferRender();
         cmOfferStatus(cmOfferHits.length
-          ? cmOfferHits.length + (cmOfferHits.length === 1 ? ' offer looks close. Check it is the right one.' : ' offers look close. Pick the right one.')
-          : 'No offer matches that title. Paste the Reddit link of your fill instead.',
+          ? `${cmOfferHits.length} ${cmOfferHits.length === 1 ? 'offer' : 'offers'} ${how}. ${cmOfferHits.length === 1 ? 'Check it is the right one.' : 'Pick the right one.'}`
+          : (writer
+              ? `Nothing found for u/${writer}. Check their Reddit name, or paste the link of your fill.`
+              : 'No offer matches that title. Paste the Reddit link of your fill instead.'),
           cmOfferHits.length ? 'good' : 'bad');
       } catch (err) {
         cmOfferStatus(err.message, 'bad');
@@ -3415,6 +3464,7 @@
       if (row) row.querySelector('input').value = offer.url;
       else cmAddLink('scriptoffer', offer.url, 'script');
       if (!(cmCredits.writers || []).length) cmCreditAdd('writers', 'u/' + offer.author);
+      cmOfferFillWriter();
       cmOfferHits = [];
       cmOfferRender();
       cmOfferShowCurrent();
@@ -3624,7 +3674,6 @@
       cmTypeChanged();
       const links = e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : []);
       cmSetLinks(links);
-      cmOfferClear();
       document.getElementById('cm-tags').value       = (e.tags || []).join(', ');
       document.getElementById('cm-short-desc').value = e.shortDesc || '';
       document.getElementById('cm-desc').value       = e.desc || '';
@@ -3637,6 +3686,8 @@
         musicians:    (cr.musicians || []).slice(),
       };
       cmRenderCredits();
+      // After the credits, which is where the writer to search for comes from.
+      cmOfferClear();
       document.getElementById('cm-date').value = e.date || '';
       document.getElementById('cm-trt').value = e.trt || '';
       document.getElementById('cm-hotaudio-track').value = e.hotaudioTrack || '';
