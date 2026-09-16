@@ -6,6 +6,19 @@
     <link rel="icon" type="image/png" href="images/JOI_Favicon.png">
   <link rel="apple-touch-icon" href="images/JOI_Favicon.png">
   <title>Content Manager — JOI Electric</title>
+  <script>
+    // Signed in on this device before? Then the sign in box is kept out of
+    // sight while the session is checked, and only shows if the check finds it
+    // has gone. Without this it flashed up on every visit, sign in or not.
+    try {
+      if (localStorage.getItem('cm_signed_in') === '1') document.documentElement.classList.add('cm-resuming');
+    } catch (e) {}
+  </script>
+  <style>
+    .cm-resuming #tools-gate { display: none !important; }
+    #tools-resuming { display: none; }
+    .cm-resuming #tools-resuming { display: flex; }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
@@ -466,6 +479,9 @@
     <div id="tools-gate-msg" style="color:#e87a88;font-size:0.85rem;margin-top:0.8rem;min-height:1em;"></div>
   </div>
 </div>
+
+<!-- Shown instead of the sign in box while a remembered session is checked. -->
+<div id="tools-resuming" role="status" style="position:fixed;inset:0;z-index:100000;background:#0c0f18;align-items:center;justify-content:center;padding:1rem;font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.3em;text-transform:uppercase;color:#8792ab;">Opening the Content Manager&hellip;</div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
@@ -2331,7 +2347,18 @@
       }).then(r => r.json());
     }
 
+    // Whether this device has a session worth checking for before showing the
+    // sign in box.
+    function toolsRemember(on) {
+      try {
+        if (on) localStorage.setItem('cm_signed_in', '1');
+        else localStorage.removeItem('cm_signed_in');
+      } catch (e) {}
+      if (!on) document.documentElement.classList.remove('cm-resuming');
+    }
+
     function toolsSignOut() {
+      toolsRemember(false);
       fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2383,6 +2410,12 @@
 
     // Already signed in from a previous visit? Then never show the gate.
     (function resumeSession() {
+      // Remembered on this device: go straight to loading the content, which
+      // refuses when the session has gone, and only then show the box.
+      if (document.documentElement.classList.contains('cm-resuming')) {
+        toolsVerify(function () { toolsRemember(false); });
+        return;
+      }
       fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2405,6 +2438,8 @@
           if (!data.ok) return onFail(data);
           // Reveal the page
           document.getElementById('tools-gate').style.display = 'none';
+          toolsRemember(true);
+          document.documentElement.classList.remove('cm-resuming');
           document.getElementById('tools-main').style.display = '';
           cmWho = data.who || {};
           // Seeing other people's entries is the owner's business alone.
@@ -2436,6 +2471,8 @@
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
         })
         .catch(() => {
+          // Show the box rather than leave the page waiting on nothing.
+          document.documentElement.classList.remove('cm-resuming');
           document.getElementById('tools-gate-msg').textContent = 'Could not reach server.';
         });
     }
