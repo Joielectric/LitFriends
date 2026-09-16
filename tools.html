@@ -3344,7 +3344,15 @@
       const t = document.getElementById('cm-type').value;
       const isAudio = t === 'audio';
       document.getElementById('cm-fills-row').style.display = isAudio ? '' : 'none';
-      document.getElementById('cm-offer-row').style.display = isAudio ? '' : 'none';
+      // A script, story or poem was offered on Reddit as much as a fill came
+      // from an offer, so everything but music can keep a Script Offer link.
+      document.getElementById('cm-offer-row').style.display = t === 'music' ? 'none' : '';
+      const offerSrc = document.getElementById('cm-offer-src');
+      if (offerSrc) {
+        offerSrc.placeholder = isAudio
+          ? 'Paste the Reddit link of your fill, or leave this empty to search by title'
+          : 'Paste the Reddit link of the offer or of a fill, or leave this empty to search by title';
+      }
       const music = document.getElementById('cm-music-fields');
       if (music) music.style.display = (t === 'music') ? 'block' : 'none';
       if (isAudio) cmRenderFillsOptions();
@@ -3434,12 +3442,12 @@
           cmOfferStatus(
             data.error ? data.error
               : cmOfferHits.length ? (data.wasOffer ? 'That post is the offer itself.' : 'Found the offer it filled.')
-              : 'GWASI has no offer recorded behind that post. Try leaving the box empty to search by title.',
+              : 'GWASI has no offer recorded for that post. Try leaving the box empty to search by title.',
             cmOfferHits.length ? 'good' : 'bad');
           return;
         }
         if (!title && !writer) {
-          cmOfferStatus('Give the entry a title, name the writer, or paste the link of your fill.', 'bad');
+          cmOfferStatus('Give the entry a title, name the writer, or paste a Reddit link.', 'bad');
           return;
         }
         cmOfferStatus('Searching the offers\u2026 the first look takes a little while.');
@@ -3466,7 +3474,7 @@
           ? `${cmOfferHits.length} ${cmOfferHits.length === 1 ? 'offer' : 'offers'} ${how}. ${cmOfferHits.length === 1 ? 'Check it is the right one.' : 'Pick the right one.'}`
           : (writer
               ? `Nothing found for u/${writer}. Check their Reddit name, or paste the link of your fill.`
-              : 'No offer matches that title. Paste the Reddit link of your fill instead.'),
+              : 'No offer matches that title. Paste a Reddit link instead.'),
           cmOfferHits.length ? 'good' : 'bad');
       } catch (err) {
         cmOfferStatus(err.message, 'bad');
