@@ -15,6 +15,7 @@
     hotaudio:   { label: 'HotAudio',   canEmbed: false },
     whyp:       { label: 'Whyp',       canEmbed: false },
     reddit:     { label: 'Reddit',     canEmbed: false },
+    scriptoffer: { label: 'Script Offer', canEmbed: false, kind: 'script' },
     scriptbin:  { label: 'ScriptBin',  canEmbed: false, kind: 'script' },
     ellipsus:   { label: 'Ellipsus',   canEmbed: false, kind: 'script' },
   };

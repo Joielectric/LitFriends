@@ -653,6 +653,21 @@
             field.value = CAT_CREDITS_MADE;
             updatePreviews();
         }
+        // A Reddit post carries two links and no more: the audio on HotAudio,
+        // and, when the audio is a fill, the script offer it came from. Every
+        // other place the audio lives is on the catalogue page.
+        function catPostLinks(e) {
+            const links = catGetLinks(e);
+            const of = k => links.find(l => l && l.provider === k && l.url) || null;
+            const whole = u => (/^https?:\/\//i.test(u) ? u : 'https://hotaudio.net/' + String(u).replace(/^\/+/, ''));
+            const out = [];
+            const offer = of('scriptoffer');
+            if (offer) out.push({ provider: 'scriptoffer', url: offer.url, text: '📜Script Offer' });
+            const here = of('hotaudio');
+            if (here) out.push({ provider: 'hotaudio', url: whole(here.url), text: '🎧Listen Here' + (e.trt ? ' TRT - ' + e.trt : '') });
+            return out;
+        }
+
         function catSetLinks(links, trt) {
             const container = document.getElementById('audioLinksContainer');
             container.innerHTML = '';
@@ -671,7 +686,7 @@
                     '<input type="text" class="form-input audio-text" placeholder="Listen Here" data-index="' + idx + '"></div>';
                 container.appendChild(g);
                 g.querySelector('.audio-url').value = lk.url || '';
-                g.querySelector('.audio-text').value = lk.url ? catLinkText(lk.provider, trt, multi) : '';
+                g.querySelector('.audio-text').value = lk.url ? (lk.text || catLinkText(lk.provider, trt, multi)) : '';
                 g.querySelectorAll('.form-input').forEach(inp => inp.addEventListener('input', updatePreviews));
                 audioLinkCount++;
             });
@@ -689,7 +704,7 @@
             CAT_ENTRY = e;
             CAT_CREDITS_MADE = catFormatCredits(e.credits);
             document.getElementById('credits').value = CAT_CREDITS_MADE;
-            catSetLinks(catGetLinks(e), e.trt || '');
+            catSetLinks(catPostLinks(e), e.trt || '');
             updatePreviews();
         }
         function catLoad() {

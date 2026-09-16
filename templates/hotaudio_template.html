@@ -420,23 +420,24 @@
       return found;
     }
 
-    // The number HotAudio gives an audio once it is uploaded, written the way
-    // a link there is: t/2983. Shown in the box when the entry already holds
-    // one, so it does not have to be typed twice.
+    // The number HotAudio gives an audio once it is uploaded: t/2983. It is
+    // kept on the entry in a field of its own, apart from the HotAudio link,
+    // which stays the address a post elsewhere would send someone to.
     function trackFromEntry(e) {
-      var link = hotAudioLink(e);
-      var path = link ? hotAudioPath(link.url) : '';
-      return /^t\/\d+$/i.test(path) ? path.toLowerCase() : '';
+      var digits = String((e && e.hotaudioTrack) || '').match(/\d{2,}/);
+      return digits ? 't/' + digits[0] : '';
     }
 
-    // What the listen line points at: the number typed here, or failing that
-    // whatever HotAudio link the entry already carries.
+    // What the listen line points at: the number typed here, then the one on
+    // the entry, and failing both whatever HotAudio link the entry carries.
     function trackPath() {
       var typed = el('trackNumber').value.trim();
       if (typed) {
         var digits = typed.match(/\d{2,}/);
         return digits ? 't/' + digits[0] : '';
       }
+      var saved = trackFromEntry(entry);
+      if (saved) return saved;
       var link = hotAudioLink(entry);
       return link ? hotAudioPath(link.url) : '';
     }
@@ -609,23 +610,20 @@
       render();
     }
 
-    // Kept on the entry as its HotAudio link, so the catalogue, the profile
-    // pages and this template all point at the same place. The whole list is
-    // sent back because a save is the list: an entry left out of one is taken
-    // to have been deleted.
+    // Kept on the entry in its own field, so the HotAudio link stays the
+    // address that works everywhere else. The whole list is sent back because
+    // a save is the list: an entry left out of one is taken to have been
+    // deleted.
     function saveTrack() {
       if (!entry) { flash('Choose an audio first.'); return; }
       var path = trackPath();
       if (!/^t\/\d+$/.test(path)) { flash('Enter the track number, like t/2983.'); return; }
-      var url = 'https://hotaudio.net/' + path;
-      var link = hotAudioLink(entry);
-      if (link) link.url = url;
-      else (entry.links = entry.links || []).push({ provider: 'hotaudio', url: url });
+      entry.hotaudioTrack = path;
       fetch('/api/content', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries: ALL_ENTRIES })
       }).then(function (r) { return r.json(); }).then(function (d) {
-        flash(d.ok ? 'Saved. The catalogue now links to ' + path + '.' : (d.error || 'Could not save.'));
+        flash(d.ok ? 'Saved. The catalogue remembers ' + path + ' for this audio.' : (d.error || 'Could not save.'));
         render();
       }).catch(function () { flash('Could not reach the server.'); });
     }
