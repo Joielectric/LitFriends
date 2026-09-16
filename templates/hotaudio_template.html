@@ -212,6 +212,10 @@
 
       <div class="section-header">Sections</div>
       <div id="sections"></div>
+      <label class="sec-row" style="margin-top:6px">
+        <input type="checkbox" id="redditNames" checked onchange="render()">
+        <span>Credit by Reddit name</span>
+      </label>
 
       <div class="form-group" style="margin-top:14px">
         <label class="form-label">Opening line</label>
@@ -312,7 +316,7 @@
 
     var CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan',
                           hotaudio:'HotAudio', whyp:'Whyp', scriptbin:'ScriptBin', ellipsus:'Ellipsus' };
-    var CATALOG = [], entry = null, mySlug = '';
+    var CATALOG = [], entry = null, mySlug = '', COLLABS = [], PROFILES = [];
 
     function el(id) { return document.getElementById(id); }
 
@@ -338,10 +342,19 @@
       return box ? box.checked : false;
     }
 
+    // HotAudio writes people as u/name, the same as Reddit, so a credited
+    // name becomes their Reddit name where one is known. Anyone without one
+    // keeps the name as credited; add theirs under Lists in Tools.
+    function creditName(n) {
+      var box = el('redditNames');
+      if ((box && !box.checked) || !CFG || !CFG.redditName) return n;
+      return CFG.redditName(n, { collaborators: COLLABS, profiles: PROFILES });
+    }
+
     function creditLine(e) {
       var c = (e && e.credits) || {}, parts = [];
       CFG.creditRoles.forEach(function (r) {
-        var names = c[r.key] || [];
+        var names = (c[r.key] || []).map(creditName);
         if (names.length) parts.push('**' + r.postLabel + ':** ' + names.join(', '));
       });
       return parts.join('\n');
@@ -511,6 +524,7 @@
 
     fetch('/api/content').then(function (r) { return r.json(); }).then(function (d) {
       (d.providers || []).forEach(function (p) { if (p && p.key) CAT_PROVIDERS[p.key] = p.label || p.key; });
+      COLLABS = d.collaborators || [];
       CATALOG = (d.entries || [])
         .filter(function (e) { return !CFG || CFG.isOwnWork(e); })
         .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
@@ -520,6 +534,12 @@
       });
       render();
     }).catch(function () { el('preview').textContent = 'Could not load the catalogue.'; });
+
+    // Published profiles carry a Reddit name too, for creators on this site.
+    fetch('/api/profiles').then(function (r) { return r.json(); }).then(function (d) {
+      PROFILES = d.profiles || [];
+      render();
+    }).catch(function () { /* the names as credited are the fallback */ });
 
     // Their saved borders, if they are signed in.
     fetch('/api/profiles', {

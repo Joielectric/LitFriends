@@ -184,5 +184,47 @@
     return SITE.profilePages[norm(label)] || SITE.profilePages[norm(name)] || '';
   };
 
+  // ── Reddit names ──────────────────────────────────────────────────────
+  // Reddit and HotAudio credit people by their Reddit username, which is
+  // rarely the name the catalogue credits them under. A collaborator carries
+  // their Reddit name (or a link to their Reddit profile) and a creator's
+  // profile carries theirs, so a credited name can be turned into "u/name"
+  // wherever a post needs one.
+  function redditFromUrl(url) {
+    var m = String(url || '').match(/reddit\.com\/u(?:ser)?\/([A-Za-z0-9_-]{2,20})/i);
+    return m ? m[1] : '';
+  }
+  function bareHandle(v) {
+    return String(v == null ? '' : v).trim().replace(/^\/?u\//i, '').replace(/[^A-Za-z0-9_-]/g, '');
+  }
+
+  // sources = { collaborators: [...], profiles: [...] }, either may be missing.
+  SITE.redditHandle = function (name, sources) {
+    var raw = String(name == null ? '' : name).trim();
+    if (!raw) return '';
+    if (/^\/?u\/[A-Za-z0-9_-]{2,20}$/i.test(raw)) return bareHandle(raw);
+    var key = norm(raw);
+    var s = sources || {};
+    var found = '';
+    (s.collaborators || []).forEach(function (c) {
+      if (found || !c || norm(c.name) !== key) return;
+      found = bareHandle(c.reddit) || redditFromUrl(c.url);
+    });
+    if (found) return found;
+    (s.profiles || []).forEach(function (p) {
+      if (found || !p) return;
+      var names = [p.name, p.slug].concat(p.aliases || []).map(norm);
+      if (names.indexOf(key) !== -1) found = bareHandle(p.reddit);
+    });
+    return found;
+  };
+
+  // The name a post should use: their Reddit one where it is known, and the
+  // name as credited where it is not.
+  SITE.redditName = function (name, sources) {
+    var handle = SITE.redditHandle(name, sources);
+    return handle ? 'u/' + handle : String(name == null ? '' : name).trim();
+  };
+
   window.SITE_CONFIG = SITE;
 })();

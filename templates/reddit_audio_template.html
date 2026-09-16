@@ -177,6 +177,10 @@
                     <option value="">— Select a published audio —</option>
                 </select>
                 <small style="color: #888; font-size: 12px;">Auto-fills title, tags, descriptions, links (with TRT), and credits from the catalogue.</small>
+                <label style="display:flex;align-items:center;gap:6px;margin-top:8px;color:#bbb;font-size:13px;cursor:pointer">
+                    <input type="checkbox" id="useRedditNames" checked onchange="catRefreshCredits()">
+                    Credit people by their Reddit name
+                </label>
             </div>
 
             <!-- TITLE SECTION -->
@@ -605,7 +609,7 @@
         }
         const catIsScript = k => CAT_KIND[k] === 'script';
         const CAT_CREDIT_MAP = [['voiceArtists','Voice Acting'],['writers','Writers'],['producers','Production'],['editors','Editing'],['musicians','Music']];
-        let CATALOG = [];
+        let CATALOG = [], CAT_COLLABS = [], CAT_PROFILES = [], CAT_ENTRY = null, CAT_CREDITS_MADE = '';
 
         function catGetLinks(e) {
             if (Array.isArray(e.links) && e.links.length) return e.links;
@@ -620,11 +624,34 @@
             if (trt && !script) base += ' TRT - ' + trt;
             return base;
         }
+        // Reddit knows people by their Reddit name, not the name the
+        // catalogue credits them under. Anyone whose Reddit name is not known
+        // keeps the name as credited; add theirs under Lists in Tools.
+        function catCreditName(n) {
+            const box = document.getElementById('useRedditNames');
+            if (box && !box.checked) return n;
+            return (window.SITE_CONFIG && SITE_CONFIG.redditName)
+                ? SITE_CONFIG.redditName(n, { collaborators: CAT_COLLABS, profiles: CAT_PROFILES })
+                : n;
+        }
         function catFormatCredits(c) {
             if (!c) return '';
             const lines = [];
-            CAT_CREDIT_MAP.forEach(([k, label]) => { if ((c[k] || []).length) lines.push('**' + label + ':** ' + c[k].join(', ')); });
+            CAT_CREDIT_MAP.forEach(([k, label]) => {
+                const names = (c[k] || []).map(catCreditName);
+                if (names.length) lines.push('**' + label + ':** ' + names.join(', '));
+            });
             return lines.join('\n');
+        }
+        // Switching the names over rewrites the credits, unless they have been
+        // edited by hand, which is theirs to keep.
+        function catRefreshCredits() {
+            if (!CAT_ENTRY) return;
+            const field = document.getElementById('credits');
+            if (field.value.trim() && field.value.trim() !== CAT_CREDITS_MADE.trim()) return;
+            CAT_CREDITS_MADE = catFormatCredits(CAT_ENTRY.credits);
+            field.value = CAT_CREDITS_MADE;
+            updatePreviews();
         }
         function catSetLinks(links, trt) {
             const container = document.getElementById('audioLinksContainer');
@@ -659,13 +686,16 @@
             document.getElementById('tags').value = tags.filter(t => t !== gender).join(', ');
             document.getElementById('shortDescription').value = e.shortDesc || '';
             document.getElementById('longDescription').value = e.desc || '';
-            document.getElementById('credits').value = catFormatCredits(e.credits);
+            CAT_ENTRY = e;
+            CAT_CREDITS_MADE = catFormatCredits(e.credits);
+            document.getElementById('credits').value = CAT_CREDITS_MADE;
             catSetLinks(catGetLinks(e), e.trt || '');
             updatePreviews();
         }
         function catLoad() {
             fetch('/api/content').then(r => r.json()).then(d => {
                 catAdoptProviders(d.providers);
+                CAT_COLLABS = d.collaborators || [];
                 // You only post your own work, so the picker offers only entries
                 // you are credited on — the store is shared with collaborators.
                 CATALOG = (d.entries || [])
@@ -686,6 +716,11 @@
             if (e) catApplyEntry(e);
         });
         catLoad();
+        // Published profiles carry a Reddit name too, for creators on this site.
+        fetch('/api/profiles')
+            .then(r => r.json())
+            .then(d => { CAT_PROFILES = d.profiles || []; catRefreshCredits(); })
+            .catch(() => {});
     </script>
 </body>
 </html>

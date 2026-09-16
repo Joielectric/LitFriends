@@ -855,9 +855,11 @@
                         <input id="cm-collab-url" class="cm-input" placeholder="https://profile-link (optional)">
                         <button type="button" class="cm-btn" onclick="cmCollabAddFromForm()">Add</button>
                     </div>
-                    <div style="margin-top:8px;">
-                        <input id="cm-collab-banner" class="cm-input" style="width:100%" placeholder="https://banner-image (optional &mdash; used by the Literotica template)">
+                    <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1.4fr;gap:8px;">
+                        <input id="cm-collab-reddit" class="cm-input" placeholder="u/name on Reddit (optional)">
+                        <input id="cm-collab-banner" class="cm-input" placeholder="https://banner-image (optional &mdash; used by the Literotica template)">
                     </div>
+                    <div class="im-hint" style="margin:6px 0 0">The Reddit name is how the Reddit and HotAudio templates credit them. A link to their Reddit profile works here too.</div>
                     <div style="margin-top:8px;">
                         <select id="cm-collab-from-entries" class="cm-input" style="max-width:280px;font-size:0.9rem" onchange="cmAddCollabFromEntries(this.value); this.value='';">
                             <option value="">Or add a name already used in entries…</option>
@@ -876,7 +878,10 @@
                                 <input id="cm-collab-edit-url" class="cm-input" placeholder="https://profile-link (optional)">
                                 <button type="button" class="cm-btn" onclick="cmCollabSaveEdit()">Save</button>
                             </div>
-                            <input id="cm-collab-edit-banner" class="cm-input" style="width:100%;margin-top:8px" placeholder="https://banner-image (optional)">
+                            <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:8px;">
+                                <input id="cm-collab-edit-reddit" class="cm-input" placeholder="u/name on Reddit (optional)">
+                                <input id="cm-collab-edit-banner" class="cm-input" placeholder="https://banner-image (optional)">
+                            </div>
                             <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" style="margin-top:8px" onclick="cmCollabDeleteEdit()">Delete collaborator</button>
                         </div>
                     </div>
@@ -2097,6 +2102,12 @@
       document.getElementById('cm-collab-edit-name').value = c.name;
       document.getElementById('cm-collab-edit-url').value = c.url || '';
       document.getElementById('cm-collab-edit-banner').value = c.banner || '';
+      // Older entries often have only a link to their Reddit profile, so show
+      // the name that link gives rather than an empty box.
+      const known = window.SITE_CONFIG && SITE_CONFIG.redditHandle
+        ? SITE_CONFIG.redditHandle(c.name, { collaborators: [c] })
+        : (c.reddit || '');
+      document.getElementById('cm-collab-edit-reddit').value = known ? 'u/' + known : '';
       box.style.display = 'block';
     }
     function cmCollabSaveEdit() {
@@ -2110,6 +2121,7 @@
       if (other && other !== c) { cmShowMsg('Another collaborator already has that name.', false); return; }
       c.name = newName; c.url = newUrl;
       c.banner = document.getElementById('cm-collab-edit-banner').value.trim();
+      c.reddit = cmRedditField('cm-collab-edit-reddit');
       cmEditingCollab = newName;
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator updated.', true); });
     }
@@ -2220,15 +2232,28 @@
       });
     }
 
+    // Kept bare, so "u/name", a link to their Reddit profile, or the name on
+    // its own all end up stored the same way.
+    function cmRedditField(id) {
+      const raw = document.getElementById(id).value.trim();
+      const link = raw.match(/reddit\.com\/u(?:ser)?\/([A-Za-z0-9_-]{2,20})/i);
+      return (link ? link[1] : raw).replace(/^\/?u\//i, '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 20);
+    }
+
     function cmCollabAddFromForm() {
       const name = document.getElementById('cm-collab-name').value.trim();
       const url = document.getElementById('cm-collab-url').value.trim();
       if (!name) { cmShowMsg('Collaborator name is required.', false); return; }
       if (cmFindCollab(name)) { cmShowMsg('That collaborator already exists.', false); return; }
-      cmCollaborators.push({ name: name, url: url, banner: document.getElementById('cm-collab-banner').value.trim() });
+      cmCollaborators.push({
+        name: name, url: url,
+        banner: document.getElementById('cm-collab-banner').value.trim(),
+        reddit: cmRedditField('cm-collab-reddit'),
+      });
       document.getElementById('cm-collab-name').value = '';
       document.getElementById('cm-collab-url').value = '';
       document.getElementById('cm-collab-banner').value = '';
+      document.getElementById('cm-collab-reddit').value = '';
       cmPersist(function () { cmRenderCollabManager(); cmShowMsg('Collaborator added.', true); });
     }
     // Distinct credit names used across entries that aren't collaborators yet
