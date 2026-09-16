@@ -210,6 +210,13 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">HotAudio track number</label>
+        <input type="text" id="trackNumber" class="form-input" placeholder="t/2983" oninput="render()">
+        <small style="color:#888">The number HotAudio gives the audio once it is uploaded. The listen line points at it.</small>
+        <button class="copy-button secondary" style="margin-top:8px" onclick="saveTrack()">Save number to the catalogue</button>
+      </div>
+
       <div class="section-header">Sections</div>
       <div id="sections"></div>
       <label class="sec-row" style="margin-top:6px">
@@ -311,12 +318,12 @@
       { key: 'excerpt',  label: 'Pull quote',    on: false },
       { key: 'tags',     label: 'Tags',          on: true },
       { key: 'credits',  label: 'Credits',       on: true },
-      { key: 'listen',   label: 'Listen links',  on: true }
+      { key: 'listen',   label: 'Listen link',   on: true }
     ];
 
     var CAT_PROVIDERS = { soundgasm:'Soundgasm', literotica:'Literotica', audiochan:'Audiochan',
                           hotaudio:'HotAudio', whyp:'Whyp', scriptbin:'ScriptBin', ellipsus:'Ellipsus' };
-    var CATALOG = [], entry = null, mySlug = '', COLLABS = [], PROFILES = [];
+    var CATALOG = [], entry = null, mySlug = '', COLLABS = [], PROFILES = [], ALL_ENTRIES = [];
 
     function el(id) { return document.getElementById(id); }
 
@@ -375,23 +382,43 @@
       }
     }
 
-    function listenLines(e) {
-      var links = (e && e.links) || [];
-      if (!links.length && e && e.provider && e.url) links = [{ provider: e.provider, url: e.url }];
-      var trt = (e && e.trt) ? ' TRT-' + e.trt : '';
-
-      return links.map(function (l) {
-        var isHere = l.provider === 'hotaudio';
-        var href = isHere ? hotAudioPath(l.url) : l.url;
-        var line = '[🎧 Listen Here' + trt + '](' + href + ')';
-        // With more than one, say which is which — otherwise every line reads
-        // the same and the reader has to guess.
-        if (links.length > 1) {
-          var which = l.label || CAT_PROVIDERS[l.provider] || l.provider || '';
-          if (which) line = which + ': ' + line;
-        }
-        return line;
+    function hotAudioLink(e) {
+      var found = null;
+      ((e && e.links) || []).forEach(function (l) {
+        if (!found && l && l.provider === 'hotaudio') found = l;
       });
+      return found;
+    }
+
+    // The number HotAudio gives an audio once it is uploaded, written the way
+    // a link there is: t/2983. Shown in the box when the entry already holds
+    // one, so it does not have to be typed twice.
+    function trackFromEntry(e) {
+      var link = hotAudioLink(e);
+      var path = link ? hotAudioPath(link.url) : '';
+      return /^t\/\d+$/i.test(path) ? path.toLowerCase() : '';
+    }
+
+    // What the listen line points at: the number typed here, or failing that
+    // whatever HotAudio link the entry already carries.
+    function trackPath() {
+      var typed = el('trackNumber').value.trim();
+      if (typed) {
+        var digits = typed.match(/\d{2,}/);
+        return digits ? 't/' + digits[0] : '';
+      }
+      var link = hotAudioLink(entry);
+      return link ? hotAudioPath(link.url) : '';
+    }
+
+    // The description sits on the audio's own page, so the only link worth
+    // printing is the audio itself. Everywhere else it lives is on the
+    // catalogue page rather than here.
+    function listenLines(e) {
+      var path = trackPath();
+      if (!path) return [];
+      var trt = (e && e.trt) ? ' TRT-' + e.trt : '';
+      return ['[🎧 Listen Here' + trt + '](' + path + ')'];
     }
 
     function build() {
@@ -515,9 +542,34 @@
 
     function pick() {
       entry = CATALOG[el('catalogSelect').value] || null;
-      if (entry) el('tagline').value = entry.shortDesc || '';
+      if (entry) {
+        el('tagline').value = entry.shortDesc || '';
+        el('trackNumber').value = trackFromEntry(entry);
+      }
       render();
     }
+
+    // Kept on the entry as its HotAudio link, so the catalogue, the profile
+    // pages and this template all point at the same place. The whole list is
+    // sent back because a save is the list: an entry left out of one is taken
+    // to have been deleted.
+    function saveTrack() {
+      if (!entry) { flash('Choose an audio first.'); return; }
+      var path = trackPath();
+      if (!/^t\/\d+$/.test(path)) { flash('Enter the track number, like t/2983.'); return; }
+      var url = 'https://hotaudio.net/' + path;
+      var link = hotAudioLink(entry);
+      if (link) link.url = url;
+      else (entry.links = entry.links || []).push({ provider: 'hotaudio', url: url });
+      fetch('/api/content', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entries: ALL_ENTRIES })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        flash(d.ok ? 'Saved. The catalogue now links to ' + path + '.' : (d.error || 'Could not save.'));
+        render();
+      }).catch(function () { flash('Could not reach the server.'); });
+    }
+    window.saveTrack = saveTrack;
 
     fillSelects();
     el('catalogSelect').addEventListener('change', pick);
@@ -525,6 +577,7 @@
     fetch('/api/content').then(function (r) { return r.json(); }).then(function (d) {
       (d.providers || []).forEach(function (p) { if (p && p.key) CAT_PROVIDERS[p.key] = p.label || p.key; });
       COLLABS = d.collaborators || [];
+      ALL_ENTRIES = d.entries || [];
       CATALOG = (d.entries || [])
         .filter(function (e) { return !CFG || CFG.isOwnWork(e); })
         .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
