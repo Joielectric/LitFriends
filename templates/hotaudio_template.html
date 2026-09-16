@@ -221,13 +221,19 @@
       </div>
 
       <div class="form-group">
+        <label class="form-label">HotAudio post link</label>
+        <input type="text" id="postLink" class="form-input" placeholder="https://hotaudio.net/u/JOI_Electric/Mine">
+        <small style="color:#888">The address of the post once it is up on HotAudio. Saved to the catalogue, it is the link a Reddit post of this audio uses.</small>
+      </div>
+
+      <div class="form-group">
         <div class="field-copy">
           <label class="form-label">HotAudio versions</label>
           <button class="mini-copy" onclick="addVersion()">Add version</button>
         </div>
         <div id="versions"></div>
         <small style="color:#888">The number HotAudio gives each version once it is uploaded, like t/2983 with music and t/2984 voice only. The label is what its listen line says. One version with no label reads Listen Here.</small>
-        <button class="copy-button secondary" style="margin-top:8px" onclick="saveTrack()">Save versions to the catalogue</button>
+        <button class="copy-button secondary" style="margin-top:8px" onclick="saveTrack()">Save link and versions to the catalogue</button>
       </div>
 
       <div class="section-header">Sections</div>
@@ -643,6 +649,7 @@
       if (entry) {
         el('tagline').value = entry.shortDesc || '';
         setVersions(versionsFromEntry(entry));
+        el('postLink').value = (hotAudioLink(entry) || {}).url || '';
       }
       fillFormFields(entry);
       render();
@@ -652,19 +659,43 @@
     // the address that works everywhere else. The whole list of entries is
     // sent back because a save is the list: an entry left out of one is taken
     // to have been deleted.
+    // The address of a post on HotAudio, as opposed to its track number: only
+    // this works from anywhere else, which is what a Reddit post needs.
+    function isPostLink(u) {
+      return /^https?:\/\/(www\.)?hotaudio\.net\/u\/[^\/\s]+\/\S+/i.test(String(u || '').trim());
+    }
+
     function saveTrack() {
       if (!entry) { flash('Choose an audio first.'); return; }
+      var link = el('postLink').value.trim();
       var list = versions();
-      if (!list.length) { flash('Add a version number first, like t/2983.'); return; }
-      entry.hotaudioTracks = list;
-      // Kept in step for anything still reading a single number.
-      entry.hotaudioTrack = list[0].track;
+      if (link && !isPostLink(link)) {
+        flash('That is not the post address. It looks like https://hotaudio.net/u/JOI_Electric/Mine, not a t/ number.');
+        return;
+      }
+      if (!link && !list.length) { flash('Add the post link or a version number first.'); return; }
+
+      // The entry's HotAudio link is the post: replaced when there is one,
+      // added when there is not.
+      if (link) {
+        var here = hotAudioLink(entry);
+        if (here) here.url = link;
+        else (entry.links = entry.links || []).push({ provider: 'hotaudio', url: link });
+      }
+      if (list.length) {
+        entry.hotaudioTracks = list;
+        // Kept in step for anything still reading a single number.
+        entry.hotaudioTrack = list[0].track;
+      }
+
+      var saved = [link ? 'the post link' : '', list.length ? list.length + (list.length === 1 ? ' version' : ' versions') : '']
+        .filter(Boolean).join(' and ');
       fetch('/api/content', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries: ALL_ENTRIES })
       }).then(function (r) { return r.json(); }).then(function (d) {
         flash(d.ok
-          ? 'Saved. The catalogue remembers ' + list.length + (list.length === 1 ? ' version' : ' versions') + ' of this audio.'
+          ? 'Saved ' + saved + ' to the catalogue.' + (link ? ' The Reddit template will use the link.' : '')
           : (d.error || 'Could not save.'));
         render();
       }).catch(function () { flash('Could not reach the server.'); });
