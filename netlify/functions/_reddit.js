@@ -149,6 +149,114 @@ export async function fromGwasi(handle) {
   return [...byId.values()].filter((p) => !removed.has(p.id));
 }
 
+// ── Script offers ────────────────────────────────────────────────────────────
+// Scripts people have offered for anyone to fill. GWASI keeps no post body, so
+// what can be searched is the title and the tags in it, who wrote it, when it
+// went up, how long it is, and whether anyone has filled it yet. The ScriptBin
+// link an offer carries is in the post, which is why every result links there.
+//
+// Searching reads the whole index rather than one author's rows, which is far
+// too heavy to do per search, so the offers are kept for half an hour and
+// every search in that time is answered from them.
+
+const OFFER_TTL = 30 * 60 * 1000;
+let offerCache = { base: "", at: 0, offers: [] };
+
+/** The offers among a set of index rows, with how many fills each one has. */
+export function extractOffers(entries, fills, removed) {
+  const gone = removed instanceof Set ? removed : new Set(removed || []);
+  const out = [];
+  (entries || []).forEach((r) => {
+    if (!Array.isArray(r) || r.length < 6) return;
+    const id = String(r[0] || "");
+    if (!id || gone.has(id)) return;
+    const flair = String(r[3] || "");
+    const title = String(r[4] || "");
+    // An offer says so in its flair or in one of its tags.
+    if (!/offer/i.test(flair) && !/\[[^\]]*offer[^\]]*\]/i.test(title)) return;
+    const length = Number(r[7]) || 0;
+    out.push({
+      id,
+      subreddit: String(r[1] || ""),
+      author: String(r[2] || ""),
+      flair,
+      title,
+      created: Number(r[5]) || 0,
+      score: Number(r[6]) || 0,
+      // A script's length is kept as minus hundreds of words.
+      words: length < 0 ? Math.round(-length * 100) : 0,
+      fills: ((fills || {})[id] || []).length,
+      url: `https://www.reddit.com/r/${String(r[1] || "gonewildaudio")}/comments/${id}/`,
+    });
+  });
+  return out;
+}
+
+/** The offers matching a search, newest first. */
+export function searchOffers(offers, query) {
+  const q = query || {};
+  const words = String(q.text || "").toLowerCase().split(/\s+/).filter(Boolean);
+  const audience = String(q.audience || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const writer = String(q.writer || "").trim().replace(/^\/?u\//i, "").toLowerCase();
+  const since = Number(q.days) > 0 ? Date.now() / 1000 - Number(q.days) * 86400 : 0;
+  const min = Number(q.minWords) || 0;
+  const max = Number(q.maxWords) || 0;
+  const limit = Math.min(Math.max(Number(q.limit) || 100, 1), 300);
+
+  const hits = (offers || []).filter((o) => {
+    if (since && o.created < since) return false;
+    if (q.unfilled && o.fills) return false;
+    if (writer && o.author.toLowerCase() !== writer) return false;
+    if (audience && !new RegExp(`\\[\\s*${audience}\\s*\\]`, "i").test(o.title)) return false;
+    // A script with no length known is not ruled out by a length.
+    if (min && o.words && o.words < min) return false;
+    if (max && o.words && o.words > max) return false;
+    if (words.length) {
+      const hay = `${o.title} ${o.author} ${o.subreddit} ${o.flair}`.toLowerCase();
+      if (!words.every((w) => hay.includes(w))) return false;
+    }
+    return true;
+  });
+  hits.sort((a, b) => b.created - a.created);
+  return { total: hits.length, offers: hits.slice(0, limit) };
+}
+
+async function loadOffers() {
+  const deltaRes = await get("https://gwasi.com/delta.json");
+  if (!deltaRes.ok) throw new SourceError(`GWASI answered ${deltaRes.status}. Try again later.`);
+  let delta;
+  try {
+    delta = await deltaRes.json();
+  } catch {
+    delta = null;
+  }
+  if (!delta || typeof delta.base !== "string" || !/^[a-z0-9]+$/i.test(delta.base)) {
+    throw new SourceError("GWASI returned something unexpected. The format may have changed.");
+  }
+  if (offerCache.base === delta.base && Date.now() - offerCache.at < OFFER_TTL) return offerCache.offers;
+
+  const res = await get(`https://gwasi.com/base_${delta.base}.json`, { ms: 25000 });
+  if (!res.ok) throw new SourceError(`GWASI answered ${res.status}. Try again later.`);
+  let index;
+  try {
+    index = JSON.parse(await res.text());
+  } catch {
+    throw new SourceError("GWASI returned something unexpected. The format may have changed.");
+  }
+  const removed = new Set(Array.isArray(delta.removed) ? delta.removed : []);
+  const fills = { ...(index.fills || {}), ...(delta.fills || {}) };
+  const offers = extractOffers(index.entries, fills, removed)
+    .concat(extractOffers(delta.entries, fills, removed));
+  // The newest day's rows repeat some of the index's.
+  const byId = new Map(offers.map((o) => [o.id, o]));
+  offerCache = { base: delta.base, at: Date.now(), offers: [...byId.values()] };
+  return offerCache.offers;
+}
+
+export async function fromOffers(query) {
+  return searchOffers(await loadOffers(), query);
+}
+
 // ── Hosts ────────────────────────────────────────────────────────────────────
 
 export function parseSoundgasmList(html) {
