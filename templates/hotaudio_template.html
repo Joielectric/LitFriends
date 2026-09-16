@@ -164,6 +164,14 @@
       border: 1px solid var(--border); border-radius: var(--radius); margin-top: 4px;
     }
     .sec-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .field-copy { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .field-copy .form-label { margin-bottom: 4px; }
+    .mini-copy {
+      flex: none; background: transparent; border: 1px solid var(--border-mid); color: var(--text-mid);
+      font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: .1em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: var(--radius); cursor: pointer; transition: border-color .2s, color .2s;
+    }
+    .mini-copy:hover { border-color: var(--coral); color: var(--coral); }
     .sec-row select { flex: 0 1 170px; }
     .sec-row span { flex: 1; color: var(--text); font-size: 0.95rem; }
   </style>
@@ -230,6 +238,28 @@
                placeholder="Taken from the short description">
         <label class="form-label" style="margin-top:8px">Pull quote <span style="text-transform:none;letter-spacing:0">(optional &mdash; a line from the script)</span></label>
         <textarea id="excerpt" class="form-textarea" oninput="render()"></textarea>
+      </div>
+
+      <div class="section-header">The rest of the HotAudio form</div>
+      <div class="form-group">
+        <div class="field-copy">
+          <label class="form-label">Title</label>
+          <button class="mini-copy" onclick="copyField('haTitle', 'Title')">Copy</button>
+        </div>
+        <input type="text" id="haTitle" class="form-input">
+
+        <div class="field-copy" style="margin-top:10px">
+          <label class="form-label">Tags <span style="text-transform:none;letter-spacing:0">(comma separated)</span></label>
+          <button class="mini-copy" onclick="copyField('haTags', 'Tags')">Copy</button>
+        </div>
+        <input type="text" id="haTags" class="form-input">
+
+        <div class="field-copy" style="margin-top:10px">
+          <label class="form-label">Short description</label>
+          <button class="mini-copy" onclick="copyField('haShort', 'Short description')">Copy</button>
+        </div>
+        <textarea id="haShort" class="form-textarea" style="min-height:60px"></textarea>
+        <small>Taken from the catalogue. Change them here if HotAudio wants them said differently; the entry stays as it is.</small>
       </div>
 
       <div class="copy-buttons">
@@ -456,14 +486,27 @@
 
       var out = blocks.join(div ? '\n\n' + div + '\n\n' : '\n\n');
       // Line breaks survive except around links, so give every link line its own space.
-      return out.split('\n').reduce(function (acc, line, i, all) {
+      var lines = out.split('\n').reduce(function (acc, line, i, all) {
         var isLink = line.indexOf('](') !== -1;
         var prevBlank = acc.length === 0 || acc[acc.length - 1] === '';
         if (isLink && !prevBlank) acc.push('');
         acc.push(line);
         if (isLink && all[i + 1] !== undefined && all[i + 1] !== '') acc.push('');
         return acc;
-      }, []).join('\n');
+      }, []);
+
+      // A line break only holds when the line before it ends in two spaces, so
+      // every line with another line under it gets them. A blank line already
+      // breaks the paragraph and needs none, and text inside a fence is shown
+      // exactly as typed, so those are left alone.
+      var fenced = false;
+      return lines.map(function (line, i, all) {
+        if (line.trim().indexOf('```') === 0) { fenced = !fenced; return line; }
+        if (fenced || !line.trim()) return line;
+        var next = all[i + 1];
+        if (next === undefined || !next.trim()) return line;
+        return line.replace(/\s+$/, '') + '  ';
+      }).join('\n');
     }
 
     function render() {
@@ -540,12 +583,29 @@
       }).join('');
     }
 
+    // HotAudio asks for a title, tags and a short description in boxes of
+    // its own, so each is offered here ready to copy. Edited here they stay
+    // here: this is what to paste, not a change to the catalogue.
+    function fillFormFields(e) {
+      el('haTitle').value = (e && e.title) || '';
+      el('haTags').value = ((e && e.tags) || []).join(', ');
+      el('haShort').value = (e && e.shortDesc) || '';
+    }
+
+    function copyField(id, what) {
+      var value = el(id).value.trim();
+      if (!value) { flash('Nothing to copy from ' + what.toLowerCase() + '.'); return; }
+      navigator.clipboard.writeText(value).then(function () { flash(what + ' copied.'); });
+    }
+    window.copyField = copyField;
+
     function pick() {
       entry = CATALOG[el('catalogSelect').value] || null;
       if (entry) {
         el('tagline').value = entry.shortDesc || '';
         el('trackNumber').value = trackFromEntry(entry);
       }
+      fillFormFields(entry);
       render();
     }
 
