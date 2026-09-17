@@ -1358,8 +1358,15 @@
                   <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
                       <label class="cm-label" style="margin:0">All profile pages</label>
-                      <input id="pl-search" class="cm-input cm-btn-sm" placeholder="Search…" style="max-width:180px" oninput="plRender()">
+                      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <!-- Creators who have never opened the card builder
+                             would otherwise share under their avatar alone.
+                             This builds one for each of them in a pass. -->
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="plBuildCards()">Build missing share cards</button>
+                        <input id="pl-search" class="cm-input cm-btn-sm" placeholder="Search…" style="max-width:180px" oninput="plRender()">
+                      </div>
                     </div>
+                    <span id="pl-cards-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-bottom:8px"></span>
                     <div id="pl-list"><div class="cm-collab-empty">Loading…</div></div>
                   </div>
                 </div>
@@ -5315,6 +5322,9 @@
     ];
 
     let pfCardTimer = null;
+    // Whether this profile's card is rebuilt on every save. Off only when the
+    // creator has said they would rather share under the site's own card.
+    let pfCardAuto = true;
 
     function pfRenderCardLogos() {
       const sel = document.getElementById('pf-card-logo');
@@ -5363,34 +5373,50 @@
       }
     }
 
+    /** Draws the card for one set of options and uploads it, returning the URL.
+     *
+     *  Shared by the button, by the automatic rebuild on save, and by the
+     *  owner's backfill, so all three produce exactly the same picture. The
+     *  canvas is a working surface; the caller decides what to do with the
+     *  result. */
+    async function pfBuildCard(opts, slug, canvas) {
+      if (!window.ShareCard) throw new Error('The card renderer is still loading.');
+      const surface = canvas || document.createElement('canvas');
+      await window.ShareCard.drawShareCard(surface, opts);
+      const blob = await window.ShareCard.cardToBlob(surface);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // One name per creator, so rebuilding replaces the old card rather
+          // than leaving a trail of them in the uploads.
+          filename: `share-card-${slug || 'profile'}.jpg`,
+          contentType: 'image/jpeg',
+          data: await cmBlobToBase64(blob),
+        }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
+      if (out.images) cmUploads = out.images;
+      return { url: out.url, bytes: blob.size };
+    }
+
     async function pfSaveCard() {
       const status = document.getElementById('pf-card-status');
-      const canvas = document.getElementById('pf-card-canvas');
-      if (!window.ShareCard) { status.textContent = 'Still loading — try again in a moment.'; return; }
-
       status.textContent = 'Drawing…';
       try {
-        // Redraw first, so what is saved is what the fields say right now
-        // rather than whatever the debounce last got round to.
-        await window.ShareCard.drawShareCard(canvas, pfCardOptions());
-        const blob = await window.ShareCard.cardToBlob(canvas);
-
-        status.textContent = `Uploading ${(blob.size / 1024).toFixed(0)}KB…`;
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: `share-card-${(pfProfile && pfProfile.slug) || 'profile'}.jpg`,
-            contentType: 'image/jpeg',
-            data: await cmBlobToBase64(blob),
-          }),
-        });
-        const out = await res.json().catch(() => ({}));
-        if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
-
-        document.getElementById('pf-share-image').value = out.url;
-        if (out.images) cmUploads = out.images;
-        status.textContent = 'Saved. Save your profile to publish it.';
+        // Built from the fields as they read right now, rather than from
+        // whatever the debounced preview last got round to drawing.
+        const { url, bytes } = await pfBuildCard(
+          pfCardOptions(),
+          pfProfile && pfProfile.slug,
+          document.getElementById('pf-card-canvas'),
+        );
+        document.getElementById('pf-share-image').value = url;
+        // Choosing to build one turns the automatic rebuild back on.
+        pfCardAuto = true;
+        status.textContent = `Saved (${(bytes / 1024).toFixed(0)}KB). Save your profile to publish it.`;
       } catch (err) {
         status.textContent = err.message;
       }
@@ -5414,8 +5440,12 @@
 
     function pfClearCard() {
       document.getElementById('pf-share-image').value = '';
+      // A deliberate choice, so the automatic rebuild stops rather than
+      // quietly putting a card back on the next save.
+      pfCardAuto = false;
       document.getElementById('pf-card-status').textContent =
-        "Cleared. Your page will share with the site's card until you save a new one.";
+        'Cleared. Your page will share with your avatar, or the site\'s card if you have none. '
+        + 'Save a card to go back to one of your own.';
     }
 
     window.addEventListener('sharecard-ready', () => {
@@ -5453,7 +5483,7 @@
       }
       puClear();
       puRender();
-      pfSave();
+      pfSaveNow();
     }
 
     function puEdit(id) {
@@ -5475,7 +5505,7 @@
       pfUpdates = pfUpdates.filter(u => u.id !== id);
       if (puEditingId === id) puClear();
       puRender();
-      pfSave();
+      pfSaveNow();
     }
 
     function puRender() {
@@ -5522,6 +5552,7 @@
       document.getElementById('pf-avatar').value = p.avatar || '';
       document.getElementById('pf-banner').value = p.banner || '';
       document.getElementById('pf-share-image').value = p.shareImage || '';
+      pfCardAuto = p.shareCardAuto !== false;
       document.getElementById('pf-accent').value = p.accent || '';
       if (p.accent) document.getElementById('pf-accent-pick').value = p.accent;
       document.getElementById('pf-published').checked = !!p.published;
@@ -5580,7 +5611,35 @@
       });
     }
 
-    function pfSave() {
+    // Saving rebuilds the share card first, so a creator's link previews as
+    // them without their having to know the card exists. It is drawn from the
+    // fields being saved, which is what keeps it from going stale the moment
+    // the avatar or the tagline changes.
+    //
+    // A failure here never blocks the save: an out-of-date card, or none at
+    // all, is a far smaller problem than losing the profile edit that prompted
+    // it, and profile-page.js falls back to their avatar either way.
+    async function pfSave() {
+      if (!pfProfile) return;
+      if (pfCardAuto && window.ShareCard) {
+        const status = document.getElementById('pf-card-status');
+        status.textContent = 'Rebuilding your share card…';
+        try {
+          const { url } = await pfBuildCard(
+            pfCardOptions(),
+            pfProfile.slug,
+            document.getElementById('pf-card-canvas'),
+          );
+          document.getElementById('pf-share-image').value = url;
+          status.textContent = 'Share card rebuilt.';
+        } catch (err) {
+          status.textContent = 'Saved your profile, but the share card could not be rebuilt: ' + err.message;
+        }
+      }
+      pfSaveNow();
+    }
+
+    function pfSaveNow() {
       if (!pfProfile) return;
       pfCollectLinks();
       const sections = {};
@@ -5592,6 +5651,7 @@
         avatar: document.getElementById('pf-avatar').value,
         banner: document.getElementById('pf-banner').value,
         shareImage: document.getElementById('pf-share-image').value,
+        shareCardAuto: pfCardAuto,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         aliases: pfAliases,
@@ -5624,8 +5684,12 @@
 
     function plLoad() {
       pfApi({ action: 'list' }, data => {
-        const live = data.profiles || {};
+        // A copy: the loop below deletes from `live` as it pairs each dynamic
+        // profile with its static page, and `plProfilesById` is meant to keep
+        // every profile for the lookups elsewhere. Sharing one object here
+        // emptied it of everyone who has a page in site-config.
         plProfilesById = data.profiles || {};
+        const live = { ...plProfilesById };
         const rows = [];
         (CFG.artists || []).forEach(a => {
           const p = live[a.slug];
@@ -5641,6 +5705,61 @@
         plRows = rows;
         plRender();
       });
+    }
+
+    /** Builds a share card for every creator who has none.
+     *
+     *  The card is normally rebuilt when a creator saves their profile, but
+     *  the ones who existed before any of this did have never saved since, and
+     *  would go on sharing under their avatar alone. This walks them once.
+     *
+     *  Only the owner can reach it: writing another creator's profile is an
+     *  owner-only power, and the server enforces that whatever this sends. */
+    async function plBuildCards() {
+      const status = document.getElementById('pl-cards-status');
+      if (!window.ShareCard) { status.textContent = 'The card renderer is still loading.'; return; }
+
+      const targets = Object.values(plProfilesById || {}).filter(
+        p => p && !p.shareImage && p.shareCardAuto !== false,
+      );
+      if (!targets.length) { status.textContent = 'Every profile already has a card.'; return; }
+
+      let built = 0;
+      const failed = [];
+      for (const p of targets) {
+        status.textContent = `Building ${built + failed.length + 1} of ${targets.length}: ${p.name || p.slug}…`;
+        try {
+          const { url } = await pfBuildCard({
+            banner:  p.banner || '',
+            avatar:  p.avatar || '',
+            logo:    '/images/JOI_Icon.png',
+            name:    p.name || p.slug,
+            tagline: p.tagline || '',
+            eyebrow: 'EROTIC AUDIO',
+            accent:  p.accent || '#5b8de8',
+          }, p.slug);
+
+          // A partial profile merges onto the stored one, so this changes the
+          // card and nothing else about them. Called directly rather than
+          // through pfApi, whose failure path hides the profile editor — a
+          // side effect that has no business firing from a backfill.
+          const res = await fetch('/api/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'save', slug: p.slug, profile: { shareImage: url } }),
+          });
+          const out = await res.json().catch(() => ({}));
+          if (!out.ok) throw new Error(out.error || `Save failed (${res.status})`);
+          built++;
+        } catch (err) {
+          failed.push(`${p.name || p.slug} (${err.message})`);
+        }
+      }
+
+      status.textContent = failed.length
+        ? `Built ${built}. Could not build: ${failed.join(', ')}.`
+        : `Built ${built} card${built === 1 ? '' : 's'}.`;
+      plLoad();
     }
 
     function plRow(p, artist) {

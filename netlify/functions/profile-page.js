@@ -48,7 +48,21 @@ export default async (req) => {
 
   const name = known ? profile.name || slug : SITE.name;
   const tagline = (known && profile.tagline) || SITE.tagline;
-  const image = (known && profile.shareImage) || SITE.card;
+
+  // What a creator's link shows, best first:
+  //
+  //   1. the card they built — their avatar on their banner, their words;
+  //   2. failing that, their avatar on its own, as a square preview;
+  //   3. only then the site's card.
+  //
+  // Step 2 matters. A creator who has filled in a profile but never opened the
+  // card builder would otherwise share under somebody else's branding, which
+  // is worse than a plain picture of them: it reads as the wrong person's
+  // page. A square card is the honest shape for an avatar — stretching one
+  // into 1200x630 crops it to a band across their face.
+  const card = known && profile.shareImage;
+  const avatarOnly = !card && known && profile.avatar;
+  const image = card || avatarOnly || SITE.card;
 
   // A creator's page is titled for them; an unknown slug is just the site.
   const title = known ? `${name} · ${SITE.name}` : SITE.name;
@@ -58,6 +72,10 @@ export default async (req) => {
     title,
     description: tagline,
     image: absolute(image, url.origin),
+    // Only a built card is known to be 1200x630. An avatar is whatever shape
+    // it was uploaded at, so it is offered as a square summary instead of
+    // being declared a wide one it is not.
+    wide: !avatarOnly,
     type: "profile",
     noindex: !known,
   });

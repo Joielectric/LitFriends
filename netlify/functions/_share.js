@@ -40,8 +40,15 @@ export const escapeHtml = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-/** The tag block for one page. `image` must already be absolute. */
-export function shareTags({ url, title, description, image, type = "website", noindex = false }) {
+/** The tag block for one page. `image` must already be absolute.
+ *
+ *  `wide` says the picture really is a 1200x630 card. Pass false for anything
+ *  whose shape is unknown — an avatar, say — so it is offered as a square
+ *  summary rather than declared a banner it is not and cropped to a band. */
+export function shareTags({
+  url, title, description, image, type = "website", noindex = false, wide = true,
+}) {
+  const sized = image && wide;
   const meta = [
     ["og:type", type],
     ["og:site_name", SITE.name],
@@ -51,13 +58,14 @@ export function shareTags({ url, title, description, image, type = "website", no
     ["og:image", image],
     // Stated so a scraper can lay out the card before it has fetched the
     // picture, which is what stops the preview flashing at the wrong shape.
-    ["og:image:width", image ? "1200" : ""],
-    ["og:image:height", image ? "630" : ""],
+    // Only claimed where the size is actually known.
+    ["og:image:width", sized ? "1200" : ""],
+    ["og:image:height", sized ? "630" : ""],
     ["og:image:alt", title],
   ];
 
   const named = [
-    ["twitter:card", image ? "summary_large_image" : "summary"],
+    ["twitter:card", sized ? "summary_large_image" : "summary"],
     ["twitter:title", title],
     ["twitter:description", description],
     ["twitter:image", image],

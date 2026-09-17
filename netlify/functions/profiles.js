@@ -64,6 +64,11 @@ export function defaultProfile(slug, name) {
     // here as a finished 1200x630 image — a scraper will not compose one, and
     // will not run the page's JavaScript to find out what it should look like.
     shareImage: "",
+    // Rebuild that picture whenever this profile is saved, so it keeps up with
+    // the avatar, banner and tagline instead of going stale the moment any of
+    // them changes. A creator who would rather their page shared under the
+    // site's own card turns this off, and it is then left alone.
+    shareCardAuto: true,
     theme: "electric",
     accent: "",
     links: [],
@@ -110,6 +115,7 @@ function sanitize(input, base, allProfiles) {
   if (input.avatar !== undefined) out.avatar = safeUrl(input.avatar);
   if (input.banner !== undefined) out.banner = safeUrl(input.banner);
   if (input.shareImage !== undefined) out.shareImage = safeUrl(input.shareImage);
+  if (input.shareCardAuto !== undefined) out.shareCardAuto = !!input.shareCardAuto;
   if (input.theme !== undefined) {
     out.theme = THEMES.includes(input.theme) ? input.theme : base.theme;
   }
