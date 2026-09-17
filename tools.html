@@ -486,6 +486,13 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
 <script src="/js/reddit-import.js"></script>
+<!-- The share-card renderer is shared with anything else that needs to draw
+     one, so it is a module; the handlers below reach it through window. -->
+<script type="module">
+  import * as ShareCard from '/js/share-card.js';
+  window.ShareCard = ShareCard;
+  window.dispatchEvent(new Event('sharecard-ready'));
+</script>
 
 <div class="container" id="tools-main" style="display:none">
 
@@ -1158,10 +1165,10 @@
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
                       <label class="cm-label">Basics</label>
                       <label class="cm-label" style="font-size:0.7rem">Display name</label>
-                      <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80">
+                      <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80" oninput="pfDrawCard()">
                       <label class="cm-label" style="font-size:0.7rem">Tagline</label>
                       <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="140"
-                             placeholder="Voice Artist &middot; Writer &middot; Collaborator">
+                             placeholder="Voice Artist &middot; Writer &middot; Collaborator" oninput="pfDrawCard()">
                       <label class="cm-label" style="font-size:0.7rem">Also credited as <span style="font-weight:normal;color:var(--text-mid)">(claim the names the catalogue credits you under)</span></label>
                       <div style="display:flex;gap:8px;flex-wrap:wrap;">
                         <select id="pf-alias-pick" class="cm-input" style="flex:1 1 220px"></select>
@@ -1219,9 +1226,49 @@
                       <label class="cm-label" style="font-size:0.7rem">Accent colour (optional)</label>
                       <div style="display:flex;gap:8px;align-items:center;">
                         <input type="color" id="pf-accent-pick" style="width:44px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer"
-                               oninput="document.getElementById('pf-accent').value = this.value">
-                        <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme">
+                               oninput="document.getElementById('pf-accent').value = this.value; pfDrawCard()">
+                        <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme" oninput="pfDrawCard()">
                       </div>
+                    </div>
+
+                    <!-- What a link to this profile looks like when it is
+                         posted somewhere. A scraper does not run the page's
+                         script, so the card cannot be drawn when the link is
+                         opened — it is composed here and the finished picture
+                         is uploaded and remembered on the profile. -->
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Share card
+                        <span style="font-weight:normal;color:var(--text-mid)">(what Reddit, Discord, X and Facebook show when your page is linked)</span>
+                      </label>
+
+                      <canvas id="pf-card-canvas"
+                              style="width:100%;aspect-ratio:1200/630;border-radius:var(--radius);border:1px solid var(--border-mid);background:var(--surface-2);display:block;margin-bottom:10px"></canvas>
+
+                      <div style="display:grid;gap:8px;margin-bottom:10px">
+                        <div>
+                          <label class="cm-label" style="font-size:0.7rem">Line above your name</label>
+                          <input id="pf-card-eyebrow" class="cm-input" style="width:100%" maxlength="40"
+                                 placeholder="EROTIC AUDIO" oninput="pfDrawCard()">
+                        </div>
+                        <div>
+                          <label class="cm-label" style="font-size:0.7rem">Logo in the corner</label>
+                          <select id="pf-card-logo" class="cm-input" style="width:100%" onchange="pfDrawCard()"></select>
+                        </div>
+                      </div>
+
+                      <p style="font-size:0.72rem;color:var(--text-dim);margin:0 0 10px">
+                        The picture uses your avatar, your banner and your tagline. Change those above and
+                        the card follows. Save it, then save your profile.
+                      </p>
+
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfDrawCard()">Refresh preview</button>
+                        <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="pfSaveCard()">Save share card</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfDownloadCard()">Download</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfClearCard()">Use the site's card</button>
+                      </div>
+                      <span id="pf-card-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:8px"></span>
+                      <input type="hidden" id="pf-share-image">
                     </div>
 
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
@@ -5248,7 +5295,132 @@
         el.src = url;
         el.style.display = url ? '' : 'none';
       });
+      pfDrawCard();
     }
+
+    // ── Share card ──────────────────────────────────────────────────────────
+    // The picture social sites show when this profile is linked. None of them
+    // runs the page's script, so it cannot be drawn when the link is opened:
+    // it is composed here, uploaded, and its URL remembered on the profile for
+    // netlify/functions/profile-page.js to put in the og:image tag.
+
+    // Marks bundled with the site. A creator who wants their own puts it in
+    // their uploads and it shows up here.
+    const PF_CARD_LOGOS = [
+      { label: 'No logo', url: '' },
+      { label: 'JOI Electric', url: '/images/JOI_Icon.png' },
+      // CA_Mark is CA_ICON with its black backing square cut away, so the mark
+      // sits on the card rather than in a box.
+      { label: 'Consenting Adults', url: '/images/CA_Mark.png' },
+    ];
+
+    let pfCardTimer = null;
+
+    function pfRenderCardLogos() {
+      const sel = document.getElementById('pf-card-logo');
+      if (!sel || sel.options.length) return;
+      const mine = (CFG.artistIcons || {})[pfProfile && pfProfile.slug] || '';
+      const opts = PF_CARD_LOGOS.slice();
+      if (mine && !opts.some(o => o.url === mine)) opts.push({ label: 'My own icon', url: mine });
+      sel.innerHTML = opts
+        .map(o => `<option value="${o.url}">${cmEsc(o.label)}</option>`)
+        .join('');
+      // The site's mark, not the creator's own icon: for most creators that
+      // icon is the same picture as their avatar, and the card would then show
+      // it twice.
+      sel.value = '/images/JOI_Icon.png';
+    }
+
+    function pfCardOptions() {
+      const val = id => (document.getElementById(id).value || '').trim();
+      return {
+        banner:  val('pf-banner'),
+        avatar:  val('pf-avatar'),
+        logo:    val('pf-card-logo'),
+        name:    val('pf-name') || (pfProfile && pfProfile.slug) || '',
+        tagline: val('pf-tagline'),
+        eyebrow: val('pf-card-eyebrow') || 'EROTIC AUDIO',
+        accent:  val('pf-accent') || '#5b8de8',
+      };
+    }
+
+    // Typing redraws, so the draw is debounced — each one loads and scales two
+    // pictures and that is wasted work on every keystroke.
+    function pfDrawCard() {
+      clearTimeout(pfCardTimer);
+      pfCardTimer = setTimeout(pfDrawCardNow, 220);
+    }
+
+    async function pfDrawCardNow() {
+      const canvas = document.getElementById('pf-card-canvas');
+      if (!canvas || !window.ShareCard) return;
+      pfRenderCardLogos();
+      try {
+        await window.ShareCard.drawShareCard(canvas, pfCardOptions());
+      } catch (err) {
+        document.getElementById('pf-card-status').textContent =
+          'Could not draw the card: ' + err.message;
+      }
+    }
+
+    async function pfSaveCard() {
+      const status = document.getElementById('pf-card-status');
+      const canvas = document.getElementById('pf-card-canvas');
+      if (!window.ShareCard) { status.textContent = 'Still loading — try again in a moment.'; return; }
+
+      status.textContent = 'Drawing…';
+      try {
+        // Redraw first, so what is saved is what the fields say right now
+        // rather than whatever the debounce last got round to.
+        await window.ShareCard.drawShareCard(canvas, pfCardOptions());
+        const blob = await window.ShareCard.cardToBlob(canvas);
+
+        status.textContent = `Uploading ${(blob.size / 1024).toFixed(0)}KB…`;
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: `share-card-${(pfProfile && pfProfile.slug) || 'profile'}.jpg`,
+            contentType: 'image/jpeg',
+            data: await cmBlobToBase64(blob),
+          }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
+
+        document.getElementById('pf-share-image').value = out.url;
+        if (out.images) cmUploads = out.images;
+        status.textContent = 'Saved. Save your profile to publish it.';
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }
+
+    async function pfDownloadCard() {
+      const canvas = document.getElementById('pf-card-canvas');
+      if (!window.ShareCard) return;
+      try {
+        await window.ShareCard.drawShareCard(canvas, pfCardOptions());
+        const blob = await window.ShareCard.cardToBlob(canvas);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `share-card-${(pfProfile && pfProfile.slug) || 'profile'}.jpg`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      } catch (err) {
+        document.getElementById('pf-card-status').textContent = err.message;
+      }
+    }
+
+    function pfClearCard() {
+      document.getElementById('pf-share-image').value = '';
+      document.getElementById('pf-card-status').textContent =
+        "Cleared. Your page will share with the site's card until you save a new one.";
+    }
+
+    window.addEventListener('sharecard-ready', () => {
+      if (document.getElementById('pf-editor').style.display !== 'none') pfDrawCard();
+    });
 
     // ── Your updates ────────────────────────────────────────────────────────
     function puClear() {
@@ -5349,6 +5521,7 @@
       document.getElementById('pf-bio').value = p.bio || '';
       document.getElementById('pf-avatar').value = p.avatar || '';
       document.getElementById('pf-banner').value = p.banner || '';
+      document.getElementById('pf-share-image').value = p.shareImage || '';
       document.getElementById('pf-accent').value = p.accent || '';
       if (p.accent) document.getElementById('pf-accent-pick').value = p.accent;
       document.getElementById('pf-published').checked = !!p.published;
@@ -5362,6 +5535,9 @@
       pfRenderLinks();
       puRender();
       puClear();
+      document.getElementById('pf-card-status').textContent = p.shareImage
+        ? 'A card is saved for this profile.'
+        : "No card saved — your page shares with the site's card.";
       pfUpdatePreviews();
     }
 
@@ -5415,6 +5591,7 @@
         bio: document.getElementById('pf-bio').value,
         avatar: document.getElementById('pf-avatar').value,
         banner: document.getElementById('pf-banner').value,
+        shareImage: document.getElementById('pf-share-image').value,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         aliases: pfAliases,

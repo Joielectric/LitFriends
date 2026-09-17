@@ -6,10 +6,15 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# One page renders every creator profile, so /profile/<slug> is served by
-# profile.html rather than a file per creator. A rewrite (200) rather than a
-# redirect, so the URL the creator shares is the URL that stays in the bar.
-[[redirects]]
-  from = "/profile/*"
-  to = "/profile.html"
-  status = 200
+# One page renders every creator profile, so /profile/<slug> is served from
+# profile.html rather than a file per creator.
+#
+# It goes through a function rather than a plain rewrite because a social
+# scraper does not run the page's JavaScript: the function fetches the same
+# shell and splices this creator's Open Graph tags into it, so a shared link
+# previews as them rather than as an empty page titled "Profile". The URL the
+# creator shares is still the URL that stays in the bar.
+#
+# The route is declared by the function itself (netlify/functions/profile-page.js,
+# `export const config = { path: "/profile/*" }`), so there is no redirect rule
+# here to drift out of step with it.

@@ -59,6 +59,11 @@ export function defaultProfile(slug, name) {
     bio: "",
     avatar: "",
     banner: "",
+    // The picture social sites show when this profile is linked. Built in the
+    // Content Manager from the avatar, the banner and the tagline, then saved
+    // here as a finished 1200x630 image — a scraper will not compose one, and
+    // will not run the page's JavaScript to find out what it should look like.
+    shareImage: "",
     theme: "electric",
     accent: "",
     links: [],
@@ -104,6 +109,7 @@ function sanitize(input, base, allProfiles) {
   if (input.bio !== undefined) out.bio = clean(input.bio, MAX.bio);
   if (input.avatar !== undefined) out.avatar = safeUrl(input.avatar);
   if (input.banner !== undefined) out.banner = safeUrl(input.banner);
+  if (input.shareImage !== undefined) out.shareImage = safeUrl(input.shareImage);
   if (input.theme !== undefined) {
     out.theme = THEMES.includes(input.theme) ? input.theme : base.theme;
   }
