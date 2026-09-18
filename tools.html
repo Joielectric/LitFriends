@@ -5379,27 +5379,51 @@
      *  owner's backfill, so all three produce exactly the same picture. The
      *  canvas is a working surface; the caller decides what to do with the
      *  result. */
-    async function pfBuildCard(opts, slug, canvas) {
+    async function pfBuildCard(opts, slug, canvas, previousUrl) {
       if (!window.ShareCard) throw new Error('The card renderer is still loading.');
       const surface = canvas || document.createElement('canvas');
       await window.ShareCard.drawShareCard(surface, opts);
       const blob = await window.ShareCard.cardToBlob(surface);
 
+      const name = `share-card-${slug || 'profile'}.jpg`;
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // One name per creator, so rebuilding replaces the old card rather
-          // than leaving a trail of them in the uploads.
-          filename: `share-card-${slug || 'profile'}.jpg`,
-          contentType: 'image/jpeg',
-          data: await cmBlobToBase64(blob),
-        }),
+        body: JSON.stringify({ filename: name, contentType: 'image/jpeg', data: await cmBlobToBase64(blob) }),
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
       if (out.images) cmUploads = out.images;
+
+      // Every upload gets its own key, which is what lets the served image be
+      // cached for a year and what makes a rebuilt card show up rather than
+      // the old one. The cost is that the card it replaces is still sitting
+      // there, and this rebuilds on every profile save — so the one it
+      // replaced is cleared up here. Best effort: a card that outlives its
+      // profile is untidy, not broken, and must never fail the save.
+      pfForgetOldCard(previousUrl, out.url, slug);
+
       return { url: out.url, bytes: blob.size };
+    }
+
+    /** Deletes the card a rebuild has just replaced.
+     *
+     *  Only ever a key this builder wrote: the name is checked against the
+     *  card naming before anything is deleted, so a picture a creator uses
+     *  somewhere else can never be caught by it. */
+    function pfForgetOldCard(previousUrl, newUrl, slug) {
+      if (!previousUrl || previousUrl === newUrl) return;
+      const key = String(previousUrl).startsWith('/api/image/')
+        ? decodeURIComponent(previousUrl.slice('/api/image/'.length))
+        : '';
+      const mine = new RegExp(`-share-card-${(slug || 'profile').replace(/[^a-z0-9-]/gi, '-')}\\.(jpe?g|png|webp)$`, 'i');
+      if (!key || !mine.test(key)) return;
+
+      fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', key }),
+      }).catch(() => {});
     }
 
     async function pfSaveCard() {
@@ -5412,6 +5436,7 @@
           pfCardOptions(),
           pfProfile && pfProfile.slug,
           document.getElementById('pf-card-canvas'),
+          document.getElementById('pf-share-image').value,
         );
         document.getElementById('pf-share-image').value = url;
         // Choosing to build one turns the automatic rebuild back on.
@@ -5629,6 +5654,7 @@
             pfCardOptions(),
             pfProfile.slug,
             document.getElementById('pf-card-canvas'),
+            document.getElementById('pf-share-image').value,
           );
           document.getElementById('pf-share-image').value = url;
           status.textContent = 'Share card rebuilt.';
@@ -5737,7 +5763,7 @@
             tagline: p.tagline || '',
             eyebrow: 'EROTIC AUDIO',
             accent:  p.accent || '#5b8de8',
-          }, p.slug);
+          }, p.slug, null, p.shareImage);
 
           // A partial profile merges onto the stored one, so this changes the
           // card and nothing else about them. Called directly rather than
