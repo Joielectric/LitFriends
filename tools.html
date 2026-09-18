@@ -3931,9 +3931,21 @@
     }
 
     // Arriving from the catalogue: /tools.html#edit=<id> opens that entry in
-    // the form. The hash is dropped once it has been read, so a later reload
-    // is an ordinary visit.
+    // the form, and #profile=<slug> opens that profile. The hash is dropped
+    // once it has been read, so a later reload is an ordinary visit.
     function cmOpenFromHash() {
+      const asProfile = String(location.hash || '').match(/^#profile=(.+)$/);
+      if (asProfile) {
+        const slug = decodeURIComponent(asProfile[1]);
+        history.replaceState(null, '', location.pathname + location.search);
+        cmTab('profile');
+        // Only the owner may open somebody else's; for anyone else the server
+        // ignores the slug and hands back their own, which is the right answer
+        // rather than an error — they arrived from their own page.
+        if (cmWho.isOwner && slug !== cmWho.slug) pfLoad(slug);
+        return;
+      }
+
       const found = String(location.hash || '').match(/^#edit=(.+)$/);
       if (!found) return;
       const id = decodeURIComponent(found[1]);
@@ -5557,6 +5569,11 @@
 
     function pfFill(p) {
       pfProfile = p;
+      // Keep the owner's picker on whichever profile is actually in the form.
+      // It fills itself from an answer that can arrive either side of this
+      // one, so the profile decides what it reads rather than the race does.
+      const who = document.getElementById('pf-who');
+      if (who && p.slug && [...who.options].some(o => o.value === p.slug)) who.value = p.slug;
       // A creator who postdates site-config's artist list is still credited
       // under their display name, so the entry picker needs to know it — and
       // any other name their credits use.

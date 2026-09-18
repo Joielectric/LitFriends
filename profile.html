@@ -213,6 +213,10 @@
         (p.aliases || []).forEach(function (a) { CFG.registerArtistName(p.slug, a); });
         AudioGrid.init({ container: '#audio-grid', artist: p.slug });
       }
+
+      // Offered only to whoever may change this profile, and outside the works
+      // section: a creator who has turned that section off still owns the page.
+      if (window.AudioGrid) AudioGrid.profileEditor({ slug: p.slug });
     }
 
     var slug = currentSlug();
