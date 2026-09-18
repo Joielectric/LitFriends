@@ -486,6 +486,13 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
 <script src="/js/reddit-import.js"></script>
+<!-- The share-card renderer is shared with anything else that needs to draw
+     one, so it is a module; the handlers below reach it through window. -->
+<script type="module">
+  import * as ShareCard from '/js/share-card.js';
+  window.ShareCard = ShareCard;
+  window.dispatchEvent(new Event('sharecard-ready'));
+</script>
 
 <div class="container" id="tools-main" style="display:none">
 
@@ -1158,10 +1165,10 @@
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
                       <label class="cm-label">Basics</label>
                       <label class="cm-label" style="font-size:0.7rem">Display name</label>
-                      <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80">
+                      <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80" oninput="pfDrawCard()">
                       <label class="cm-label" style="font-size:0.7rem">Tagline</label>
                       <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="140"
-                             placeholder="Voice Artist &middot; Writer &middot; Collaborator">
+                             placeholder="Voice Artist &middot; Writer &middot; Collaborator" oninput="pfDrawCard()">
                       <label class="cm-label" style="font-size:0.7rem">Also credited as <span style="font-weight:normal;color:var(--text-mid)">(claim the names the catalogue credits you under)</span></label>
                       <div style="display:flex;gap:8px;flex-wrap:wrap;">
                         <select id="pf-alias-pick" class="cm-input" style="flex:1 1 220px"></select>
@@ -1219,9 +1226,49 @@
                       <label class="cm-label" style="font-size:0.7rem">Accent colour (optional)</label>
                       <div style="display:flex;gap:8px;align-items:center;">
                         <input type="color" id="pf-accent-pick" style="width:44px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer"
-                               oninput="document.getElementById('pf-accent').value = this.value">
-                        <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme">
+                               oninput="document.getElementById('pf-accent').value = this.value; pfDrawCard()">
+                        <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme" oninput="pfDrawCard()">
                       </div>
+                    </div>
+
+                    <!-- What a link to this profile looks like when it is
+                         posted somewhere. A scraper does not run the page's
+                         script, so the card cannot be drawn when the link is
+                         opened — it is composed here and the finished picture
+                         is uploaded and remembered on the profile. -->
+                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+                      <label class="cm-label">Share card
+                        <span style="font-weight:normal;color:var(--text-mid)">(what Reddit, Discord, X and Facebook show when your page is linked)</span>
+                      </label>
+
+                      <canvas id="pf-card-canvas"
+                              style="width:100%;aspect-ratio:1200/630;border-radius:var(--radius);border:1px solid var(--border-mid);background:var(--surface-2);display:block;margin-bottom:10px"></canvas>
+
+                      <div style="display:grid;gap:8px;margin-bottom:10px">
+                        <div>
+                          <label class="cm-label" style="font-size:0.7rem">Line above your name</label>
+                          <input id="pf-card-eyebrow" class="cm-input" style="width:100%" maxlength="40"
+                                 placeholder="EROTIC AUDIO" oninput="pfDrawCard()">
+                        </div>
+                        <div>
+                          <label class="cm-label" style="font-size:0.7rem">Logo in the corner</label>
+                          <select id="pf-card-logo" class="cm-input" style="width:100%" onchange="pfDrawCard()"></select>
+                        </div>
+                      </div>
+
+                      <p style="font-size:0.72rem;color:var(--text-dim);margin:0 0 10px">
+                        The picture uses your avatar, your banner and your tagline. Change those above and
+                        the card follows. Save it, then save your profile.
+                      </p>
+
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfDrawCard()">Refresh preview</button>
+                        <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="pfSaveCard()">Save share card</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfDownloadCard()">Download</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfClearCard()">Use the site's card</button>
+                      </div>
+                      <span id="pf-card-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:8px"></span>
+                      <input type="hidden" id="pf-share-image">
                     </div>
 
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
@@ -1311,8 +1358,15 @@
                   <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
                       <label class="cm-label" style="margin:0">All profile pages</label>
-                      <input id="pl-search" class="cm-input cm-btn-sm" placeholder="Search…" style="max-width:180px" oninput="plRender()">
+                      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <!-- Creators who have never opened the card builder
+                             would otherwise share under their avatar alone.
+                             This builds one for each of them in a pass. -->
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="plBuildCards()">Build missing share cards</button>
+                        <input id="pl-search" class="cm-input cm-btn-sm" placeholder="Search…" style="max-width:180px" oninput="plRender()">
+                      </div>
                     </div>
+                    <span id="pl-cards-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-bottom:8px"></span>
                     <div id="pl-list"><div class="cm-collab-empty">Loading…</div></div>
                   </div>
                 </div>
@@ -5248,7 +5302,180 @@
         el.src = url;
         el.style.display = url ? '' : 'none';
       });
+      pfDrawCard();
     }
+
+    // ── Share card ──────────────────────────────────────────────────────────
+    // The picture social sites show when this profile is linked. None of them
+    // runs the page's script, so it cannot be drawn when the link is opened:
+    // it is composed here, uploaded, and its URL remembered on the profile for
+    // netlify/functions/profile-page.js to put in the og:image tag.
+
+    // Marks bundled with the site. A creator who wants their own puts it in
+    // their uploads and it shows up here.
+    const PF_CARD_LOGOS = [
+      { label: 'No logo', url: '' },
+      { label: 'JOI Electric', url: '/images/JOI_Icon.png' },
+      // CA_Mark is CA_ICON with its black backing square cut away, so the mark
+      // sits on the card rather than in a box.
+      { label: 'Consenting Adults', url: '/images/CA_Mark.png' },
+    ];
+
+    let pfCardTimer = null;
+    // Whether this profile's card is rebuilt on every save. Off only when the
+    // creator has said they would rather share under the site's own card.
+    let pfCardAuto = true;
+
+    function pfRenderCardLogos() {
+      const sel = document.getElementById('pf-card-logo');
+      if (!sel || sel.options.length) return;
+      const mine = (CFG.artistIcons || {})[pfProfile && pfProfile.slug] || '';
+      const opts = PF_CARD_LOGOS.slice();
+      if (mine && !opts.some(o => o.url === mine)) opts.push({ label: 'My own icon', url: mine });
+      sel.innerHTML = opts
+        .map(o => `<option value="${o.url}">${cmEsc(o.label)}</option>`)
+        .join('');
+      // The site's mark, not the creator's own icon: for most creators that
+      // icon is the same picture as their avatar, and the card would then show
+      // it twice.
+      sel.value = '/images/JOI_Icon.png';
+    }
+
+    function pfCardOptions() {
+      const val = id => (document.getElementById(id).value || '').trim();
+      return {
+        banner:  val('pf-banner'),
+        avatar:  val('pf-avatar'),
+        logo:    val('pf-card-logo'),
+        name:    val('pf-name') || (pfProfile && pfProfile.slug) || '',
+        tagline: val('pf-tagline'),
+        eyebrow: val('pf-card-eyebrow') || 'EROTIC AUDIO',
+        accent:  val('pf-accent') || '#5b8de8',
+      };
+    }
+
+    // Typing redraws, so the draw is debounced — each one loads and scales two
+    // pictures and that is wasted work on every keystroke.
+    function pfDrawCard() {
+      clearTimeout(pfCardTimer);
+      pfCardTimer = setTimeout(pfDrawCardNow, 220);
+    }
+
+    async function pfDrawCardNow() {
+      const canvas = document.getElementById('pf-card-canvas');
+      if (!canvas || !window.ShareCard) return;
+      pfRenderCardLogos();
+      try {
+        await window.ShareCard.drawShareCard(canvas, pfCardOptions());
+      } catch (err) {
+        document.getElementById('pf-card-status').textContent =
+          'Could not draw the card: ' + err.message;
+      }
+    }
+
+    /** Draws the card for one set of options and uploads it, returning the URL.
+     *
+     *  Shared by the button, by the automatic rebuild on save, and by the
+     *  owner's backfill, so all three produce exactly the same picture. The
+     *  canvas is a working surface; the caller decides what to do with the
+     *  result. */
+    async function pfBuildCard(opts, slug, canvas, previousUrl) {
+      if (!window.ShareCard) throw new Error('The card renderer is still loading.');
+      const surface = canvas || document.createElement('canvas');
+      await window.ShareCard.drawShareCard(surface, opts);
+      const blob = await window.ShareCard.cardToBlob(surface);
+
+      const name = `share-card-${slug || 'profile'}.jpg`;
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: name, contentType: 'image/jpeg', data: await cmBlobToBase64(blob) }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.url) throw new Error(out.error || `Upload failed (${res.status})`);
+      if (out.images) cmUploads = out.images;
+
+      // Every upload gets its own key, which is what lets the served image be
+      // cached for a year and what makes a rebuilt card show up rather than
+      // the old one. The cost is that the card it replaces is still sitting
+      // there, and this rebuilds on every profile save — so the one it
+      // replaced is cleared up here. Best effort: a card that outlives its
+      // profile is untidy, not broken, and must never fail the save.
+      pfForgetOldCard(previousUrl, out.url, slug);
+
+      return { url: out.url, bytes: blob.size };
+    }
+
+    /** Deletes the card a rebuild has just replaced.
+     *
+     *  Only ever a key this builder wrote: the name is checked against the
+     *  card naming before anything is deleted, so a picture a creator uses
+     *  somewhere else can never be caught by it. */
+    function pfForgetOldCard(previousUrl, newUrl, slug) {
+      if (!previousUrl || previousUrl === newUrl) return;
+      const key = String(previousUrl).startsWith('/api/image/')
+        ? decodeURIComponent(previousUrl.slice('/api/image/'.length))
+        : '';
+      const mine = new RegExp(`-share-card-${(slug || 'profile').replace(/[^a-z0-9-]/gi, '-')}\\.(jpe?g|png|webp)$`, 'i');
+      if (!key || !mine.test(key)) return;
+
+      fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', key }),
+      }).catch(() => {});
+    }
+
+    async function pfSaveCard() {
+      const status = document.getElementById('pf-card-status');
+      status.textContent = 'Drawing…';
+      try {
+        // Built from the fields as they read right now, rather than from
+        // whatever the debounced preview last got round to drawing.
+        const { url, bytes } = await pfBuildCard(
+          pfCardOptions(),
+          pfProfile && pfProfile.slug,
+          document.getElementById('pf-card-canvas'),
+          document.getElementById('pf-share-image').value,
+        );
+        document.getElementById('pf-share-image').value = url;
+        // Choosing to build one turns the automatic rebuild back on.
+        pfCardAuto = true;
+        status.textContent = `Saved (${(bytes / 1024).toFixed(0)}KB). Save your profile to publish it.`;
+      } catch (err) {
+        status.textContent = err.message;
+      }
+    }
+
+    async function pfDownloadCard() {
+      const canvas = document.getElementById('pf-card-canvas');
+      if (!window.ShareCard) return;
+      try {
+        await window.ShareCard.drawShareCard(canvas, pfCardOptions());
+        const blob = await window.ShareCard.cardToBlob(canvas);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `share-card-${(pfProfile && pfProfile.slug) || 'profile'}.jpg`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      } catch (err) {
+        document.getElementById('pf-card-status').textContent = err.message;
+      }
+    }
+
+    function pfClearCard() {
+      document.getElementById('pf-share-image').value = '';
+      // A deliberate choice, so the automatic rebuild stops rather than
+      // quietly putting a card back on the next save.
+      pfCardAuto = false;
+      document.getElementById('pf-card-status').textContent =
+        'Cleared. Your page will share with your avatar, or the site\'s card if you have none. '
+        + 'Save a card to go back to one of your own.';
+    }
+
+    window.addEventListener('sharecard-ready', () => {
+      if (document.getElementById('pf-editor').style.display !== 'none') pfDrawCard();
+    });
 
     // ── Your updates ────────────────────────────────────────────────────────
     function puClear() {
@@ -5281,7 +5508,7 @@
       }
       puClear();
       puRender();
-      pfSave();
+      pfSaveNow();
     }
 
     function puEdit(id) {
@@ -5303,7 +5530,7 @@
       pfUpdates = pfUpdates.filter(u => u.id !== id);
       if (puEditingId === id) puClear();
       puRender();
-      pfSave();
+      pfSaveNow();
     }
 
     function puRender() {
@@ -5349,6 +5576,8 @@
       document.getElementById('pf-bio').value = p.bio || '';
       document.getElementById('pf-avatar').value = p.avatar || '';
       document.getElementById('pf-banner').value = p.banner || '';
+      document.getElementById('pf-share-image').value = p.shareImage || '';
+      pfCardAuto = p.shareCardAuto !== false;
       document.getElementById('pf-accent').value = p.accent || '';
       if (p.accent) document.getElementById('pf-accent-pick').value = p.accent;
       document.getElementById('pf-published').checked = !!p.published;
@@ -5362,6 +5591,9 @@
       pfRenderLinks();
       puRender();
       puClear();
+      document.getElementById('pf-card-status').textContent = p.shareImage
+        ? 'A card is saved for this profile.'
+        : "No card saved — your page shares with the site's card.";
       pfUpdatePreviews();
     }
 
@@ -5404,7 +5636,36 @@
       });
     }
 
-    function pfSave() {
+    // Saving rebuilds the share card first, so a creator's link previews as
+    // them without their having to know the card exists. It is drawn from the
+    // fields being saved, which is what keeps it from going stale the moment
+    // the avatar or the tagline changes.
+    //
+    // A failure here never blocks the save: an out-of-date card, or none at
+    // all, is a far smaller problem than losing the profile edit that prompted
+    // it, and profile-page.js falls back to their avatar either way.
+    async function pfSave() {
+      if (!pfProfile) return;
+      if (pfCardAuto && window.ShareCard) {
+        const status = document.getElementById('pf-card-status');
+        status.textContent = 'Rebuilding your share card…';
+        try {
+          const { url } = await pfBuildCard(
+            pfCardOptions(),
+            pfProfile.slug,
+            document.getElementById('pf-card-canvas'),
+            document.getElementById('pf-share-image').value,
+          );
+          document.getElementById('pf-share-image').value = url;
+          status.textContent = 'Share card rebuilt.';
+        } catch (err) {
+          status.textContent = 'Saved your profile, but the share card could not be rebuilt: ' + err.message;
+        }
+      }
+      pfSaveNow();
+    }
+
+    function pfSaveNow() {
       if (!pfProfile) return;
       pfCollectLinks();
       const sections = {};
@@ -5415,6 +5676,8 @@
         bio: document.getElementById('pf-bio').value,
         avatar: document.getElementById('pf-avatar').value,
         banner: document.getElementById('pf-banner').value,
+        shareImage: document.getElementById('pf-share-image').value,
+        shareCardAuto: pfCardAuto,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         aliases: pfAliases,
@@ -5447,8 +5710,12 @@
 
     function plLoad() {
       pfApi({ action: 'list' }, data => {
-        const live = data.profiles || {};
+        // A copy: the loop below deletes from `live` as it pairs each dynamic
+        // profile with its static page, and `plProfilesById` is meant to keep
+        // every profile for the lookups elsewhere. Sharing one object here
+        // emptied it of everyone who has a page in site-config.
         plProfilesById = data.profiles || {};
+        const live = { ...plProfilesById };
         const rows = [];
         (CFG.artists || []).forEach(a => {
           const p = live[a.slug];
@@ -5464,6 +5731,61 @@
         plRows = rows;
         plRender();
       });
+    }
+
+    /** Builds a share card for every creator who has none.
+     *
+     *  The card is normally rebuilt when a creator saves their profile, but
+     *  the ones who existed before any of this did have never saved since, and
+     *  would go on sharing under their avatar alone. This walks them once.
+     *
+     *  Only the owner can reach it: writing another creator's profile is an
+     *  owner-only power, and the server enforces that whatever this sends. */
+    async function plBuildCards() {
+      const status = document.getElementById('pl-cards-status');
+      if (!window.ShareCard) { status.textContent = 'The card renderer is still loading.'; return; }
+
+      const targets = Object.values(plProfilesById || {}).filter(
+        p => p && !p.shareImage && p.shareCardAuto !== false,
+      );
+      if (!targets.length) { status.textContent = 'Every profile already has a card.'; return; }
+
+      let built = 0;
+      const failed = [];
+      for (const p of targets) {
+        status.textContent = `Building ${built + failed.length + 1} of ${targets.length}: ${p.name || p.slug}…`;
+        try {
+          const { url } = await pfBuildCard({
+            banner:  p.banner || '',
+            avatar:  p.avatar || '',
+            logo:    '/images/JOI_Icon.png',
+            name:    p.name || p.slug,
+            tagline: p.tagline || '',
+            eyebrow: 'EROTIC AUDIO',
+            accent:  p.accent || '#5b8de8',
+          }, p.slug, null, p.shareImage);
+
+          // A partial profile merges onto the stored one, so this changes the
+          // card and nothing else about them. Called directly rather than
+          // through pfApi, whose failure path hides the profile editor — a
+          // side effect that has no business firing from a backfill.
+          const res = await fetch('/api/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'save', slug: p.slug, profile: { shareImage: url } }),
+          });
+          const out = await res.json().catch(() => ({}));
+          if (!out.ok) throw new Error(out.error || `Save failed (${res.status})`);
+          built++;
+        } catch (err) {
+          failed.push(`${p.name || p.slug} (${err.message})`);
+        }
+      }
+
+      status.textContent = failed.length
+        ? `Built ${built}. Could not build: ${failed.join(', ')}.`
+        : `Built ${built} card${built === 1 ? '' : 's'}.`;
+      plLoad();
     }
 
     function plRow(p, artist) {
