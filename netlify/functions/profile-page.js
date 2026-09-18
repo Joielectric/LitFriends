@@ -64,12 +64,16 @@ export default async (req) => {
   const avatarOnly = !card && known && profile.avatar;
   const image = card || avatarOnly || SITE.card;
 
-  // A creator's page is titled for them; an unknown slug is just the site.
-  const title = known ? `${name} · ${SITE.name}` : SITE.name;
+  // A creator's page is titled for them alone, and names them as the site it
+  // belongs to. A link to their page should arrive as them, not as the site
+  // they happen to be hosted on — the preview is theirs, not an advert for
+  // whose server it is. An unknown slug is just the site.
+  const title = known ? name : SITE.name;
 
   const tags = shareTags({
     url: `${url.origin}/profile/${encodeURIComponent(slug)}`,
     title,
+    siteName: known ? name : SITE.name,
     description: tagline,
     image: absolute(image, url.origin),
     // Only a built card is known to be 1200x630. An avatar is whatever shape

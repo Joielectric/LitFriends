@@ -5335,10 +5335,12 @@
       sel.innerHTML = opts
         .map(o => `<option value="${o.url}">${cmEsc(o.label)}</option>`)
         .join('');
-      // The site's mark, not the creator's own icon: for most creators that
-      // icon is the same picture as their avatar, and the card would then show
-      // it twice.
-      sel.value = '/images/JOI_Icon.png';
+      // No mark by default. A creator's card is theirs — a shared link should
+      // arrive as them and not as the site they happen to be hosted on — and
+      // their own icon is usually the same picture as their avatar, which the
+      // card already shows. The site's marks stay in the list for whoever
+      // wants one.
+      sel.value = '';
     }
 
     function pfCardOptions() {
