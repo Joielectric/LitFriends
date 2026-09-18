@@ -108,8 +108,13 @@
   // so this is asked once and quietly: a visitor gets nothing back and sees
   // nothing new.
   let WHO = null;
+  // Kept, so a page that wants this twice — a works list and a profile editor
+  // — still asks once, which was the point of asking alongside the catalogue
+  // rather than after it.
+  let whoAsked = null;
   function whoAmI() {
-    return fetch('/api/session', {
+    if (whoAsked) return whoAsked;
+    whoAsked = fetch('/api/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'who' }),
@@ -117,6 +122,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) { WHO = (d && d.ok && d.who) || null; return WHO; })
       .catch(function () { return null; });
+    return whoAsked;
   }
 
   // The server decides this as well. Here it only decides whether to offer the
@@ -350,6 +356,25 @@ body {
 }
 .ag-edit:hover { color: var(--coral, #e8634f); border-color: var(--coral, #e8634f); }
 .ag-modal-edit { margin-left: auto; }
+/* The profile editor's own way in. These nine pages are hand-built and no two
+   lay their header out the same way, so rather than find a place inside each
+   one it sits over the corner of the page. Only the person who may edit the
+   profile ever sees it. */
+.ag-profile-edit {
+  position: fixed; top: 14px; right: 14px; z-index: 900;
+  font-family: "Cinzel", serif;
+  font-size: 0.58rem; letter-spacing: .12em; text-transform: uppercase;
+  padding: 8px 14px;
+  border: 1px dashed var(--border-mid, rgba(255,255,255,.28));
+  border-radius: 999px;
+  color: var(--text-mid, #999);
+  text-decoration: none; white-space: nowrap;
+  background: rgba(10,10,14,.72);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.ag-profile-edit:hover { color: var(--coral, #e8634f); border-color: var(--coral, #e8634f); }
+/* One page is light, and a dark chip on it would be a smudge. */
+@media (prefers-color-scheme: light) { .ag-profile-edit { background: rgba(255,255,255,.82); } }
 .ag-plink {
   font-family: "Cinzel", serif;
   font-size: 0.56rem; letter-spacing: .08em; text-transform: uppercase;
@@ -1026,6 +1051,35 @@ body {
 
   // ── Public API ─────────────────────────────────────────────────────────────
   window.AudioGrid = {
+    /** Offers the owner of a profile a way into the Content Manager.
+     *
+     *  A profile page is public, so this asks quietly who is signed in and
+     *  adds nothing at all for a visitor — the same bargain the Edit button on
+     *  a work makes. The server decides who may actually save; this only
+     *  decides whether to offer the door.
+     *
+     *      AudioGrid.profileEditor({ slug: 'filthy-bunny' });
+     */
+    profileEditor({ slug, label }) {
+      if (!slug) return;
+      injectStyles();
+      return whoAmI().then(function (who) {
+        if (!who) return null;                                  // not signed in
+        if (!who.isOwner && who.slug !== slug) return null;      // not theirs
+        if (document.querySelector('.ag-profile-edit')) return null;
+
+        const a = document.createElement('a');
+        a.className = 'ag-profile-edit';
+        a.href = '/tools.html#profile=' + encodeURIComponent(slug);
+        a.textContent = label || (who.isOwner && who.slug !== slug
+          ? 'Edit this profile'
+          : 'Edit my profile');
+        a.title = 'Open this profile in the Content Manager';
+        document.body.appendChild(a);
+        return a;
+      });
+    },
+
     init({ container, artist, showFilters, limit, perPage }) {
       injectStyles();
       const el = typeof container === 'string' ? document.querySelector(container) : container;
