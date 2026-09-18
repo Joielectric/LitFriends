@@ -47,11 +47,14 @@ export const escapeHtml = (s) =>
  *  summary rather than declared a banner it is not and cropped to a band. */
 export function shareTags({
   url, title, description, image, type = "website", noindex = false, wide = true,
+  siteName = SITE.name,
 }) {
   const sized = image && wide;
   const meta = [
     ["og:type", type],
-    ["og:site_name", SITE.name],
+    // Usually the site. A creator's page names them instead: the small label a
+    // preview puts above the title should say whose page it is.
+    ["og:site_name", siteName],
     ["og:url", url],
     ["og:title", title],
     ["og:description", description],
