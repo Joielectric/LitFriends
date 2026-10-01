@@ -387,6 +387,33 @@
     .fb-field { font-size: 0.88rem; color: var(--text-mid); margin-top: 6px; }
     .fb-field b { color: var(--silver); font-weight: 600; }
     .fb-toggle { background: none; border: none; color: var(--coral); cursor: pointer; font-size: 0.82rem; padding: 4px 0; }
+    /* Visitors */
+    .vs-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .vs-chart { position: relative; margin: 14px 0 4px; }
+    .vs-chart svg { display: block; width: 100%; height: 140px; }
+    .vs-chart .vs-hit { fill: transparent; }
+    .vs-chart .vs-mark { fill: var(--coral); }
+    .vs-chart .vs-col:hover .vs-mark { fill: var(--rose); }
+    .vs-axis { display: flex; justify-content: space-between; gap: 8px; font-size: 0.72rem; color: var(--text-dim); }
+    .vs-tip { position: absolute; pointer-events: none; background: var(--surface-3); border: 1px solid var(--border-mid); border-radius: var(--radius); padding: 6px 9px; font-size: 0.8rem; color: var(--text); white-space: nowrap; transform: translate(-50%, -100%); display: none; }
+    .vs-tip b { color: var(--silver-hi); }
+    .vs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin-top: 14px; }
+    .vs-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; min-width: 0; }
+    .vs-box h4 { font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 8px; font-weight: normal; }
+    .vs-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    .vs-table td { padding: 3px 0; color: var(--text-mid); vertical-align: top; }
+    .vs-table td:first-child { word-break: break-word; padding-right: 8px; }
+    .vs-table td.n { text-align: right; color: var(--silver-hi); font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
+    .vs-table th { text-align: right; font-weight: normal; font-size: 0.7rem; color: var(--text-dim); padding: 0 0 4px 8px; }
+    .vs-table th:first-child { text-align: left; padding-left: 0; }
+    .vs-meter { display: block; height: 3px; background: var(--coral); border-radius: 2px; margin-top: 2px; opacity: .55; }
+    .vs-visit { background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--coral); border-radius: var(--radius); padding: 9px 12px; margin-bottom: 6px; }
+    .vs-visit-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 0.86rem; color: var(--silver-hi); }
+    .vs-visit-meta { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; word-break: break-word; }
+    .vs-steps { margin: 6px 0 0; padding: 0; list-style: none; font-size: 0.82rem; color: var(--text-mid); }
+    .vs-steps li { padding: 1px 0; display: grid; grid-template-columns: 82px 1fr; gap: 6px; word-break: break-word; }
+    .vs-steps .k { color: var(--text-dim); }
+    .vs-tag { font-size: 0.68rem; border: 1px solid var(--border-mid); border-radius: 2px; padding: 0 5px; color: var(--text-mid); margin-left: 6px; }
     /* People pickers + collaborators */
     .cm-people { display: flex; flex-wrap: wrap; gap: 6px; min-height: 10px; }
     .cm-people:empty::before { content: "None selected"; color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
@@ -527,6 +554,7 @@
                   <button class="cm-tab owner-only" data-tab="news" onclick="cmTab('news')" style="display:none">Site News</button>
                   <button class="cm-tab owner-only" data-tab="feedback" onclick="cmTab('feedback')" style="display:none">Feedback</button>
                   <button class="cm-tab owner-only" data-tab="inbox"    onclick="cmTab('inbox')" style="display:none">Inbox</button>
+                  <button class="cm-tab"        data-tab="visits"   onclick="cmTab('visits')">Visitors</button>
                   <button class="cm-tab"        data-tab="templates" onclick="cmTab('templates')">Templates</button>
                   <button class="cm-tab"        data-tab="projects" onclick="cmTab('projects')">Projects</button>
                   <button class="cm-tab"        data-tab="profile"  onclick="cmTab('profile')">My Profile</button>
@@ -1113,6 +1141,34 @@
                     <div id="fb-list"><div class="cm-collab-empty">Click Refresh to load responses.</div></div>
                 </div>
 
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-visits" hidden>
+                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <div class="vs-bar">
+                      <label class="cm-label" style="margin:0">Visitors <span id="vs-scope" style="font-weight:normal;color:var(--text-mid)"></span></label>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <select id="vs-days" class="cm-input" style="font-size:0.85rem;width:auto" onchange="vsLoad()">
+                          <option value="1">Today</option>
+                          <option value="7">Last 7 days</option>
+                          <option value="30" selected>Last 30 days</option>
+                          <option value="90">Last 90 days</option>
+                        </select>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="vsLoad()">Refresh</button>
+                      </div>
+                    </div>
+                    <div id="vs-stats" class="fb-stats"></div>
+                    <div id="vs-chart" class="vs-chart"></div>
+                    <div id="vs-tables" class="vs-grid"></div>
+                    <label class="cm-label" style="margin:18px 0 8px;display:block">Recent visits</label>
+                    <div id="vs-recent"><div class="cm-collab-empty">Open this tab to load visits.</div></div>
+                    <p style="font-size:0.78rem;color:var(--text-dim);margin-top:12px">
+                      Visitors are counted by an anonymous id their browser keeps; no names, emails or IP addresses are stored.
+                      Visits while you are signed in, and from browsers that ask not to be tracked, are left out.
+                      Plays inside embedded players from other sites (Soundgasm and the like) cannot be seen, only the click to open them.
+                      Days are counted in UTC.
+                    </p>
+                  </div>
                 </div>
 
                 <div class="cm-tab-panel" id="tabp-inbox" hidden>
@@ -2044,6 +2100,114 @@
       const rows = fbFiltered();
       if (!rows.length) { cmShowMsg('Nothing to export.', false); return; }
       fbDownload('feedback-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(rows, null, 2), 'application/json');
+    }
+
+    // ── Visitors: who came, and what they did (netlify/functions/visits.js) ──
+    let vsData = null;
+    const VS_STEP = { view: 'Viewed', open: 'Opened', play: 'Played', complete: 'Finished', outbound: 'Went to', download: 'Downloaded', search: 'Searched' };
+
+    function vsNum(n) { return Number(n || 0).toLocaleString(); }
+    function vsDur(sec) {
+      sec = Math.round(sec || 0);
+      if (sec < 60) return sec + 's';
+      const m = Math.floor(sec / 60), h = Math.floor(m / 60);
+      return h ? h + 'h ' + (m % 60) + 'm' : m + 'm ' + (sec % 60) + 's';
+    }
+
+    function vsLoad() {
+      const days = document.getElementById('vs-days').value;
+      const recent = document.getElementById('vs-recent');
+      recent.innerHTML = '<div class="cm-collab-empty">Loading…</div>';
+      fetch('/api/visits', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'stats', days: Number(days) })
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) { recent.innerHTML = '<div class="cm-collab-empty">' + fbEsc(d.error || 'Could not load visitors.') + '</div>'; return; }
+          vsData = d;
+          vsRender();
+        })
+        .catch(() => { recent.innerHTML = '<div class="cm-collab-empty">Network error loading visitors.</div>'; });
+    }
+
+    function vsRender() {
+      const d = vsData, t = d.totals;
+      document.getElementById('vs-scope').textContent = d.scope === 'site' ? '(the whole site)' : '(your profile and your work)';
+      const tile = (label, value) => '<div class="fb-stat"><span class="fb-stat-label">' + label + '</span><span class="fb-stat-value">' + value + '</span></div>';
+      document.getElementById('vs-stats').innerHTML =
+        tile('Visitors', vsNum(t.visitors)) +
+        tile('Visits', vsNum(t.visits) + (t.returningVisits ? ' <span style="font-size:0.75rem;font-weight:normal;color:var(--text-dim)">' + vsNum(t.returningVisits) + ' return</span>' : '')) +
+        tile('Page views', vsNum(t.views)) +
+        tile('Plays', vsNum(t.plays)) +
+        tile('Listened to the end', vsNum(t.completes)) +
+        tile('Avg time per visit', vsDur(t.avgDur));
+      vsChart(d.daily);
+
+      const table = (title, rows, head) => {
+        const max = rows.reduce((m, r) => Math.max(m, r.c), 0) || 1;
+        return '<div class="vs-box"><h4>' + title + '</h4>' + (rows.length
+          ? '<table class="vs-table"><tr><th></th><th>' + head + '</th></tr>' + rows.map(r =>
+              '<tr><td>' + fbEsc(r.k) + '<span class="vs-meter" style="width:' + Math.max(2, Math.round(r.c / max * 100)) + '%"></span></td><td class="n">' + vsNum(r.c) + '</td></tr>').join('') + '</table>'
+          : '<div class="cm-collab-empty">Nothing yet.</div>') + '</div>';
+      };
+      const works = '<div class="vs-box"><h4>Works</h4>' + (d.works.length
+        ? '<table class="vs-table"><tr><th></th><th>Opened</th><th>Played</th><th>Finished</th></tr>' + d.works.map(w =>
+            '<tr><td>' + fbEsc(w.title) + '</td><td class="n">' + vsNum(w.opens) + '</td><td class="n">' + vsNum(w.plays) + '</td><td class="n">' + vsNum(w.completes) + '</td></tr>').join('') + '</table>'
+        : '<div class="cm-collab-empty">Nothing opened yet.</div>') + '</div>';
+      document.getElementById('vs-tables').innerHTML =
+        works +
+        table('Pages', d.pages, 'Views') +
+        table('Came from', d.referrers, 'Visits') +
+        table('Clicked out to', d.outbound, 'Clicks') +
+        table('Searched for', d.searches, 'Times') +
+        table('Countries', d.countries, 'Visits') +
+        table('Devices', d.devices, 'Visits') +
+        table('Browsers', d.browsers, 'Visits');
+
+      const recent = document.getElementById('vs-recent');
+      if (!d.recent.length) { recent.innerHTML = '<div class="cm-collab-empty">No visits in this range yet.</div>'; return; }
+      recent.innerHTML = d.recent.map(v =>
+        '<div class="vs-visit">' +
+          '<div class="vs-visit-head"><span>' + fbEsc(new Date(v.start).toLocaleString()) + (v.returning ? '<span class="vs-tag">returning</span>' : '') + '</span><span>' + vsDur(v.dur) + '</span></div>' +
+          '<div class="vs-visit-meta">' + [v.where || 'Unknown location', v.device, v.ref ? 'from ' + v.ref : 'direct'].map(fbEsc).join(' &middot; ') + '</div>' +
+          '<ul class="vs-steps">' + v.steps.map(s => '<li><span class="k">' + (VS_STEP[s.t] || fbEsc(s.t)) + '</span>' + fbEsc(s.x) + '</li>').join('') + '</ul>' +
+        '</div>').join('');
+    }
+
+    // Visitors per day. One series, so no legend; hovering a day gives its numbers.
+    function vsChart(daily) {
+      const el = document.getElementById('vs-chart');
+      if (daily.length < 2) { el.innerHTML = ''; return; }
+      const W = 600, H = 140, gap = 2;
+      const max = Math.max(1, ...daily.map(x => x.visitors));
+      const bw = W / daily.length;
+      const cols = daily.map((x, i) => {
+        const h = x.visitors ? Math.max(2, x.visitors / max * (H - 4)) : 0;
+        const bx = i * bw + gap / 2, w = Math.max(1, bw - gap), top = H - h;
+        const r = Math.min(4, w / 2, h);
+        // Rounded at the top, square on the baseline.
+        const mark = h ? '<path class="vs-mark" d="M' + bx + ' ' + H + 'V' + (top + r) + 'Q' + bx + ' ' + top + ' ' + (bx + r) + ' ' + top +
+          'H' + (bx + w - r) + 'Q' + (bx + w) + ' ' + top + ' ' + (bx + w) + ' ' + (top + r) + 'V' + H + 'Z"/>' : '';
+        return '<g class="vs-col" data-i="' + i + '"><rect class="vs-hit" x="' + (i * bw) + '" y="0" width="' + bw + '" height="' + H + '"/>' + mark + '</g>';
+      }).join('');
+      const fmt = (day) => new Date(day + 'T00:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+      el.innerHTML =
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Visitors per day">' +
+          '<line x1="0" y1="' + (H - 0.5) + '" x2="' + W + '" y2="' + (H - 0.5) + '" stroke="var(--border)" />' + cols + '</svg>' +
+        '<div class="vs-axis"><span>' + fmt(daily[0].day) + '</span><span>Visitors per day · peak ' + vsNum(max) + '</span><span>' + fmt(daily[daily.length - 1].day) + '</span></div>' +
+        '<div class="vs-tip"></div>';
+      const tip = el.querySelector('.vs-tip'), svg = el.querySelector('svg');
+      el.querySelectorAll('.vs-col').forEach(g => {
+        g.addEventListener('mouseenter', () => {
+          const x = daily[+g.dataset.i];
+          tip.innerHTML = '<b>' + fmt(x.day) + '</b><br>' + vsNum(x.visitors) + ' visitors · ' + vsNum(x.views) + ' views · ' + vsNum(x.plays) + ' plays';
+          const box = svg.getBoundingClientRect(), cell = g.getBoundingClientRect();
+          const left = Math.min(Math.max(cell.left - box.left + cell.width / 2, 90), box.width - 90);
+          tip.style.left = left + 'px'; tip.style.top = '0px'; tip.style.display = 'block';
+        });
+        g.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+      });
     }
 
     // ── Inbox: contact messages and alert signups ───────────────────────────
@@ -5939,6 +6103,7 @@
         p.hidden = (p.id !== 'tabp-' + name);
       });
       if (name === 'tags') cmRenderTags();
+      if (name === 'visits' && !vsData) vsLoad();
       try { sessionStorage.setItem('cm_tab', name); } catch (e) {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
