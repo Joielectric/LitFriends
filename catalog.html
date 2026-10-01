@@ -772,6 +772,7 @@
       (credits || related ? '<div class="modal-credits">' + related + credits + '</div>' : '') +
     '</div>';
     document.body.appendChild(overlay);
+    if (window.joiTrack) joiTrack.open(e);
     overlay.querySelector('.modal-close').addEventListener('click', closeModal);
     // Jump straight from an audio to its script, or from a script to a fill.
     Array.prototype.forEach.call(overlay.querySelectorAll('[data-goto]'), function(a){
@@ -814,5 +815,6 @@
   fetchData();
 })();
 </script>
+<script src="/js/track.js" defer></script>
 </body>
 </html>
