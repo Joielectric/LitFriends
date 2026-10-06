@@ -325,6 +325,86 @@ body {
   color: var(--text, #eee); min-width: 9rem;
 }
 .ag-tag-search:focus { outline: none; border-color: var(--border-hi, rgba(255,255,255,.45)); }
+
+/* Browse all tags, alphabetically.
+ *
+ * A prolific tagger runs to several hundred entries, most of them used once.
+ * Dropping that into the chip row as one flat expansion is a wall nobody
+ * reads and a page that jumps half a screen when it opens. So the row keeps
+ * showing the tags carrying the most work, and the rest live here: a fixed
+ * height panel, grouped by letter, with an index to jump by and a search to
+ * cut it down. Alphabetical because this is the one you open knowing roughly
+ * what you are after. */
+.ag-tag-browser {
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  border-radius: 3px;
+  background: var(--surface, rgba(255,255,255,.03));
+  padding: 0.75rem 0.85rem;
+  margin: -0.4rem 0 1rem;
+}
+.ag-tb-head {
+  display: flex; flex-wrap: wrap; gap: 0.6rem;
+  align-items: center; margin-bottom: 0.6rem;
+}
+.ag-tb-head .ag-tag-search { flex: 1 1 11rem; }
+.ag-tb-count {
+  color: var(--text-dim, #888); font-size: 0.72rem; white-space: nowrap;
+}
+.ag-tb-close {
+  background: none; cursor: pointer; border: 1px solid var(--border-mid, rgba(255,255,255,.25));
+  color: var(--text-mid, #999); border-radius: 999px;
+  padding: 4px 11px; font-size: 0.72rem; letter-spacing: .04em;
+}
+.ag-tb-close:hover { border-color: var(--border-hi, rgba(255,255,255,.45)); color: var(--silver-hi, #f5f0ea); }
+
+/* The index is a jump bar, not a filter: every letter in the vocabulary is
+   a button, and letters nothing starts with are left out rather than shown
+   dead. */
+.ag-tb-index {
+  display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 0.55rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+}
+.ag-tb-jump {
+  background: none; cursor: pointer; border: 1px solid transparent;
+  color: var(--text-mid, #999); border-radius: 3px;
+  min-width: 1.4rem; padding: 2px 4px;
+  font-size: 0.7rem; letter-spacing: .05em; text-transform: uppercase;
+}
+.ag-tb-jump:hover { border-color: var(--border-hi, rgba(255,255,255,.45)); color: var(--silver-hi, #f5f0ea); }
+
+.ag-tb-scroll { max-height: 17rem; overflow-y: auto; }
+.ag-tb-group { margin-bottom: 0.5rem; }
+/* The letter stays put while its own run scrolls past, so it is always clear
+   where you are in the alphabet. */
+.ag-tb-letter {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--surface-2, #111);
+  color: var(--text-dim, #888);
+  font-family: "Cinzel", serif; font-size: 0.62rem;
+  letter-spacing: .18em; text-transform: uppercase;
+  padding: 3px 6px; margin-bottom: 5px; border-radius: 2px;
+}
+.ag-tb-items { display: flex; flex-wrap: wrap; gap: 5px; }
+.ag-tb-n { opacity: .55; font-size: 0.9em; margin-left: 4px; }
+.ag-tb-none { color: var(--text-dim, #888); font-size: 0.8rem; font-style: italic; padding: 0.3rem 0; }
+
+/* The sort control sits with the tags rather than above the list, because
+   both of them change what the list shows. */
+.ag-own-controls {
+  display: flex; flex-wrap: wrap; gap: 0.6rem;
+  align-items: center; margin-bottom: 0.7rem;
+}
+.ag-own-sort {
+  background: var(--surface-2, #111);
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  color: var(--text, #eee); border-radius: 3px;
+  padding: 4px 10px; font-size: 0.74rem; cursor: pointer;
+}
+.ag-own-sort:focus { outline: none; border-color: var(--border-hi, rgba(255,255,255,.45)); }
+.ag-own-sort-label {
+  color: var(--text-dim, #888); font-family: "Cinzel", serif;
+  font-size: 0.6rem; letter-spacing: .16em; text-transform: uppercase;
+}
 .ag-pager {
   display: flex; align-items: center; justify-content: center; gap: 1rem;
   margin-top: 1.2rem; font-size: 0.8rem; color: var(--text-dim, #888);
@@ -902,40 +982,144 @@ body {
     applyFilters();
   }
 
+  // TRT is free text ("14:32", "1:05:30", "45 min"), so parse defensively and
+  // return null when it cannot be read rather than guessing a length. Same
+  // reading as the catalogue's, so the two sort a shared work the same way.
+  function trtSeconds(e) {
+    const raw = String((e && e.trt) || '').trim();
+    if (!raw) return null;
+    const clock = raw.match(/(\d+):(\d{1,2})(?::(\d{1,2}))?/);
+    if (clock) {
+      const a = +clock[1], b = +clock[2], c = clock[3] === undefined ? null : +clock[3];
+      return c === null ? a * 60 + b : a * 3600 + b * 60 + c;
+    }
+    const hm = raw.match(/(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)/i);
+    if (hm && (hm[1] || hm[2])) return (+(hm[1] || 0)) * 3600 + (+(hm[2] || 0)) * 60;
+    const hOnly = raw.match(/^(\d+(?:\.\d+)?)\s*h/i);
+    if (hOnly) return Math.round(parseFloat(hOnly[1]) * 3600);
+    return null;
+  }
+
+  const SORTS = [
+    ['date-desc',  'Newest first'],
+    ['date-asc',   'Oldest first'],
+    ['trt-desc',   'Longest first'],
+    ['trt-asc',    'Shortest first'],
+    ['title-asc',  'Title A\u2013Z'],
+    ['title-desc', 'Title Z\u2013A'],
+  ];
+
+  // Date is the tie-breaker everywhere, so works that match on length or sit
+  // under the same title still come out newest first rather than in whatever
+  // order the store happened to return them.
+  function sortEntries(list, mode) {
+    const out = list.slice();
+    const byDateDesc = (a, b) => String(b.date || '').localeCompare(String(a.date || ''));
+
+    if (mode === 'trt-desc' || mode === 'trt-asc') {
+      const dir = mode === 'trt-asc' ? 1 : -1;
+      // A work with no readable length sinks to the bottom either way, so a
+      // length sort never opens with a run of blanks.
+      out.sort((a, b) => {
+        const sa = trtSeconds(a), sb = trtSeconds(b);
+        if (sa === null && sb === null) return byDateDesc(a, b);
+        if (sa === null) return 1;
+        if (sb === null) return -1;
+        return sa !== sb ? (sa - sb) * dir : byDateDesc(a, b);
+      });
+      return out;
+    }
+
+    if (mode === 'title-asc' || mode === 'title-desc') {
+      const dir = mode === 'title-desc' ? -1 : 1;
+      out.sort((a, b) => {
+        const c = String(a.title || '').localeCompare(String(b.title || ''),
+                                                      undefined, { sensitivity: 'base', numeric: true });
+        return c ? c * dir : byDateDesc(a, b);
+      });
+      return out;
+    }
+
+    out.sort(mode === 'date-asc'
+      ? (a, b) => String(a.date || '').localeCompare(String(b.date || ''))
+      : byDateDesc);
+    return out;
+  }
+
   // A creator's own page shows their work and nothing else, so the filters are
   // just their tags — no artist strip, no platform list. Ten at a time, because
   // a long back catalogue buries everything under the first screenful.
   function renderPaged(entries, container, perPage) {
     const active = new Set();
     let page = 0;
+    let sortMode = 'date-desc';
 
-    // Their tags, most used first, audience tags kept at the front where they
-    // are the thing people actually filter by.
+    // Their tags, counted once. Two orders come off this: the chip row wants
+    // the ones carrying the most work, the browser wants the alphabet.
     const counts = {};
     entries.forEach(e => (e.tags || []).forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
+
+    // Most used first, audience tags kept at the front where they are the
+    // thing people actually filter by.
     const tags = Object.keys(counts).sort((a, b) => {
       const ga = isGenderTag(a), gb = isGenderTag(b);
       if (ga !== gb) return ga ? -1 : 1;
       return (counts[b] - counts[a]) || a.toLowerCase().localeCompare(b.toLowerCase());
     });
+    const alphaTags = Object.keys(counts).sort((a, b) =>
+      a.toLowerCase().localeCompare(b.toLowerCase(), undefined, { numeric: true }));
 
     const TOP_TAGS = 20;
-    let showAllTags = false;
+    let browserOpen = false;
     let tagQuery = '';
 
+    const controls = document.createElement('div');
+    controls.className = 'ag-own-controls';
     const tagRow = document.createElement('div');
     tagRow.className = 'ag-own-tags';
+    const browser = document.createElement('div');
+    browser.className = 'ag-tag-browser';
+    browser.hidden = true;
     const grid = document.createElement('div');
     const pager = document.createElement('div');
     pager.className = 'ag-pager';
-    container.append(tagRow, grid, pager);
+    container.append(controls, tagRow, browser, grid, pager);
+
+    // ── Sort ────────────────────────────────────────────────────────────────
+    const sortLabel = document.createElement('span');
+    sortLabel.className = 'ag-own-sort-label';
+    sortLabel.textContent = 'Sort';
+    const sortSel = document.createElement('select');
+    sortSel.className = 'ag-own-sort';
+    sortSel.setAttribute('aria-label', 'Sort works');
+    SORTS.forEach(([value, label]) => {
+      const o = document.createElement('option');
+      o.value = value;
+      o.textContent = label;
+      sortSel.appendChild(o);
+    });
+    sortSel.value = sortMode;
+    sortSel.addEventListener('change', () => {
+      sortMode = sortSel.value;
+      page = 0;                 // a new order starts at the top
+      draw();
+    });
+    controls.append(sortLabel, sortSel);
 
     function matching() {
-      if (!active.size) return entries;
-      return entries.filter(e => {
+      const list = !active.size ? entries : entries.filter(e => {
         const has = (e.tags || []).map(t => String(t).toLowerCase());
         return [...active].every(t => has.includes(t.toLowerCase()));
       });
+      return sortEntries(list, sortMode);
+    }
+
+    // Prev and next mean something different depending on what the list is
+    // ordered by, and "Older" pointing at a longer work reads as a bug.
+    function pagerLabels() {
+      if (sortMode === 'date-desc') return ['&larr; Newer', 'Older &rarr;'];
+      if (sortMode === 'date-asc')  return ['&larr; Older', 'Newer &rarr;'];
+      return ['&larr; Previous', 'Next &rarr;'];
     }
 
     function draw() {
@@ -951,12 +1135,14 @@ body {
       }
 
       drawTags();
+      if (browserOpen) drawBrowser();
 
       // A pager for one page of results is noise.
+      const [prev, next] = pagerLabels();
       pager.innerHTML = pages > 1
-        ? `<button ${page === 0 ? 'disabled' : ''} data-go="prev">&larr; Newer</button>
+        ? `<button ${page === 0 ? 'disabled' : ''} data-go="prev">${prev}</button>
            <span>${page * perPage + 1}&ndash;${Math.min((page + 1) * perPage, list.length)} of ${list.length}</span>
-           <button ${page >= pages - 1 ? 'disabled' : ''} data-go="next">Older &rarr;</button>`
+           <button ${page >= pages - 1 ? 'disabled' : ''} data-go="next">${next}</button>`
         : (list.length ? `<span>${list.length} ${list.length === 1 ? 'work' : 'works'}</span>` : '');
 
       pager.querySelectorAll('button').forEach(b => {
@@ -970,21 +1156,6 @@ body {
       });
     }
 
-    // A long tagger ends up with a wall of chips that is harder to read than the
-    // list it filters. Show the ones carrying the most work, and let the rest be
-    // asked for. Anything already picked always stays visible, or turning it off
-    // again would mean hunting for it.
-    function visibleTags() {
-      if (tagQuery) {
-        const q = tagQuery.toLowerCase();
-        return tags.filter(t => t.toLowerCase().includes(q));
-      }
-      if (showAllTags || tags.length <= TOP_TAGS) return tags;
-      const top = tags.slice(0, TOP_TAGS);
-      const picked = [...active].filter(t => !top.includes(t));
-      return top.concat(picked);
-    }
-
     function chip(text, cls, onClick) {
       const b = document.createElement('button');
       b.className = 'ag-own-tag' + (cls ? ' ' + cls : '');
@@ -993,57 +1164,172 @@ body {
       return b;
     }
 
+    function toggle(t) {
+      active.has(t) ? active.delete(t) : active.add(t);
+      page = 0;                 // a new filter starts at the top
+      draw();
+    }
+
+    // ── The chip row ────────────────────────────────────────────────────────
+    // The tags carrying the most work, and nothing else. Anything already
+    // picked stays visible however rare it is, or turning it off again would
+    // mean opening the browser to hunt for it.
     function drawTags() {
       tagRow.innerHTML = '';
 
-      // The search only earns its place once the list is long.
-      if (tags.length > TOP_TAGS) {
-        const box = document.createElement('input');
-        box.type = 'search';
-        box.className = 'ag-tag-search';
-        box.placeholder = 'Search tags…';
-        box.value = tagQuery;
-        box.addEventListener('input', () => {
-          tagQuery = box.value.trim();
-          drawTags();
-          // Keep typing without losing the caret.
-          const again = tagRow.querySelector('.ag-tag-search');
-          if (again) { again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
-        });
-        tagRow.appendChild(box);
-      }
-
-      const shown = visibleTags();
-      shown.forEach(t => {
-        const b = chip(t, active.has(t) ? 'active' : '', () => {
-          active.has(t) ? active.delete(t) : active.add(t);
-          page = 0;             // a new filter starts at the top
-          draw();
-        });
+      const top = tags.slice(0, TOP_TAGS);
+      const picked = [...active].filter(t => !top.includes(t));
+      top.concat(picked).forEach(t => {
+        const b = chip(t, active.has(t) ? 'active' : '', () => toggle(t));
         b.dataset.tag = t;
         tagRow.appendChild(b);
       });
 
-      if (!tagQuery && tags.length > TOP_TAGS) {
-        const hidden = tags.length - shown.length;
-        if (showAllTags) {
-          tagRow.appendChild(chip('Show fewer', 'more', () => { showAllTags = false; drawTags(); }));
-        } else if (hidden > 0) {
-          tagRow.appendChild(chip('+' + hidden + ' more', 'more', () => { showAllTags = true; drawTags(); }));
+      if (tags.length > TOP_TAGS) {
+        const rest = tags.length - top.length;
+        tagRow.appendChild(chip(
+          browserOpen ? 'Close tag list' : 'Browse all ' + tags.length + ' tags',
+          'more',
+          toggleBrowser
+        ));
+        if (!browserOpen) {
+          const note = document.createElement('span');
+          note.style.cssText = 'color:var(--text-dim,#888);font-size:0.72rem;align-self:center;';
+          note.textContent = '+' + rest + ' more';
+          tagRow.appendChild(note);
         }
-      }
-      if (tagQuery && !shown.length) {
-        const none = document.createElement('span');
-        none.style.cssText = 'color:var(--text-dim,#888);font-size:0.78rem;align-self:center;';
-        none.textContent = 'No tag matches that.';
-        tagRow.appendChild(none);
       }
 
       if (active.size) {
         tagRow.appendChild(chip('Clear', 'clear', () => {
-          active.clear(); page = 0; tagQuery = ''; draw();
+          active.clear(); page = 0; draw();
         }));
       }
+    }
+
+    // ── The browser ─────────────────────────────────────────────────────────
+    function toggleBrowser() {
+      browserOpen = !browserOpen;
+      browser.hidden = !browserOpen;
+      tagQuery = '';
+      drawTags();
+      if (browserOpen) {
+        drawBrowser();
+        const box = browser.querySelector('.ag-tag-search');
+        if (box) box.focus();
+      } else {
+        browser.innerHTML = '';
+      }
+    }
+
+    // Everything the creator has used, A to Z, grouped by initial. Anything
+    // that does not start with a letter lands under # rather than inventing
+    // a group per symbol.
+    function groupsFor(list) {
+      const out = [];
+      let current = null;
+      list.forEach(t => {
+        // Strip the accent off the initial before grouping. localeCompare
+        // files "Ümlaut" next to the other U words, so leaving it as its own
+        // character would open a second # group in the middle of the
+        // alphabet, and give the index two buttons with the same label.
+        const first = String(t).trim().charAt(0)
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+        const letter = /[A-Z]/.test(first) ? first : '#';
+        if (!current || current.letter !== letter) {
+          current = { letter, items: [] };
+          out.push(current);
+        }
+        current.items.push(t);
+      });
+      return out;
+    }
+
+    function drawBrowser() {
+      const q = tagQuery.trim().toLowerCase();
+      const shown = q ? alphaTags.filter(t => t.toLowerCase().includes(q)) : alphaTags;
+      const groups = groupsFor(shown);
+
+      // Rebuilding the whole panel would drop the caret mid-search, so the
+      // head is built once and only the list below it is redrawn.
+      let head = browser.querySelector('.ag-tb-head');
+      if (!head) {
+        browser.innerHTML = '';
+        head = document.createElement('div');
+        head.className = 'ag-tb-head';
+
+        const box = document.createElement('input');
+        box.type = 'search';
+        box.className = 'ag-tag-search';
+        box.placeholder = 'Search tags…';
+        box.setAttribute('aria-label', 'Search tags');
+        box.addEventListener('input', () => { tagQuery = box.value; drawBrowser(); });
+
+        const count = document.createElement('span');
+        count.className = 'ag-tb-count';
+
+        const close = document.createElement('button');
+        close.className = 'ag-tb-close';
+        close.textContent = 'Close';
+        close.addEventListener('click', toggleBrowser);
+
+        head.append(box, count, close);
+        browser.append(head,
+          Object.assign(document.createElement('div'), { className: 'ag-tb-index' }),
+          Object.assign(document.createElement('div'), { className: 'ag-tb-scroll' }));
+      }
+
+      browser.querySelector('.ag-tb-count').textContent =
+        shown.length === alphaTags.length
+          ? alphaTags.length + ' tags'
+          : shown.length + ' of ' + alphaTags.length + ' tags';
+
+      const index = browser.querySelector('.ag-tb-index');
+      const scroll = browser.querySelector('.ag-tb-scroll');
+
+      index.innerHTML = '';
+      groups.forEach(g => {
+        const b = document.createElement('button');
+        b.className = 'ag-tb-jump';
+        b.textContent = g.letter;
+        b.addEventListener('click', () => {
+          const target = scroll.querySelector('[data-letter="' + g.letter + '"]');
+          // scrollIntoView would take the whole page with it, so the panel
+          // scrolls itself instead.
+          if (target) scroll.scrollTop = target.offsetTop - scroll.offsetTop;
+        });
+        index.appendChild(b);
+      });
+
+      scroll.innerHTML = '';
+      if (!shown.length) {
+        scroll.innerHTML = '<div class="ag-tb-none">No tag matches that.</div>';
+        return;
+      }
+      groups.forEach(g => {
+        const wrap = document.createElement('div');
+        wrap.className = 'ag-tb-group';
+        wrap.dataset.letter = g.letter;
+
+        const letter = document.createElement('div');
+        letter.className = 'ag-tb-letter';
+        letter.textContent = g.letter;
+
+        const items = document.createElement('div');
+        items.className = 'ag-tb-items';
+        g.items.forEach(t => {
+          const b = chip(t, active.has(t) ? 'active' : '', () => toggle(t));
+          b.dataset.tag = t;
+          const n = document.createElement('span');
+          n.className = 'ag-tb-n';
+          n.textContent = counts[t];
+          b.appendChild(n);
+          items.appendChild(b);
+        });
+
+        wrap.append(letter, items);
+        scroll.appendChild(wrap);
+      });
     }
 
     draw();
