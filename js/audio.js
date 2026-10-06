@@ -745,6 +745,7 @@ body {
 
     document.body.appendChild(overlay);
     currentOverlay = overlay;
+    if (window.joiTrack) joiTrack.open(entry);
   }
 
   // ── Row ────────────────────────────────────────────────────────────────────
