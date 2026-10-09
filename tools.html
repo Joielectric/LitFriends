@@ -748,7 +748,14 @@
                         <div id="cm-uploads-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                                 <span id="cm-uploads-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
-                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadUploads()">Refresh</button>
+                                <span style="display:flex;gap:6px;align-items:center">
+                                    <!-- The owner's own uploads unless they ask for someone else's -->
+                                    <select id="cm-uploads-scope" class="cm-input owner-only" style="display:none;width:auto;padding:3px 6px;font-size:0.75rem"
+                                        title="Whose uploads to show" onchange="cmLoadUploads()">
+                                        <option value="mine">My uploads</option>
+                                    </select>
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadUploads()">Refresh</button>
+                                </span>
                             </div>
                             <div id="cm-uploads-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:280px;overflow-y:auto;"></div>
                         </div>
@@ -3237,6 +3244,7 @@
             filename:    file.name,
             contentType: blob.type,
             data:        await cmBlobToBase64(blob),
+            scope:       cmUploadScope(),
           }),
         });
         const out = await res.json().catch(() => ({}));
@@ -3782,18 +3790,42 @@
       if (open) cmLoadUploads();
     }
 
+    // Everyone sees their own uploads. The owner can ask for one creator's, or
+    // everybody's, from the picker; the server ignores this for anyone else.
+    function cmUploadScope() {
+      const sel = document.getElementById('cm-uploads-scope');
+      return (cmWho.isOwner && sel && sel.value) || 'mine';
+    }
+
+    function cmFillUploadScopes(owners) {
+      const sel = document.getElementById('cm-uploads-scope');
+      if (!sel || !cmWho.isOwner || !Array.isArray(owners)) return;
+      const current = sel.value || 'mine';
+      const names = {};
+      (CFG.artists || []).forEach(a => { names[a.slug] = a.name; });
+      const total = owners.reduce((n, o) => n + o.count, 0);
+      const opts = [{ value: 'mine', label: 'My uploads' }]
+        .concat(owners
+          .filter(o => o.slug !== (cmWho.slug || CFG.identity.owner))
+          .map(o => ({ value: o.slug, label: `${names[o.slug] || o.slug} (${o.count})` })))
+        .concat([{ value: 'all', label: `Everyone (${total})` }]);
+      sel.innerHTML = opts.map(o => `<option value="${cmEsc(o.value)}">${cmEsc(o.label)}</option>`).join('');
+      sel.value = opts.some(o => o.value === current) ? current : 'mine';
+    }
+
     function cmLoadUploads() {
       const summary = document.getElementById('cm-uploads-summary');
       summary.textContent = 'Loading…';
       fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list' }),
+        body: JSON.stringify({ action: 'list', scope: cmUploadScope() }),
       })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
           if (!ok) throw new Error(d.error || 'Could not load uploads');
           cmUploads = d.images || [];
+          cmFillUploadScopes(d.owners);
           cmRenderUploads(d.totalBytes);
         })
         .catch(err => { summary.textContent = err.message; });
@@ -3814,9 +3846,10 @@
         ? totalBytes
         : cmUploads.reduce((n, i) => n + (Number(i.size) || 0), 0);
 
+      const scope = cmUploadScope();
       summary.textContent = cmUploads.length
         ? `${cmUploads.length} image${cmUploads.length === 1 ? '' : 's'} · ${cmFmtSize(total)} stored`
-        : 'No uploads yet';
+        : scope === 'mine' ? 'No uploads yet' : 'No uploads here';
 
       if (!cmUploads.length) {
         grid.innerHTML = '<span style="font-size:0.75rem;color:var(--text-dim)">Upload one with “Upload New”.</span>';
@@ -3827,6 +3860,9 @@
       grid.innerHTML = cmUploads.map(img => {
         const used = cmUploadUsage(img.url);
         const isCurrent = img.url === current;
+        // A creator is also shown older, unowned pictures their own work uses;
+        // those are the owner's to remove, so no button.
+        const canDelete = cmWho.isOwner || !!img.owner;
         return `
           <div style="position:relative;border:1px solid ${isCurrent ? 'var(--coral)' : 'var(--border)'};border-radius:var(--radius);overflow:hidden;background:var(--surface);">
             <img src="${cmEsc(img.url)}" alt="${cmEsc(img.name)}" loading="lazy"
@@ -3835,8 +3871,8 @@
                  style="width:100%;height:72px;object-fit:cover;display:block;cursor:pointer">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:3px 5px;font-size:0.62rem;color:var(--text-dim)">
               <span>${cmFmtSize(img.size)}${used ? ' · in use' : ''}</span>
-              <button type="button" title="Delete" onclick="cmDeleteUpload('${cmEsc(img.key)}','${cmEsc(img.url)}')"
-                      style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;line-height:1;padding:0 2px">&times;</button>
+              ${canDelete ? `<button type="button" title="Delete" onclick="cmDeleteUpload('${cmEsc(img.key)}','${cmEsc(img.url)}')"
+                      style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;line-height:1;padding:0 2px">&times;</button>` : ''}
             </div>
           </div>`;
       }).join('');
@@ -3862,7 +3898,7 @@
       fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', key }),
+        body: JSON.stringify({ action: 'delete', key, scope: cmUploadScope() }),
       })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
