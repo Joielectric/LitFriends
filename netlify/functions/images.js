@@ -1,16 +1,24 @@
 import { siteStore, readJsonWithLegacy, readBlobWithLegacy, listWithLegacy, deleteEverywhere } from "./_site.js";
-import { authorize, unauthorized } from "./_auth.js";
+import { authorize, unauthorized, OWNER_SLUG } from "./_auth.js";
 
 // Cover-image upload, listing and serving, backed by Netlify Blobs.
 //
 //   POST /api/upload  { password, filename, contentType, data } -> { url }
-//   POST /api/upload  { password, action: "list" }              -> { images, totalBytes }
+//   POST /api/upload  { action: "list", scope? }                -> { images, totalBytes, owners? }
 //   POST /api/upload  { password, action: "delete", key }       -> { ok }
 //   GET  /api/image/:key                                        -> the bytes
 //
-// Uploads and management are admin-only and use the shared check in
-// _auth.js — Google sign-in, or the password fallback — same as
-// /api/content. Reads are public — the catalogue has to show the covers.
+// Uploads and management need a signed-in creator, checked in _auth.js, same
+// as /api/content. Reads are public — the catalogue has to show the covers.
+//
+// Every upload belongs to whoever made it, by profile slug, the same way a
+// catalogue entry does. A creator lists and deletes only their own. Uploads
+// that predate this carry no owner and are the site owner's, except that a
+// creator still sees the old ones their own entries or profile use, so nothing
+// they picked before disappears from their library.
+//
+// The site owner sees only their own by default too. `scope` widens it:
+// "all" for everyone's, or a creator's slug for just theirs.
 
 const JSON_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -64,6 +72,60 @@ async function reconcileIndex(s) {
   return { images, changed: orphans.length > 0 || kept.length !== indexed.length };
 }
 
+// The slug an upload is filed under, matching content.js.
+const slugOf = (auth) => (auth.isOwner ? OWNER_SLUG : auth.slug) || "";
+const ownerOf = (img) => img.owner || OWNER_SLUG;
+
+function isMine(img, auth) {
+  const mine = slugOf(auth);
+  if (mine && ownerOf(img) === mine) return true;
+  // A creator not yet given a profile still owns what they upload.
+  return !!img.uploadedBy && img.uploadedBy === auth.email;
+}
+
+// Old, unowned uploads a creator's own work points at. Read only for a
+// creator's list; the owner already sees every unowned upload as theirs.
+async function referencedBy(slug) {
+  const urls = new Set();
+  if (!slug) return urls;
+  const add = (u) => { if (typeof u === "string" && u) urls.add(u); };
+
+  const { data } = await readJsonWithLegacy("content", "audio").catch(() => ({ data: null }));
+  const entries = Array.isArray(data) ? data : (data && Array.isArray(data.entries) ? data.entries : []);
+  entries.filter((e) => e && e.owner === slug).forEach((e) => add(e.image));
+
+  const profiles = await siteStore("profiles").get("profiles", { type: "json" }).catch(() => null);
+  const p = profiles && profiles.profiles && profiles.profiles[slug];
+  if (p) {
+    [p.avatar, p.banner, p.shareImage].forEach(add);
+    (Array.isArray(p.updates) ? p.updates : []).forEach((u) => add(u && u.image));
+  }
+  return urls;
+}
+
+const totalOf = (images) => images.reduce((n, i) => n + (Number(i.size) || 0), 0);
+
+// What one caller is shown. `all` is the whole index; `scope` only counts for
+// the site owner.
+async function visibleTo(all, auth, scope) {
+  if (auth.isOwner) {
+    if (scope === "all") return all;
+    const slug = scope && scope !== "mine" ? String(scope) : OWNER_SLUG;
+    return all.filter((i) => ownerOf(i) === slug);
+  }
+  const used = await referencedBy(auth.slug);
+  return all.filter((i) => isMine(i, auth) || (!i.owner && used.has(i.url)));
+}
+
+// The owner's picker: whose uploads there are, and how many of each.
+function ownersOf(all) {
+  const counts = {};
+  all.forEach((i) => { const o = ownerOf(i); counts[o] = (counts[o] || 0) + 1; });
+  return Object.entries(counts)
+    .map(([slug, count]) => ({ slug, count }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
 export default async (req) => {
   if (req.method === "OPTIONS") return new Response("", { status: 200, headers: JSON_HEADERS });
 
@@ -104,26 +166,34 @@ export default async (req) => {
 
   // ── List ────────────────────────────────────────────────────────────────
   if (body.action === "list") {
-    const { images, changed } = await reconcileIndex(s);
-    if (changed) await s.setJSON(INDEX_KEY, { images });
-    const totalBytes = images.reduce((n, i) => n + (Number(i.size) || 0), 0);
-    return json({ ok: true, images, totalBytes });
+    const { images: all, changed } = await reconcileIndex(s);
+    if (changed) await s.setJSON(INDEX_KEY, { images: all });
+    const images = await visibleTo(all, auth, body.scope);
+    const out = { ok: true, images, totalBytes: totalOf(images) };
+    if (auth.isOwner) out.owners = ownersOf(all);
+    return json(out);
   }
 
   // ── Delete ──────────────────────────────────────────────────────────────
   if (body.action === "delete") {
-    // The image store is shared, and a creator has no way to see what a file
-    // is used for elsewhere on the site. Adding is fine; removing is not.
-    if (!auth.isOwner) {
-      return json({ error: "Only the site owner can delete uploaded images." }, 403);
-    }
     const key = String(body.key || "");
     if (!key || key === INDEX_KEY) return json({ error: "Missing image key" }, 400);
 
+    // A creator may remove what they uploaded and nothing else: they cannot
+    // see what anyone else's picture is used for. Old unowned uploads are the
+    // owner's, even the ones a creator is shown because they use them.
+    const { images: before } = await reconcileIndex(s);
+    const target = before.find(i => i.key === key);
+    if (!target) return json({ error: "Not found" }, 404);
+    if (!auth.isOwner && !(target.owner && isMine(target, auth))) {
+      return json({ error: "You can only delete images you uploaded." }, 403);
+    }
+
     await deleteEverywhere("images", key);
-    const images = (await readIndex(s)).filter(i => i.key !== key);
-    await s.setJSON(INDEX_KEY, { images });
-    return json({ ok: true, images, totalBytes: images.reduce((n, i) => n + (Number(i.size) || 0), 0) });
+    const all = before.filter(i => i.key !== key);
+    await s.setJSON(INDEX_KEY, { images: all });
+    const images = await visibleTo(all, auth, body.scope);
+    return json({ ok: true, images, totalBytes: totalOf(images) });
   }
 
   // ── Upload ──────────────────────────────────────────────────────────────
@@ -161,10 +231,11 @@ export default async (req) => {
   const uploadedAt = new Date().toISOString();
 
   await s.set(key, bytes, {
-    metadata: { contentType, originalName: String(body.filename || ""), uploadedAt },
+    metadata: { contentType, originalName: String(body.filename || ""), uploadedAt, owner: slugOf(auth) },
   });
 
-  // Read-modify-write on the index. Not atomic, but there is a single admin.
+  // Read-modify-write on the index. Not atomic; a lost race leaves a blob
+  // outside the index, which the next list adopts as the owner's.
   const entry = {
     key,
     url: `/api/image/${key}`,
@@ -172,10 +243,13 @@ export default async (req) => {
     size: bytes.length,
     type: contentType,
     uploadedAt,
+    owner: slugOf(auth),
+    uploadedBy: auth.email || "",
   };
-  const images = [entry, ...(await readIndex(s)).filter(i => i.key !== key)];
-  await s.setJSON(INDEX_KEY, { images });
+  const all = [entry, ...(await readIndex(s)).filter(i => i.key !== key)];
+  await s.setJSON(INDEX_KEY, { images: all });
 
+  const images = await visibleTo(all, auth, body.scope);
   return json({ ok: true, url: entry.url, key, bytes: bytes.length, images });
 };
 
