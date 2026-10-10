@@ -274,6 +274,8 @@
                             <option value="Script by">Script by</option>
                             <option value="Directed by">Directed by</option>
                             <option value="Sound effects by">Sound effects by</option>
+                            <option value="Artwork by">Artwork by</option>
+                            <option value="SFX">SFX</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -528,6 +530,8 @@
                         <option value="Script by">Script by</option>
                         <option value="Directed by">Directed by</option>
                         <option value="Sound effects by">Sound effects by</option>
+                        <option value="Artwork by">Artwork by</option>
+                        <option value="SFX">SFX</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -807,6 +811,7 @@
             producers:    'Produced by',
             editors:      'Edited by',
             musicians:    'Music by',
+            artwork:      'Artwork by',
         };
 
         // Every credited name needs a row in contributorsData, because the
@@ -834,6 +839,11 @@
                     if (name) rows.push({ reason: CAT_REASONS[role], name });
                 });
             });
+            // SFX credit a pack rather than a person, so the whole credit line
+            // stands in for the name and carries its own link.
+            if (window.SITE_CONFIG) SITE_CONFIG.sfxOf(e).forEach(s => {
+                rows.push({ reason: 'SFX', name: SITE_CONFIG.sfxText(s), url: s.url || '' });
+            });
             // An entry with no credits leaves whatever is already filled in
             // alone, rather than wiping a block that was typed by hand.
             if (!rows.length) return;
@@ -851,7 +861,7 @@
                 const url = document.querySelector(`.attribute-url[data-index="${i}"]`);
                 if (reason) reason.value = r.reason;
                 if (name) name.value = String(r.index);
-                if (url) url.value = contributorsData[r.index].profileUrl || '';
+                if (url) url.value = r.url || contributorsData[r.index].profileUrl || '';
             });
         }
         // name (lowercased) -> { name, url } from the Content Manager's

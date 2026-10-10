@@ -303,6 +303,8 @@
     .im-kinds { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.86rem; color: var(--text-mid); }
     .cm-track-row { display: grid; grid-template-columns: 1fr 150px auto; gap: 8px; align-items: center; margin-bottom: 6px; }
     @media (max-width: 768px) { .cm-track-row { grid-template-columns: 1fr; } }
+    .cm-sfx-row { display: grid; grid-template-columns: 210px 1fr 180px auto; gap: 8px; align-items: center; margin-bottom: 6px; }
+    @media (max-width: 768px) { .cm-sfx-row { grid-template-columns: 1fr; } }
     .cm-offer-title a { color: var(--text); text-decoration: none; }
     .cm-offer-title a:hover { color: var(--coral); text-decoration: underline; }
     .im-kinds label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
@@ -834,6 +836,18 @@
                                 <div class="cm-people" id="cm-people-musicians"></div>
                                 <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="musicians"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('musicians')">+ New</button></div>
                             </div>
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Artwork</label>
+                                <div class="cm-people" id="cm-people-artwork"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="artwork"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('artwork')">+ New</button></div>
+                            </div>
+                        </div>
+                        <div style="margin-top:14px">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                                <label class="cm-label" style="margin:0;font-size:0.88rem;color:var(--text-mid)">SFX <span style="font-weight:normal">(optional)</span></label>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddSfx()">+ Add SFX</button>
+                            </div>
+                            <div id="cm-sfx"></div>
+                            <div class="im-hint" style="margin:6px 0 0">The licence, then a short credit line like "The Sauce Pack by u/name" or "Rain pack from Freesound". The link is optional.</div>
                         </div>
                     </div>
 
@@ -1946,7 +1960,13 @@
 
     // ── Credits / collaborators ────────────────────────────────────────────────
     const CM_ROLES = CFG.creditKeys;
-    let cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
+    // One empty list per role, so a role added to site-config needs no edit here.
+    function cmBlankCredits(from) {
+      const out = {};
+      CM_ROLES.forEach(role => { out[role] = ((from || {})[role] || []).slice(); });
+      return out;
+    }
+    let cmCredits = cmBlankCredits();
 
     function cmNorm(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
     function cmCollabNames() {
@@ -1991,7 +2011,9 @@
       const name = (prompt('New collaborator name:') || '').trim();
       if (!name) return;
       if (!cmFindCollab(name)) {
-        const url = (prompt('Profile link for ' + name + ' (optional):') || '').trim();
+        // Artists are usually found on Reddit, so start them off with that link.
+        const guess = role === 'artwork' ? 'https://www.reddit.com/user/' + name.replace(/^\/?u\//i, '') : '';
+        const url = (prompt('Profile link for ' + name + ' (optional):', guess) || '').trim();
         cmCollaborators.push({ name: name, url: url });
         cmPersist(function () { cmRenderCollabManager(); cmRenderCredits(); });
       }
@@ -3948,6 +3970,43 @@
         .filter(t => t.track);
     }
 
+    // ── SFX credits ─────────────────────────────────────────────────────────
+
+    function cmAddSfx(license = 'CC0', note = '', url = '') {
+      const row = document.createElement('div');
+      row.className = 'cm-sfx-row';
+      row.innerHTML = `
+        <select class="cm-input cm-sfx-license" style="min-width:0">${
+          CFG.sfxLicenses.map(l => `<option value="${cmEsc(l.key)}">${cmEsc(l.label)}</option>`).join('')
+        }</select>
+        <input class="cm-input cm-sfx-note" placeholder="The Sauce Pack by u/name" style="min-width:0">
+        <input class="cm-input cm-sfx-url" placeholder="Link (optional)" style="min-width:0">
+        <button type="button" class="cm-btn cm-btn-sm" title="Remove this SFX credit">&times;</button>`;
+      const sel = row.querySelector('.cm-sfx-license');
+      // A licence typed some other way is kept rather than silently changed.
+      if (license && !CFG.sfxLicenseLabels[license]) sel.insertAdjacentHTML('beforeend', `<option value="${cmEsc(license)}">${cmEsc(license)}</option>`);
+      sel.value = license || 'CC0';
+      row.querySelector('.cm-sfx-note').value = note;
+      row.querySelector('.cm-sfx-url').value = url;
+      row.querySelector('button').addEventListener('click', () => row.remove());
+      document.getElementById('cm-sfx').appendChild(row);
+    }
+
+    function cmSetSfx(list) {
+      document.getElementById('cm-sfx').innerHTML = '';
+      (Array.isArray(list) ? list : []).forEach(s => cmAddSfx(s.license || '', s.note || '', s.url || ''));
+    }
+
+    function cmGetSfx() {
+      return [...document.querySelectorAll('#cm-sfx .cm-sfx-row')]
+        .map(row => ({
+          license: row.querySelector('.cm-sfx-license').value,
+          note:    row.querySelector('.cm-sfx-note').value.trim(),
+          url:     row.querySelector('.cm-sfx-url').value.trim(),
+        }))
+        .filter(s => s.note || s.url);
+    }
+
     // ── Save / Edit ─────────────────────────────────────────────────────────
 
     function cmSaveEntry() {
@@ -3977,13 +4036,8 @@
         tempo:   document.getElementById('cm-tempo').value.trim(),
         useCase: document.getElementById('cm-use').value.trim(),
         license: document.getElementById('cm-license').value.trim(),
-        credits: {
-          voiceArtists: cmCredits.voiceArtists.slice(),
-          writers:      cmCredits.writers.slice(),
-          producers:    cmCredits.producers.slice(),
-          editors:      cmCredits.editors.slice(),
-          musicians:    cmCredits.musicians.slice(),
-        },
+        credits: cmBlankCredits(cmCredits),
+        sfx:     cmGetSfx(),
       };
 
       if (cmEditingId) {
@@ -4016,14 +4070,9 @@
       document.getElementById('cm-short-desc').value = e.shortDesc || '';
       document.getElementById('cm-desc').value       = e.desc || '';
       const cr = e.credits || {};
-      cmCredits = {
-        voiceArtists: (cr.voiceArtists || []).slice(),
-        writers:      (cr.writers || []).slice(),
-        producers:    (cr.producers || []).slice(),
-        editors:      (cr.editors || []).slice(),
-        musicians:    (cr.musicians || []).slice(),
-      };
+      cmCredits = cmBlankCredits(cr);
       cmRenderCredits();
+      cmSetSfx(e.sfx);
       // After the credits, which is where the writer to search for comes from.
       cmOfferClear();
       document.getElementById('cm-date').value = e.date || '';
@@ -4063,8 +4112,9 @@
       document.getElementById('cm-type').value = 'audio';
       cmRenderFillsOptions('');
       cmTypeChanged();
-      cmCredits = { voiceArtists: [], writers: [], producers: [], editors: [], musicians: [] };
+      cmCredits = cmBlankCredits();
       cmRenderCredits();
+      cmSetSfx([]);
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
     }
 

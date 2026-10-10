@@ -78,6 +78,21 @@
       { key: 'producers',    label: 'Producer', postLabel: 'Production'   },
       { key: 'editors',      label: 'Editor',   postLabel: 'Editing'      },
       { key: 'musicians',    label: 'Music',    postLabel: 'Music'        },
+      { key: 'artwork',      label: 'Artwork',  postLabel: 'Artwork'      },
+    ],
+
+    // ── Sound effects ─────────────────────────────────────────────────────
+    // SFX are credited to a pack or a source rather than to a collaborator,
+    // so they live on the entry as entry.sfx = [{ license, note, url }].
+    // `label` is what the picker shows, `short` is what a credit line says.
+    sfxLicenses: [
+      { key: 'CC0',         label: 'CC0 (Public Domain)', short: 'CC0'             },
+      { key: 'CC BY',       label: 'CC BY 4.0',           short: 'CC BY 4.0'       },
+      { key: 'CC BY-SA',    label: 'CC BY-SA 4.0',        short: 'CC BY-SA 4.0'    },
+      { key: 'CC BY-NC',    label: 'CC BY-NC 4.0',        short: 'CC BY-NC 4.0'    },
+      { key: 'CC BY-NC-SA', label: 'CC BY-NC-SA 4.0',     short: 'CC BY-NC-SA 4.0' },
+      { key: 'CC BY-ND',    label: 'CC BY-ND 4.0',        short: 'CC BY-ND 4.0'    },
+      { key: 'CC BY-NC-ND', label: 'CC BY-NC-ND 4.0',     short: 'CC BY-NC-ND 4.0' },
     ],
 
     // ── Artists with a page on this site ──────────────────────────────────
@@ -127,6 +142,24 @@
   SITE.creditKeys   = SITE.creditRoles.map(function (r) { return r.key; });
   SITE.creditLabels = {};
   SITE.creditRoles.forEach(function (r) { SITE.creditLabels[r.key] = r.label; });
+
+  SITE.sfxLicenseLabels = {};
+  SITE.sfxLicenseShort  = {};
+  SITE.sfxLicenses.forEach(function (l) {
+    SITE.sfxLicenseLabels[l.key] = l.label;
+    SITE.sfxLicenseShort[l.key]  = l.short;
+  });
+
+  // The SFX credits worth showing: anything with a note or a link.
+  SITE.sfxOf = function (entry) {
+    return ((entry && entry.sfx) || []).filter(function (s) { return s && (s.note || s.url); });
+  };
+  // One line per credit: "The Sauce Pack by u/xxxx (CC BY 4.0)".
+  SITE.sfxText = function (s) {
+    var lic = s.license ? (SITE.sfxLicenseShort[s.license] || s.license) : '';
+    var text = String(s.note || s.url || '').trim();
+    return lic ? text + ' (' + lic + ')' : text;
+  };
 
   SITE.artistLabels   = {};
   SITE.artistIcons    = {};
