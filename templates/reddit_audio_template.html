@@ -615,7 +615,7 @@
             });
         }
         const catIsScript = k => CAT_KIND[k] === 'script';
-        const CAT_CREDIT_MAP = [['voiceArtists','Voice Acting'],['writers','Writers'],['producers','Production'],['editors','Editing'],['musicians','Music']];
+        const CAT_CREDIT_MAP = [['voiceArtists','Voice Acting'],['writers','Writers'],['producers','Production'],['editors','Editing'],['musicians','Music'],['artwork','Artwork']];
         let CATALOG = [], CAT_COLLABS = [], CAT_PROFILES = [], CAT_ENTRY = null, CAT_CREDITS_MADE = '';
 
         function catGetLinks(e) {
@@ -655,13 +655,18 @@
             }).join('\n');
         }
 
-        function catFormatCredits(c) {
-            if (!c) return '';
+        function catFormatCredits(e) {
+            if (!e) return '';
+            const c = e.credits || {};
             const lines = [];
             CAT_CREDIT_MAP.forEach(([k, label]) => {
                 const names = (c[k] || []).map(catCreditName);
                 if (names.length) lines.push('**' + label + ':** ' + names.join(', '));
             });
+            const sfx = window.SITE_CONFIG ? SITE_CONFIG.sfxOf(e) : [];
+            if (sfx.length) lines.push('**SFX:** ' + sfx.map(s => s.url
+                ? '[' + SITE_CONFIG.sfxText(s) + '](' + s.url + ')'
+                : SITE_CONFIG.sfxText(s)).join(', '));
             return catHardBreaks(lines.join('\n'));
         }
         // Switching the names over rewrites the credits, unless they have been
@@ -670,7 +675,7 @@
             if (!CAT_ENTRY) return;
             const field = document.getElementById('credits');
             if (field.value.trim() && field.value.trim() !== CAT_CREDITS_MADE.trim()) return;
-            CAT_CREDITS_MADE = catFormatCredits(CAT_ENTRY.credits);
+            CAT_CREDITS_MADE = catFormatCredits(CAT_ENTRY);
             field.value = CAT_CREDITS_MADE;
             updatePreviews();
         }
@@ -744,7 +749,7 @@
             document.getElementById('shortDescription').value = e.shortDesc || '';
             document.getElementById('longDescription').value = e.desc || '';
             CAT_ENTRY = e;
-            CAT_CREDITS_MADE = catFormatCredits(e.credits);
+            CAT_CREDITS_MADE = catFormatCredits(e);
             document.getElementById('credits').value = CAT_CREDITS_MADE;
             catSetLinks(catPostLinks(e), e.trt || '');
             updatePreviews();

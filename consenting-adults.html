@@ -1067,7 +1067,7 @@
           var cr = e.credits || {};
           var seen = {};
           var contribs = [];
-          ['voiceArtists','writers','producers','editors','musicians'].forEach(function(role){
+          ['voiceArtists','writers','producers','editors','musicians','artwork'].forEach(function(role){
             (cr[role] || []).forEach(function(name){
               var k = nameKey(name);
               if (!seen[k]) { seen[k] = true; contribs.push(name); }
@@ -1107,7 +1107,12 @@
         PROVIDERS[p.key] = { label: p.label || p.key, embed: !!existing.embed };
       });
     }
-    var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music' };
+    var CREDIT_LABELS = { voiceArtists:'Voice', writers:'Writer', producers:'Producer', editors:'Editor', musicians:'Music', artwork:'Artwork' };
+    function sfxLine(s){
+      var text = String(s.note || s.url || '').replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+      if (s.license) text += ' (' + (s.license === 'CC0' ? 'CC0' : s.license + ' 4.0') + ')';
+      return /^https?:\/\//i.test(s.url || '') ? '<a href="' + s.url.replace(/"/g, '%22') + '" target="_blank" rel="noopener noreferrer" style="color:inherit">' + text + '</a>' : text;
+    }
     var currentModal = null;
 
     function closeRecentModal(){
@@ -1122,6 +1127,8 @@
       var tags = (entry.tags||[]).map(function(t){ return '<span style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:20px;border:1px solid rgba(200,180,170,0.3);color:var(--text-mid)">'+t+'</span>'; }).join('');
       var credits = '';
       if(entry.credits){ Object.entries(CREDIT_LABELS).forEach(function(pair){ var names=(entry.credits[pair[0]]||[]); if(names.length) credits+='<div style="font-size:0.78rem;line-height:1.5"><span style="display:block;color:var(--text-dim);font-size:0.66rem;letter-spacing:.08em;text-transform:uppercase">'+pair[1]+'</span><span style="color:var(--text-mid)">'+names.join(', ')+'</span></div>'; }); }
+      var sfx = (entry.sfx || []).filter(function(s){ return s && (s.note || s.url); });
+      if(sfx.length) credits+='<div style="font-size:0.78rem;line-height:1.5"><span style="display:block;color:var(--text-dim);font-size:0.66rem;letter-spacing:.08em;text-transform:uppercase">SFX</span><span style="color:var(--text-mid)">'+sfx.map(sfxLine).join('<br>')+'</span></div>';
       if(credits) credits='<div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.2rem">'+credits+'</div>';
 
       function tabBody(link){

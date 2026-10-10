@@ -651,15 +651,23 @@ body {
   // ── Modal ──────────────────────────────────────────────────────────────────
   let currentOverlay = null;
 
-  function creditsHtml(credits) {
-    if (!credits) return '';
-    const rows = Object.entries(CREDIT_LABELS)
+  function creditsHtml(entry) {
+    const credits = entry.credits || {};
+    let rows = Object.entries(CREDIT_LABELS)
       .filter(([k]) => (credits[k] || []).length)
       .map(([k, label]) => `
         <div class="ag-credit-row">
           <span class="ag-credit-label">${label}</span>
           <span class="ag-credit-names">${credits[k].map(name => collabHtml(name)).join(', ')}</span>
         </div>`).join('');
+    const sfx = CFG.sfxOf(entry);
+    if (sfx.length) rows += `
+        <div class="ag-credit-row">
+          <span class="ag-credit-label">SFX</span>
+          <span class="ag-credit-names">${sfx.map(s => safeUrl(s.url)
+            ? `<a class="ag-collab-link" href="${escHtml(safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${escHtml(CFG.sfxText(s))}</a>`
+            : escHtml(CFG.sfxText(s))).join('<br>')}</span>
+        </div>`;
     return rows ? `<div class="ag-modal-credits">${rows}</div>` : '';
   }
 
@@ -725,7 +733,7 @@ body {
           ${entry.desc ? `<div class="ag-modal-desc">${richText(entry.desc)}</div>` : ''}
           <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0], entry) : ''}</div>
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
-          ${creditsHtml(entry.credits)}
+          ${creditsHtml(entry)}
         </div>
       </div>`;
 

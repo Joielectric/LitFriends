@@ -412,6 +412,10 @@
         var names = (c[r.key] || []).map(creditName);
         if (names.length) parts.push('**' + r.postLabel + ':** ' + names.join(', '));
       });
+      var sfx = CFG.sfxOf(e);
+      if (sfx.length) parts.push('**SFX:** ' + sfx.map(function (s) {
+        return s.url ? '[' + CFG.sfxText(s) + '](' + s.url + ')' : CFG.sfxText(s);
+      }).join(', '));
       return parts.join('\n');
     }
 

@@ -748,6 +748,11 @@
     CREDIT_ORDER.forEach(function(role){
       if ((c[role]||[]).length) credits += '<div class="cred-row"><span class="cred-label">' + CREDIT_LABELS[role] + '</span><span class="cred-names">' + c[role].map(function(n){ return collabHtml(n, false); }).join(', ') + '</span></div>';
     });
+    var sfx = CFG.sfxOf(e);
+    if (sfx.length) credits += '<div class="cred-row"><span class="cred-label">SFX</span><span class="cred-names">' + sfx.map(function(s){
+      var text = esc(CFG.sfxText(s));
+      return safeUrl(s.url) ? '<a href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener noreferrer">' + text + '</a>' : text;
+    }).join('<br>') + '</span></div>';
 
     overlay = document.createElement('div');
     overlay.className = 'overlay';
