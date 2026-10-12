@@ -529,9 +529,17 @@
     <a class="back-link" href="index.html">&#8592; Home</a>
     <span style="display:flex;align-items:center;gap:10px;">
       <span id="cm-whoami" style="color:var(--text-dim);font-size:0.8rem;"></span>
+      <select id="cm-view-as" class="cm-input" style="display:none;width:auto;font-size:0.8rem;padding:3px 6px" onchange="cmViewAs(this.value)" title="See the Content Manager as one of your creators sees it">
+        <option value="">View as: myself</option>
+      </select>
       <button type="button" class="cm-btn cm-btn-sm" onclick="toolsSignOut()">Sign out</button>
     </span>
   </nav>
+
+  <div id="cm-view-as-bar" style="margin:0 0 14px;padding:10px 14px;border:1px solid var(--electric-dim, #5b8de8);border-radius:var(--radius);background:rgba(91,141,232,0.12);color:var(--text);font-size:0.88rem;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+    <span>Viewing as <b id="cm-view-as-name"></b>. This is what they see. Nothing can be changed while you are viewing as them.</span>
+    <button type="button" class="cm-btn cm-btn-sm" onclick="cmViewAs('')">Stop viewing</button>
+  </div>
 
   <div class="header">
     <h1>Content Manager</h1>
@@ -1918,6 +1926,61 @@
 
     const ARTIST_LABELS = CFG.artistLabels;
 
+    // ── Viewing as a creator ────────────────────────────────────────────────
+    // The owner can see this page as one creator sees it. The choice lives in
+    // this tab's sessionStorage, and every request to the site's API carries it
+    // as X-View-As; the server then answers as that creator and refuses any
+    // change (netlify/functions/_auth.js). Signing in and out is never sent as
+    // them, and nor is the list the picker is filled from.
+    let cmViewingAs = '';
+    try { cmViewingAs = sessionStorage.getItem('cm_view_as') || ''; } catch (e) {}
+    const toolsRawFetch = window.fetch.bind(window);
+    if (cmViewingAs) {
+      window.fetch = function (input, init) {
+        const url = typeof input === 'string' ? input : (input && input.url) || '';
+        const path = new URL(url, location.href);
+        if (path.origin === location.origin && path.pathname.indexOf('/api/') === 0 && path.pathname !== '/api/session') {
+          init = Object.assign({}, init);
+          const headers = new Headers(init.headers || (typeof input === 'string' ? undefined : input.headers));
+          headers.set('X-View-As', cmViewingAs);
+          init.headers = headers;
+        }
+        return toolsRawFetch(input, init);
+      };
+    }
+
+    function cmViewAs(slug) {
+      try {
+        if (slug) sessionStorage.setItem('cm_view_as', slug);
+        else sessionStorage.removeItem('cm_view_as');
+      } catch (e) {}
+      location.reload();
+    }
+
+    // Fill the picker from the creator register, asked for as the owner.
+    function cmViewAsInit() {
+      const sel = document.getElementById('cm-view-as');
+      if (!sel || !(cmWho.isOwner || cmWho.viewAs)) return;
+      toolsRawFetch('/api/creators', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list' }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          const list = (d.creators || [])
+            .filter(c => c.slug && c.role !== 'owner')
+            .sort((a, b) => (a.name || a.slug).localeCompare(b.name || b.slug));
+          if (!list.length) return;
+          sel.innerHTML = '<option value="">View as: myself</option>' + list.map(c =>
+            '<option value="' + cmEsc(c.slug) + '">View as: ' + cmEsc(c.name || c.slug) + '</option>').join('');
+          sel.value = cmViewingAs;
+          sel.style.display = '';
+          const named = list.find(c => c.slug === cmViewingAs);
+          if (named) document.getElementById('cm-view-as-name').textContent = named.name || named.slug;
+        })
+        .catch(() => {});
+    }
+
     let cmEntries = [];
     let cmWho = {};
     let cmCollaborators = [];
@@ -2682,6 +2745,9 @@
       })
         .then(r => r.json())
         .then(data => {
+          // Viewing as someone who can no longer be viewed (their account was
+          // removed, say): drop back to yourself rather than to the sign-in box.
+          if (!data.ok && cmViewingAs) return cmViewAs('');
           if (!data.ok) return onFail(data);
           // Reveal the page
           document.getElementById('tools-gate').style.display = 'none';
@@ -2691,7 +2757,14 @@
           cmWho = data.who || {};
           // Seeing other people's entries is the owner's business alone.
           const whoami = document.getElementById('cm-whoami');
-          if (whoami) whoami.textContent = cmWho.email ? 'Signed in as ' + cmWho.email : '';
+          if (whoami) whoami.textContent = cmWho.viewAs
+            ? 'Signed in as ' + cmWho.viewAs + ', viewing as ' + cmWho.email
+            : cmWho.email ? 'Signed in as ' + cmWho.email : '';
+          if (cmWho.viewAs) {
+            document.getElementById('cm-view-as-name').textContent = cmWho.slug;
+            document.getElementById('cm-view-as-bar').style.display = 'flex';
+          }
+          cmViewAsInit();
           const allRow = document.getElementById('cm-all-creators-row');
           if (allRow) allRow.style.display = cmWho.isOwner ? 'flex' : 'none';
           document.querySelectorAll('.owner-only').forEach(el => {

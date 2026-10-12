@@ -178,11 +178,71 @@ export async function identify(rawEmail, name, via) {
 /**
  * Decide whether a request may make changes.
  *
- * Returns { ok, email, name, via, role, slug, isOwner, error }. `via` is
- * "session" or "google", which lets a caller log who did what.
+ * Returns { ok, email, name, via, role, slug, isOwner, viewAs, error }. `via`
+ * is "session" or "google", which lets a caller log who did what. `viewAs` is
+ * set, to the owner's email, when the owner is looking as a creator.
  * `slug` is the profile this person owns, and is what content gets scoped by.
  */
 export async function authorize(req, body) {
+  const who = await signedIn(req, body);
+  return who.ok ? viewAs(req, body, who) : who;
+}
+
+// ── Viewing as a creator ────────────────────────────────────────────────────
+// The owner can look at the Content Manager the way one creator sees it, by
+// sending `X-View-As: <their slug>`. The request is then answered exactly as
+// it would be for that creator, so what comes back is what they see, rather
+// than an approximation the page has to keep in step with the server.
+//
+// It only ever reads. A creator's view is borrowed to look, not to act: any
+// write while viewing as someone is refused here, before the function behind
+// it runs, so nothing can be changed under their name by accident. `viewAs`
+// on the result carries the owner's own email for anything that logs.
+const VIEW_AS_HEADER = "x-view-as";
+const READ_ACTIONS = new Set(["verify", "list", "mine", "stats"]);
+// Lookups on other sites that store nothing, used by the importer.
+const READ_PATHS = new Set(["/api/reddit", "/api/literotica", "/api/scriptbin"]);
+
+function isRead(req, body) {
+  if (body && READ_ACTIONS.has(body.action)) return true;
+  try {
+    return READ_PATHS.has(new URL(req.url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+async function viewAs(req, body, who) {
+  const slug = String(req.headers.get(VIEW_AS_HEADER) || "").trim().toLowerCase();
+  if (!slug) return who;
+  if (!who.isOwner) return { ok: false, error: "Only the site owner can view as a creator.", email: who.email };
+
+  const rec = (await readCreators()).find((c) => String(c.slug || "").toLowerCase() === slug);
+  if (!rec) return { ok: false, error: `No creator account uses the profile "${slug}".`, email: who.email };
+
+  if (!isRead(req, body)) {
+    return {
+      ok: false,
+      viewOnly: true,
+      error: `You are viewing as ${rec.name || slug}, which is read-only. Stop viewing as them to make changes.`,
+      email: who.email,
+    };
+  }
+
+  return {
+    ok: true,
+    email: normEmail(rec.email),
+    name: rec.name || "",
+    via: who.via,
+    isOwner: false,
+    role: rec.role === "owner" ? "creator" : rec.role || "creator",
+    slug: rec.slug,
+    viewAs: who.email,
+  };
+}
+
+// Who the credentials on this request belong to, before any viewing-as.
+async function signedIn(req, body) {
   const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
 
   // A session this site issued. Checked first because it is the common case
@@ -217,6 +277,7 @@ export async function authorize(req, body) {
 export function unauthorized(auth) {
   return {
     error: (auth && auth.error) || "Unauthorized",
+    view_only: !!(auth && auth.viewOnly),
     google_configured: !!(process.env.GOOGLE_CLIENT_ID || "").trim(),
   };
 }
