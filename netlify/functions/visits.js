@@ -222,7 +222,10 @@ function pageLabel(p) {
   return p;
 }
 
-function summarise(batches, days, fromDay, scope) {
+// `exact` is for the owner alone: it keeps each visit's city and region.
+// Everyone else is told the country and no closer, so a creator's view never
+// narrows a listener down to a town.
+function summarise(batches, days, fromDay, scope, exact) {
   // Flatten into events carrying their visit's facts.
   const events = [];
   for (const b of batches) {
@@ -253,7 +256,7 @@ function summarise(batches, days, fromDay, scope) {
     if (!sess) {
       sess = {
         s: e.s, v: e.v, start: e.ts, end: e.ts, dur: 0,
-        where: [e.city, e.r, e.c].filter(Boolean).join(", "), country: e.c || "Unknown", cc: e.cc || "",
+        where: (exact ? [e.city, e.r, e.c] : [e.c]).filter(Boolean).join(", "), country: e.c || "Unknown", cc: e.cc || "",
         device: [e.dev, e.br, e.os].filter(Boolean).join(" · "),
         ref: "", steps: [],
       };
@@ -375,7 +378,7 @@ async function stats(req, body) {
 
   const store = siteStore("visits");
   const perDay = await pool(days, 6, (d) => readDay(store, d, today));
-  const result = summarise(perDay.flat(), days, days[0], scope);
+  const result = summarise(perDay.flat(), days, days[0], scope, !!auth.isOwner);
   return json({ ok: true, scope: scope ? scope.slug : "site", ...result });
 }
 
