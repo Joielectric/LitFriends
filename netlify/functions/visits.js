@@ -1,11 +1,11 @@
 import { siteStore } from "./_site.js";
-import { authorize, unauthorized } from "./_auth.js";
+import { authorize, unauthorized, OWNER_SLUG } from "./_auth.js";
 import { cookieFromRequest, readSession } from "./_session.js";
 
 // Who visits, and what they do while they are here.
 //
 //   POST /api/visits { v, s, events: [...] }         -> record (from js/track.js)
-//   POST /api/visits { action: "stats", days }       -> the Visitors tab
+//   POST /api/visits { action: "stats", days, scope } -> the Visitors tab
 //
 // Nothing here identifies a person. A visitor is a random id their browser
 // made up and kept; there is no IP address, no full user agent and no cookie
@@ -194,11 +194,20 @@ async function namesFor(slug) {
   return names;
 }
 
+// The owner's own pages, beyond their profile. The catalogue lists only work
+// the owner is credited on, so all of it is theirs.
+const OWNER_PAGES = new Set(["/catalog", "/a-word-from-me"]);
+
 // Whose is this event? A creator's page, or a work they are credited on.
-function belongsTo(e, slug, names) {
+function belongsTo(e, slug, names, pages) {
+  if (pages && pages.has(e.p)) return true;
   const m = /^\/profiles?\/([^/]+)/.exec(e.p || "");
   if (m && m[1].toLowerCase() === slug) return true;
   return (e.art || []).some((a) => names.has(a));
+}
+
+async function scopeFor(slug) {
+  return { slug, names: await namesFor(slug), pages: slug === OWNER_SLUG ? OWNER_PAGES : null };
 }
 
 function tally(map, key, n = 1) {
@@ -218,7 +227,7 @@ function summarise(batches, days, fromDay, scope) {
   const events = [];
   for (const b of batches) {
     for (const e of b.events || []) {
-      if (scope && !belongsTo(e, scope.slug, scope.names)) continue;
+      if (scope && !belongsTo(e, scope.slug, scope.names, scope.pages)) continue;
       events.push({ ...e, ts: e.ts || b.ts, v: b.v, s: b.s, c: b.c, cc: b.cc, r: b.r, city: b.city, dev: b.dev, br: b.br, os: b.os });
     }
   }
@@ -346,12 +355,17 @@ async function stats(req, body) {
   const auth = await authorize(req, body);
   if (!auth.ok) return json(unauthorized(auth), 401);
 
-  // The owner sees the whole site. A creator sees their own page and their
-  // own work, which is the part of it that is theirs.
+  // The owner sees the whole site, or narrows it to one creator's share with
+  // `scope`: their own slug for their own catalogue, or anyone else's. A
+  // creator sees their own page and their own work, which is the part of it
+  // that is theirs, and cannot ask for more.
   let scope = null;
+  const asked = String(body.scope || "").trim().toLowerCase();
   if (!auth.isOwner) {
     if (!auth.slug) return json({ error: "Your account has no profile yet." }, 403);
-    scope = { slug: auth.slug, names: await namesFor(auth.slug) };
+    scope = await scopeFor(auth.slug);
+  } else if (asked && asked !== "site") {
+    scope = await scopeFor(asked === "mine" ? OWNER_SLUG : asked);
   }
 
   const n = Math.max(1, Math.min(MAX_DAYS, Math.round(Number(body.days) || 30)));
@@ -362,7 +376,7 @@ async function stats(req, body) {
   const store = siteStore("visits");
   const perDay = await pool(days, 6, (d) => readDay(store, d, today));
   const result = summarise(perDay.flat(), days, days[0], scope);
-  return json({ ok: true, scope: scope ? auth.slug : "site", ...result });
+  return json({ ok: true, scope: scope ? scope.slug : "site", ...result });
 }
 
 export default async (req, context) => {

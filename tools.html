@@ -1163,6 +1163,10 @@
                     <div id="fb-stats" class="fb-stats"></div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
                         <input id="fb-search" class="cm-input" placeholder="Search responses…" style="flex:1;min-width:180px;font-size:0.9rem" oninput="fbRender()">
+                        <select id="fb-filter-for" class="cm-input owner-only" style="display:none;max-width:220px;font-size:0.9rem" onchange="fbRender()" title="Whose feedback to show">
+                            <option value="">Whole site</option>
+                            <option value="mine">My catalogue</option>
+                        </select>
                         <select id="fb-filter-title" class="cm-input" style="max-width:260px;font-size:0.9rem" onchange="fbRender()">
                             <option value="">All audios / scripts</option>
                         </select>
@@ -1177,6 +1181,10 @@
                     <div class="vs-bar">
                       <label class="cm-label" style="margin:0">Visitors <span id="vs-scope" style="font-weight:normal;color:var(--text-mid)"></span></label>
                       <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <select id="vs-scope-pick" class="cm-input owner-only" style="display:none;font-size:0.85rem;width:auto" onchange="vsLoad()" title="Whose numbers to show">
+                          <option value="site">Whole site</option>
+                          <option value="mine">My catalogue</option>
+                        </select>
                         <select id="vs-days" class="cm-input" style="font-size:0.85rem;width:auto" onchange="vsLoad()">
                           <option value="1">Today</option>
                           <option value="7">Last 7 days</option>
@@ -2096,8 +2104,32 @@
     };
     function fbLabel(k) { return FB_LABELS[k] || k.replace(/_/g, ' '); }
     function fbEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    // Feedback through the site's own form, or through the owner's profile, is
+    // the owner's; feedback through anyone else's profile carries their slug.
+    function fbForOf(r) {
+      const own = cmWho.slug || CFG.identity.owner;
+      return !r.for || r.for === own ? 'mine' : r.for;
+    }
+
+    function fbScoped() {
+      const sel = document.getElementById('fb-filter-for');
+      const want = (cmWho.isOwner && sel && sel.value) || '';
+      return want ? fbResponses.filter(r => fbForOf(r) === want) : fbResponses;
+    }
+
+    function fbFillFor() {
+      const sel = document.getElementById('fb-filter-for');
+      if (!sel || !cmWho.isOwner) return;
+      const keep = sel.value;
+      const name = slug => { const c = (crCreators || []).find(x => x.slug === slug); return (c && c.name) || slug; };
+      const others = [...new Set(fbResponses.map(fbForOf))].filter(f => f !== 'mine').sort();
+      sel.innerHTML = '<option value="">Whole site</option><option value="mine">My catalogue</option>' +
+        others.map(f => '<option value="' + fbEsc(f) + '">' + fbEsc(name(f)) + '</option>').join('');
+      sel.value = [...sel.options].some(o => o.value === keep) ? keep : '';
+    }
+
     function fbAvg(key) {
-      const nums = fbResponses.map(r => parseFloat(r[key])).filter(n => !isNaN(n));
+      const nums = fbScoped().map(r => parseFloat(r[key])).filter(n => !isNaN(n));
       return nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1) : '—';
     }
 
@@ -2110,6 +2142,7 @@
         .then(d => {
           if (!d.ok) { cmShowMsg('Could not load feedback: ' + (d.error || 'error'), false); return; }
           fbResponses = d.responses || [];
+          fbFillFor();
           fbPopulateTitles();
           fbRender();
         })
@@ -2126,7 +2159,7 @@
     function fbFiltered() {
       const q = (document.getElementById('fb-search').value || '').toLowerCase().trim();
       const title = document.getElementById('fb-filter-title').value;
-      return fbResponses.filter(r => {
+      return fbScoped().filter(r => {
         if (title && r.audio_title !== title) return false;
         if (q && !Object.values(r).join(' ').toLowerCase().includes(q)) return false;
         return true;
@@ -2137,7 +2170,7 @@
       const list = fbFiltered();
       const stats = document.getElementById('fb-stats');
       stats.innerHTML =
-        '<div class="fb-stat"><span class="fb-stat-label">Responses</span><span class="fb-stat-value">' + fbResponses.length + '</span></div>' +
+        '<div class="fb-stat"><span class="fb-stat-label">Responses</span><span class="fb-stat-value">' + fbScoped().length + '</span></div>' +
         '<div class="fb-stat"><span class="fb-stat-label">Avg overall</span><span class="fb-stat-value">' + fbAvg('rating_overall') + '</span></div>' +
         '<div class="fb-stat"><span class="fb-stat-label">Avg arousal</span><span class="fb-stat-value">' + fbAvg('rating_arousal') + '</span></div>' +
         '<div class="fb-stat"><span class="fb-stat-label">Avg stars</span><span class="fb-stat-value">' + fbAvg('star_performance') + '</span></div>' +
@@ -2206,13 +2239,38 @@
       return h ? h + 'h ' + (m % 60) + 'm' : m + 'm ' + (sec % 60) + 's';
     }
 
+    // The owner can narrow the tab to their own catalogue, or to any creator's
+    // share of the site; everyone else only ever sees their own.
+    function vsFillScopes() {
+      const pick = document.getElementById('vs-scope-pick');
+      if (!pick || !cmWho.isOwner) return;
+      const keep = pick.value;
+      const own = cmWho.slug || CFG.identity.owner;
+      const others = (crCreators || [])
+        .filter(c => c.slug && c.slug !== own)
+        .sort((a, b) => (a.name || a.slug).localeCompare(b.name || b.slug));
+      pick.innerHTML = '<option value="site">Whole site</option><option value="mine">My catalogue</option>' +
+        others.map(c => '<option value="' + cmEsc(c.slug) + '">' + cmEsc(c.name || c.slug) + '</option>').join('');
+      pick.value = [...pick.options].some(o => o.value === keep) ? keep : 'site';
+    }
+
+    function vsScopeLabel(scope) {
+      if (scope === 'site') return '(the whole site)';
+      if (!cmWho.isOwner) return '(your profile and your work)';
+      if (scope === (cmWho.slug || CFG.identity.owner)) return '(your catalogue)';
+      const c = (crCreators || []).find(x => x.slug === scope);
+      return '(' + ((c && c.name) || scope) + '\u2019s profile and work)';
+    }
+
     function vsLoad() {
       const days = document.getElementById('vs-days').value;
+      const pick = document.getElementById('vs-scope-pick');
+      const scope = (cmWho.isOwner && pick && pick.value) || '';
       const recent = document.getElementById('vs-recent');
       recent.innerHTML = '<div class="cm-collab-empty">Loading…</div>';
       fetch('/api/visits', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'stats', days: Number(days) })
+        body: JSON.stringify({ action: 'stats', days: Number(days), scope: scope })
       })
         .then(r => r.json())
         .then(d => {
@@ -2225,7 +2283,7 @@
 
     function vsRender() {
       const d = vsData, t = d.totals;
-      document.getElementById('vs-scope').textContent = d.scope === 'site' ? '(the whole site)' : '(your profile and your work)';
+      document.getElementById('vs-scope').textContent = vsScopeLabel(d.scope);
       const tile = (label, value) => '<div class="fb-stat"><span class="fb-stat-label">' + label + '</span><span class="fb-stat-value">' + value + '</span></div>';
       document.getElementById('vs-stats').innerHTML =
         tile('Visitors', vsNum(t.visitors)) +
@@ -6206,6 +6264,7 @@
           if (!data.ok) return crMsg(data.error || 'That did not work.');
           crCreators = data.creators || [];
           crRender();
+          vsFillScopes();
           onOk && onOk(data);
         })
         .catch(() => crMsg('Could not reach the server.'));
