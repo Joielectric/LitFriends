@@ -1,7 +1,8 @@
-/* Age gate for creator profiles.
+/* Age gate for pages that show or point to adult material: the creator
+ * profiles, the catalogue and A Word From Me.
  *
- * A profile can be reached directly from a shared link, skipping the gate on
- * the home page, so each one asks for itself. Load it in <head>, without
+ * Any of them can be reached directly from a shared link, skipping the gate
+ * on the home page, so each one asks for itself. Load it in <head>, without
  * defer, so the page is hidden before anything on it paints:
  *
  *     <script src="/js/age-gate.js"></script>
@@ -10,7 +11,8 @@
  * (joi_verified) and consenting-adults.html (ca_verified): a visitor who has
  * already said yes on either is not asked again, and saying yes here counts
  * for both. Colours come from the page's own custom properties, so the box
- * takes on each creator's theme.
+ * takes on each page's theme. A page without them falls back to the site's
+ * default blue.
  */
 (function () {
   'use strict';
@@ -39,13 +41,13 @@
     '  display: flex; align-items: center; justify-content: center; padding: 1rem;' +
     '  font-family: "Raleway", system-ui, sans-serif; }' +
     '#age-gate .age-box { background: var(--surface, #1e2438); color: var(--text, #f2f6ff);' +
-    '  border: 1px solid var(--border, rgba(180,195,225,0.24)); border-top: 2px solid var(--accent, #7fb2ff);' +
+    '  border: 1px solid var(--border, rgba(180,195,225,0.24)); border-top: 2px solid var(--accent, var(--electric, #7fb2ff));' +
     '  border-radius: var(--radius, 4px); max-width: 420px; width: 100%; padding: 2.6rem 2rem; text-align: center; }' +
     '#age-gate .age-diamond { width: 52px; height: 52px; border: 1px solid var(--border, rgba(180,195,225,0.42));' +
     '  transform: rotate(45deg); margin: 0 auto 1.6rem; display: flex; align-items: center; justify-content: center;' +
     '  background: var(--surface-2, var(--bg, #262d44)); }' +
     '#age-gate .age-diamond span { transform: rotate(-45deg); font-family: "Cinzel", serif; font-weight: 600;' +
-    '  font-size: 0.8rem; color: var(--accent, #7fb2ff); }' +
+    '  font-size: 0.8rem; color: var(--accent, var(--electric, #7fb2ff)); }' +
     '#age-gate .age-eyebrow { font-family: "Cinzel", serif; font-size: 0.62rem; letter-spacing: 0.4em;' +
     '  text-transform: uppercase; color: var(--text-dim, #a9b4cc); display: block; margin-bottom: 0.7rem; }' +
     '#age-gate h2 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 300; font-size: 1.7rem;' +
@@ -55,14 +57,20 @@
     '#age-gate button { font-family: "Cinzel", serif; font-size: 0.64rem; letter-spacing: 0.28em;' +
     '  text-transform: uppercase; padding: 0.85rem 1.5rem; border-radius: var(--radius, 4px); cursor: pointer;' +
     '  border: 1px solid; background: transparent; transition: all 0.25s; }' +
-    '#age-gate .age-yes { color: var(--text, #fff); border-color: var(--accent, #7fb2ff); }' +
-    '#age-gate .age-yes:hover, #age-gate .age-yes:focus-visible { background: var(--accent, #7fb2ff); color: #fff; }' +
+    '#age-gate .age-yes { color: var(--text, #fff); border-color: var(--accent, var(--electric, #7fb2ff)); }' +
+    '#age-gate .age-yes:hover, #age-gate .age-yes:focus-visible { background: var(--accent, var(--electric, #7fb2ff)); color: #fff; }' +
     '#age-gate .age-no { color: var(--text-dim, #a9b4cc); border-color: var(--border, rgba(180,195,225,0.24)); }' +
     '#age-gate .age-no:hover, #age-gate .age-no:focus-visible { color: var(--text, #f2f6ff); }';
 
   var style = document.createElement('style');
   style.textContent = css;
   (document.head || root).appendChild(style);
+
+  // The heading face, for pages (the catalogue) that do not load it already.
+  var font = document.createElement('link');
+  font.rel = 'stylesheet';
+  font.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap';
+  (document.head || root).appendChild(font);
 
   function build() {
     var gate = document.createElement('div');
@@ -75,7 +83,7 @@
         '<div class="age-diamond"><span>18+</span></div>' +
         '<span class="age-eyebrow">Adults Only</span>' +
         '<h2 id="age-gate-title">Are you 18 or older?</h2>' +
-        '<p>This page contains adult audio content intended for mature audiences only. ' +
+        '<p>This site contains and links to adult content intended for mature audiences only. ' +
         'You must be 18 or older to enter.</p>' +
         '<div class="age-buttons">' +
           '<button type="button" class="age-yes">Yes, I’m 18+</button>' +
