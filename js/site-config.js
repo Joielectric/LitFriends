@@ -99,15 +99,24 @@
     // A credited name matching one of these links to the local page in
     // preference to the collaborator's external link.
     artists: [
-      { slug: 'joi-electric',       name: 'JOI Electric',           icon: '/images/JOI_Icon.png',                        page: 'profiles/joi-electric.html',       tagline: 'Producer · Editor · Musician · Sound Designer' },
-      { slug: 'loona-licks',        name: 'Loona Licks',            icon: '/images/LL_Icon.png',                         page: 'profiles/loona-licks.html',        tagline: 'Voice Artist · Collaborator · Currently on Hiatus' },
-      { slug: 'misskittensk',       name: 'MissKittenSK',           icon: '/images/MissKittenSKClub.png',                page: 'profiles/misskittenSK.html',       tagline: 'A decade of debauched erotic audio · Retired', aliases: ['miss kitten sk'] },
-      { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       page: 'profiles/hisbadgirl77.html',       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77'] },
-      { slug: 'wellnobodysperfect', name: "Well Nobody's Perfect",  icon: '/images/WNP_Icon.png',                        page: 'profiles/wellnobodysperfect.html', tagline: 'Voice Artist · Funny · Delightfully Unpredictable', aliases: ['wellnobodysperfect'] },
-      { slug: 'naughtiwolf',        name: 'NaughtiWolf',            icon: '/images/NW_Icon.png',                         page: 'profiles/naughtiwolf.html',        tagline: 'Voice Artist · BFE · Narrative Collaborator' },
-      { slug: 'lotus-kitty',        name: 'Lotus Kitty',            icon: '/images/LK_Icon.png',                         page: 'profiles/lotus-kitty.html',        tagline: 'Voice Artist · Demisexual · Storyteller' },
-      { slug: 'filthy-bunny',       name: 'Filthy Bunny',           icon: '/images/Filthy_Bunny_Avatar_GreenEyes.png',   page: 'profiles/filthy-bunny.html',       tagline: 'Voice Artist · Writer · Switchy Sub' },
-      { slug: 'la-sphynxxx',        name: 'LaSphynxxx',             icon: '/images/LS_ICON.png',                         page: 'profiles/la-sphynxxx.html',        tagline: 'Voice Artist · Singer · Free Content · Open Requests', aliases: ['la sphynxxx', 'sphynxxx'] },
+      { slug: 'joi-electric',       name: 'JOI Electric',           icon: '/images/JOI_Icon.png',                        page: 'profiles/joi-electric.html',       tagline: 'Producer · Editor · Musician · Sound Designer',
+        bio: "Collaborative audio built alongside amazing artists and storytellers. Exploring intimacy through sound." },
+      { slug: 'loona-licks',        name: 'Loona Licks',            icon: '/images/LL_Icon.png',                         page: 'profiles/loona-licks.html',        tagline: 'Voice Artist · Collaborator · Currently on Hiatus',
+        bio: "Whispering your desires to life. Collaborative, playful, and always asking — who would you like me to be?" },
+      { slug: 'misskittensk',       name: 'MissKittenSK',           icon: '/images/MissKittenSKClub.png',                page: 'profiles/misskittenSK.html',       tagline: 'A decade of debauched erotic audio · Retired', aliases: ['miss kitten sk'],
+        bio: "A decade of debauched erotic audio. Master of improv, architect of desire. Now retired — the archive remains." },
+      { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       page: 'profiles/hisbadgirl77.html',       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77'],
+        bio: "Captivating voice, sharp writer's instinct, and an improv gift that makes every performance feel alive." },
+      { slug: 'wellnobodysperfect', name: "Well Nobody's Perfect",  icon: '/images/WNP_Icon.png',                        page: 'profiles/wellnobodysperfect.html', tagline: 'Voice Artist · Funny · Delightfully Unpredictable', aliases: ['wellnobodysperfect'],
+        bio: "Funny, self-aware, and delightfully unpredictable. One moment tender, the next a complete brat. Usually both at once." },
+      { slug: 'naughtiwolf',        name: 'NaughtiWolf',            icon: '/images/NW_Icon.png',                         page: 'profiles/naughtiwolf.html',        tagline: 'Voice Artist · BFE · Narrative Collaborator',
+        bio: "Authority meets warmth. Script fills, BFE, and narrative collaborations with honest feeling behind the control." },
+      { slug: 'lotus-kitty',        name: 'Lotus Kitty',            icon: '/images/LK_Icon.png',                         page: 'profiles/lotus-kitty.html',        tagline: 'Voice Artist · Demisexual · Storyteller',
+        bio: "Thoughtful and original. The wilder side she reveals to few can be glimpsed, winking playfully, in her art." },
+      { slug: 'filthy-bunny',       name: 'Filthy Bunny',           icon: '/images/Filthy_Bunny_Avatar_GreenEyes.png',   page: 'profiles/filthy-bunny.html',       tagline: 'Voice Artist · Writer · Switchy Sub',
+        bio: "Versatile, creative, and utterly uninhibited. Bringing characters to life through nuance, vulnerability, and warmth." },
+      { slug: 'la-sphynxxx',        name: 'LaSphynxxx',             icon: '/images/LS_ICON.png',                         page: 'profiles/la-sphynxxx.html',        tagline: 'Voice Artist · Singer · Free Content · Open Requests', aliases: ['la sphynxxx', 'sphynxxx'],
+        bio: "Enigmatic and gifted. Free content, open requests, and a voice that commands attention the moment it fills a room." },
     ],
   };
 

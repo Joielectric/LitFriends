@@ -725,6 +725,28 @@
     <span class="hero-sub">Adult audio &mdash; 18+ only</span>
   </section>
 
+  <section class="artists">
+    <div class="recent-section-header">
+      <div class="section-label">The Artists</div>
+      <a href="catalog.html?all=1" class="recent-view-all">Shared catalogue &#8594;</a>
+    </div>
+    <!-- Built from SITE_CONFIG.artists, then topped up from /api/profiles.
+         These cards used to be written out by hand here, which meant the
+         roster existed twice and had already drifted: three of the role lines
+         disagreed with the ones the rest of the site shows. -->
+    <div class="artist-grid" id="artist-grid">
+      <div class="recent-loading">Loading&hellip;</div>
+    </div>
+  </section>
+  <section id="recently-added" style="margin-bottom:2.5rem;">
+    <div class="recent-section-header">
+      <div class="section-label">Latest Works</div>
+      <a href="catalog.html?all=1" class="recent-view-all">View All &#8594;</a>
+    </div>
+    <div class="recent-grid" id="recent-grid">
+      <div class="recent-loading">Loading…</div>
+    </div>
+  </section>
   <section class="about-us">
     <div class="section-label">About Us</div>
     <div class="about-body">
@@ -734,113 +756,6 @@
       <div class="about-col">
         <p>Every piece we release is crafted with intention: high production quality, thoughtful performance, and a genuine desire to realize each artist's creative vision. We're always open to new collaborators. If you have a voice, a story, or a skill that belongs here — reach out.</p>
       </div>
-    </div>
-  </section>
-
-  <section id="recently-added" style="margin-bottom:2.5rem;">
-    <div class="recent-section-header">
-      <div class="section-label">Latest Works</div>
-      <a href="catalog.html" class="recent-view-all">View All &#8594;</a>
-    </div>
-    <div class="recent-grid" id="recent-grid">
-      <div class="recent-loading">Loading…</div>
-    </div>
-  </section>
-
-  <section class="artists">
-    <div class="section-label">The Artists</div>
-    <div class="artist-grid">
-
-      <a class="artist-card" href="profiles/joi-electric.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/JOI_Icon.png" alt="JOI Electric"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">JOI Electric</div>
-        <div class="artist-role">Producer &middot; Editor &middot; Musician &middot; Sound Designer</div>
-        <p class="artist-bio">Collaborative audio built alongside amazing artists and storytellers. Exploring intimacy through sound.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/loona-licks.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/LL_Icon.png" alt="Loona Licks"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">Loona Licks</div>
-        <div class="artist-role">Voice Artist &amp; Storyteller</div>
-        <p class="artist-bio">Whispering your desires to life. Collaborative, playful, and always asking — who would you like me to be?</p>
-      </a>
-
-      <a class="artist-card" href="profiles/misskittenSK.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/MissKittenSKClub.png" alt="MissKittenSK"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">MissKittenSK</div>
-        <div class="artist-role">Retired &nbsp;&middot;&nbsp; 10+ Years &nbsp;&middot;&nbsp; 420+ Audios</div>
-        <p class="artist-bio">A decade of debauched erotic audio. Master of improv, architect of desire. Now retired — the archive remains.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/hisbadgirl77.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/HBG_WIngs.png" alt="HisBadGirl77"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">HisBadGirl77</div>
-        <div class="artist-role">Writer &middot; Voice Artist &middot; Collaborator</div>
-        <p class="artist-bio">Captivating voice, sharp writer's instinct, and an improv gift that makes every performance feel alive.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/wellnobodysperfect.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/WNP_Icon.png" alt="Wellnobodysperfect"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">Well Nobody's Perfect</div>
-        <div class="artist-role">Voice Artist &middot; Switchy &middot; Storyteller</div>
-        <p class="artist-bio">Funny, self-aware, and delightfully unpredictable. One moment tender, the next a complete brat. Usually both at once.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/naughtiwolf.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/NW_Icon.png" alt="NaughtiWolf"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">NaughtiWolf</div>
-        <div class="artist-role">Voice Artist &middot; MDom &middot; Collaborator</div>
-        <p class="artist-bio">Authority meets warmth. Script fills, BFE, and narrative collaborations with honest feeling behind the control.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/lotus-kitty.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/LK_Icon.png" alt="Lotus Kitty"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">Lotus Kitty</div>
-        <div class="artist-role">Voice Artist &middot; Demisexual &middot; Storyteller</div>
-        <p class="artist-bio">Thoughtful and original. The wilder side she reveals to few can be glimpsed, winking playfully, in her art.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/filthy-bunny.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/Filthy_Bunny_Avatar_GreenEyes.png" alt="Filthy Bunny"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">Filthy Bunny</div>
-        <div class="artist-role">Voice Artist &middot; Writer &middot; Storyteller</div>
-        <p class="artist-bio">Versatile, creative, and utterly uninhibited. Bringing characters to life through nuance, vulnerability, and warmth.</p>
-      </a>
-
-      <a class="artist-card" href="profiles/la-sphynxxx.html">
-        <div class="artist-card-top">
-          <div class="artist-initials artist-initials-img"><img src="images/LS_ICON.png" alt="LaSphynxxx"></div>
-          <span class="artist-arrow">&#8594;</span>
-        </div>
-        <div class="artist-name">LaSphynxxx</div>
-        <div class="artist-role">Voice Artist &middot; Singer &middot; Erotic Audio</div>
-        <p class="artist-bio">Enigmatic and gifted. Free content, open requests, and a voice that commands attention the moment it fills a room.</p>
-      </a>
-
     </div>
   </section>
 
@@ -1182,7 +1097,100 @@
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeRecentModal(); });
   })();
 </script>
+<script src="/js/site-config.js"></script>
 <script src="/js/nav.js"></script>
+<script>
+  /* The artist grid.
+   *
+   * Two sources, in order of confidence:
+   *
+   *   1. SITE_CONFIG.artists, the curated roster. It ships in the page, so
+   *      the grid is filled before any network call and still reads right if
+   *      /api/profiles is slow or down.
+   *   2. /api/profiles, for anyone published who is not in that roster yet.
+   *      A new creator appears here on their own, without this file changing.
+   *
+   * A card links to the hand-built page when the roster names one, and to
+   * /profile/<slug> otherwise, which is the page every creator gets.
+   */
+  (function () {
+    var CFG  = window.SITE_CONFIG;
+    var grid = document.getElementById('artist-grid');
+    if (!grid || !CFG || !CFG.artists) return;
+
+    function esc(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // No avatar is not a broken card: the initials placeholder is already
+    // styled for exactly this.
+    function initials(name) {
+      return String(name || '').trim().split(/\s+/)
+        .map(function (w) { return w[0] || ''; }).join('').toUpperCase().slice(0, 3);
+    }
+
+    // A profile bio is free text and can run long. Cut at a word, not mid-word.
+    function short(text, max) {
+      var t = String(text || '').trim();
+      if (t.length <= max) return t;
+      var cut = t.slice(0, max);
+      var sp = cut.lastIndexOf(' ');
+      return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[.,;:\s]+$/, '') + '\u2026';
+    }
+
+    function cardHtml(a) {
+      var href = a.page || ('/profile/' + encodeURIComponent(a.slug));
+      var art  = a.icon
+        ? '<div class="artist-initials artist-initials-img"><img src="' + esc(a.icon) +
+          '" alt="' + esc(a.name) + '" loading="lazy"></div>'
+        : '<div class="artist-initials">' + esc(initials(a.name)) + '</div>';
+      return '<a class="artist-card" href="' + esc(href) + '">' +
+        '<div class="artist-card-top">' + art +
+          '<span class="artist-arrow">&#8594;</span>' +
+        '</div>' +
+        '<div class="artist-name">' + esc(a.name) + '</div>' +
+        (a.tagline ? '<div class="artist-role">' + esc(a.tagline) + '</div>' : '') +
+        (a.bio ? '<p class="artist-bio">' + esc(short(a.bio, 150)) + '</p>' : '') +
+      '</a>';
+    }
+
+    function draw(list) {
+      grid.innerHTML = list.length
+        ? list.map(cardHtml).join('')
+        : '<div class="recent-loading">No artists listed yet.</div>';
+    }
+
+    var roster = CFG.artists.slice();
+    draw(roster);
+
+    var known = {};
+    roster.forEach(function (a) { known[String(a.slug).toLowerCase()] = true; });
+
+    fetch('/api/profiles')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var extra = (data && data.profiles || [])
+          .filter(function (p) { return p && p.slug && !known[String(p.slug).toLowerCase()]; })
+          .map(function (p) {
+            return {
+              slug: p.slug,
+              name: p.name || p.slug,
+              icon: p.avatar || '',
+              tagline: p.tagline || '',
+              bio: p.bio || '',
+              page: '',
+            };
+          })
+          .sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+        // The curated order is deliberate, so newcomers go after it rather
+        // than being mixed in.
+        if (extra.length) draw(roster.concat(extra));
+      })
+      .catch(function () { /* the roster is already on screen */ });
+  })();
+</script>
 <script src="/js/track.js" defer></script>
 </body>
 </html>
