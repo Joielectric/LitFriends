@@ -9,7 +9,9 @@
  *   LinkIcons.html(url)   an <img> tag for that link, or '' if none is known
  *   LinkIcons.apply()     upgrade every .platform-link on the page, swapping the
  *                         lettered .platform-icon placeholder (LIT, RDT…) for the
- *                         real mark. Runs on its own once the page has loaded.
+ *                         real mark, and put a small mark at the front of every
+ *                         .social-link pill (the homepage's Find Me row).
+ *                         Runs on its own once the page has loaded.
  *
  * A host with no icon keeps whatever the page already shows, so adding one is
  * only ever an improvement: drop the file in /images/platforms and add a line.
@@ -77,7 +79,8 @@
   // once it holds a logo, the logo is the tile.
   var CSS =
     '.platform-icon.has-logo{background:none;border:none;padding:0;overflow:hidden}' +
-    '.link-logo{display:block;width:100%;height:100%;object-fit:contain;border-radius:22%}';
+    '.link-logo{display:block;width:100%;height:100%;object-fit:contain;border-radius:22%}' +
+    '.social-link .link-logo{width:18px;height:18px;flex-shrink:0}';
 
   function addStyle() {
     if (document.getElementById('link-icons-css')) return;
@@ -97,6 +100,12 @@
       if (!tag) return;
       box.innerHTML = tag;
       box.classList.add('has-logo');
+    });
+    var pills = (root || document).querySelectorAll('a.social-link');
+    Array.prototype.forEach.call(pills, function (a) {
+      if (a.querySelector('.link-logo')) return;
+      var tag = html(a.getAttribute('href'));
+      if (tag) a.insertAdjacentHTML('afterbegin', tag);
     });
   }
 
