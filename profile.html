@@ -95,7 +95,9 @@
       font-family: "Raleway", sans-serif; font-size: 0.86rem; letter-spacing: 0.08em;
     }
     .link:hover { border-color: var(--accent); background: var(--surface-2); }
-    .link span:last-child { color: var(--accent); }
+    .link > span:last-child { color: var(--accent); }
+    .link-name { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .link-icon { width: 26px; height: 26px; flex-shrink: 0; }
     .cta {
       display: inline-block; padding: 0.85rem 2rem; border-radius: 999px;
       border: 1px solid var(--accent); color: var(--accent); text-decoration: none;
@@ -121,6 +123,7 @@
 
   <script src="/js/site-config.js"></script>
   <script src="/js/audio.js"></script>
+  <script src="/js/link-icons.js"></script>
   <script>
   (function () {
     'use strict';
@@ -194,8 +197,10 @@
       if (sections.links !== false && (p.links || []).length) {
         html += '<section><h2>Find Me</h2><div class="links">' +
           p.links.map(function (l) {
+            var logo = window.LinkIcons ? LinkIcons.html(l.url) : '';
             return '<a class="link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
-              '<span>' + esc(l.label) + '</span><span>&#8599;</span></a>';
+              '<span class="link-name">' + (logo ? '<span class="link-icon">' + logo + '</span>' : '') +
+              esc(l.label) + '</span><span>&#8599;</span></a>';
           }).join('') + '</div></section>';
       }
       if (sections.feedback !== false) {
