@@ -77,10 +77,10 @@ body::before {
 }
 .topnav a:hover, .topnav a[aria-current] { color: var(--text); background: var(--glass-hi); }
 @media (max-width: 720px) { .topnav { display: none; } }
-/* The sister collective's link: its own coral, so it reads as somewhere else */
-.topnav a.vk-link { display: inline-flex; align-items: center; gap: 0.35rem; color: #ff9a7a; }
+/* The sister collective's link: its own dusty rose, so it reads as somewhere else */
+.topnav a.vk-link { display: inline-flex; align-items: center; gap: 0.35rem; color: #e8a0b0; }
 .topnav a.vk-link svg { width: 15px; height: 15px; }
-.topnav a.vk-link:hover { color: #fff; background: rgba(255,122,92,0.14); }
+.topnav a.vk-link:hover { color: #fff; background: rgba(176,40,74,0.2); }
 
 /* Mobile bottom bar */
 .bottombar {
@@ -96,7 +96,7 @@ body::before {
 }
 .bottombar a[aria-current] { color: var(--text); background: var(--glass-hi); }
 .bottombar a svg { width: 20px; height: 20px; }
-.bottombar a.vk-link { color: #ff9a7a; }
+.bottombar a.vk-link { color: #e8a0b0; }
 .bottombar a { white-space: nowrap; }
 @media (max-width: 400px) { .bottombar a { min-width: 0; padding: 0.4rem 0.5rem; } }
 @media (max-width: 720px) { .bottombar { display: flex; } }
