@@ -1117,6 +1117,39 @@
     }
     var currentModal = null;
 
+    // The same popup the catalogues open (css/ca.css styles it in the
+    // collective's colours), so a work looks the same wherever it is opened.
+    function escHtml(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function safeUrl(u){
+      u = String(u || '').trim();
+      if (!u) return '';
+      if (/^https?:\/\//i.test(u)) return u;
+      if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';
+      return u.replace(/"/g, '%22');
+    }
+    // Escape, keep line breaks, and turn pasted URLs into links
+    function richText(s){
+      return escHtml(s).replace(/(https?:\/\/[^\s<]+)/g, function(u){
+        var trail = '', m = u.match(/[.,;:!?)\]]+$/);
+        if (m) { trail = m[0]; u = u.slice(0, -trail.length); }
+        return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
+      }).replace(/\r?\n/g, '<br>');
+    }
+    function niceDate(d){
+      var t = Date.parse(d || '');
+      if (isNaN(t)) return escHtml(d || '');
+      var dt = new Date(t);
+      return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: dt.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+    }
+    // A credited name leads to their page where there is one.
+    function nameHtml(n){
+      var CFG = window.SITE_CONFIG;
+      var page = CFG && CFG.profilePage ? CFG.profilePage(n, n) : '';
+      return page ? '<a href="' + escHtml(page) + '">' + escHtml(n) + '</a>' : escHtml(n);
+    }
+    var OPEN_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    var DL_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
     function closeRecentModal(){
       if(currentModal){ currentModal.remove(); currentModal=null; }
       document.body.style.overflow='';
@@ -1125,61 +1158,53 @@
     function openRecentModal(entry){
       closeRecentModal();
       document.body.style.overflow='hidden';
+      var CFG = window.SITE_CONFIG;
       var links = Array.isArray(entry.links)&&entry.links.length ? entry.links : (entry.provider&&entry.url ? [{provider:entry.provider,url:entry.url}] : []);
-      var tags = (entry.tags||[]).map(function(t){ return '<span style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 9px;border-radius:20px;border:1px solid rgba(200,180,170,0.3);color:var(--text-mid)">'+t+'</span>'; }).join('');
+      var type = CFG && CFG.typeOf ? CFG.typeOf(entry) : (entry.type || 'audio');
+      var badge = CFG && CFG.typeLabels && CFG.typeLabels[type]
+        ? '<span class="vk-type"><span aria-hidden="true">' + (CFG.typeIcons[type] || '') + '</span> ' + escHtml(CFG.typeLabels[type]) + '</span>' : '';
+      var reads = CFG && CFG.isTextType && CFG.isTextType(entry);
+      var linkBtns = links.map(function(l){
+        var prov = PROVIDERS[l.provider] || { label: l.provider };
+        var verb = l.kind ? (l.kind === 'script' ? 'Read on ' : 'Listen on ') : (reads ? 'Read on ' : 'Open on ');
+        var href = safeUrl(l.url);
+        return href ? '<a class="vk-link-btn" href="' + escHtml(href) + '" target="_blank" rel="noopener noreferrer">' + OPEN_ICON + verb + escHtml(prov.label) + '</a>' : '';
+      }).join('');
+      var isAud = function(t){ return GENDER_TAGS.indexOf(String(t).toLowerCase()) !== -1; };
+      var tags = (entry.tags||[]).filter(isAud).concat((entry.tags||[]).filter(function(t){ return !isAud(t); }))
+        .map(function(t){ return '<span class="recent-tag' + (isAud(t) ? ' gender' : '') + '">' + escHtml(t) + '</span>'; }).join('');
       var credits = '';
-      if(entry.credits){ Object.entries(CREDIT_LABELS).forEach(function(pair){ var names=(entry.credits[pair[0]]||[]); if(names.length) credits+='<div style="font-size:0.78rem;line-height:1.5"><span style="display:block;color:var(--text-dim);font-size:0.66rem;letter-spacing:.08em;text-transform:uppercase">'+pair[1]+'</span><span style="color:var(--text-mid)">'+names.join(', ')+'</span></div>'; }); }
+      if(entry.credits){ Object.entries(CREDIT_LABELS).forEach(function(pair){
+        var names = (entry.credits[pair[0]]||[]);
+        if(names.length) credits += '<div class="vk-cred"><span class="vk-cred-label">' + pair[1] + '</span><span class="vk-cred-names">' + names.map(nameHtml).join(', ') + '</span></div>';
+      }); }
       var sfx = (entry.sfx || []).filter(function(s){ return s && (s.note || s.url); });
-      if(sfx.length) credits+='<div style="font-size:0.78rem;line-height:1.5"><span style="display:block;color:var(--text-dim);font-size:0.66rem;letter-spacing:.08em;text-transform:uppercase">SFX</span><span style="color:var(--text-mid)">'+sfx.map(sfxLine).join('<br>')+'</span></div>';
-      if(credits) credits='<div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.2rem">'+credits+'</div>';
-
-      function tabBody(link){
-        var prov = PROVIDERS[link.provider]||{label:link.provider,embed:false};
-        return (prov.embed
-          ? '<iframe style="width:100%;height:220px;border:none;border-radius:2px;background:#000" src="'+link.url+'" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>'
-          : '<div style="padding:1.4rem;text-align:center;color:var(--text-dim);font-style:italic;font-size:0.9rem">Embedding not available for '+prov.label+'.</div>')
-          + '<a href="'+link.url+'" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;margin-top:0.8rem;padding:8px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(200,150,140,0.3);border-radius:2px;color:var(--text-mid);text-decoration:none;font-family:Cinzel,serif;font-size:0.72rem;letter-spacing:.06em;text-transform:uppercase;width:fit-content"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Open on '+prov.label+'</a>';
-      }
-
-      var tabsHtml = links.length > 1
-        ? '<div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">'
-          + links.map(function(lk,i){ var prov=PROVIDERS[lk.provider]||{label:lk.provider}; return '<button class="rm-tab" data-idx="'+i+'" style="padding:5px 14px;border:1px solid '+(i===0?'var(--coral)':'rgba(200,150,140,0.3)')+';background:'+(i===0?'rgba(176,40,74,.12)':'transparent')+';color:'+(i===0?'var(--coral)':'var(--text-dim)')+';font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;cursor:pointer">'+prov.label+'</button>'; }).join('')
-          + '</div>'
-        : '';
+      if(sfx.length) credits += '<div class="vk-cred"><span class="vk-cred-label">SFX</span><span class="vk-cred-names">' + sfx.map(sfxLine).join('<br>') + '</span></div>';
+      var meta = (entry.date ? '<div class="vk-meta-item"><span>Released</span><b>' + niceDate(entry.date) + '</b></div>' : '')
+               + (entry.trt ? '<div class="vk-meta-item"><span>Length</span><b>' + escHtml(entry.trt) + '</b></div>' : '');
+      var track = safeUrl(entry.track), img = safeUrl(entry.image);
 
       var overlay = document.createElement('div');
-      overlay.style.cssText='position:fixed;inset:0;z-index:9100;background:rgba(6,3,6,0.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem';
+      overlay.className = 'vk-overlay';
       overlay.addEventListener('click', function(ev){ if(ev.target===overlay) closeRecentModal(); });
-
-      var modal = document.createElement('div');
-      modal.style.cssText='background:var(--surface);border:1px solid var(--border-mid);border-radius:4px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:1.6rem;position:relative';
-      modal.innerHTML=
-        '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem">'
-        +  '<div><div style="font-family:Cinzel,serif;font-size:1.05rem;letter-spacing:.05em;color:#fff;line-height:1.3">'+(entry.title||'Untitled')+'</div>'+(entry.date?'<div style="color:var(--text-dim);font-size:0.78rem;margin-top:3px">'+entry.date+'</div>':'')+'</div>'
-        +  '<button id="rm-close" style="background:none;border:none;color:var(--text-dim);font-size:1.4rem;cursor:pointer;line-height:1;padding:0 0 0 1rem;flex-shrink:0">&times;</button>'
-        +'</div>'
-        +(entry.desc?'<div style="color:var(--text-mid);font-size:0.9rem;line-height:1.7;margin-bottom:1rem">'+entry.desc+'</div>':'')
-        + tabsHtml
-        +'<div id="rm-body">'+(links.length ? tabBody(links[0]) : '<div style="color:var(--text-dim);font-style:italic">No links available.</div>')+'</div>'
-        +(tags?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:1rem">'+tags+'</div>':'')
-        + credits;
-
-      overlay.appendChild(modal);
+      overlay.innerHTML =
+        '<div class="vk-modal" role="dialog" aria-modal="true" aria-label="' + escHtml(entry.title || 'Untitled') + '">'
+        + '<div class="vk-head"><div class="vk-title">' + badge + escHtml(entry.title || 'Untitled') + '</div>'
+        +   '<button class="vk-close" aria-label="Close">&times;</button></div>'
+        + (meta ? '<div class="vk-meta">' + meta + '</div>' : '')
+        + (track ? '<div class="vk-player"><audio controls preload="none" src="' + escHtml(track) + '"></audio></div>' : '')
+        + (img ? '<div class="vk-frame"><img src="' + escHtml(img) + '" alt="' + escHtml(entry.title || '') + '" loading="lazy"></div>' : '')
+        + (entry.desc ? '<div class="vk-desc">' + richText(entry.desc) + '</div>' : '')
+        + ((track || linkBtns) ? '<div class="vk-links">' + (track ? '<a class="vk-dl" href="' + escHtml(track) + '" download>' + DL_ICON + 'Download track</a>' : '') + linkBtns + '</div>'
+                               : '<div class="vk-note">No links yet.</div>')
+        + (entry.license ? '<div class="vk-license">' + escHtml(entry.license) + '</div>' : '')
+        + (tags ? '<div class="vk-tags">' + tags + '</div>' : '')
+        + (credits ? '<div class="vk-credits">' + credits + '</div>' : '')
+        + '</div>';
       document.body.appendChild(overlay);
       currentModal = overlay;
-
-      modal.querySelector('#rm-close').addEventListener('click', closeRecentModal);
-
-      // Tab switching
-      modal.querySelectorAll('.rm-tab').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          modal.querySelectorAll('.rm-tab').forEach(function(b){
-            b.style.borderColor='rgba(200,150,140,0.3)'; b.style.background='transparent'; b.style.color='var(--text-dim)';
-          });
-          btn.style.borderColor='var(--coral)'; btn.style.background='rgba(176,40,74,.12)'; btn.style.color='var(--coral)';
-          modal.querySelector('#rm-body').innerHTML = tabBody(links[+btn.dataset.idx]);
-        });
-      });
+      overlay.querySelector('.vk-close').addEventListener('click', closeRecentModal);
+      if (window.joiTrack) joiTrack.open(entry);
     }
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeRecentModal(); });
   })();
