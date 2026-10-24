@@ -319,6 +319,7 @@
 </nav>
 
 <script src="/js/site-config.js"></script>
+<script src="/js/artists.js"></script>
 <script>
 (function () {
   'use strict';
@@ -555,7 +556,9 @@
     var url = window.__CATALOG_SRC__ || '/api/content';
     Promise.all([
       fetch(url).then(function(r){ return r.json(); }),
-      whoAmI()
+      whoAmI(),
+      // Creators with a profile but no hand-built page, so their credits link.
+      window.Artists ? Artists.load() : null
     ]).then(function(both){
       var data = both[0];
       adoptProviders(data.providers);
