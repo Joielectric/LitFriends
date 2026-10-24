@@ -180,48 +180,78 @@ html.reveal-on .reveal.in { opacity: 1; transform: none; }
   html.reveal-on .reveal { opacity: 1; transform: none; transition: none; }
 }
 
-/* Release cards in a sideways-scrolling row (homepage's Latest drops, About) */
+/* Release cards: a small square thumbnail on the left, words and tags on the
+ * right. Cover art is mostly wide banners, so the thumbnail shows the whole
+ * image, uncropped, over a blurred copy of itself that fills the square.
+ *
+ *   <a class="rel">                    (or <div> on the catalogue)
+ *     <div class="thumb t-audio">
+ *       <img class="thumb-bg" …> <img class="thumb-img" …>   or  <span class="gen">M</span>
+ *       <button class="play">…</button>                        when there is a track
+ *     </div>
+ *     <div class="rel-body"> .rel-title  .rel-meta  .chips </div>
+ *   </a>
+ */
+.rel {
+  position: relative; display: flex; gap: 0.9rem; align-items: flex-start; padding: 0.75rem; color: var(--text); text-decoration: none;
+  background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius);
+  transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
+}
+.rel:hover { transform: translateY(-3px); border-color: rgba(139,92,255,0.55); box-shadow: 0 12px 34px rgba(139,92,255,0.2); }
+.rel:active { transform: scale(0.99); }
+.rel-body { flex: 1; min-width: 0; }
+.rel-title { font-family: var(--display); font-weight: 600; font-size: 1.02rem; line-height: 1.3; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rel-meta { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+
+.thumb {
+  position: relative; flex-shrink: 0; width: var(--thumb, 104px); aspect-ratio: 1; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(135deg, #1b2350, #3a1f6e 60%, #6b1f63);
+  display: flex; align-items: center; justify-content: center; isolation: isolate;
+}
+.thumb.t-script { background: linear-gradient(135deg, #3b2a0b, #6e4d12 60%, #8a3a1f); }
+.thumb.t-story  { background: linear-gradient(135deg, #0b3b33, #12655a 60%, #1f4f8a); }
+.thumb.t-poem   { background: linear-gradient(135deg, #2a0b3b, #5a1f8a 60%, #8a1f6b); }
+.thumb.t-music  { background: linear-gradient(135deg, #0b3b2f, #128a6e 60%, #1f6b8a); }
+.thumb-bg {
+  position: absolute; inset: -15%; width: 130%; height: 130%; object-fit: cover; z-index: -1;
+  filter: blur(14px) saturate(1.35) brightness(0.72);
+}
+.thumb-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.thumb .gen { font-family: "Cinzel", serif; font-weight: 700; font-size: 2.3rem; color: rgba(255,255,255,0.85); text-shadow: 0 0 24px rgba(57,213,255,0.55); }
+@media (max-width: 520px) { .thumb { --thumb: 88px; } .thumb .gen { font-size: 2rem; } }
+
+.badge-new {
+  display: inline-block; font-family: var(--display); font-weight: 700; font-size: 0.66rem; letter-spacing: 0.06em; line-height: 1.5;
+  color: #0a0c18; background: var(--volt); padding: 0.05rem 0.5rem; border-radius: 999px;
+}
+.play {
+  position: absolute; right: 5px; bottom: 5px; width: 34px; height: 34px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--volt); color: #0a0c18; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5); transition: transform 0.15s;
+}
+.play:hover { transform: scale(1.08); }
+.play:active { transform: scale(0.94); }
+.play svg { width: 14px; height: 14px; }
+.rel.playing .thumb { box-shadow: 0 0 0 2px var(--cyan), 0 0 24px rgba(57,213,255,0.45); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.6rem; }
+.chip { font-size: 0.78rem; font-weight: 600; color: var(--text); border-radius: 999px; padding: 0.2rem 0.62rem; line-height: 1.35; background: rgba(57,213,255,0.12); border: 1px solid rgba(57,213,255,0.38); }
+/* Audience tags (F4M and the like) are what most people filter on first */
+.chip.gender { color: #ffc56b; background: rgba(255,180,84,0.16); border-color: rgba(255,180,84,0.55); }
+
+/* The homepage's and About's row of the newest few, scrolling sideways */
 .drops {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 220px); gap: 1rem;
+  display: grid; grid-auto-flow: column; grid-auto-columns: min(360px, 86vw); gap: 0.9rem;
   overflow-x: auto; scroll-snap-type: x mandatory; padding: 0.3rem 1.2rem 1rem; margin: 0 -1.2rem;
   scrollbar-width: none; overscroll-behavior-x: contain;
 }
 .drops::-webkit-scrollbar { display: none; }
-.drop {
-  scroll-snap-align: start; position: relative; display: flex; flex-direction: column; color: var(--text);
-  text-decoration: none; padding: 0.6rem; transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
-}
-.drop:hover { transform: translateY(-4px); border-color: rgba(139,92,255,0.6); box-shadow: 0 14px 40px rgba(139,92,255,0.25); }
-.drop-cover {
-  position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 0.75rem;
-  background: linear-gradient(135deg, #1b2350, #3a1f6e 60%, #6b1f63);
-  display: flex; align-items: center; justify-content: center;
-}
-.drop-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.drop-cover .gen { font-family: "Cinzel", serif; font-weight: 700; font-size: 3.4rem; color: rgba(255,255,255,0.85); text-shadow: 0 0 30px rgba(57,213,255,0.6); }
-.badge-new {
-  position: absolute; top: 8px; left: 8px; font-family: var(--display); font-weight: 700; font-size: 0.68rem;
-  letter-spacing: 0.06em; color: #0a0c18; background: var(--volt); padding: 0.2rem 0.55rem; border-radius: 999px;
-}
-.play {
-  position: absolute; right: 10px; bottom: 10px; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
-  background: var(--volt); color: #0a0c18; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.45); transition: transform 0.15s;
-}
-.play:hover { transform: scale(1.08); }
-.play:active { transform: scale(0.94); }
-.play svg { width: 18px; height: 18px; }
-.drop.playing .drop-cover { box-shadow: 0 0 0 2px var(--cyan), 0 0 30px rgba(57,213,255,0.45); }
-.drop-title { font-family: var(--display); font-weight: 600; font-size: 1rem; line-height: 1.3;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.drop-meta { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem; }
-.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.55rem; }
-.chip { font-size: 0.78rem; font-weight: 600; color: var(--text); border-radius: 999px; padding: 0.2rem 0.62rem; line-height: 1.35; background: rgba(57,213,255,0.12); border: 1px solid rgba(57,213,255,0.38); }
-/* Audience tags (F4M and the like) are what most people filter on first */
-.chip.gender { color: #ffc56b; background: rgba(255,180,84,0.16); border-color: rgba(255,180,84,0.55); }
+.drops > .rel { scroll-snap-align: start; }
 .drops-empty { color: var(--text-dim); padding: 1.2rem 1.4rem; }
+
 .skeleton { pointer-events: none; }
-.skeleton .drop-cover, .skeleton .sk-line { background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.10), rgba(255,255,255,0.05)); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
-.sk-line { height: 0.8rem; border-radius: 6px; margin-top: 0.4rem; }
+.skeleton .thumb, .skeleton .sk-line { background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.10), rgba(255,255,255,0.05)); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+.sk-line { height: 0.8rem; border-radius: 6px; margin-top: 0.5rem; }
 @keyframes shimmer { to { background-position: -200% 0; } }
-@media (prefers-reduced-motion: reduce) { .skeleton .drop-cover, .skeleton .sk-line { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .skeleton .thumb, .skeleton .sk-line { animation: none; } }

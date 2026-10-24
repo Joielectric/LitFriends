@@ -72,9 +72,7 @@
     .cta-row { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; }
 
 
-    /* Latest drops: the cards are in css/electric.css; the homepage's are a touch wider */
-    .drops { grid-auto-columns: minmax(210px, 230px); }
-    .drop-cover .gen-icon { position: absolute; left: 10px; bottom: 8px; font-size: 1.1rem; opacity: 0.8; }
+    /* Latest drops: the cards are in css/electric.css */
 
     /* News */
     .news-grid { display: grid; gap: 1rem; }
@@ -338,7 +336,7 @@
     var CFG = window.SITE_CONFIG;
     var DROP_COUNT = 10;
     var NEW_DAYS = 21;
-    row.innerHTML = new Array(5).join('<div class="drop glass skeleton"><div class="drop-cover"></div><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div></div>');
+    row.innerHTML = new Array(4).join('<div class="rel skeleton"><div class="thumb"></div><div class="rel-body"><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div><div class="sk-line" style="width:65%"></div></div></div>');
 
     var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
     var PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -358,21 +356,23 @@
       var img = safeUrl(e.image);
       var track = safeUrl(e.track);
       var type = CFG ? CFG.typeOf(e) : 'audio';
-      var icon = CFG && CFG.typeIcons ? CFG.typeIcons[type] || '' : '';
       var initial = esc(String(e.title || '?').replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase() || '?');
-      var tags = (e.tags || []).filter(function (t) { return !(CFG && CFG.isAudienceTag && CFG.isAudienceTag(t)); }).slice(0, 2);
-      var audience = (e.tags || []).filter(function (t) { return CFG && CFG.isAudienceTag && CFG.isAudienceTag(t); }).slice(0, 1);
-      var meta = [w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
-      return '<a class="drop glass" href="catalog.html?q=' + encodeURIComponent(e.title || '') + '" data-i="' + i + '">' +
-        '<div class="drop-cover">' +
-          (img ? '<img src="' + img + '" alt="" loading="lazy">'
-               : '<span class="gen" aria-hidden="true">' + initial + '</span><span class="gen-icon" aria-hidden="true">' + icon + '</span>') +
-          (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
+      var isAud = function (t) { return !!(CFG && CFG.isAudienceTag && CFG.isAudienceTag(t)); };
+      // Audience first: it is the first thing a listener filters on.
+      var tags = (e.tags || []).filter(isAud).concat((e.tags || []).filter(function (t) { return !isAud(t); })).slice(0, 5);
+      var meta = (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
+        [type !== 'audio' && CFG ? esc(CFG.typeLabels[type]) : '', w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
+      return '<a class="rel" href="catalog.html?q=' + encodeURIComponent(e.title || '') + '" data-i="' + i + '">' +
+        '<div class="thumb t-' + esc(type) + '">' +
+          (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
+               : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
           (track ? '<button type="button" class="play" data-track="' + esc(track) + '" aria-label="Play ' + esc(e.title || '') + '">' + PLAY + '</button>' : '') +
         '</div>' +
-        '<div class="drop-title">' + esc(e.title || 'Untitled') + '</div>' +
-        (meta ? '<div class="drop-meta">' + meta + '</div>' : '') +
-        ((audience.length || tags.length) ? '<div class="chips">' + audience.map(function (t) { return '<span class="chip gender">' + esc(t) + '</span>'; }).concat(tags.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; })).join('') + '</div>' : '') +
+        '<div class="rel-body">' +
+          '<div class="rel-title">' + esc(e.title || 'Untitled') + '</div>' +
+          (meta ? '<div class="rel-meta">' + meta + '</div>' : '') +
+          (tags.length ? '<div class="chips">' + tags.map(function (t) { return '<span class="chip' + (isAud(t) ? ' gender' : '') + '">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        '</div>' +
       '</a>';
     }
 
@@ -388,7 +388,7 @@
     var audio = null, playingBtn = null;
     function stopPlaying() {
       if (audio) audio.pause();
-      if (playingBtn) { playingBtn.innerHTML = PLAY; playingBtn.closest('.drop').classList.remove('playing'); }
+      if (playingBtn) { playingBtn.innerHTML = PLAY; playingBtn.closest('.rel').classList.remove('playing'); }
       playingBtn = null;
     }
     row.addEventListener('click', function (ev) {
@@ -401,7 +401,7 @@
       audio.src = btn.getAttribute('data-track');
       audio.onended = stopPlaying;
       audio.play().then(function () {
-        playingBtn = btn; btn.innerHTML = PAUSE; btn.closest('.drop').classList.add('playing');
+        playingBtn = btn; btn.innerHTML = PAUSE; btn.closest('.rel').classList.add('playing');
       }).catch(stopPlaying);
     });
 
