@@ -25,9 +25,9 @@ const SITES = {
     card: "/images/share/joi-electric.png",
   },
   ca: {
-    name: "Consenting Adults",
+    name: "The Velvet Key",
     tagline: "Every voice here wanted to be heard.",
-    card: "/images/share/consenting-adults.png",
+    card: "/images/share/the-velvet-key.png",
   },
 };
 
