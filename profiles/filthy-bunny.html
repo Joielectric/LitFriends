@@ -27,250 +27,31 @@
   <link rel="canonical" href="https://joielectric.com/profiles/filthy-bunny.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+    <script>if ('IntersectionObserver' in window) document.documentElement.classList.add('reveal-on');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/electric.css">
+  <link rel="stylesheet" href="/css/profile.css">
   <style>
+    /* This creator's colours; css/profile.css builds the rest from them. */
     :root {
-      --accent: var(--wine);
-      --bg: #0e090b;
-      --surface: #1a1013;
-      --surface-2: #221519;
-      --surface-3: #2c1c20;
-      --crimson: #9b2035;
-      --wine: #b03050;
-      --rose: #c85070;
-      --amber: #c8903a;
-      --amber-pale: rgba(200,144,58,0.08);
-      --wine-pale: rgba(176,48,80,0.08);
-      --text: #f5ece8;
-      --text-mid: #e8c8c0;
-      --text-dim: #c09090;
-      --silver: #f0dcd8;
-      --silver-hi: #fdf6f4;
-      --border: rgba(176,48,80,0.28);
-      --border-mid: rgba(176,48,80,0.48);
-      --border-hi: rgba(200,80,112,0.7);
-      --radius: 3px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 17px;
-      line-height: 1.75;
-      min-height: 100vh;
-      min-height: 100dvh;
-      overflow-x: clip;
-    }
-
-    body::before {
-      content: "";
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(155,32,53,0.3) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 35% at 15% 60%, rgba(200,144,58,0.06) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 35% at 85% 40%, rgba(155,32,53,0.08) 0%, transparent 55%);
-      pointer-events: none; z-index: 0;
-    }
-
-    /* === LAYOUT === */
-    .page-wrap {
-      position: relative; z-index: 1;
-      max-width: 860px; margin: 0 auto;
-      padding: 0 1.5rem 6rem;
-    }
-
-    /* === BANNER === */
-    .banner-frame {
-      position: relative;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-bottom: 3px solid var(--crimson);
-      overflow: hidden;
-      margin-top: 1rem;
-      margin-bottom: 0;
-    }
-    .banner-frame img {
-      width: 100%; height: auto; display: block;
-      max-height: 300px; object-fit: cover; object-position: center 30%;
-    }
-
-    /* === INTRO === */
-    .page-intro {
-      text-align: center;
-      padding: 3rem 1rem 2.2rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2.5rem;
-    }
-    .intro-eyebrow {
-      font-family: "Cinzel", serif;
-      font-size: 0.65rem; letter-spacing: 0.5em; text-transform: uppercase;
-      color: var(--text-dim); display: block; margin-bottom: 1rem;
-    }
-    .page-intro h1 {
-      font-family: "Great Vibes", cursive;
-      font-size: clamp(3.2rem, 9vw, 5.5rem);
-      font-weight: 400;
-      color: var(--rose);
-      line-height: 1.1; margin-bottom: 0.4rem;
-      filter: drop-shadow(0 2px 18px rgba(155,32,53,0.5)) drop-shadow(0 0 40px rgba(200,80,100,0.25));
-    }
-    .intro-script {
-      font-family: "Cinzel", serif;
-      font-size: 0.65rem; letter-spacing: 0.38em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: 1.4rem; display: block;
-    }
-    .divider {
-      display: flex; align-items: center; gap: 1rem;
-      justify-content: center; margin: 1.4rem auto; max-width: 260px;
-    }
-    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
-    .divider i {
-      width: 5px; height: 5px; background: var(--wine);
-      transform: rotate(45deg); display: inline-block;
-    }
-    .intro-tagline {
-      font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-      font-style: italic; color: var(--text-mid);
-      max-width: 480px; margin: 0 auto; line-height: 1.85;
-    }
-
-    /* === SECTION === */
-    .section { margin-bottom: 3rem; }
-    .section-label {
-      font-family: "Cinzel", serif;
-      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.38em; text-transform: uppercase;
-      color: var(--text-dim);
-      display: flex; align-items: center; gap: 1rem;
-      margin-bottom: 1.6rem;
-    }
-    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
-
-    /* === BIO === */
-    .bio {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--crimson);
-      border-radius: var(--radius);
-      padding: 1.8rem 2rem;
-    }
-    .bio p {
-      font-size: 1.05rem; color: var(--text-mid); line-height: 1.95;
-    }
-    .bio p + p { margin-top: 1rem; }
-
-    /* === TRAITS === */
-    .traits {
-      display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.6rem;
-    }
-    .trait {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 0.88rem; font-style: italic;
-      padding: 0.32rem 1.1rem;
-      border-radius: 999px; border: 1px solid;
-      line-height: 1.4;
-    }
-    .trait-wine    { color: var(--wine);   border-color: var(--wine);   background: var(--wine-pale); }
-    .trait-amber   { color: var(--amber);  border-color: rgba(200,144,58,0.5); background: var(--amber-pale); }
-    .trait-silver  { color: var(--silver); border-color: var(--border-mid); background: rgba(224,204,200,0.05); }
-
-    /* === BLOCKQUOTE === */
-    blockquote {
-      margin-top: 1.6rem;
-      padding: 1rem 1.4rem 0.9rem 1.6rem;
-      border-left: 3px solid var(--wine);
-      background: rgba(176,48,80,0.07);
-      border-radius: 0 var(--radius) var(--radius) 0;
-    }
-    blockquote p {
-      font-family: "Great Vibes", cursive;
-      font-size: 1.5rem !important;
-      color: var(--rose) !important;
-      line-height: 1.5 !important;
-      font-style: normal !important;
-    }
-    blockquote cite {
-      display: block; margin-top: 0.4rem;
-      font-family: "Cinzel", serif; font-size: 0.58rem;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--text-dim);
-    }
-
-    /* === PLATFORM LINKS === */
-    .platforms {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 0.9rem;
-    }
-    .platform-link {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 1rem 1.2rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      text-decoration: none; color: var(--text-mid);
-      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
-    }
-    .platform-link:hover {
-      border-color: var(--wine);
-      box-shadow: 0 0 20px rgba(155,32,53,0.2);
-      color: var(--text);
-    }
-    .platform-icon {
-      width: 38px; height: 38px; border-radius: var(--radius);
-      background: rgba(176,48,80,0.12);
-      border: 1px solid var(--border-mid);
-      display: flex; align-items: center; justify-content: center;
-      font-family: "Cinzel", serif; font-size: 0.55rem; font-weight: 600;
-      color: var(--wine); flex-shrink: 0; letter-spacing: 0.05em;
-    }
-    .platform-info { flex: 1; min-width: 0; }
-    .platform-name {
-      font-family: "Cinzel", serif; font-size: 0.65rem;
-      letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
-      color: var(--silver); display: block; margin-bottom: 0.2rem;
-    }
-    .platform-desc { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
-    .platform-arrow {
-      color: var(--text-dim); font-size: 0.9rem;
-      transition: color 0.25s, transform 0.25s;
-    }
-    .platform-link:hover .platform-arrow { color: var(--wine); transform: translateX(3px); }
-
-    /* === AUDIO WORKS === */
-    #audio-grid {
-      --surface-2: var(--surface-2);
-      --border: rgba(176,48,80,0.28);
-      --border-mid: rgba(176,48,80,0.48);
-      --text: #f5ece8;
-      --text-mid: #d4a8a0;
-      --text-dim: #8a5858;
-      --silver: #e0ccc8;
-      --silver-hi: #f8f0ee;
-      --coral: #b03050;
-      --radius: 3px;
-    }
-
-    /* === FOOTER === */
-    footer {
-      text-align: center; padding: 2rem 1rem;
-      border-top: 1px solid var(--border); margin-top: 3rem;
-      font-family: "Cinzel", serif; font-size: 0.58rem;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--text-dim);
-    }
-
-    @media (max-width: 600px) {
-      .platforms { grid-template-columns: 1fr; }
-      .bio { padding: 1.4rem; }
+      --bg: #0e090b; --bg-2: #1a1013;
+      --text: #f5ece8; --text-mid: #e8c8c0; --text-dim: #b08888;
+      --accent: #e0587a; --accent-2: #c8903a; --glow: 224,88,122;
     }
   </style>
   <script src="/js/age-gate.js"></script>
 </head>
 <body>
+
+<nav class="topbar" id="topbar">
+  <a class="brand" href="../index.html" aria-label="JOI Electric home"><img src="../images/JOI_Icon.png" alt=""><span>JOI Electric</span></a>
+  <div class="topnav">
+    <a href="../index.html#drops">Drops</a>
+    <a href="../catalog.html">Catalogue</a>
+    <a href="../profiles/joi-electric.html">About</a>
+    <a href="../contact.html">Contact</a>
+  </div>
+</nav>
 
 <div class="page-wrap">
 
@@ -363,6 +144,13 @@
   Filthy Bunny &middot; 18+ only
 </footer>
 
+<nav class="bottombar" aria-label="Quick links">
+  <a href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+  <a href="../index.html#drops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>Drops</a>
+  <a href="../catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Catalogue</a>
+  <a href="../contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact</a>
+</nav>
+<script src="/js/electric.js"></script>
 <script src="/js/site-config.js"></script>
 <script src="/js/audio.js"></script>
 <script src="/js/link-icons.js"></script>

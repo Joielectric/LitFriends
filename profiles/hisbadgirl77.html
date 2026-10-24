@@ -27,268 +27,31 @@
   <link rel="canonical" href="https://joielectric.com/profiles/hisbadgirl77.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@300;400;500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+    <script>if ('IntersectionObserver' in window) document.documentElement.classList.add('reveal-on');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/electric.css">
+  <link rel="stylesheet" href="/css/profile.css">
   <style>
+    /* This creator's colours; css/profile.css builds the rest from them. */
     :root {
-      --accent: var(--fire);
-      --bg: #1c1413;
-      --surface: #281a17;
-      --surface-2: #32211e;
-      --surface-3: #3c2a25;
-      --crimson: #9e1a1a;
-      --crimson-bright: #c03030;
-      --fire: #c85a20;
-      --fire-bright: #e07830;
-      --gold: #b07818;
-      --gold-bright: #d4a030;
-      --gold-pale: rgba(176, 120, 24, 0.08);
-      --text: #f5e8da;
-      --text-mid: #c4907c;
-      --text-dim: #9a6452;
-      --silver: #d8c8b8;
-      --silver-hi: #f5ede0;
-      --border: rgba(178, 50, 50, 0.34);
-      --border-mid: rgba(210, 110, 50, 0.5);
-      --border-hi: rgba(212, 160, 48, 0.62);
-      --radius: 2px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Raleway", sans-serif;
-      font-weight: 400;
-      font-size: 16px;
-      line-height: 1.75;
-      min-height: 100vh;
-      min-height: 100dvh;
-      overflow-x: clip;
-    }
-
-    body::before {
-      content: "";
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% 100%, rgba(158, 26, 26, 0.2) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 40% at 15% 60%, rgba(200, 90, 32, 0.1) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 40% at 85% 40%, rgba(140, 20, 20, 0.12) 0%, transparent 55%);
-      pointer-events: none; z-index: 0;
-    }
-
-    /* === LAYOUT === */
-    .page-wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 1.5rem 1rem 5rem; }
-
-    /* === BANNER === */
-    .banner-frame {
-      position: relative; z-index: 1;
-      background: #000;
-      border-bottom: 2px solid var(--crimson);
-      margin-bottom: 0.5rem;
-    }
-    .banner-frame img {
-      width: 100%;
-      height: auto;
-      display: block;
-      max-height: 280px;
-      object-fit: cover;
-      object-position: center center;
-    }
-
-    /* === INTRO === */
-    .page-intro {
-      text-align: center;
-      padding: 2.8rem 1rem 2rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2rem;
-    }
-
-    .intro-eyebrow {
-      font-family: "Cinzel", serif;
-      font-size: 0.68rem;
-      letter-spacing: 0.45em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 0.8rem;
-    }
-
-    .page-intro h1 {
-      font-family: "Dancing Script", cursive;
-      font-size: clamp(2.6rem, 8vw, 4.4rem);
-      font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 0.4rem;
-      background: linear-gradient(135deg, #f0c880 0%, var(--fire-bright) 40%, var(--crimson-bright) 80%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      filter: drop-shadow(0 0 20px rgba(200, 90, 32, 0.4));
-    }
-
-    .intro-script {
-      font-family: "Cinzel", serif;
-      font-size: 0.62rem;
-      letter-spacing: 0.42em;
-      color: var(--fire);
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 1.2rem;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      justify-content: center;
-      margin: 1.2rem auto;
-      max-width: 260px;
-    }
-    .divider span { flex: 1; height: 1px; background: var(--border-mid); }
-    .divider i { width: 5px; height: 5px; background: var(--crimson); transform: rotate(45deg); display: inline-block; }
-
-    .intro-tagline {
-      font-family: "Cormorant Garamond", serif;
-      font-style: italic;
-      font-size: 1.15rem;
-      color: var(--text-mid);
-      line-height: 1.8;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-
-    /* === SECTION === */
-    .section { margin-bottom: 2.8rem; }
-
-    .section-label {
-      font-family: "Cinzel", serif;
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.28em;
-      color: var(--silver-hi);
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 1.4rem;
-      padding-left: 0.8rem;
-      border-left: 2px solid var(--fire);
-    }
-    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-
-    /* === BIO === */
-    .bio {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.6rem 1.8rem;
-    }
-
-    .bio p {
-      font-size: 0.95rem;
-      color: var(--text-mid);
-      line-height: 1.9;
-    }
-
-    .bio p + p { margin-top: 0.9rem; }
-
-    .bio-quote {
-      font-family: "Cormorant Garamond", serif;
-      font-style: italic;
-      font-size: 1.05rem;
-      color: var(--silver);
-      border-left: 2px solid var(--crimson);
-      padding-left: 1rem;
-      margin-top: 1.2rem;
-      line-height: 1.85;
-    }
-
-    /* === PLATFORM LINKS === */
-    .platforms {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 0.9rem;
-    }
-
-    .platform-link {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.2rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      text-decoration: none;
-      color: var(--text-mid);
-      transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
-    }
-
-    .platform-link:hover {
-      border-color: var(--fire);
-      box-shadow: 0 0 20px rgba(200, 90, 32, 0.18);
-      color: var(--text);
-    }
-
-    .platform-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius);
-      background: var(--surface-2);
-      border: 1px solid var(--border-mid);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "Cinzel", serif;
-      font-size: 0.58rem;
-      font-weight: 600;
-      color: var(--fire-bright);
-      flex-shrink: 0;
-      letter-spacing: 0.03em;
-    }
-
-    .platform-info { flex: 1; min-width: 0; }
-
-    .platform-name {
-      font-family: "Cinzel", serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--silver);
-      display: block;
-      margin-bottom: 0.2rem;
-    }
-
-    .platform-desc { font-size: 0.78rem; color: var(--text-dim); }
-
-    .platform-arrow {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      transition: color 0.25s, transform 0.25s;
-    }
-
-    .platform-link:hover .platform-arrow {
-      color: var(--fire-bright);
-      transform: translateX(3px);
-    }
-
-    /* === FOOTER === */
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-      font-family: "Cinzel", serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.3em;
-      color: var(--text-dim);
-      text-transform: uppercase;
+      --bg: #140e0d; --bg-2: #221614;
+      --text: #f5e8da; --text-mid: #d4a890; --text-dim: #9a7462;
+      --accent: #e07830; --accent-2: #c03030; --glow: 224,120,48;
     }
   </style>
   <script src="/js/age-gate.js"></script>
 </head>
 <body>
+
+<nav class="topbar" id="topbar">
+  <a class="brand" href="../index.html" aria-label="JOI Electric home"><img src="../images/JOI_Icon.png" alt=""><span>JOI Electric</span></a>
+  <div class="topnav">
+    <a href="../index.html#drops">Drops</a>
+    <a href="../catalog.html">Catalogue</a>
+    <a href="../profiles/joi-electric.html">About</a>
+    <a href="../contact.html">Contact</a>
+  </div>
+</nav>
 
 <div class="page-wrap">
 
@@ -361,6 +124,13 @@
 <footer>
   HisBadGirl77 &middot; 18+ only
 </footer>
+<nav class="bottombar" aria-label="Quick links">
+  <a href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+  <a href="../index.html#drops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>Drops</a>
+  <a href="../catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Catalogue</a>
+  <a href="../contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact</a>
+</nav>
+<script src="/js/electric.js"></script>
 <script src="/js/site-config.js"></script>
 <script src="/js/audio.js"></script>
 <script src="/js/link-icons.js"></script>
