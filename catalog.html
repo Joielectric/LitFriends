@@ -562,6 +562,9 @@
       COLLAB = {};
       (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });
       buildFilters();
+      // ?q= arrives from the homepage's Latest drops, already searched for.
+      var startQ = new URLSearchParams(location.search).get('q');
+      if (startQ) { els.search.value = startQ; state.q = startQ.toLowerCase().trim(); }
       apply();
     }).catch(function(){
       els.rows.innerHTML = '<div class="empty">Could not load the catalogue.</div>';
