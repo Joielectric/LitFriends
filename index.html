@@ -372,7 +372,7 @@
         '</div>' +
         '<div class="drop-title">' + esc(e.title || 'Untitled') + '</div>' +
         (meta ? '<div class="drop-meta">' + meta + '</div>' : '') +
-        ((audience.length || tags.length) ? '<div class="chips">' + audience.concat(tags).map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        ((audience.length || tags.length) ? '<div class="chips">' + audience.map(function (t) { return '<span class="chip gender">' + esc(t) + '</span>'; }).concat(tags.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; })).join('') + '</div>' : '') +
       '</a>';
     }
 

@@ -263,7 +263,7 @@
         '</div>' +
         '<div class="drop-title">' + esc(e.title || 'Untitled') + '</div>' +
         (meta ? '<div class="drop-meta">' + meta + '</div>' : '') +
-        (tags.length ? '<div class="chips">' + tags.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        (tags.length ? '<div class="chips">' + tags.map(function (t) { return '<span class="chip' + (CFG.isAudienceTag(t) ? ' gender' : '') + '">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
       '</a>';
     }
     row.innerHTML = new Array(5).join('<div class="drop glass skeleton"><div class="drop-cover"></div><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div></div>');
