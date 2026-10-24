@@ -55,7 +55,7 @@
     var bar = document.getElementById('topbar');
     if (bar) {
       bar.innerHTML =
-        '<a class="brand ca" href="/consenting-adults.html" aria-label="The Velvet Key home"><img src="/images/CA_ICON.png" alt=""><span>The Velvet Key</span></a>' +
+        '<a class="brand ca" href="/consenting-adults.html" aria-label="The Velvet Key home"><img src="/images/velvet-key-icon-128.png" alt=""><span>The Velvet Key</span></a>' +
         '<div class="topnav">' + links(slug).slice(1).map(function (l) {
           return '<a href="' + l.href + '"' + (l.key === current ? ' aria-current="page"' : '') + '>' + l.label + '</a>';
         }).join('') + '</div>';

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="images/CA_ICON.png">
-  <link rel="apple-touch-icon" href="images/CA_ICON.png">
+  <link rel="icon" type="image/png" href="images/velvet-key-icon-128.png">
+  <link rel="apple-touch-icon" href="images/velvet-key-icon-512.png">
   <link rel="manifest" href="manifest-ca.json">
   <title>Catalogue &middot; The Velvet Key</title>
   <!-- How a link to this page looks when it is posted somewhere. Facebook, X,
@@ -56,9 +56,10 @@
        overflow:hidden clips the swell so it can never raise a scrollbar. */
     #intro { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
     /* Backdrop is its own layer, so lifting it does not dim the face in front of it. */
-    #intro .intro-veil { position: absolute; inset: 0; background: var(--bg); animation: intro-veil 1.15s ease-out forwards; }
+    #intro .intro-veil { position: absolute; inset: 0; background: #000; animation: intro-veil 1.15s ease-out forwards; }
     /* Absolute rather than a sized grid item, so it fills the overlay outright. */
-    #intro img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center;
+    /* The emblem carries the name, so it is shown whole rather than cropped to the screen */
+    #intro img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center;
                  will-change: transform, opacity; animation: intro-rush 1.15s cubic-bezier(0.35, 0, 0.85, 0.5) forwards; }
     /* Accelerating scale reads as the face closing on the viewer, not just growing. */
     @keyframes intro-rush {
@@ -254,10 +255,10 @@
 </head>
 <body>
 
-<div id="intro" aria-hidden="true"><span class="intro-veil"></span><img src="images/CA_ICON.png" alt="" fetchpriority="high"></div>
+<div id="intro" aria-hidden="true"><span class="intro-veil"></span><img src="images/velvet-key-logo.jpg" alt="" fetchpriority="high"></div>
 
 <nav class="topbar" id="topbar">
-  <a class="brand ca" href="/consenting-adults.html" aria-label="The Velvet Key home"><img src="/images/CA_ICON.png" alt=""><span>The Velvet Key</span></a>
+  <a class="brand ca" href="/consenting-adults.html" aria-label="The Velvet Key home"><img src="/images/velvet-key-icon-128.png" alt=""><span>The Velvet Key</span></a>
   <div class="topnav">
     <a href="/consenting-adults.html">Home</a>
     <a href="/consenting-adults.html#artists">Artists</a>

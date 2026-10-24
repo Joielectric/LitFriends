@@ -2,7 +2,7 @@
   "name": "The Velvet Key",
   "short_name": "Velvet Key",
   "icons": [
-    { "src": "/images/CA_ICON.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/images/velvet-key-icon-128.png", "sizes": "512x512", "type": "image/png" }
   ],
   "start_url": "/",
   "display": "standalone",
