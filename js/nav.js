@@ -184,7 +184,7 @@
   // Logo
   const logo = document.createElement('a');
   logo.id = 'ca-nav-logo';
-  logo.href = root + 'index.html';
+  logo.href = root + 'consenting-adults.html';
   logo.textContent = 'The Velvet Key';
   inner.appendChild(logo);
 
@@ -206,6 +206,7 @@
 
       const sub = document.createElement('ul');
       sub.className = 'ca-nav-dropdown';
+      if (link.label === 'Artists') sub.id = 'ca-artists-menu';
       link.children.forEach(child => {
         const sli = document.createElement('li');
         const a = document.createElement('a');
@@ -278,6 +279,32 @@
     }
   });
   nav.appendChild(drawer);
+
+  // Artists who joined after this list was written have a published profile
+  // rather than a page here. js/artists.js knows them; add them to both menus.
+  if (window.Artists) {
+    Artists.load().then(list => {
+      const fresh = list.filter(a => a.isNew);
+      if (!fresh.length) return;
+      const menu = document.getElementById('ca-artists-menu');
+      const subs = drawer.querySelectorAll('.ca-mobile-sub');
+      let after = subs[subs.length - 1];
+      fresh.forEach(artist => {
+        if (menu) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = artist.href; a.textContent = artist.name;
+          li.appendChild(a); menu.appendChild(li);
+        }
+        if (after) {
+          const m = document.createElement('a');
+          m.className = 'ca-mobile-link ca-mobile-sub';
+          m.href = artist.href; m.textContent = artist.name;
+          after.insertAdjacentElement('afterend', m); after = m;
+        }
+      });
+    });
+  }
 
   // Admin modal
   const modal = document.createElement('div');

@@ -1183,6 +1183,34 @@
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeRecentModal(); });
   })();
 </script>
+<script src="/js/site-config.js"></script>
+<script src="/js/artists.js"></script>
+<script>
+  // The cards above are the artists with hand-built pages. Anyone who has
+  // joined since, with a published profile, is added after them.
+  (function () {
+    var grid = document.querySelector('#artists .artist-grid');
+    if (!grid || !window.Artists) return;
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+    function initials(n) { return esc(String(n || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase()); }
+    Artists.load().then(function (list) {
+      list.filter(function (a) { return a.isNew; }).forEach(function (a) {
+        var icon = /^(https?:\/\/|\/)/i.test(a.icon) ? a.icon : '';
+        grid.insertAdjacentHTML('beforeend',
+          '<a class="artist-card" href="' + esc(a.href) + '">' +
+            '<div class="artist-card-top">' +
+              (icon ? '<div class="artist-initials artist-initials-img"><img src="' + esc(icon) + '" alt="' + esc(a.name) + '"></div>'
+                    : '<div class="artist-initials">' + initials(a.name) + '</div>') +
+              '<span class="artist-arrow">&#8594;</span>' +
+            '</div>' +
+            '<div class="artist-name">' + esc(a.name) + '</div>' +
+            (a.tagline ? '<div class="artist-role">' + esc(a.tagline) + '</div>' : '') +
+            (a.bio ? '<p class="artist-bio">' + esc(a.bio) + '</p>' : '') +
+          '</a>');
+      });
+    });
+  })();
+</script>
 <script src="/js/nav.js"></script>
 <script src="/js/track.js" defer></script>
 </body>
