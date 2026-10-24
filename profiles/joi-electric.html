@@ -251,22 +251,25 @@
       };
     }
     function card(e) {
-      var w = when(e.date), img = safeUrl(e.image), track = safeUrl(e.track);
+      var w = when(e.date), img = safeUrl(e.image), track = safeUrl(e.track), type = CFG.typeOf(e);
       var initial = esc(String(e.title || '?').replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase() || '?');
-      var tags = (e.tags || []).filter(CFG.isAudienceTag).concat((e.tags || []).filter(function (t) { return !CFG.isAudienceTag(t); })).slice(0, 3);
-      var meta = [w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
-      return '<a class="drop glass" href="../catalog.html?q=' + encodeURIComponent(e.title || '') + '">' +
-        '<div class="drop-cover">' +
-          (img ? '<img src="' + img + '" alt="" loading="lazy">' : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
-          (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
+      var tags = (e.tags || []).filter(CFG.isAudienceTag).concat((e.tags || []).filter(function (t) { return !CFG.isAudienceTag(t); })).slice(0, 5);
+      var meta = (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
+        [type !== 'audio' ? esc(CFG.typeLabels[type]) : '', w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
+      return '<a class="rel" href="../catalog.html?q=' + encodeURIComponent(e.title || '') + '">' +
+        '<div class="thumb t-' + esc(type) + '">' +
+          (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
+               : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
           (track ? '<button type="button" class="play" data-track="' + esc(track) + '" aria-label="Play ' + esc(e.title || '') + '">' + PLAY + '</button>' : '') +
         '</div>' +
-        '<div class="drop-title">' + esc(e.title || 'Untitled') + '</div>' +
-        (meta ? '<div class="drop-meta">' + meta + '</div>' : '') +
-        (tags.length ? '<div class="chips">' + tags.map(function (t) { return '<span class="chip' + (CFG.isAudienceTag(t) ? ' gender' : '') + '">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        '<div class="rel-body">' +
+          '<div class="rel-title">' + esc(e.title || 'Untitled') + '</div>' +
+          (meta ? '<div class="rel-meta">' + meta + '</div>' : '') +
+          (tags.length ? '<div class="chips">' + tags.map(function (t) { return '<span class="chip' + (CFG.isAudienceTag(t) ? ' gender' : '') + '">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+        '</div>' +
       '</a>';
     }
-    row.innerHTML = new Array(5).join('<div class="drop glass skeleton"><div class="drop-cover"></div><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div></div>');
+    row.innerHTML = new Array(4).join('<div class="rel skeleton"><div class="thumb"></div><div class="rel-body"><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div><div class="sk-line" style="width:65%"></div></div></div>');
     fetch('/api/content').then(function (r) { return r.json(); }).then(function (d) {
       var mine = (d.entries || []).filter(function (e) { return CFG.creditedIn(e, 'joi-electric'); })
         .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); }).slice(0, 8);
@@ -277,7 +280,7 @@
     var audio = null, playing = null;
     function stop() {
       if (audio) audio.pause();
-      if (playing) { playing.innerHTML = PLAY; playing.closest('.drop').classList.remove('playing'); }
+      if (playing) { playing.innerHTML = PLAY; playing.closest('.rel').classList.remove('playing'); }
       playing = null;
     }
     row.addEventListener('click', function (ev) {
@@ -289,7 +292,7 @@
       audio = audio || new Audio();
       audio.src = btn.getAttribute('data-track');
       audio.onended = stop;
-      audio.play().then(function () { playing = btn; btn.innerHTML = PAUSE; btn.closest('.drop').classList.add('playing'); }).catch(stop);
+      audio.play().then(function () { playing = btn; btn.innerHTML = PAUSE; btn.closest('.rel').classList.add('playing'); }).catch(stop);
     });
 
     AudioGrid.profileEditor({ slug: 'joi-electric' });

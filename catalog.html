@@ -144,58 +144,20 @@
     }
     .clear-btn:hover { border-color: var(--pink); color: var(--text); }
 
-    /* Card grid */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
-    @media (max-width: 520px) { .grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; } }
-    .card {
-      position: relative; display: flex; flex-direction: column; cursor: pointer; padding: 0.6rem 0.6rem 0.8rem;
-      background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius);
-      transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
-    }
-    .card:hover { transform: translateY(-4px); border-color: rgba(139,92,255,0.6); box-shadow: 0 14px 40px rgba(139,92,255,0.22); }
-    .card:active { transform: scale(0.985); }
-    .cover {
-      position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 0.7rem;
-      background: linear-gradient(135deg, #1b2350, #3a1f6e 60%, #6b1f63);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .cover.t-script { background: linear-gradient(135deg, #3b2a0b, #6e4d12 60%, #8a3a1f); }
-    .cover.t-story  { background: linear-gradient(135deg, #0b3b33, #12655a 60%, #1f4f8a); }
-    .cover.t-poem   { background: linear-gradient(135deg, #2a0b3b, #5a1f8a 60%, #8a1f6b); }
-    .cover.t-music  { background: linear-gradient(135deg, #0b3b2f, #128a6e 60%, #1f6b8a); }
-    .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .cover .gen { font-family: "Cinzel", serif; font-weight: 700; font-size: clamp(2.4rem, 8vw, 3.6rem); color: rgba(255,255,255,0.85); text-shadow: 0 0 30px rgba(57,213,255,0.5); }
-    .badge-new {
-      position: absolute; top: 8px; left: 8px; font-family: var(--display); font-weight: 700; font-size: 0.66rem;
-      letter-spacing: 0.06em; color: #0a0c18; background: var(--volt); padding: 0.2rem 0.55rem; border-radius: 999px;
-    }
+    /* Card grid. The card itself (.rel, .thumb, .chips) is in css/electric.css. */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.9rem; }
+    @media (max-width: 400px) { .grid { grid-template-columns: 1fr; } }
+    .card { cursor: pointer; }
+    /* The modal's title still carries a type badge */
     .type-badge {
-      position: absolute; top: 8px; right: 8px; font-family: var(--display); font-weight: 600; font-size: 0.68rem;
-      color: #fff; background: rgba(10,12,24,0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      padding: 0.2rem 0.55rem; border-radius: 999px; white-space: nowrap;
+      display: inline-block; font-family: var(--display); font-weight: 600; font-size: 0.72rem;
+      color: #fff; background: var(--glass-hi); padding: 0.2rem 0.55rem; border-radius: 999px; white-space: nowrap;
     }
     .type-ico { margin-right: 3px; }
-    .play {
-      position: absolute; right: 8px; bottom: 8px; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
-      background: var(--volt); color: #0a0c18; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.45); transition: transform 0.15s;
-    }
-    .play:hover { transform: scale(1.08); }
-    .play svg { width: 17px; height: 17px; }
-    .card.playing .cover { box-shadow: 0 0 0 2px var(--cyan), 0 0 30px rgba(57,213,255,0.45); }
-    .c-title { font-family: var(--display); font-weight: 600; font-size: 1rem; line-height: 1.3; color: var(--text);
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .c-meta { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem; }
     .c-artist { font-size: 0.84rem; color: var(--text-mid); margin-top: 0.25rem; line-height: 1.35; }
-    .c-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
     .rt { font-size: 0.78rem; font-weight: 600; color: var(--text); border-radius: 999px; padding: 0.2rem 0.62rem; line-height: 1.35; background: rgba(57,213,255,0.12); border: 1px solid rgba(57,213,255,0.38); }
     .rt.gender { color: #ffc56b; background: rgba(255,180,84,0.16); border-color: rgba(255,180,84,0.55); }
-    .c-links { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: auto; padding-top: 0.6rem; }
-    @media (max-width: 520px) {
-      .c-tags .rt:nth-child(n+3) { display: none; }
-      .c-links { display: none; }
-      .card { padding: 0.5rem 0.5rem 0.7rem; }
-    }
+    .c-links { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.6rem; }
     .plink {
       font-family: var(--display); font-size: 0.74rem; font-weight: 500; padding: 0.22rem 0.6rem; border-radius: 999px;
       border: 1px solid rgba(57,213,255,0.35); color: var(--cyan); text-decoration: none; white-space: nowrap; transition: all 0.18s;
@@ -212,10 +174,6 @@
     .more-wrap { text-align: center; margin-top: 1.6rem; }
 
     .empty, .loading { grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; color: var(--text-dim); }
-    .skeleton { pointer-events: none; }
-    .skeleton .cover, .skeleton .sk-line { background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.10), rgba(255,255,255,0.05)); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
-    .sk-line { height: 0.8rem; border-radius: 6px; margin-top: 0.4rem; }
-    @keyframes shimmer { to { background-position: -200% 0; } }
 
     /* Modal — a centred card on desktop, a bottom sheet on phones */
     .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(6,8,16,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fade 0.2s ease; }
@@ -234,11 +192,10 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .overlay, .modal { animation: none; }
-      .skeleton .cover, .skeleton .sk-line { animation: none; }
     }
     .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.8rem; }
     .modal-title { font-family: var(--display); font-weight: 700; font-size: 1.45rem; color: #fff; line-height: 1.25; }
-    .modal-title .type-badge { position: static; display: inline-block; vertical-align: middle; margin-right: 0.5rem; background: var(--glass-hi); font-size: 0.72rem; }
+    .modal-title .type-badge { vertical-align: middle; margin-right: 0.5rem; }
     .modal-close { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--glass-hi); border: none; color: var(--text-mid); font-size: 1.4rem; line-height: 1; cursor: pointer; }
     .modal-close:hover { color: #fff; background: rgba(255,255,255,0.16); }
     .modal-head .edit-link { margin-left: auto; align-self: center; }
@@ -766,7 +723,7 @@
       return '<a class="plink" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" data-stop="1">' + esc(provLabel(l.provider)) + '</a>';
     }).join('');
     // Audience first: it is the first thing a listener filters on.
-    var tagList = (e.tags||[]).filter(isGender).concat((e.tags||[]).filter(function(t){ return !isGender(t); })).slice(0,4);
+    var tagList = (e.tags||[]).filter(isGender).concat((e.tags||[]).filter(function(t){ return !isGender(t); })).slice(0,6);
     var tags = tagList.map(function(t){
       return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>';
     }).join('');
@@ -777,19 +734,21 @@
     var img = safeUrl(e.image);
     var track = safeUrl(e.track);
     var initial = esc(String(e.title || '?').replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase() || '?');
-    var meta = [niceDate(e.date), e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
-    return '<div class="card" role="button" tabindex="0" data-idx="' + idx + '" aria-label="' + esc(e.title || 'Untitled') + '">' +
-      '<div class="cover t-' + esc(t) + '">' +
-        (img ? '<img src="' + img + '" alt="" loading="lazy">' : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
-        (isFresh(e.date) ? '<span class="badge-new">NEW</span>' : '') +
-        (t !== 'audio' ? typeBadge(e) : '') +
+    var meta = (isFresh(e.date) ? '<span class="badge-new">NEW</span>' : '') +
+      [t !== 'audio' ? '<span aria-hidden="true">' + TYPE_ICONS[t] + '</span> ' + esc(TYPE_LABELS[t]) : '', niceDate(e.date), e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
+    return '<div class="card rel" role="button" tabindex="0" data-idx="' + idx + '" aria-label="' + esc(e.title || 'Untitled') + '">' +
+      '<div class="thumb t-' + esc(t) + '">' +
+        (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
+             : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
         (track ? '<button type="button" class="play" data-stop="1" data-track="' + esc(track) + '" aria-label="Play ' + esc(e.title || '') + '">' + PLAY + '</button>' : '') +
       '</div>' +
-      '<div class="c-title">' + esc(e.title||'Untitled') + '</div>' +
-      (meta ? '<div class="c-meta">' + meta + '</div>' : '') +
-      (artistStr ? '<div class="c-artist">' + artistStr + '</div>' : '') +
-      (tags ? '<div class="c-tags">' + tags + '</div>' : '') +
-      ((links || editLink(e)) ? '<div class="c-links">' + links + editLink(e) + '</div>' : '') +
+      '<div class="rel-body">' +
+        '<div class="rel-title">' + esc(e.title||'Untitled') + '</div>' +
+        (meta ? '<div class="rel-meta">' + meta + '</div>' : '') +
+        (artistStr ? '<div class="c-artist">' + artistStr + '</div>' : '') +
+        (tags ? '<div class="chips c-tags">' + tags + '</div>' : '') +
+        ((links || editLink(e)) ? '<div class="c-links">' + links + editLink(e) + '</div>' : '') +
+      '</div>' +
     '</div>';
   }
 
@@ -797,7 +756,7 @@
   var audio = null, playingBtn = null;
   function stopPlaying(){
     if (audio) audio.pause();
-    if (playingBtn){ playingBtn.innerHTML = PLAY; var c = playingBtn.closest('.card'); if (c) c.classList.remove('playing'); }
+    if (playingBtn){ playingBtn.innerHTML = PLAY; var c = playingBtn.closest('.rel'); if (c) c.classList.remove('playing'); }
     playingBtn = null;
   }
   function togglePlay(btn){
@@ -807,7 +766,7 @@
     audio.src = btn.getAttribute('data-track');
     audio.onended = stopPlaying;
     audio.play().then(function(){
-      playingBtn = btn; btn.innerHTML = PAUSE; btn.closest('.card').classList.add('playing');
+      playingBtn = btn; btn.innerHTML = PAUSE; btn.closest('.rel').classList.add('playing');
     }).catch(stopPlaying);
   }
 
@@ -970,7 +929,7 @@
     window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
   })();
 
-  els.rows.innerHTML = new Array(9).join('<div class="card skeleton"><div class="cover"></div><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div></div>');
+  els.rows.innerHTML = new Array(7).join('<div class="rel skeleton"><div class="thumb"></div><div class="rel-body"><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div><div class="sk-line" style="width:65%"></div></div></div>');
   syncTypeTabs();
   fetchData();
 })();
