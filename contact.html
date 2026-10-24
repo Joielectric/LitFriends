@@ -29,123 +29,61 @@
   <link rel="canonical" href="https://joielectric.com/contact.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <script>if ('IntersectionObserver' in window) document.documentElement.classList.add('reveal-on');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/electric.css">
   <style>
-    :root {
-      --bg: #151a2a;
-      --surface: #1e2438;
-      --surface-2: #262d44;
-      --border: rgba(180,195,225,0.24);
-      --border-mid: rgba(180,195,225,0.42);
-      --text: #f2f6ff;
-      --text-mid: #d7e0f2;
-      --text-dim: #aab6d4;
-      --silver-hi: #eaf0fa;
-      --electric: #5b8de8;
-      --electric-dim: #2a4880;
-      --danger: #c0394a;
-      --ok: #4fb783;
-      --radius: 3px;
+    .page-head { padding-bottom: 1.6rem; }
+    .anon {
+      display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 1.4rem; padding: 0.95rem 1rem;
+      border-radius: var(--radius-sm); background: rgba(139,92,255,0.12); border: 1px solid rgba(139,92,255,0.35);
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-    body {
-      background: var(--bg); color: var(--text);
-      font-family: "Raleway", sans-serif; font-size: 16px; line-height: 1.7;
-      min-height: 100vh; min-height: 100dvh; overflow-x: clip;
-    }
-    body::before {
-      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(91,141,232,0.08) 0%, transparent 70%),
-        linear-gradient(to bottom, rgba(21,26,42,0.72) 0%, rgba(21,26,42,0.88) 60%, rgba(21,26,42,0.95) 100%),
-        url('images/JOIWebBack.png') center center / cover no-repeat;
-    }
-
-    .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 1.2rem 4rem; }
-    .nav { padding: 1.4rem 0 0; font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; }
-    .nav a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
-    .nav a:hover { color: var(--electric); }
-    .nav .sep { color: var(--text-dim); margin: 0 0.4rem; }
-
-    header { text-align: center; padding: 2.6rem 0 1.6rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
-    .eyebrow { font-family: "Cinzel", serif; font-size: 0.66rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--electric); display: block; margin-bottom: 0.7rem; }
-    header h1 { font-family: "Cinzel", serif; font-weight: 600; font-size: clamp(1.9rem, 5vw, 2.7rem); letter-spacing: 0.06em; color: #fff; }
-    .sub { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.1rem; color: var(--text-mid); margin-top: 0.5rem; }
-
-    .section-label { font-family: "Cinzel", serif; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--electric); display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.1rem; }
-    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-
-    .card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--electric); border-radius: var(--radius); padding: 1.5rem 1.6rem; margin-bottom: 2.4rem; }
-    .card p.lead { color: var(--text-mid); font-size: 0.95rem; margin-bottom: 1.2rem; }
-
-    label { display: block; font-size: 0.9rem; font-weight: 500; color: var(--silver-hi); margin-bottom: 0.4rem; }
-    label .opt { font-weight: 400; color: var(--text-dim); font-size: 0.82rem; }
-    input[type="text"], input[type="email"], textarea {
-      width: 100%; background: var(--surface-2); border: 1px solid var(--border);
-      color: var(--text); font-family: "Raleway", sans-serif; font-size: 1rem;
-      padding: 0.75rem 0.95rem; border-radius: var(--radius); outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none;
-    }
-    input:focus, textarea:focus { border-color: var(--electric); box-shadow: 0 0 0 2px rgba(91,141,232,0.15); }
-    input::placeholder, textarea::placeholder { color: var(--text-dim); }
-    textarea { resize: vertical; min-height: 130px; line-height: 1.7; }
-    .field { margin-bottom: 1.1rem; }
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
-
-    .check { display: flex; align-items: flex-start; gap: 0.7rem; cursor: pointer; font-size: 0.92rem; color: var(--text-mid); }
-    .check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; accent-color: var(--electric); cursor: pointer; }
-
-    button.send {
-      font-family: "Cinzel", serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase;
-      color: #fff; background: linear-gradient(140deg, rgba(91,141,232,0.42), rgba(42,72,128,0.6));
-      border: 1px solid var(--electric); border-radius: 999px; padding: 0.9rem 2.2rem;
-      cursor: pointer; min-height: 52px; transition: transform 0.2s, box-shadow 0.25s;
-      box-shadow: 0 0 16px rgba(91,141,232,0.25);
-    }
-    button.send:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 26px rgba(91,141,232,0.45); }
-    button.send:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-
-    .msg { margin-top: 0.9rem; font-size: 0.9rem; min-height: 1.2em; }
-    .msg.ok  { color: var(--ok); }
-    .msg.err { color: #e87a88; }
+    .anon p { color: var(--text-mid); font-size: 0.95rem; }
+    .anon strong { color: var(--text); }
+    .anon-ico { flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; background: var(--volt); color: #0a0c18; display: flex; align-items: center; justify-content: center; }
+    .anon-ico svg { width: 18px; height: 18px; }
+    .send { margin-top: 0.4rem; }
+    @media (max-width: 520px) { .send { width: 100%; } }
     .hp { position: absolute; left: -9999px; opacity: 0; height: 0; }
-
-    .direct { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--electric); text-decoration: none; font-size: 0.98rem; word-break: break-all; }
-    .direct:hover { color: #fff; }
-
     .done { display: none; text-align: center; padding: 1.5rem 0.5rem; }
     .done.active { display: block; }
-    .done h3 { font-family: "Cormorant Garamond", serif; font-weight: 300; font-size: 1.6rem; color: #fff; margin-bottom: 0.5rem; }
-    .done p { color: var(--text-mid); font-size: 0.95rem; }
-
-    footer { position: relative; z-index: 1; text-align: center; padding: 2rem 1rem 1rem; border-top: 1px solid var(--border); color: var(--text-dim); font-family: "Cinzel", serif; font-size: 0.6rem; letter-spacing: 0.24em; text-transform: uppercase; }
+    .done h3 { font-family: var(--display); font-weight: 700; font-size: 1.6rem; margin-bottom: 0.4rem; }
+    .done h3::before { content: "\2713"; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin: 0 auto 0.9rem; border-radius: 50%; background: var(--volt); color: #0a0c18; font-size: 1.5rem; }
+    .done p { color: var(--text-mid); }
+    .direct {
+      display: flex; align-items: center; gap: 0.8rem; padding: 1rem 1.2rem; text-decoration: none; color: var(--text);
+      font-family: var(--display); font-weight: 600; font-size: 1.05rem; word-break: break-all; transition: transform 0.15s, border-color 0.2s;
+    }
+    .direct:hover { border-color: var(--line-hi); transform: translateY(-2px); }
+    .direct svg { flex-shrink: 0; color: var(--cyan); }
   </style>
 </head>
 <body>
 
-<div class="wrap">
-
-  <nav class="nav">
-    <a href="index.html">&#8592; Home</a>
-    <span class="sep">/</span>
+<nav class="topbar" id="topbar">
+  <a class="brand" href="index.html" aria-label="JOI Electric home"><img src="images/JOI_Icon.png" alt=""><span>JOI Electric</span></a>
+  <div class="topnav">
+    <a href="index.html#drops">Drops</a>
     <a href="catalog.html">Catalogue</a>
-  </nav>
+    <a href="profiles/joi-electric.html">About</a>
+    <a href="contact.html" aria-current="page">Contact</a>
+  </div>
+</nav>
 
-  <header>
-    <span class="eyebrow">Get In Touch</span>
-    <h1>Contact</h1>
-    <p class="sub">Collaborations, questions, or just to say hello.</p>
+<div class="wrap narrow">
+
+  <header class="page-head">
+    <span class="eyebrow">Get in touch</span>
+    <h1>Say <em>hello</em></h1>
+    <p class="sub">Collaborations, requests, questions, feedback &mdash; or just to say hi. It all comes straight to me.</p>
   </header>
 
   <!-- Message -->
-  <section>
-    <div class="section-label">Send a message</div>
-    <div class="card">
+  <section class="reveal">
+    <div class="sec-head"><h2>Send a message</h2></div>
+    <div class="glass panel">
       <div id="form-wrap">
-        <p class="lead">Requests, collaboration ideas, script permissions, feedback, or anything else &mdash; it comes straight to me.</p>
-        <p class="lead"><strong>You can stay anonymous.</strong> Only the message is required &mdash; leave your name and email blank and nothing identifies you. Add an email only if you'd like a reply.</p>
+        <div class="anon"><span class="anon-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><p><strong>You can stay anonymous.</strong> Only the message is required &mdash; leave your name and email blank and nothing identifies you. Add an email only if you'd like a reply.</p></div>
         <form id="contact-form" novalidate>
           <div class="row2">
             <div class="field">
@@ -172,7 +110,7 @@
             </label>
           </div>
           <input type="text" class="hp" id="c-botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button type="submit" class="send" id="c-send">Send Message</button>
+          <button type="submit" class="btn btn-primary send" id="c-send">Send Message</button>
           <div class="msg" id="c-msg"></div>
         </form>
       </div>
@@ -184,9 +122,9 @@
   </section>
 
   <!-- Alerts -->
-  <section>
-    <div class="section-label">Email alerts</div>
-    <div class="card">
+  <section id="alerts" class="reveal">
+    <div class="sec-head"><h2>Drop alerts</h2></div>
+    <div class="glass panel">
       <div id="sub-wrap">
         <p class="lead">A note when something new drops. No schedule, no noise, and you can ask to be removed any time.</p>
         <form id="sub-form" novalidate>
@@ -201,7 +139,7 @@
             </div>
           </div>
           <input type="text" class="hp" id="s-botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button type="submit" class="send" id="s-send">Sign Me Up</button>
+          <button type="submit" class="btn btn-primary send" id="s-send">Sign Me Up</button>
           <div class="msg" id="s-msg"></div>
         </form>
       </div>
@@ -212,20 +150,25 @@
     </div>
   </section>
 
-  <!-- Direct -->
-  <section>
-    <div class="section-label">Or email me directly</div>
-    <div class="card" style="margin-bottom:1rem">
-      <a class="direct" href="mailto:joi@joielectric.com">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        joi@joielectric.com
-      </a>
-    </div>
+  <section class="reveal">
+    <div class="sec-head"><h2>Or email me directly</h2></div>
+    <a class="direct glass" href="mailto:joi@joielectric.com">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      joi@joielectric.com
+    </a>
   </section>
 
 </div>
 
-<footer>JOI Electric &mdash; 18+ only</footer>
+<footer>JOI Electric &middot; 18+ only</footer>
+
+<nav class="bottombar" aria-label="Quick links">
+  <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+  <a href="index.html#drops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>Drops</a>
+  <a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Catalogue</a>
+  <a href="contact.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact</a>
+</nav>
+<script src="/js/electric.js"></script>
 
 <script>
 (function () {
