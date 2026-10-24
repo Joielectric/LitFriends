@@ -8,129 +8,102 @@
   <title>Profile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <script>if ('IntersectionObserver' in window) document.documentElement.classList.add('reveal-on');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/electric.css">
+  <link rel="stylesheet" href="/css/profile.css">
   <style>
-    /* One page renders every creator profile. The theme is a set of custom
-       properties swapped on <body data-theme>, so a creator picks a look
-       without any of them getting their own stylesheet to break. */
-    /* Palette and themes: css/themes.css
-     *
-     * Corners are softer here than on the forms, which is a shape choice rather
-     * than part of the colour scheme, so it stays with the page. */
-    html body, html body[data-theme] { --radius: 3px; }
+    /* One page renders every creator profile. The site's own look is the
+       default (css/electric.css + css/profile.css); a creator who picks
+       another theme gets its palette from css/themes.css on <body data-theme>,
+       and the names profile.css builds on are pointed at it here. Values that
+       refer to other properties are declared again on <body>, since a var()
+       set on :root resolves against :root's values, not the theme's. */
+    :root { --accent: #39d5ff; --accent-2: #8b5cff; --glow: 139,92,255; }
+    html body[data-theme] {
+      --bg-2: var(--surface); --line: var(--border); --line-hi: var(--border-mid);
+      --accent-2: var(--accent); --cyan: var(--accent); --violet: var(--accent); --pink: var(--accent);
+      --volt: linear-gradient(120deg, var(--accent), var(--accent));
+      --silver-hi: #fff; --radius: 18px;
+    }
+    body[data-theme="electric"] { --glow: 91,141,232; }
+    body[data-theme="ember"]    { --glow: 217,116,63; }
+    body[data-theme="orchid"]   { --glow: 180,120,232; }
+    body[data-theme="moss"]     { --glow: 95,191,148; }
+    body[data-theme="noir"]     { --glow: 201,201,210; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-    body {
-      background: var(--bg); color: var(--text);
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 17px; line-height: 1.75;
-      min-height: 100vh; min-height: 100dvh; overflow-x: clip;
-    }
-    body::before {
-      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse 70% 45% at 50% 0%, var(--accent-soft) 0%, transparent 70%);
-    }
-    .wrap { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
-
-    .banner {
-      height: 180px; border-radius: var(--radius); border: 1px solid var(--border);
-      background-size: cover; background-position: center; margin-bottom: -60px;
-    }
-    .head { text-align: center; padding-top: 1rem; }
+    .wrap { max-width: 860px; }
+    .banner { aspect-ratio: 3 / 1; border-radius: 24px; border: 1px solid var(--line); background-size: cover; background-position: center; margin-top: 0.4rem; }
+    @media (max-width: 560px) { .banner { aspect-ratio: 2 / 1; border-radius: 18px; } }
+    .head { text-align: center; padding: 1.4rem 0 0.6rem; }
+    .banner + .head { margin-top: -64px; }
     .avatar {
-      width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
-      border: 2px solid var(--accent); background: var(--surface-2);
-      box-shadow: 0 6px 26px rgba(0,0,0,0.45);
+      width: 112px; height: 112px; border-radius: 28px; object-fit: cover; background: var(--bg);
+      box-shadow: 0 0 0 4px var(--bg), 0 0 40px rgba(var(--glow),0.45);
     }
-    h1 {
-      font-family: "Cinzel", serif; font-weight: 300; font-size: 2.1rem;
-      letter-spacing: 0.06em; margin: 0.8rem 0 0.3rem; color: var(--text);
+    .head h1 {
+      font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;
+      font-size: clamp(2.3rem, 8vw, 3.6rem); margin: 0.8rem 0 0.5rem;
+      background: linear-gradient(120deg, #fff 0%, var(--accent) 50%, var(--accent-2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .tagline {
-      font-family: "Raleway", sans-serif; font-size: 0.8rem; letter-spacing: 0.22em;
-      text-transform: uppercase; color: var(--accent);
-    }
-    section { margin-top: 2.6rem; }
-    h2 {
-      font-family: "Cinzel", serif; font-size: 0.78rem; font-weight: 600;
-      letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim);
-      display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
-    }
-    h2::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
-    .bio {
-      background: var(--surface); border: 1px solid var(--border);
-      border-left: 2px solid var(--accent); border-radius: var(--radius);
-      padding: 1.3rem 1.5rem; color: var(--text-mid); white-space: pre-wrap;
-    }
-    .updates { display: grid; gap: 0.9rem; }
-    .update {
-      background: var(--surface); border: 1px solid var(--border);
-      border-left: 2px solid var(--accent); border-radius: var(--radius);
-      padding: 1.1rem 1.3rem;
-    }
-    .u-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: var(--radius); margin-bottom: 0.8rem; }
-    .u-date {
-      font-family: "Raleway", sans-serif; font-size: 0.68rem; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--text-dim);
-    }
-    .u-title {
-      font-family: "Cinzel", serif; font-size: 1.05rem; color: var(--text);
-      margin: 0.2rem 0 0.5rem;
-    }
-    .u-body { color: var(--text-mid); }
+    .tagline { font-family: var(--display); font-weight: 500; font-size: 1.1rem; color: var(--text-mid); }
+    #page > section { margin-top: 2.8rem; margin-bottom: 0; }
+    #page h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.35rem, 3.4vw, 1.7rem); letter-spacing: -0.01em; margin-bottom: 1rem; }
+    .bio { white-space: pre-wrap; }
+    .updates { display: grid; gap: 1rem; }
+    .update { background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.2rem 1.3rem; position: relative; overflow: hidden; }
+    .update::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--volt); }
+    .u-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.9rem; display: block; }
+    .u-date { font-family: var(--display); font-size: 0.8rem; font-weight: 500; color: var(--accent); }
+    .u-title { font-family: var(--display); font-weight: 700; font-size: 1.25rem; color: var(--text); margin: 0.15rem 0 0.45rem; }
+    .u-body { color: var(--text-mid); line-height: 1.7; }
     .u-body > :first-child { margin-top: 0; }
     .u-body > :last-child { margin-bottom: 0; }
     .u-body p, .u-body ul, .u-body ol, .u-body blockquote { margin: 0 0 0.8em; }
     .u-body ul, .u-body ol { padding-left: 1.4em; }
-    .u-body h3, .u-body h4, .u-body h5 { font-family: "Cinzel", serif; color: var(--text); font-weight: 600; margin: 1em 0 0.4em; line-height: 1.3; }
-    .u-body h3 { font-size: 1.05rem; } .u-body h4 { font-size: 0.98rem; } .u-body h5 { font-size: 0.9rem; }
+    .u-body h3, .u-body h4, .u-body h5 { font-family: var(--display); color: var(--text); font-weight: 700; margin: 1em 0 0.4em; line-height: 1.3; }
+    .u-body h3 { font-size: 1.12rem; } .u-body h4 { font-size: 1.02rem; } .u-body h5 { font-size: 0.95rem; }
     .u-body strong { color: var(--text); }
     .u-body a { color: var(--accent); }
     .u-body blockquote { border-left: 2px solid var(--accent); padding-left: 0.9em; color: var(--text-dim); }
-    .u-body code { font-size: 0.85em; background: var(--border); padding: 0.1em 0.35em; border-radius: 3px; }
-    .u-body hr { border: 0; border-top: 1px solid var(--border); margin: 1em 0; }
-    .u-link {
-      display: inline-block; margin-top: 0.7rem; color: var(--accent);
-      text-decoration: none; font-family: "Raleway", sans-serif; font-size: 0.82rem;
-      letter-spacing: 0.06em;
-    }
-    .u-link:hover { text-decoration: underline; }
-    .links { display: grid; gap: 0.6rem; }
+    .u-body code { font-size: 0.85em; background: var(--glass-hi); padding: 0.1em 0.35em; border-radius: 4px; }
+    .u-body hr { border: 0; border-top: 1px solid var(--line); margin: 1em 0; }
+    .u-link { margin-top: 0.9rem; padding: 0.6rem 1.15rem; min-height: 0; font-size: 0.92rem; }
+    .links { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.7rem; }
     .link {
-      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-      background: var(--surface); border: 1px solid var(--border-mid);
-      border-radius: var(--radius); padding: 0.85rem 1.1rem;
-      color: var(--text); text-decoration: none; transition: border-color .2s, background .2s;
-      font-family: "Raleway", sans-serif; font-size: 0.86rem; letter-spacing: 0.08em;
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.95rem 1.1rem;
+      background: var(--glass); border: 1px solid var(--line); border-radius: 16px; color: var(--text); text-decoration: none;
+      font-family: var(--display); font-weight: 600; font-size: 1rem; transition: transform 0.15s, background 0.2s, border-color 0.2s;
     }
-    .link:hover { border-color: var(--accent); background: var(--surface-2); }
-    .link > span:last-child { color: var(--accent); }
+    .link:hover { background: var(--glass-hi); border-color: rgba(var(--glow),0.5); transform: translateY(-2px); }
+    .link > span:last-child { color: var(--text-dim); }
     .link-name { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
-    .link-icon { width: 26px; height: 26px; flex-shrink: 0; }
-    .cta {
-      display: inline-block; padding: 0.85rem 2rem; border-radius: 999px;
-      border: 1px solid var(--accent); color: var(--accent); text-decoration: none;
-      font-family: "Cinzel", serif; font-size: 0.72rem; letter-spacing: 0.2em;
-      text-transform: uppercase; transition: background .2s, color .2s;
+    .link-icon { width: 28px; height: 28px; flex-shrink: 0; }
+    .feedback-cta {
+      position: relative; padding: 2rem 1.6rem; text-align: center; border-radius: var(--radius); overflow: hidden;
+      background: linear-gradient(var(--bg-2), var(--bg-2)) padding-box, var(--volt) border-box; border: 1.5px solid transparent;
     }
-    .cta:hover { background: var(--accent); color: var(--bg); }
-    footer {
-      margin-top: 3.5rem; text-align: center; color: var(--text-dim);
-      font-size: 0.8rem; font-family: "Raleway", sans-serif; letter-spacing: 0.1em;
-    }
-    footer a { color: var(--text-mid); }
+    .feedback-cta h2 { margin-bottom: 0.4rem !important; }
+    .feedback-cta p { color: var(--text-mid); max-width: 440px; margin: 0 auto 1.2rem; }
+    #page > footer { margin: 3.5rem -1.2rem 0; }
     .state { text-align: center; padding: 5rem 1rem; color: var(--text-mid); }
     #audio-grid { margin-top: 0.5rem; }
-    @media (max-width: 600px) {
-      h1 { font-size: 1.7rem; }
-      .banner { height: 120px; margin-bottom: -50px; }
-    }
   </style>
   <script src="/js/age-gate.js"></script>
 </head>
 <body>
+
+<nav class="topbar" id="topbar">
+  <a class="brand" href="/index.html" aria-label="JOI Electric home"><img src="/images/JOI_Icon.png" alt=""><span>JOI Electric</span></a>
+  <div class="topnav">
+    <a href="/index.html#drops">Drops</a>
+    <a href="/catalog.html">Catalogue</a>
+    <a href="/profiles/joi-electric.html">About</a>
+    <a href="/contact.html">Contact</a>
+  </div>
+</nav>
   <div class="wrap" id="page"><div class="state">Loading…</div></div>
 
   <script src="/js/site-config.js"></script>
@@ -168,10 +141,20 @@
 
     function render(p) {
       document.title = p.name + ' · ' + CFG.identity.name;
-      document.body.setAttribute('data-theme', p.theme || 'electric');
+      // The site's own theme is the base look already, so only another one
+      // goes on <body>.
+      if (p.theme && p.theme !== 'electric') document.body.setAttribute('data-theme', p.theme);
       // A custom accent overrides the theme's, and has already been checked
-      // server-side to be a colour and nothing else.
-      if (p.accent) document.body.style.setProperty('--accent', p.accent);
+      // server-side to be a colour and nothing else: #rgb, #rgba, #rrggbb or #rrggbbaa.
+      if (p.accent) {
+        var hex = p.accent.replace('#', '');
+        if (hex.length <= 4) hex = hex.slice(0, 3).replace(/./g, '$&$&');   // #rgb / #rgba
+        var rgb = [0, 2, 4].map(function (i) { return parseInt(hex.substr(i, 2), 16); }).join(',');
+        var st = document.body.style;
+        ['--accent', '--accent-2', '--cyan', '--violet', '--pink'].forEach(function (v) { st.setProperty(v, p.accent); });
+        st.setProperty('--volt', 'linear-gradient(120deg, ' + p.accent + ', ' + p.accent + ')');
+        if (/^[\d,]+$/.test(rgb)) st.setProperty('--glow', rgb);
+      }
 
       var sections = p.sections || {};
       var html = '';
@@ -195,14 +178,14 @@
               (u.image ? '<img class="u-img" src="' + esc(u.image) + '" alt="" loading="lazy">' : '') +
               head +
               (u.body ? '<div class="u-body">' + Markdown.render(u.body) + '</div>' : '') +
-              (u.link ? '<a class="u-link" href="' + esc(u.link) + '" target="_blank" rel="noopener noreferrer">' +
+              (u.link ? '<a class="u-link btn btn-glass" href="' + esc(u.link) + '" target="_blank" rel="noopener noreferrer">' +
                 esc(u.linkLabel || 'Read more') + ' &#8599;</a>' : '') +
               '</article>';
           }).join('') + '</div></section>';
       }
 
       if (sections.about !== false && p.bio) {
-        html += '<section><h2>About</h2><div class="bio">' + richText(p.bio) + '</div></section>';
+        html += '<section><h2>About</h2><div class="bio glass">' + richText(p.bio) + '</div></section>';
       }
       if (sections.works !== false) {
         html += '<section><h2>Works</h2><div id="audio-grid"></div></section>';
@@ -217,8 +200,9 @@
           }).join('') + '</div></section>';
       }
       if (sections.feedback !== false) {
-        html += '<section style="text-align:center"><h2>Feedback</h2>' +
-          '<a class="cta" href="/feedback.html?for=' + encodeURIComponent(p.slug) + '">Leave Feedback</a></section>';
+        html += '<section><div class="feedback-cta"><h2>Tell ' + esc(p.name) + ' what you thought</h2>' +
+          '<p>It&rsquo;s anonymous, takes a couple of minutes, and they read every response.</p>' +
+          '<a class="btn btn-primary" href="/feedback.html?for=' + encodeURIComponent(p.slug) + '">Leave feedback</a></div></section>';
       }
       html += '<footer><a href="/">' + esc(CFG.identity.name) + '</a> &middot; 18+ only</footer>';
 
@@ -254,6 +238,13 @@
       .catch(function () { show('<div class="state">Could not load this profile.</div>'); });
   })();
   </script>
+<nav class="bottombar" aria-label="Quick links">
+  <a href="/index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+  <a href="/index.html#drops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>Drops</a>
+  <a href="/catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Catalogue</a>
+  <a href="/contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact</a>
+</nav>
+<script src="/js/electric.js"></script>
 <script src="/js/track.js" defer></script>
 </body>
 </html>

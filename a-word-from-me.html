@@ -30,178 +30,68 @@
   <link rel="canonical" href="https://joielectric.com/a-word-from-me.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <script>if ('IntersectionObserver' in window) document.documentElement.classList.add('reveal-on');</script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/electric.css">
   <style>
-    :root {
-      --bg: #151a2a;
-      --surface: #1e2438;
-      --border: rgba(180,195,225,0.24);
-      --border-mid: rgba(180,195,225,0.42);
-      --text: #f2f6ff;
-      --text-mid: #d7e0f2;
-      --text-dim: #aab6d4;
-      --silver: #c4cfe0;
-      --silver-hi: #eaf0fa;
-      --electric: #5b8de8;
-      --electric-dim: #2a4880;
-      --radius: 2px;
+    .back-nav { margin: 0.6rem 0 0; }
+    .back-nav a {
+      display: inline-flex; font-family: var(--display); font-weight: 500; font-size: 0.9rem; color: var(--text-mid); text-decoration: none;
+      padding: 0.35rem 0.85rem; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); transition: color 0.2s, border-color 0.2s;
     }
+    .back-nav a:hover { color: var(--text); border-color: var(--line-hi); }
+    .back-nav .sep, .back-nav .current, .back-nav a + .sep + a { display: none; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Raleway", sans-serif;
-      font-size: 16px;
-      line-height: 1.75;
-      min-height: 100vh;
-      min-height: 100dvh;
-      overflow-x: clip;
-    }
-
-    /* Deliberately stiller than the rest of the site. No lightning, no motion.
-       The background sits further back so the text carries the page. */
-    body::before {
-      content: "";
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 60% 45% at 50% 0%, rgba(91,141,232,0.06) 0%, transparent 72%),
-        radial-gradient(ellipse 60% 60% at 85% 95%, rgba(30,20,50,0.5) 0%, transparent 65%),
-        linear-gradient(180deg, rgba(21,26,42,0.55) 0%, rgba(21,26,42,0.88) 100%),
-        url('images/JOIWebBack.png') center center / cover no-repeat;
-      pointer-events: none; z-index: 0;
-    }
-
-    .page-wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
-
-    /* === NAV === */
-    .back-nav {
-      padding: 1.2rem 0 0;
-      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
-      font-family: "Cinzel", serif; font-size: 0.58rem;
-      letter-spacing: 0.3em; text-transform: uppercase;
-    }
-    .back-nav a { color: var(--text-mid); text-decoration: none; transition: color 0.25s; }
-    .back-nav a:hover { color: var(--electric); }
-    .back-nav .sep { color: var(--text-dim); }
-    .back-nav .current { color: var(--silver); }
-
-    /* === OPENING === */
-    .opening {
-      padding: 4.5rem 0 2.5rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 3rem;
-    }
-
+    .opening { padding: 2.4rem 0 2.2rem; }
     .opening-eyebrow {
-      font-family: "Cinzel", serif;
-      font-size: 0.66rem;
-      letter-spacing: 0.4em;
-      text-transform: uppercase;
-      color: var(--silver);
-      font-weight: 600;
-      display: block;
-      margin-bottom: 1.6rem;
+      display: inline-block; font-family: var(--display); font-weight: 600; font-size: 0.82rem; color: var(--cyan);
+      background: rgba(57,213,255,0.1); border: 1px solid rgba(57,213,255,0.25); border-radius: 999px; padding: 0.25rem 0.75rem; margin-bottom: 1rem;
     }
-
-    /* The three-beat opening line, set to break where it should be read. */
-    .opening h1 {
-      font-family: "Cormorant Garamond", serif;
-      font-weight: 300;
-      font-size: clamp(1.9rem, 5.4vw, 2.9rem);
-      line-height: 1.28;
-      color: var(--silver-hi);
-      letter-spacing: 0.01em;
+    .opening h1 { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.12; font-size: clamp(2rem, 6.5vw, 3.3rem); }
+    .beat { display: block; opacity: 0; transform: translateY(14px); animation: beat 0.7s ease forwards; }
+    .beat:nth-child(2) { animation-delay: 0.5s; }
+    .beat:nth-child(3) {
+      animation-delay: 1s; background: var(--volt);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .opening h1 .beat { display: block; }
-    .opening h1 .beat + .beat { margin-top: 0.15em; }
+    @keyframes beat { to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .beat { opacity: 1; transform: none; animation: none; } }
+    .opening-rule { display: none; }
 
-    .opening-rule { display: flex; align-items: center; gap: 0.7rem; margin-top: 2.2rem; }
-    .opening-rule span { flex: 1; max-width: 90px; height: 1px; background: var(--border-mid); }
-    .opening-rule i { width: 5px; height: 5px; background: var(--electric-dim); transform: rotate(45deg); display: inline-block; }
-
-    /* === BODY === */
-    .prose p {
-      font-family: "Cormorant Garamond", serif;
-      font-size: clamp(1.12rem, 2.1vw, 1.28rem);
-      font-weight: 300;
-      line-height: 1.82;
-      color: var(--text-mid);
-    }
-    .prose p + p { margin-top: 1.5rem; }
-    .prose em { font-style: italic; color: var(--silver-hi); }
-
-    .closing {
-      margin-top: 3.2rem;
-      padding-top: 2.2rem;
-      border-top: 1px solid var(--border);
-    }
+    .prose p { font-size: 1.12rem; line-height: 1.85; color: var(--text-mid); }
+    .prose p + p, .prose p + .closing { margin-top: 1.3rem; }
+    .prose em { color: var(--text); }
     .closing p {
-      font-family: "Cormorant Garamond", serif;
-      font-style: italic;
-      font-size: clamp(1.15rem, 2.2vw, 1.35rem);
-      font-weight: 300;
-      line-height: 1.7;
-      color: var(--silver-hi);
+      font-family: var(--display); font-weight: 600; font-size: clamp(1.3rem, 3.6vw, 1.6rem); line-height: 1.4; color: var(--text);
+      padding-left: 1rem; border-left: 3px solid; border-image: var(--volt) 1;
     }
+    @media (max-width: 520px) { .prose p { font-size: 1.05rem; } }
 
-    /* Turns the page outward, from who he is to what the work is. */
-    .invitation {
-      margin-top: 3.2rem;
-      padding-left: 1.1rem;
-      border-left: 2px solid var(--electric-dim);
-    }
-    .invitation p {
-      font-family: "Cormorant Garamond", serif;
-      font-size: clamp(1.12rem, 2.1vw, 1.28rem);
-      font-weight: 300;
-      line-height: 1.82;
-      color: var(--text-mid);
-    }
-
-    /* === ONWARD === */
-    .onward { margin-top: 3.5rem; display: flex; flex-wrap: wrap; gap: 0.9rem; }
-    .invitation + .onward { margin-top: 1.7rem; }
-    .onward a {
-      flex: 1 1 220px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-      background: var(--surface);
-      border: 1px solid var(--border-mid);
-      border-left: 3px solid var(--electric);
-      border-radius: var(--radius);
-      padding: 1.1rem 1.3rem;
-      text-decoration: none;
-      font-family: "Cinzel", serif; font-size: 0.66rem;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text);
-      transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
-    }
-    .onward a:hover { transform: translateY(-3px); border-color: var(--electric); box-shadow: 0 8px 26px rgba(91,141,232,0.28); }
-    .onward .arrow { color: var(--electric); }
-
-    /* === FOOTER === */
-    footer {
-      position: relative; z-index: 1;
-      text-align: center;
-      padding: 2rem 1rem;
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-      font-family: "Cinzel", serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.3em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
+    .invitation { margin: 2.6rem 0 1.4rem; padding: 1.4rem 1.5rem; }
+    .invitation p { color: var(--text); font-size: 1.05rem; line-height: 1.7; }
+    .onward { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+    @media (max-width: 520px) { .onward a { flex: 1 1 100%; } }
   </style>
   <script src="/js/age-gate.js"></script>
 </head>
 <body>
 
-<div class="page-wrap">
+<nav class="topbar" id="topbar">
+  <a class="brand" href="index.html" aria-label="JOI Electric home"><img src="images/JOI_Icon.png" alt=""><span>JOI Electric</span></a>
+  <div class="topnav">
+    <a href="index.html#drops">Drops</a>
+    <a href="catalog.html">Catalogue</a>
+    <a href="profiles/joi-electric.html" aria-current="page">About</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<div class="wrap narrow">
 
   <nav class="back-nav">
-    <a href="index.html">&#8592; Home</a>
+    <a href="profiles/joi-electric.html">&#8592; About me</a>
+    <span class="sep">/</span>
+    <a href="index.html">Home</a>
     <span class="sep">/</span>
     <a href="profiles/joi-electric.html">About</a>
     <span class="sep">/</span>
@@ -234,13 +124,13 @@
 
   </div>
 
-  <div class="invitation">
+  <div class="invitation glass">
     <p>So have a look through the work. This is my journey, and these stories are borne of those experiences, told from inside that perspective.</p>
   </div>
 
   <div class="onward">
-    <a href="catalog.html">Browse the Catalogue <span class="arrow">&#8594;</span></a>
-    <a href="profiles/joi-electric.html">Where to Find Me <span class="arrow">&#8594;</span></a>
+    <a class="btn btn-primary" href="catalog.html">Browse the catalogue <span class="arrow">&#8594;</span></a>
+    <a class="btn btn-glass" href="profiles/joi-electric.html">Where to find me <span class="arrow">&#8594;</span></a>
   </div>
 
 </div>
@@ -249,6 +139,13 @@
   JOI Electric &middot; Erotic Audio &middot; 18+ only
 </footer>
 
+<nav class="bottombar" aria-label="Quick links">
+  <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+  <a href="index.html#drops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>Drops</a>
+  <a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Catalogue</a>
+  <a href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact</a>
+</nav>
+<script src="/js/electric.js"></script>
 <script src="/js/track.js" defer></script>
 </body>
 </html>

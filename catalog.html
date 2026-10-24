@@ -30,66 +30,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/electric.css">
   <style>
-    :root {
-      --bg: #0a0c18;
-      --bg-2: #11142a;
-      --glass: rgba(255,255,255,0.055);
-      --glass-hi: rgba(255,255,255,0.09);
-      --line: rgba(255,255,255,0.10);
-      --line-hi: rgba(255,255,255,0.18);
-      --text: #f6f7ff;
-      --text-mid: #c8cee6;
-      --text-dim: #8e97b8;
-      --cyan: #39d5ff;
-      --violet: #8b5cff;
-      --pink: #ff4fd8;
-      --gender: #ffb454;
-      --volt: linear-gradient(120deg, var(--cyan) 0%, var(--violet) 55%, var(--pink) 100%);
-      --radius: 18px;
-      --radius-sm: 12px;
-      --display: "Space Grotesk", system-ui, sans-serif;
-      --body: "Inter", system-ui, sans-serif;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
-    body {
-      background: var(--bg); color: var(--text);
-      font-family: var(--body); font-size: 16px; line-height: 1.6;
-      min-height: 100vh; overflow-x: clip; -webkit-font-smoothing: antialiased;
-    }
-    body::before {
-      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(55% 40% at 10% 0%, rgba(57,213,255,0.12) 0%, transparent 70%),
-        radial-gradient(50% 40% at 95% 5%, rgba(139,92,255,0.18) 0%, transparent 70%);
-    }
-    :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
+    /* Palette, type, bars, buttons and footer: css/electric.css */
+    :root { --gender: #ffb454; }
+    body::before { background: radial-gradient(55% 40% at 10% 0%, rgba(57,213,255,0.12) 0%, transparent 70%), radial-gradient(50% 40% at 95% 5%, rgba(139,92,255,0.18) 0%, transparent 70%); }
 
-    .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 1.2rem 5rem; }
 
-    /* Top bar — same as the homepage's */
-    .topbar {
-      position: sticky; top: 0; z-index: 40;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-      max-width: 1180px; margin: 0 auto; padding: 0.8rem 1.2rem;
-    }
-    .topbar::before {
-      content: ""; position: absolute; inset: 0; z-index: -1;
-      background: rgba(10,12,24,0.7); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--line); opacity: 0; transition: opacity 0.3s;
-    }
-    .topbar.scrolled::before { opacity: 1; }
-    .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
-    .brand img { width: 34px; height: 34px; border-radius: 10px; }
-    .brand span { font-family: "Cinzel", serif; font-weight: 700; letter-spacing: 0.08em; font-size: 0.95rem; }
-    .topnav { display: flex; gap: 0.3rem; }
-    .topnav a {
-      text-decoration: none; font-family: var(--display); font-weight: 500; font-size: 0.92rem;
-      color: var(--text-mid); padding: 0.45rem 0.85rem; border-radius: 999px; transition: color 0.2s, background 0.2s;
-    }
-    .topnav a:hover, .topnav a[aria-current] { color: var(--text); background: var(--glass-hi); }
-    @media (max-width: 720px) { .topnav { display: none; } }
+    /* Wider than the other pages: the grid wants the room */
+    .wrap, .topbar { max-width: 1180px; }
 
     /* Intro: the avatar starts full-screen and rushes at the viewer as it fades.
        overflow:hidden clips the swell so it can never raise a scrollbar. */
@@ -261,16 +210,6 @@
     .collab-link:hover { border-bottom-color: var(--cyan); }
 
     .more-wrap { text-align: center; margin-top: 1.6rem; }
-    .btn {
-      display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; cursor: pointer;
-      font-family: var(--display); font-weight: 600; font-size: 0.98rem; border: 0;
-      padding: 0.8rem 1.4rem; border-radius: 999px; color: var(--text); transition: transform 0.15s ease, box-shadow 0.25s, background 0.25s;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-primary { background: var(--volt); color: #0a0c18; box-shadow: 0 8px 30px rgba(139,92,255,0.4); }
-    .btn-primary:hover { box-shadow: 0 10px 40px rgba(57,213,255,0.45); }
-    .btn-glass { background: var(--glass-hi); border: 1px solid var(--line-hi); }
-    .btn-glass:hover { background: rgba(255,255,255,0.14); }
 
     .empty, .loading { grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; color: var(--text-dim); }
     .skeleton { pointer-events: none; }
@@ -341,24 +280,6 @@
     .cred-names { color: var(--text); }
     .cred-names a { color: var(--cyan); }
 
-    footer { position: relative; z-index: 1; text-align: center; padding: 2rem 1rem 6rem; border-top: 1px solid var(--line); color: var(--text-dim); font-size: 0.82rem; }
-    @media (min-width: 721px) { footer { padding-bottom: 2rem; } }
-
-    /* Mobile bottom bar — same as the homepage's */
-    .bottombar {
-      position: fixed; z-index: 45; left: 50%; bottom: max(12px, env(safe-area-inset-bottom));
-      transform: translateX(-50%); display: none; gap: 0.2rem; padding: 0.35rem;
-      background: rgba(17,20,42,0.82); border: 1px solid var(--line-hi); border-radius: 999px;
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-    }
-    .bottombar a {
-      display: flex; flex-direction: column; align-items: center; gap: 0.1rem; min-width: 64px;
-      text-decoration: none; color: var(--text-mid); font-family: var(--display); font-size: 0.68rem; font-weight: 500;
-      padding: 0.4rem 0.6rem; border-radius: 999px;
-    }
-    .bottombar a[aria-current] { color: var(--text); background: var(--glass-hi); }
-    .bottombar a svg { width: 20px; height: 20px; }
-    @media (max-width: 720px) { .bottombar { display: flex; } }
   </style>
   <script src="/js/age-gate.js"></script>
 </head>

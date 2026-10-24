@@ -1,0 +1,116 @@
+/* Consenting Adults (consenting-adults.html) in the site's newer look:
+ * Space Grotesk and Inter, glass cards, pill buttons, a gradient accent.
+ * It keeps its own coral-and-crimson palette, splash video and starfield.
+ *
+ * Linked after the page's own <style>, so a rule here wins at equal
+ * specificity. The menu is injected by js/nav.js after this sheet, so those
+ * rules are prefixed with `html body` to outrank it.
+ */
+
+:root {
+  --ca-a: #ff7a5c;
+  --ca-b: #e0405e;
+  --ca-volt: linear-gradient(120deg, #ffb07a 0%, var(--ca-a) 40%, var(--ca-b) 100%);
+  --ca-glass: rgba(255,255,255,0.055);
+  --ca-glass-hi: rgba(255,255,255,0.09);
+  --ca-line: rgba(255,255,255,0.10);
+  --ca-line-hi: rgba(255,255,255,0.18);
+  --display: "Space Grotesk", system-ui, sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--ca-a); outline-offset: 3px; border-radius: 6px; }
+
+/* Hero */
+.hero-eyebrow {
+  display: inline-block; font-family: var(--display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0; text-transform: none;
+  color: var(--ca-a); background: rgba(255,122,92,0.12); border: 1px solid rgba(255,122,92,0.35); border-radius: 999px; padding: 0.25rem 0.8rem;
+}
+.hero h1 {
+  font-family: var(--display); font-weight: 700; letter-spacing: -0.03em; text-transform: none; line-height: 1;
+  font-size: clamp(2.8rem, 10vw, 5.4rem);
+  background: linear-gradient(120deg, #fff 0%, #ffd2b8 30%, var(--ca-a) 60%, var(--ca-b) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-divider { display: none; }
+.hero-tagline { font-family: var(--display); font-style: normal; font-weight: 500; font-size: clamp(1.15rem, 2.6vw, 1.45rem); line-height: 1.4; color: #fff; }
+.hero-sub {
+  display: inline-block; font-family: var(--display); font-weight: 500; font-size: 0.85rem; letter-spacing: 0; text-transform: none;
+  color: var(--text-mid); background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 999px; padding: 0.35rem 0.85rem;
+}
+
+/* Section headings */
+.section-label {
+  font-family: var(--display); font-weight: 700; font-size: clamp(1.4rem, 3.4vw, 1.8rem); letter-spacing: -0.01em;
+  text-transform: none; color: var(--text);
+}
+.section-label::after { display: none; }
+.recent-view-all {
+  font-family: var(--display); font-weight: 500; font-size: 0.92rem; letter-spacing: 0; text-transform: none;
+  color: var(--ca-a); border: 0; background: none; padding: 0;
+}
+.recent-view-all:hover { color: #fff; background: none; }
+
+/* About */
+.about-col {
+  background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 18px; padding: 1.3rem 1.4rem;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.about-col p { font-family: var(--body); font-size: 1rem; line-height: 1.75; color: var(--text-mid); }
+
+/* Latest works + artists: glass cards */
+.recent-card, .artist-card {
+  background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 18px;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
+}
+.recent-card::before, .artist-card::before { display: none; }
+.recent-card:hover, .artist-card:hover { transform: translateY(-4px); border-color: rgba(255,122,92,0.55); box-shadow: 0 14px 40px rgba(224,64,94,0.22); }
+.recent-card:active, .artist-card:active { transform: scale(0.985); }
+.recent-title, .artist-name { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; text-transform: none; color: #fff; }
+.artist-name { font-size: 1.15rem; }
+.recent-badge {
+  font-family: var(--display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.04em;
+  color: #1a0a10; background: var(--ca-volt); border: 0; border-radius: 999px;
+}
+.recent-desc, .artist-bio { font-family: var(--body); color: var(--text-mid); }
+.artist-role { font-family: var(--display); font-weight: 500; font-size: 0.82rem; letter-spacing: 0; text-transform: none; color: var(--ca-a); }
+.recent-date { font-family: var(--body); letter-spacing: 0; text-transform: none; }
+.recent-desc { font-style: normal; }
+.recent-tag { font-family: var(--body); font-size: 0.74rem; letter-spacing: 0; text-transform: none; border: 0; border-radius: 999px; background: var(--ca-glass-hi); color: var(--text-mid); padding: 0.15rem 0.55rem; }
+.recent-tag.gender { color: #ffc070; background: rgba(255,180,84,0.12); }
+.artist-initials, .artist-initials-img { border-radius: 16px; overflow: hidden; border: 0; box-shadow: 0 0 0 1px var(--ca-line-hi), 0 6px 20px rgba(0,0,0,0.35); }
+.artist-initials-img img { border-radius: 16px; }
+.artist-arrow { color: var(--text-dim); }
+.artist-card:hover .artist-arrow { color: var(--ca-a); }
+
+/* Age gate */
+.age-gate-box { background: #1d1019; border: 1px solid var(--ca-line-hi); border-radius: 24px; box-shadow: 0 0 80px rgba(224,64,94,0.25); }
+.age-gate-box::before { display: none; }
+.age-gate-diamond { transform: none; border: 0; border-radius: 20px; background: var(--ca-volt); width: 64px; height: 64px; }
+.age-gate-diamond span { transform: none; font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: #1a0a10; }
+.age-gate-eyebrow { font-family: var(--display); font-weight: 600; letter-spacing: 0; text-transform: none; font-size: 0.9rem; color: var(--ca-a); }
+.age-gate-title { font-family: var(--display); font-weight: 700; font-size: 1.6rem; letter-spacing: -0.01em; }
+.age-gate-text { font-family: var(--body); }
+.age-btn {
+  font-family: var(--display); font-weight: 600; font-size: 1rem; letter-spacing: 0; text-transform: none;
+  border-radius: 999px; padding: 0.85rem 1.5rem; min-height: 50px;
+}
+.age-btn::before { display: none; }
+.age-btn-yes { background: var(--ca-volt); color: #1a0a10; border: 0; box-shadow: 0 8px 28px rgba(224,64,94,0.4); }
+.age-btn-yes:hover { color: #1a0a10; transform: translateY(-2px); }
+.age-btn-no { background: var(--ca-glass-hi); border: 1px solid var(--ca-line-hi); color: var(--text); }
+#splash-skip { font-family: var(--display); font-weight: 600; letter-spacing: 0; text-transform: none; border-radius: 999px; }
+
+footer { font-family: var(--body); letter-spacing: 0; text-transform: none; font-size: 0.82rem; }
+
+/* Menu (js/nav.js) */
+html body #ca-nav { background: rgba(26,14,22,0.72); border: 1px solid var(--ca-line); border-radius: 999px; }
+html body #ca-nav-logo { font-family: var(--display); font-weight: 700; letter-spacing: -0.01em; text-transform: none; }
+html body .ca-nav-link, html body .ca-nav-btn, html body .ca-mobile-link, html body .ca-mobile-btn {
+  font-family: var(--display); font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 0.92rem; border-radius: 999px;
+}
+html body .ca-nav-dropdown { background: #1d1019; border: 1px solid var(--ca-line-hi); border-radius: 16px; overflow: hidden; }
+html body .ca-nav-dropdown a { font-family: var(--body); letter-spacing: 0; text-transform: none; font-size: 0.9rem; }
+html body #ca-mobile-menu { background: #1d1019; border: 1px solid var(--ca-line-hi); border-radius: 20px; }
