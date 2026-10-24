@@ -84,13 +84,6 @@ body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antia
 }
 .recent-view-all:hover { color: #fff; background: none; }
 
-/* About */
-.about-col {
-  background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 18px; padding: 1.3rem 1.4rem;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-}
-.about-col p { font-family: var(--body); font-size: 1rem; line-height: 1.75; color: var(--text-mid); }
-
 /* Latest works + artists: glass cards */
 .recent-card, .artist-card {
   background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 18px;

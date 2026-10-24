@@ -194,23 +194,6 @@
     }
     .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-    /* === ABOUT US === */
-    .about-us {
-      margin: 2.5rem 0 2rem;
-    }
-    .about-body {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem 2.5rem;
-    }
-    .about-col p {
-      font-size: 1.1rem;
-      color: var(--text-mid);
-      line-height: 1.9;
-    }
-    @media (max-width: 640px) {
-      .about-body { grid-template-columns: 1fr; }
-    }
 
     /* === RECENTLY ADDED === */
     .recent-section-header {
@@ -726,19 +709,7 @@
     <span class="hero-sub">Adult audio &mdash; 18+ only</span>
   </section>
 
-  <section class="about-us">
-    <div class="section-label">About Us</div>
-    <div class="about-body">
-      <div class="about-col">
-        <p>The Velvet Key is a collaborative group of independent audio artists who believe the best work happens together. We pair voices, skills, and visions — writers with producers, performers with storytellers — to create intimate audio that neither could build alone.</p>
-      </div>
-      <div class="about-col">
-        <p>Every piece we release is crafted with intention: high production quality, thoughtful performance, and a genuine desire to realize each artist's creative vision. We're always open to new collaborators. If you have a voice, a story, or a skill that belongs here — reach out.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="recently-added" style="margin-bottom:2.5rem;">
+  <section id="recently-added" style="margin:2.5rem 0;">
     <div class="recent-section-header">
       <div class="section-label">Latest Works</div>
       <a href="velvet-key-catalog.html" class="recent-view-all">View All &#8594;</a>
