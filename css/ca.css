@@ -8,16 +8,48 @@
  */
 
 :root {
-  --ca-a: #ff7a5c;
-  --ca-b: #e0405e;
-  --ca-volt: linear-gradient(120deg, #ffb07a 0%, var(--ca-a) 40%, var(--ca-b) 100%);
-  --ca-glass: rgba(255,255,255,0.055);
-  --ca-glass-hi: rgba(255,255,255,0.09);
-  --ca-line: rgba(255,255,255,0.10);
-  --ca-line-hi: rgba(255,255,255,0.18);
+  /* Velvet: near-black with a plum cast, garnet and wine, a dusty rose to read by */
+  --bg: #08050a;
+  --surface: #140a12;
+  --surface-2: #1d0f1a;
+  --crimson: #8e1c3c;
+  --coral: #d0607a;
+  --rose: #e8a0b0;
+  --amber: #c88a6a;
+  --glow-soft: rgba(142,28,60,0.12);
+  --glow-mid: rgba(110,20,48,0.28);
+  --text: #f8eef2;
+  --text-mid: #e2c6d0;
+  --text-dim: #b38c9c;
+  --border: rgba(176,40,74,0.26);
+  --border-mid: rgba(176,40,74,0.44);
+
+  --ca-a: #d0607a;
+  --ca-b: #8e1c3c;
+  --ca-volt: linear-gradient(120deg, #e8a0b0 0%, var(--ca-a) 45%, var(--ca-b) 100%);
+  --ca-glass: rgba(255,255,255,0.045);
+  --ca-glass-hi: rgba(255,255,255,0.08);
+  --ca-line: rgba(255,255,255,0.09);
+  --ca-line-hi: rgba(255,255,255,0.16);
   --display: "Space Grotesk", system-ui, sans-serif;
   --body: "Inter", system-ui, sans-serif;
   color-scheme: dark;
+}
+body { background: var(--bg); }
+
+/* The waves and the smoke stay; the page around them goes darker. */
+.bg-glow {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 100%, rgba(90,14,40,0.38) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(110,20,48,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 70%, rgba(80,24,70,0.14) 0%, transparent 60%);
+}
+/* Words above the veil, so darkening the smoke never dims them */
+.hero > * { position: relative; z-index: 1; }
+.hero::before {
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 50%, rgba(8,4,10,0.72) 0%, rgba(8,4,10,0.45) 100%),
+    linear-gradient(180deg, rgba(40,6,24,0.25), rgba(8,4,10,0.55));
 }
 body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 :focus-visible { outline: 2px solid var(--ca-a); outline-offset: 3px; border-radius: 6px; }
@@ -25,12 +57,12 @@ body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antia
 /* Hero */
 .hero-eyebrow {
   display: inline-block; font-family: var(--display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0; text-transform: none;
-  color: var(--ca-a); background: rgba(255,122,92,0.12); border: 1px solid rgba(255,122,92,0.35); border-radius: 999px; padding: 0.25rem 0.8rem;
+  color: var(--ca-a); background: rgba(208,96,122,0.12); border: 1px solid rgba(208,96,122,0.35); border-radius: 999px; padding: 0.25rem 0.8rem;
 }
 .hero h1 {
   font-family: var(--display); font-weight: 700; letter-spacing: -0.03em; text-transform: none; line-height: 1;
   font-size: clamp(2.8rem, 10vw, 5.4rem);
-  background: linear-gradient(120deg, #fff 0%, #ffd2b8 30%, var(--ca-a) 60%, var(--ca-b) 100%);
+  background: linear-gradient(120deg, #fff 0%, #f2d0da 30%, var(--ca-a) 62%, #a8284e 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .hero-divider { display: none; }
@@ -66,19 +98,19 @@ body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antia
   transition: transform 0.2s ease, border-color 0.25s, box-shadow 0.25s;
 }
 .recent-card::before, .artist-card::before { display: none; }
-.recent-card:hover, .artist-card:hover { transform: translateY(-4px); border-color: rgba(255,122,92,0.55); box-shadow: 0 14px 40px rgba(224,64,94,0.22); }
+.recent-card:hover, .artist-card:hover { transform: translateY(-4px); border-color: rgba(208,96,122,0.55); box-shadow: 0 14px 40px rgba(142,28,60,0.22); }
 .recent-card:active, .artist-card:active { transform: scale(0.985); }
 .recent-title, .artist-name { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; text-transform: none; color: #fff; }
 .artist-name { font-size: 1.15rem; }
 .recent-badge {
   font-family: var(--display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.04em;
-  color: #1a0a10; background: var(--ca-volt); border: 0; border-radius: 999px;
+  color: #fff; background: var(--ca-volt); border: 0; border-radius: 999px;
 }
 .recent-desc, .artist-bio { font-family: var(--body); color: var(--text-mid); }
 .artist-role { font-family: var(--display); font-weight: 500; font-size: 0.82rem; letter-spacing: 0; text-transform: none; color: var(--ca-a); }
 .recent-date { font-family: var(--body); letter-spacing: 0; text-transform: none; }
 .recent-desc { font-style: normal; }
-.recent-tag { font-family: var(--body); font-size: 0.78rem; font-weight: 600; letter-spacing: 0; text-transform: none; border-radius: 999px; color: var(--text); background: rgba(255,122,92,0.14); border: 1px solid rgba(255,122,92,0.42); padding: 0.2rem 0.62rem; }
+.recent-tag { font-family: var(--body); font-size: 0.78rem; font-weight: 600; letter-spacing: 0; text-transform: none; border-radius: 999px; color: var(--text); background: rgba(208,96,122,0.14); border: 1px solid rgba(208,96,122,0.42); padding: 0.2rem 0.62rem; }
 .recent-tag.gender { color: #ffc56b; background: rgba(255,180,84,0.16); border-color: rgba(255,180,84,0.55); }
 .artist-initials, .artist-initials-img { border-radius: 16px; overflow: hidden; border: 0; box-shadow: 0 0 0 1px var(--ca-line-hi), 0 6px 20px rgba(0,0,0,0.35); }
 .artist-initials-img img { border-radius: 16px; }
@@ -86,10 +118,10 @@ body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antia
 .artist-card:hover .artist-arrow { color: var(--ca-a); }
 
 /* Age gate */
-.age-gate-box { background: #1d1019; border: 1px solid var(--ca-line-hi); border-radius: 24px; box-shadow: 0 0 80px rgba(224,64,94,0.25); }
+.age-gate-box { background: #140a12; border: 1px solid var(--ca-line-hi); border-radius: 24px; box-shadow: 0 0 80px rgba(142,28,60,0.25); }
 .age-gate-box::before { display: none; }
 .age-gate-diamond { transform: none; border: 0; border-radius: 20px; background: var(--ca-volt); width: 64px; height: 64px; }
-.age-gate-diamond span { transform: none; font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: #1a0a10; }
+.age-gate-diamond span { transform: none; font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: #fff; }
 .age-gate-eyebrow { font-family: var(--display); font-weight: 600; letter-spacing: 0; text-transform: none; font-size: 0.9rem; color: var(--ca-a); }
 .age-gate-title { font-family: var(--display); font-weight: 700; font-size: 1.6rem; letter-spacing: -0.01em; }
 .age-gate-text { font-family: var(--body); }
@@ -98,19 +130,19 @@ body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antia
   border-radius: 999px; padding: 0.85rem 1.5rem; min-height: 50px;
 }
 .age-btn::before { display: none; }
-.age-btn-yes { background: var(--ca-volt); color: #1a0a10; border: 0; box-shadow: 0 8px 28px rgba(224,64,94,0.4); }
-.age-btn-yes:hover { color: #1a0a10; transform: translateY(-2px); }
+.age-btn-yes { background: var(--ca-volt); color: #fff; border: 0; box-shadow: 0 8px 28px rgba(142,28,60,0.4); }
+.age-btn-yes:hover { color: #fff; transform: translateY(-2px); }
 .age-btn-no { background: var(--ca-glass-hi); border: 1px solid var(--ca-line-hi); color: var(--text); }
 #splash-skip { font-family: var(--display); font-weight: 600; letter-spacing: 0; text-transform: none; border-radius: 999px; }
 
 footer { font-family: var(--body); letter-spacing: 0; text-transform: none; font-size: 0.82rem; }
 
 /* Menu (js/nav.js) */
-html body #ca-nav { background: rgba(26,14,22,0.72); border: 1px solid var(--ca-line); border-radius: 999px; }
+html body #ca-nav { background: rgba(14,8,14,0.78); border: 1px solid var(--ca-line); border-radius: 999px; }
 html body #ca-nav-logo { font-family: var(--display); font-weight: 700; letter-spacing: -0.01em; text-transform: none; }
 html body .ca-nav-link, html body .ca-nav-btn, html body .ca-mobile-link, html body .ca-mobile-btn {
   font-family: var(--display); font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 0.92rem; border-radius: 999px;
 }
-html body .ca-nav-dropdown { background: #1d1019; border: 1px solid var(--ca-line-hi); border-radius: 16px; overflow: hidden; }
+html body .ca-nav-dropdown { background: #140a12; border: 1px solid var(--ca-line-hi); border-radius: 16px; overflow: hidden; }
 html body .ca-nav-dropdown a { font-family: var(--body); letter-spacing: 0; text-transform: none; font-size: 0.9rem; }
-html body #ca-mobile-menu { background: #1d1019; border: 1px solid var(--ca-line-hi); border-radius: 20px; }
+html body #ca-mobile-menu { background: #140a12; border: 1px solid var(--ca-line-hi); border-radius: 20px; }
