@@ -490,12 +490,12 @@ footer { margin-top: 2rem; }
 var FOR = (new URLSearchParams(location.search).get('for') || '')
   .toLowerCase().replace(/[^a-z0-9-]/g, '');
 
-// A collaborator's form belongs to the Consenting Adults collective, so it
+// A collaborator's form belongs to The Velvet Key collective, so it
 // takes the collective's bars rather than JOI Electric's.
 if (FOR && FOR !== 'joi-electric') {
   if (window.SiteNav) SiteNav.collective(FOR, 'feedback');
   var closedBack = document.querySelector('#feedback-closed a');
-  if (closedBack) { closedBack.href = '/consenting-adults.html'; closedBack.textContent = 'Back to Consenting Adults'; }
+  if (closedBack) { closedBack.href = '/consenting-adults.html'; closedBack.textContent = 'Back to The Velvet Key'; }
 }
 
 // ── Populate platform + audio pickers from the catalogue ────────────────────

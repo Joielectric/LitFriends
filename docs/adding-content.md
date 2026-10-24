@@ -1,4 +1,4 @@
-# How to Add a New Audio Project to Consenting Adults
+# How to Add a New Audio Project to The Velvet Key
 
 ## Overview
 

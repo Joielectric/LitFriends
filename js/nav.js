@@ -5,8 +5,8 @@
   const isTools = /\/tools\.html/.test(location.pathname);
 
   const LINKS = [
-    { label: 'Home',    href: root + 'index.html' },
-    { label: 'Listen',  href: root + 'catalog.html' },
+    { label: 'Home',    href: root + 'consenting-adults.html' },
+    { label: 'Listen',  href: root + 'velvet-key-catalog.html' },
     { label: 'Artists', href: null, children: [
       { label: 'JOI Electric',        href: root + 'profiles/joi-electric.html' },
       { label: 'Loona Licks',         href: root + 'profiles/loona-licks.html' },
@@ -185,7 +185,7 @@
   const logo = document.createElement('a');
   logo.id = 'ca-nav-logo';
   logo.href = root + 'index.html';
-  logo.textContent = 'Consenting Adults';
+  logo.textContent = 'The Velvet Key';
   inner.appendChild(logo);
 
   // Desktop links

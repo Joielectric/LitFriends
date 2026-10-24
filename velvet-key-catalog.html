@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/CA_ICON.png">
+  <link rel="apple-touch-icon" href="images/CA_ICON.png">
+  <link rel="manifest" href="manifest-ca.json">
+  <title>Catalogue &middot; The Velvet Key</title>
+  <!-- How a link to this page looks when it is posted somewhere. Facebook, X,
+       Discord, Bluesky, Reddit, Slack and iMessage all read these, and none of
+       them runs the page's script, so every fact a preview shows has to be
+       here in the HTML. The picture is images/share/ — 1200x630, which is the
+       shape they all crop from. Rebuild one in the Content Manager under
+       My Profile -> Share card. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="The Velvet Key">
+  <meta property="og:url" content="https://consentingadults.netlify.app/velvet-key-catalog.html">
+  <meta property="og:title" content="Catalogue · The Velvet Key">
+  <meta property="og:description" content="Every release from The Velvet Key's artists, filtered by the tags that matter to you.">
+  <meta property="og:image" content="https://consentingadults.netlify.app/images/share/the-velvet-key.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Catalogue · The Velvet Key">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Catalogue · The Velvet Key">
+  <meta name="twitter:description" content="Every release from The Velvet Key's artists, filtered by the tags that matter to you.">
+  <meta name="twitter:image" content="https://consentingadults.netlify.app/images/share/the-velvet-key.png">
+  <meta name="description" content="Every release from The Velvet Key's artists, filtered by the tags that matter to you.">
+  <link rel="canonical" href="https://consentingadults.netlify.app/velvet-key-catalog.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/electric.css">
+  <style>
+    /* Palette, type, bars, buttons and footer: css/electric.css */
+    :root {
+      --gender: #ffb454;
+      /* The Velvet Key's colours over the site's shared look */
+      --cyan: #ff8a66; --violet: #f0506e; --pink: #e0407e;
+      --bg: #0d080c; --bg-2: #1a0f17;
+    }
+    .rel:hover { border-color: rgba(240,80,110,0.55); box-shadow: 0 12px 34px rgba(240,80,110,0.2); }
+    .rel.playing .thumb { box-shadow: 0 0 0 2px var(--cyan), 0 0 24px rgba(255,138,102,0.45); }
+    .brand.ca span { font-family: var(--display); font-weight: 700; letter-spacing: -0.01em; font-size: 1rem; }
+    body::before { background: radial-gradient(55% 40% at 10% 0%, rgba(255,138,102,0.12) 0%, transparent 70%), radial-gradient(50% 40% at 95% 5%, rgba(224,64,94,0.2) 0%, transparent 70%); }
+
+
+    /* Wider than the other pages: the grid wants the room */
+    .wrap, .topbar { max-width: 1180px; }
+
+    /* Intro: the avatar starts full-screen and rushes at the viewer as it fades.
+       overflow:hidden clips the swell so it can never raise a scrollbar. */
+    #intro { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
+    /* Backdrop is its own layer, so lifting it does not dim the face in front of it. */
+    #intro .intro-veil { position: absolute; inset: 0; background: var(--bg); animation: intro-veil 1.15s ease-out forwards; }
+    /* Absolute rather than a sized grid item, so it fills the overlay outright. */
+    #intro img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center;
+                 will-change: transform, opacity; animation: intro-rush 1.15s cubic-bezier(0.35, 0, 0.85, 0.5) forwards; }
+    /* Accelerating scale reads as the face closing on the viewer, not just growing. */
+    @keyframes intro-rush {
+      0%   { transform: scale(1);   opacity: 1; }
+      55%  { opacity: 0.9; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    /* Backdrop clears just behind the face so the catalogue is there as it goes. */
+    @keyframes intro-veil { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { #intro { display: none; } }
+
+    /* Header */
+    .cat-head { padding: 1.6rem 0 1.4rem; }
+    .cat-head h1 {
+      font-family: var(--display); font-weight: 700; letter-spacing: -0.02em;
+      font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1.05; margin-bottom: 0.6rem;
+    }
+    .cat-head h1 .spark { background: var(--volt); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .cat-sub { color: var(--text-mid); font-size: 1rem; max-width: 640px; }
+
+    /* Search + filters stay in reach while scrolling */
+    .controls {
+      position: sticky; top: 58px; z-index: 30; margin: 0 -1.2rem 0.6rem; padding: 0.7rem 1.2rem 0.5rem;
+      transition: background 0.25s;
+    }
+    .controls.stuck { background: rgba(10,12,24,0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+    .search-wrap { position: relative; margin-bottom: 0.7rem; }
+    .search-wrap svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-dim); pointer-events: none; }
+    .search-input {
+      width: 100%; background: var(--glass-hi); border: 1px solid var(--line-hi); color: var(--text);
+      font-family: var(--body); font-size: 1rem; padding: 0.85rem 1rem 0.85rem 2.8rem; border-radius: 999px;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-input::placeholder { color: var(--text-dim); }
+    .search-input:focus { border-color: rgba(255,138,102,0.6); box-shadow: 0 0 0 4px rgba(255,138,102,0.12); }
+
+    .scroller { display: flex; gap: 0.45rem; align-items: center; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.2rem; }
+    .scroller::-webkit-scrollbar { display: none; }
+    .type-tab, .sel {
+      flex-shrink: 0; font-family: var(--display); font-weight: 500; font-size: 0.88rem; color: var(--text-mid);
+      background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 0.45rem 0.95rem;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .type-tab:hover, .sel:hover { color: var(--text); border-color: var(--line-hi); }
+    .type-tab.active { background: var(--volt); border-color: transparent; color: #0a0c18; font-weight: 600; }
+    .sel { appearance: none; -webkit-appearance: none; padding-right: 2rem; outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c8cee6' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.8rem center; }
+    .sel option { background: var(--bg-2); color: var(--text); }
+    .sel.set { color: var(--text); border-color: rgba(255,138,102,0.55); }
+    .divider { flex-shrink: 0; width: 1px; height: 22px; background: var(--line-hi); margin: 0 0.2rem; }
+
+    .chip-row { display: flex; gap: 0.4rem; align-items: center; overflow-x: auto; scrollbar-width: none; margin-bottom: 0.6rem; }
+    .chip-row::-webkit-scrollbar { display: none; }
+    .chip-row:empty { display: none; }
+    @media (min-width: 721px) { .chip-row { flex-wrap: wrap; overflow: visible; } }
+    .chip-label { flex-shrink: 0; font-family: var(--display); font-size: 0.8rem; font-weight: 600; color: var(--text-dim); margin-right: 0.2rem; }
+    .chip {
+      flex-shrink: 0; font-family: var(--body); font-size: 0.8rem; font-weight: 500; padding: 0.3rem 0.75rem; border-radius: 999px;
+      border: 1px solid var(--line); background: var(--glass); color: var(--text-mid); cursor: pointer; transition: all 0.15s;
+    }
+    .chip::before { content: "#"; opacity: 0.5; margin-right: 1px; }
+    .chip:hover { border-color: var(--line-hi); color: var(--text); }
+    .chip.active { background: var(--text); border-color: var(--text); color: #0a0c18; }
+    .chip.active::before { opacity: 0.6; }
+    .chip.gender { color: var(--gender); border-color: rgba(255,180,84,0.35); }
+    .chip.gender::before, #tb-toggle::before { content: none; }
+    .chip.gender.active { background: var(--gender); border-color: var(--gender); color: #201400; }
+    #tb-toggle { color: var(--cyan); border-style: dashed; }
+    .chip .chip-n { color: var(--text-dim); margin-left: 5px; font-size: 0.9em; }
+    .chip.active .chip-n { color: rgba(10,12,24,0.6); }
+
+    /* Browse all tags. The vocabulary runs to hundreds of entries, most of
+       them used once, so the panel is sorted by how much work carries a tag
+       rather than alphabetically, and the single use tail is folded away. */
+    .tag-browser { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); padding: 0.9rem 1rem; margin: 0.3rem 0 0.8rem; }
+    .tb-controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-bottom: 0.7rem; }
+    .tb-search {
+      flex: 1 1 12rem; min-width: 0; padding: 0.5rem 0.9rem; font-family: var(--body);
+      background: var(--glass-hi); border: 1px solid var(--line-hi); border-radius: 999px; color: var(--text); font-size: 0.88rem;
+    }
+    .tb-search:focus { outline: none; border-color: rgba(255,138,102,0.6); }
+    .tb-rare { display: flex; align-items: center; gap: 0.4rem; color: var(--text-mid); font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
+    .tb-rare input { cursor: pointer; accent-color: var(--violet); }
+    .tb-count { color: var(--text-dim); font-size: 0.82rem; white-space: nowrap; }
+    .tb-list { display: flex; flex-wrap: wrap; gap: 0.4rem; max-height: 15rem; overflow-y: auto; }
+    .tb-none { color: var(--text-dim); font-size: 0.85rem; font-style: italic; padding: 0.4rem 0; }
+
+    .meta-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0 1rem; gap: 1rem; }
+    .count { color: var(--text-dim); font-size: 0.88rem; font-family: var(--display); }
+    .count b { color: var(--text); font-weight: 600; }
+    .clear-btn {
+      background: none; border: 1px solid var(--line-hi); color: var(--text-mid); font-family: var(--display); font-weight: 500;
+      font-size: 0.85rem; padding: 0.35rem 0.9rem; border-radius: 999px; cursor: pointer; transition: all 0.2s;
+    }
+    .clear-btn:hover { border-color: var(--pink); color: var(--text); }
+
+    /* Card grid. The card itself (.rel, .thumb, .chips) is in css/electric.css. */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.9rem; }
+    @media (max-width: 400px) { .grid { grid-template-columns: 1fr; } }
+    .card { cursor: pointer; }
+    /* The modal's title still carries a type badge */
+    .type-badge {
+      display: inline-block; font-family: var(--display); font-weight: 600; font-size: 0.72rem;
+      color: #fff; background: var(--glass-hi); padding: 0.2rem 0.55rem; border-radius: 999px; white-space: nowrap;
+    }
+    .type-ico { margin-right: 3px; }
+    .c-artist { font-size: 0.84rem; color: var(--text-mid); margin-top: 0.25rem; line-height: 1.35; }
+    .rt { font-size: 0.78rem; font-weight: 600; color: var(--text); border-radius: 999px; padding: 0.2rem 0.62rem; line-height: 1.35; background: rgba(255,138,102,0.12); border: 1px solid rgba(255,138,102,0.38); }
+    .rt.gender { color: #ffc56b; background: rgba(255,180,84,0.16); border-color: rgba(255,180,84,0.55); }
+    .c-links { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.6rem; }
+    .plink {
+      font-family: var(--display); font-size: 0.74rem; font-weight: 500; padding: 0.22rem 0.6rem; border-radius: 999px;
+      border: 1px solid rgba(255,138,102,0.35); color: var(--cyan); text-decoration: none; white-space: nowrap; transition: all 0.18s;
+    }
+    .plink:hover { background: var(--cyan); color: #0a0c18; border-color: var(--cyan); }
+    .edit-link {
+      font-family: var(--display); font-size: 0.74rem; font-weight: 500; padding: 0.22rem 0.6rem; border-radius: 999px;
+      border: 1px dashed var(--line-hi); color: var(--text-mid); text-decoration: none; white-space: nowrap; transition: all 0.18s;
+    }
+    .edit-link:hover { color: #fff; border-color: var(--violet); }
+    .collab-link { color: var(--cyan); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+    .collab-link:hover { border-bottom-color: var(--cyan); }
+
+    .more-wrap { text-align: center; margin-top: 1.6rem; }
+
+    .empty, .loading { grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; color: var(--text-dim); }
+
+    /* Modal — a centred card on desktop, a bottom sheet on phones */
+    .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(6,8,16,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fade 0.2s ease; }
+    .modal {
+      position: relative; background: var(--bg-2); border: 1px solid var(--line-hi); border-radius: 24px;
+      max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 1.5rem 1.6rem;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(240,80,110,0.15); animation: pop 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    }
+    @keyframes fade { from { opacity: 0; } }
+    @keyframes pop { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+    @media (max-width: 600px) {
+      .overlay { align-items: flex-end; padding: 0; }
+      .modal { border-radius: 24px 24px 0 0; max-height: 92vh; padding: 1.3rem 1.2rem 2rem; animation: sheet 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+      .modal::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--line-hi); margin: -0.4rem auto 0.9rem; }
+      @keyframes sheet { from { transform: translateY(100%); } }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .overlay, .modal { animation: none; }
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.8rem; }
+    .modal-title { font-family: var(--display); font-weight: 700; font-size: 1.45rem; color: #fff; line-height: 1.25; }
+    .modal-title .type-badge { vertical-align: middle; margin-right: 0.5rem; }
+    .modal-close { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--glass-hi); border: none; color: var(--text-mid); font-size: 1.4rem; line-height: 1; cursor: pointer; }
+    .modal-close:hover { color: #fff; background: rgba(255,255,255,0.16); }
+    .modal-head .edit-link { margin-left: auto; align-self: center; }
+    /* Labeled meta: Date Created / Total Run Time */
+    .modal-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.1rem; }
+    .meta-item { display: inline-flex; gap: 0.4rem; align-items: baseline; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.8rem; }
+    .meta-label { font-size: 0.75rem; color: var(--text-dim); }
+    .meta-value { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .modal-desc { color: var(--text-mid); font-size: 0.95rem; line-height: 1.7; margin: 0 0 1.2rem; }
+    .modal-desc a { color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(255,138,102,0.4); word-break: break-word; }
+    .modal-desc a:hover { color: #fff; }
+    .modal-frame { margin: 0 0 1.1rem; border-radius: var(--radius); overflow: hidden; background: rgba(0,0,0,0.3); }
+    .modal-frame img { display: block; width: 100%; height: auto; }
+    .modal-note { color: var(--text-dim); font-style: italic; font-size: 0.9rem; margin-bottom: 1rem; }
+    .modal-links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.2rem; }
+    .modal-link {
+      display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--display); font-weight: 600; font-size: 0.92rem;
+      padding: 0.7rem 1.2rem; border-radius: 999px; color: #0a0c18; text-decoration: none; background: var(--volt);
+      box-shadow: 0 6px 22px rgba(240,80,110,0.35); transition: transform 0.15s, box-shadow 0.2s;
+    }
+    .modal-link:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,138,102,0.4); }
+    .modal-link:active { transform: scale(0.97); }
+    /* Inline player */
+    .track-player { margin: 0 0 1rem; background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.7rem 0.8rem; }
+    .track-player audio { width: 100%; display: block; height: 38px; }
+    .track-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .track-dl {
+      display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--display); font-weight: 600; font-size: 0.92rem;
+      padding: 0.7rem 1.2rem; border-radius: 999px; border: 1px solid rgba(111,227,193,0.6);
+      color: #bff7e6; text-decoration: none; background: rgba(111,227,193,0.12); transition: all 0.18s;
+    }
+    .track-dl:hover { background: #6fe3c1; color: #06231c; }
+    .track-license { font-size: 0.85rem; color: var(--text-mid); font-style: italic; border-left: 2px solid rgba(111,227,193,0.5); padding-left: 0.7rem; margin-bottom: 1rem; }
+    .modal-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.1rem; }
+    .modal-credits { border-top: 1px solid var(--line); padding-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 1.2rem; }
+    @media (max-width: 420px) { .modal-credits { grid-template-columns: 1fr; } }
+    .cred-row { font-size: 0.88rem; }
+    .cred-label { display: block; color: var(--text-dim); font-size: 0.74rem; font-weight: 500; }
+    .cred-names { color: var(--text); }
+    .cred-names a { color: var(--cyan); }
+
+  </style>
+  <script src="/js/age-gate.js"></script>
+</head>
+<body>
+
+<div id="intro" aria-hidden="true"><span class="intro-veil"></span><img src="images/CA_ICON.png" alt="" fetchpriority="high"></div>
+
+<nav class="topbar" id="topbar">
+  <a class="brand ca" href="/consenting-adults.html" aria-label="The Velvet Key home"><img src="/images/CA_ICON.png" alt=""><span>The Velvet Key</span></a>
+  <div class="topnav">
+    <a href="/consenting-adults.html">Home</a>
+    <a href="/consenting-adults.html#artists">Artists</a>
+    <a href="/velvet-key-catalog.html" aria-current="page">Catalogue</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header class="cat-head">
+    <h1>The Velvet Key <span class="spark">catalogue</span></h1>
+    <p class="cat-sub">Every release from every artist in the collective. Search by title, tag or creator, and follow the names to the people behind the work.</p>
+  </header>
+
+  <div class="controls" id="controls">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input class="search-input" type="search" id="search" placeholder="Search titles, tags, creators…" aria-label="Search the catalogue">
+    </div>
+    <div class="scroller">
+      <div class="scroller" id="type-tabs" role="group" aria-label="Type" style="overflow:visible;padding:0">
+        <button type="button" class="type-tab active" data-type="">All</button>
+        <button type="button" class="type-tab" data-type="audio">Audio</button>
+        <button type="button" class="type-tab" data-type="script">Scripts</button>
+        <button type="button" class="type-tab" data-type="story">Stories</button>
+        <button type="button" class="type-tab" data-type="poem">Poems</button>
+        <button type="button" class="type-tab" data-type="music">Music</button>
+      </div>
+      <span class="divider" aria-hidden="true"></span>
+      <select class="sel" id="name-filter" aria-label="Creator"><option value="">All creators</option></select>
+      <select class="sel" id="provider-filter" aria-label="Platform"><option value="">All platforms</option></select>
+      <select class="sel" id="sort-by" aria-label="Sort">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="trt-desc">Longest first</option>
+        <option value="trt-asc">Shortest first</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="chip-row" id="audience-chips"></div>
+  <div class="chip-row" id="tag-chips"></div>
+
+  <div class="tag-browser" id="tag-browser" hidden>
+    <div class="tb-controls">
+      <input class="tb-search" id="tb-search" type="search" placeholder="Filter tags…" autocomplete="off">
+      <label class="tb-rare"><input type="checkbox" id="tb-rare"> Include tags used once</label>
+      <span class="tb-count" id="tb-count"></span>
+    </div>
+    <div class="tb-list" id="tb-list"></div>
+  </div>
+
+  <div class="meta-row">
+    <span class="count" id="count"></span>
+    <button class="clear-btn" id="clear" style="display:none">Clear filters</button>
+  </div>
+
+  <div class="grid" id="rows"></div>
+  <div class="more-wrap" id="more-wrap" hidden><button type="button" class="btn btn-glass" id="more">Show more</button></div>
+
+</div>
+
+<footer>The Velvet Key &middot; 18+ only</footer>
+
+<nav class="bottombar" aria-label="Quick links">
+  <a href="/consenting-adults.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+  <a href="/consenting-adults.html#artists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17" cy="9" r="2.8"/><path d="M16 14.6c3 .1 5.5 1.9 5.5 5.4"/></svg>Artists</a>
+  <a href="/velvet-key-catalog.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Catalogue</a>
+</nav>
+
+<script src="/js/site-config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // Fallback labels only. The live list is managed in the Content Manager and
+  // arrives with the content payload; adoptProviders() merges it over these.
+  var PROVIDERS = {
+    soundgasm: 'Soundgasm', literotica: 'Literotica', audiochan: 'Audiochan',
+    hotaudio: 'HotAudio', whyp: 'Whyp', scriptbin: 'ScriptBin', ellipsus: 'Ellipsus'
+  };
+  var PROVIDER_KIND = { scriptbin: 'script', ellipsus: 'script' };
+
+  function adoptProviders(list){
+    (list || []).forEach(function(p){
+      if (!p || !p.key) return;
+      PROVIDERS[p.key] = p.label || p.key;
+      PROVIDER_KIND[p.key] = p.kind === 'script' ? 'script' : 'audio';
+    });
+  }
+  // A link's own kind wins: an audio entry may link to the script for it, and
+  // only the link knows that. Otherwise the entry's type decides, and the
+  // platform's setting is the last word — for somewhere never audio.
+  function provVerb(key, entry, link){
+    if (link && link.kind) return link.kind === 'script' ? 'Read on ' : 'Listen on ';
+    if (entry && isTextEntry(entry)) return 'Read on ';
+    return PROVIDER_KIND[key] === 'script' ? 'Read on ' : 'Open on ';
+  }
+  var TOP_TAGS = 16;
+
+  // Shared lists come from js/site-config.js (loaded above).
+  var CFG = window.SITE_CONFIG;
+  var GENDER_TAGS   = CFG.audienceTags;
+  var CREDIT_LABELS = CFG.creditLabels;
+  var CREDIT_ORDER  = CFG.creditKeys;
+  var TYPE_LABELS   = CFG.typeLabels;
+  var TYPE_ICONS    = CFG.typeIcons;
+  var profilePage   = CFG.profilePage;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+
+  // Keep line breaks and turn pasted URLs into links
+  function richText(s){
+    return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function(u){
+      var trail='', m=u.match(/[.,;:!?)\]]+$/);
+      if (m){ trail=m[0]; u=u.slice(0,-trail.length); }
+      return '<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+u+'</a>'+trail;
+    }).replace(/\r?\n/g, '<br>');
+  }
+  function safeUrl(u){
+    u = String(u || '').trim();
+    if (!u) return '';
+    if (/^https?:\/\//i.test(u)) return u;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';
+    return u.replace(/"/g, '%22');
+  }
+  function isGender(t){ return CFG.isAudienceTag(t); }
+  function provLabel(p){ return PROVIDERS[p] || p; }
+
+  function getLinks(e){
+    if (Array.isArray(e.links) && e.links.length) return e.links;
+    if (e.provider && e.url) return [{ provider: e.provider, url: e.url }];
+    return [];
+  }
+  function allNames(e){
+    var out = [], seen = {};
+    var c = e.credits || {};
+    CREDIT_ORDER.forEach(function(role){ (c[role] || []).forEach(function(n){ var k = n.toLowerCase(); if(!seen[k]){ seen[k]=1; out.push(n); } }); });
+    return out;
+  }
+  function voiceNames(e){ return ((e.credits || {}).voiceArtists) || []; }
+
+  // Collaborators → clickable names
+  var COLLAB = {};
+  function normName(s){ return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+
+  function typeOf(e){ return CFG.typeOf(e); }
+  // Audio is the default and stays unbadged; everything else is called out.
+  function typeBadge(e){
+    var t = typeOf(e);
+    if (!TYPE_LABELS[t]) return '';
+    return '<span class="type-badge ' + esc(t) + '">' +
+      '<span class="type-ico" aria-hidden="true">' + TYPE_ICONS[t] + '</span>' +
+      esc(TYPE_LABELS[t]) + '</span>';
+  }
+  // Written work is read wherever it lives, so the entry's own type wins over
+  // the platform's kind: a story on an audio host is still read, not listened to.
+  function isTextEntry(e){ return CFG.isTextType(e); }
+
+  // TRT is free text ("14:32", "1:05:30", "45 min"), so parse defensively and
+  // return null when it cannot be read rather than guessing a length.
+  function trtSeconds(e){
+    var raw = String((e && e.trt) || '').trim();
+    if (!raw) return null;
+    var clock = raw.match(/(\d+):(\d{1,2})(?::(\d{1,2}))?/);
+    if (clock){
+      var a = +clock[1], b = +clock[2], c = clock[3] === undefined ? null : +clock[3];
+      return c === null ? a * 60 + b : a * 3600 + b * 60 + c;
+    }
+    var hm = raw.match(/(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)/i);
+    if (hm && (hm[1] || hm[2])) return (+(hm[1] || 0)) * 3600 + (+(hm[2] || 0)) * 60;
+    var hOnly = raw.match(/^(\d+(?:\.\d+)?)\s*h/i);
+    if (hOnly) return Math.round(parseFloat(hOnly[1]) * 3600);
+    return null;
+  }
+
+  // Entries with no readable length sink to the bottom whichever way we sort,
+  // so a length sort never opens with a run of blanks.
+  function sortEntries(list, mode){
+    var out = list.slice();
+    if (mode === 'trt-desc' || mode === 'trt-asc'){
+      var dir = mode === 'trt-asc' ? 1 : -1;
+      out.sort(function(a, b){
+        var sa = trtSeconds(a), sb = trtSeconds(b);
+        if (sa === null && sb === null) return (b.date||'').localeCompare(a.date||'');
+        if (sa === null) return 1;
+        if (sb === null) return -1;
+        if (sa !== sb) return (sa - sb) * dir;
+        return (b.date||'').localeCompare(a.date||'');
+      });
+      return out;
+    }
+    out.sort(function(a, b){
+      return mode === 'date-asc'
+        ? (a.date||'').localeCompare(b.date||'')
+        : (b.date||'').localeCompare(a.date||'');
+    });
+    return out;
+  }
+
+  // Linked entries are found in the whole store, not just what this catalogue
+  // lists: an audio here can fill another creator's script, and one of ours
+  // can be filled by someone else's audio.
+  function entryById(id){
+    if (!id) return null;
+    for (var i = 0; i < ALL.length; i++) if (ALL[i].id === id) return ALL[i];
+    return null;
+  }
+  // An audio stores the script it filled; the script side is derived, so the
+  // two directions can never disagree.
+  function fillsOf(scriptId){
+    return ALL.filter(function(e){ return e.fills && e.fills === scriptId; });
+  }
+  function relLink(e){
+    var link = '<a class="collab-link" href="#" data-goto="' + esc(e.id) + '">' + esc(e.title || 'Untitled') + '</a>';
+    if (SHOW_ALL || CFG.isOwnWork(e)) return link;
+    // Someone else's work names them, since nothing else on this page will.
+    var c = e.credits || {};
+    var who = typeOf(e) === 'script' ? (c.writers || []) : voiceNames(e);
+    if (!who.length) who = allNames(e);
+    return who.length ? link + ' by ' + esc(who.join(', ')) : link;
+  }
+  function relatedHtml(e){
+    if (typeOf(e) === 'script') {
+      var fills = fillsOf(e.id);
+      if (!fills.length) return '';
+      return '<div class="cred-row"><span class="cred-label">Filled by</span><span class="cred-names">' +
+        fills.map(relLink).join(', ') + '</span></div>';
+    }
+    var script = entryById(e.fills);
+    if (!script) return '';
+    return '<div class="cred-row"><span class="cred-label">Script</span><span class="cred-names">' +
+      relLink(script) + '</span></div>';  }
+
+  function collabHtml(name, inRow){
+    var c = COLLAB[normName(name)];
+    var label = c ? c.name : name;
+    var page = profilePage(name, label);
+    if (page) {
+      return '<a class="collab-link" href="' + page + '"' + (inRow ? ' data-stop="1"' : '') + '>' + esc(label) + '</a>';
+    }
+    if (c && c.url) {
+      return '<a class="collab-link" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer"' + (inRow ? ' data-stop="1"' : '') + '>' + esc(label) + '</a>';
+    }
+    return esc(label);
+  }
+
+  var els = {
+    rows: document.getElementById('rows'),
+    search: document.getElementById('search'),
+    typeTabs: document.getElementById('type-tabs'),
+    name: document.getElementById('name-filter'),
+    provider: document.getElementById('provider-filter'),
+    audience: document.getElementById('audience-chips'),
+    tags: document.getElementById('tag-chips'),
+    sort: document.getElementById('sort-by'),
+    count: document.getElementById('count'),
+    clear: document.getElementById('clear'),
+    browser: document.getElementById('tag-browser'),
+    tbSearch: document.getElementById('tb-search'),
+    tbRare: document.getElementById('tb-rare'),
+    tbCount: document.getElementById('tb-count'),
+    tbList: document.getElementById('tb-list'),
+    more: document.getElementById('more'),
+    moreWrap: document.getElementById('more-wrap')
+  };
+  var PAGE = 24;          // cards per screenful; Show more adds another
+  var NEW_DAYS = 21;      // how long a release wears its NEW badge
+
+  var ENTRIES = [];
+  var ALL = [];        // the whole store, for following links out of ENTRIES
+  var TAG_COUNT = {};
+  // The collective's catalogue: every creator's work, never only the owner's.
+  var SHOW_ALL = true;
+  var state ={ q: '', type: '', name: '', provider: '', sort: 'date-desc', tags: {} };
+
+  // Who is signed in, if anyone. The catalogue is public, so this is asked
+  // once and quietly: a visitor gets nothing back and sees nothing new.
+  var WHO = null;
+  function whoAmI(){
+    return fetch('/api/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'who' })
+    }).then(function(r){ return r.json(); })
+      .then(function(d){ WHO = (d && d.ok && d.who) || null; return WHO; })
+      .catch(function(){ return null; });
+  }
+
+  // The server decides this as well. Here it only decides whether to offer the
+  // button. Work with no owner is the site owner's, from before creators kept
+  // their own.
+  function canEdit(e){
+    if (!WHO || !e) return false;
+    if (WHO.isOwner) return true;
+    return !!e.owner && e.owner === WHO.slug;
+  }
+
+  function editLink(e, cls){
+    if (!canEdit(e)) return '';
+    return '<a class="edit-link' + (cls ? ' ' + cls : '') + '" href="/tools.html#edit=' +
+      encodeURIComponent(e.id || '') + '" data-stop="1" title="Open this in the Content Manager">Edit</a>';
+  }
+
+  function fetchData(){
+    var url = window.__CATALOG_SRC__ || '/api/content';
+    Promise.all([
+      fetch(url).then(function(r){ return r.json(); }),
+      whoAmI()
+    ]).then(function(both){
+      var data = both[0];
+      adoptProviders(data.providers);
+      // The content store is shared with collaborators building their own
+      // pages, so this catalogue shows only work the site's owner is credited
+      // on. ?all=1 lifts that for checking the full store.
+      var all = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      ALL = all;
+      ENTRIES = SHOW_ALL ? all : all.filter(function(e){ return CFG.isOwnWork(e); });
+      COLLAB = {};
+      (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });
+      buildFilters();
+      // ?q= arrives from the homepage's Latest drops, already searched for.
+      var startQ = new URLSearchParams(location.search).get('q');
+      if (startQ) { els.search.value = startQ; state.q = startQ.toLowerCase().trim(); }
+      apply();
+    }).catch(function(){
+      els.rows.innerHTML = '<div class="empty">Could not load the catalogue.</div>';
+    });
+  }
+
+  function buildFilters(){
+    // Creator dropdown (all credited names, sorted)
+    var names = {};
+    ENTRIES.forEach(function(e){ allNames(e).forEach(function(n){ names[n] = 1; }); });
+    Object.keys(names).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); })
+      .forEach(function(n){ var o = document.createElement('option'); o.value = n; o.textContent = n; els.name.appendChild(o); });
+
+    // Provider dropdown (only providers present)
+    var provs = {};
+    ENTRIES.forEach(function(e){ getLinks(e).forEach(function(l){ provs[l.provider] = 1; }); });
+    Object.keys(provs).forEach(function(p){ var o = document.createElement('option'); o.value = p; o.textContent = provLabel(p); els.provider.appendChild(o); });
+
+    // Tag chips: the most used ones up front, the rest behind Browse all.
+    TAG_COUNT = {};
+    ENTRIES.forEach(function(e){ (e.tags || []).forEach(function(t){ TAG_COUNT[t] = (TAG_COUNT[t]||0)+1; }); });
+    var all = Object.keys(TAG_COUNT);
+    var gender = all.filter(isGender);
+    var other = all.filter(function(t){ return !isGender(t); }).sort(byCount).slice(0, TOP_TAGS);
+
+    if (gender.length){
+      els.audience.innerHTML = '<span class="chip-label">Audience</span>';
+      gender.forEach(function(t){ els.audience.appendChild(chip(t, true)); });
+    }
+    if (other.length){
+      els.tags.innerHTML = '<span class="chip-label">Tags</span>';
+      other.forEach(function(t){ els.tags.appendChild(chip(t, false)); });
+      if (all.length > other.length + gender.length){
+        var open = chip('Browse all tags', false, true);
+        open.id = 'tb-toggle';
+        open.addEventListener('click', toggleBrowser);
+        els.tags.appendChild(open);
+      }
+    }
+    renderBrowser();
+  }
+
+  // Most used first, alphabetical within a count so the order is stable.
+  function byCount(a, b){
+    return (TAG_COUNT[b] - TAG_COUNT[a]) || a.toLowerCase().localeCompare(b.toLowerCase());
+  }
+
+  function toggleTag(t){
+    if (state.tags[t]) delete state.tags[t]; else state.tags[t] = 1;
+    syncChips();
+    apply();
+  }
+
+  // A tag can be switched on from the chip row or from the browser, so both
+  // read their state from one place rather than each tracking its own.
+  function syncChips(){
+    document.querySelectorAll('.chip[data-tag]').forEach(function(c){
+      c.classList.toggle('active', !!state.tags[c.dataset.tag]);
+    });
+  }
+
+  function chip(t, gender, plain){
+    var b = document.createElement('button');
+    b.className = 'chip' + (gender ? ' gender' : '');
+    b.textContent = t;
+    if (plain) return b;
+    b.dataset.tag = t;
+    if (state.tags[t]) b.classList.add('active');
+    b.addEventListener('click', function(){ toggleTag(t); });
+    return b;
+  }
+
+  function toggleBrowser(){
+    var open = els.browser.hidden;
+    els.browser.hidden = !open;
+    var btn = document.getElementById('tb-toggle');
+    if (btn) btn.textContent = open ? 'Hide all tags' : 'Browse all tags';
+    if (open) els.tbSearch.focus();
+  }
+
+  // Most of the vocabulary is used on exactly one work, a long tail of dead
+  // ends to scroll past, so it stays behind the checkbox. An active tag is
+  // always listed, however rare, so it can be switched back off.
+  function renderBrowser(){
+    var q = els.tbSearch.value.toLowerCase().trim();
+    var rare = els.tbRare.checked;
+    var all = Object.keys(TAG_COUNT);
+    var shown = all.filter(function(t){
+      if (!rare && TAG_COUNT[t] < 2 && !state.tags[t]) return false;
+      return !q || t.toLowerCase().indexOf(q) !== -1;
+    }).sort(byCount);
+
+    els.tbCount.textContent = shown.length + ' of ' + all.length + ' tags';
+    els.tbList.innerHTML = '';
+    if (!shown.length){
+      els.tbList.innerHTML = '<div class="tb-none">No tag matches that.</div>';
+      return;
+    }
+    shown.forEach(function(t){
+      var b = chip(t, isGender(t));
+      var c = document.createElement('span');
+      c.className = 'chip-n';
+      c.textContent = TAG_COUNT[t];
+      b.appendChild(c);
+      els.tbList.appendChild(b);
+    });
+  }
+
+  function matches(e){
+    var q = state.q;
+    if (q){
+      var hay = (e.title||'') + ' ' + (e.desc||'') + ' ' + (e.shortDesc||'') + ' ' +
+                (e.tags||[]).join(' ') + ' ' + allNames(e).join(' ');
+      if (hay.toLowerCase().indexOf(q) === -1) return false;
+    }
+    if (state.type && (e.type || 'audio') !== state.type) return false;
+    if (state.name && allNames(e).indexOf(state.name) === -1) return false;
+    if (state.provider && !getLinks(e).some(function(l){ return l.provider === state.provider; })) return false;
+    var active = Object.keys(state.tags);
+    if (active.length){ var tags = e.tags || []; for (var i=0;i<active.length;i++){ if (tags.indexOf(active[i]) === -1) return false; } }
+    return true;
+  }
+
+  function trackMetaHtml(e){
+    var bits = '';
+    if (e.tempo)   bits += '<div class="meta-item"><span class="meta-label">Tempo</span><span class="meta-value">' + esc(e.tempo) + '</span></div>';
+    if (e.useCase) bits += '<div class="meta-item"><span class="meta-label">Intended Use</span><span class="meta-value">' + esc(e.useCase) + '</span></div>';
+    return bits ? '<div class="track-meta">' + bits + '</div>' : '';
+  }
+
+  var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+  var PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+  // "2026-10-21" reads as "Oct 21" this year and "Oct 21, 2024" before it.
+  // Anything that is not a date is shown as it was typed.
+  function niceDate(d){
+    var t = Date.parse(d || '');
+    if (isNaN(t)) return esc(d || '');
+    var dt = new Date(t);
+    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric',
+      year: dt.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+  }
+  function isFresh(d){
+    var t = Date.parse(d || '');
+    return !isNaN(t) && (Date.now() - t) < NEW_DAYS * 864e5;
+  }
+
+  function cardHtml(e, idx){
+    var links = getLinks(e).map(function(l){
+      return '<a class="plink" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" data-stop="1">' + esc(provLabel(l.provider)) + '</a>';
+    }).join('');
+    // Audience first: it is the first thing a listener filters on.
+    var tagList = (e.tags||[]).filter(isGender).concat((e.tags||[]).filter(function(t){ return !isGender(t); })).slice(0,6);
+    var tags = tagList.map(function(t){
+      return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>';
+    }).join('');
+    var voices = voiceNames(e);
+    var artistList = voices.length ? voices : allNames(e).slice(0,2);
+    var artistStr = artistList.map(function(n){ return collabHtml(n, true); }).join(', ');
+    var t = typeOf(e);
+    var img = safeUrl(e.image);
+    var track = safeUrl(e.track);
+    var initial = esc(String(e.title || '?').replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase() || '?');
+    var meta = (isFresh(e.date) ? '<span class="badge-new">NEW</span>' : '') +
+      [t !== 'audio' ? '<span aria-hidden="true">' + TYPE_ICONS[t] + '</span> ' + esc(TYPE_LABELS[t]) : '', niceDate(e.date), e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
+    return '<div class="card rel" role="button" tabindex="0" data-idx="' + idx + '" aria-label="' + esc(e.title || 'Untitled') + '">' +
+      '<div class="thumb t-' + esc(t) + '">' +
+        (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
+             : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
+        (track ? '<button type="button" class="play" data-stop="1" data-track="' + esc(track) + '" aria-label="Play ' + esc(e.title || '') + '">' + PLAY + '</button>' : '') +
+      '</div>' +
+      '<div class="rel-body">' +
+        '<div class="rel-title">' + esc(e.title||'Untitled') + '</div>' +
+        (meta ? '<div class="rel-meta">' + meta + '</div>' : '') +
+        (artistStr ? '<div class="c-artist">' + artistStr + '</div>' : '') +
+        (tags ? '<div class="chips c-tags">' + tags + '</div>' : '') +
+        ((links || editLink(e)) ? '<div class="c-links">' + links + editLink(e) + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  // One player for the page: starting a card stops the last one.
+  var audio = null, playingBtn = null;
+  function stopPlaying(){
+    if (audio) audio.pause();
+    if (playingBtn){ playingBtn.innerHTML = PLAY; var c = playingBtn.closest('.rel'); if (c) c.classList.remove('playing'); }
+    playingBtn = null;
+  }
+  function togglePlay(btn){
+    if (playingBtn === btn){ stopPlaying(); return; }
+    stopPlaying();
+    audio = audio || new Audio();
+    audio.src = btn.getAttribute('data-track');
+    audio.onended = stopPlaying;
+    audio.play().then(function(){
+      playingBtn = btn; btn.innerHTML = PAUSE; btn.closest('.rel').classList.add('playing');
+    }).catch(stopPlaying);
+  }
+
+  var FILTERED = [], SHOWN = 0;
+
+  function apply(){
+    stopPlaying();
+    FILTERED = sortEntries(ENTRIES.filter(matches), state.sort);
+    var has = state.q || state.type || state.name || state.provider || Object.keys(state.tags).length;
+    els.clear.style.display = has ? '' : 'none';
+    els.count.innerHTML = (has ? '<b>' + FILTERED.length + '</b> of ' + ENTRIES.length : '<b>' + ENTRIES.length + '</b>') +
+      ' works';
+    els.name.classList.toggle('set', !!state.name);
+    els.provider.classList.toggle('set', !!state.provider);
+    SHOWN = 0;
+    els.rows.innerHTML = '';
+    if (!FILTERED.length){
+      els.rows.innerHTML = '<div class="empty">Nothing matches that. Try fewer tags, or clear the filters.</div>';
+      els.moreWrap.hidden = true;
+      return;
+    }
+    showMore();
+  }
+
+  function showMore(){
+    var next = FILTERED.slice(SHOWN, SHOWN + PAGE);
+    els.rows.insertAdjacentHTML('beforeend', next.map(function(e, i){ return cardHtml(e, SHOWN + i); }).join(''));
+    SHOWN += next.length;
+    var left = FILTERED.length - SHOWN;
+    els.moreWrap.hidden = left <= 0;
+    if (left > 0) els.more.textContent = 'Show more (' + left + ')';
+  }
+
+  // Cards are wired once, here, rather than one listener per card per render.
+  els.rows.addEventListener('click', function(ev){
+    var play = ev.target.closest('.play');
+    if (play){ ev.preventDefault(); togglePlay(play); return; }
+    if (ev.target.closest('[data-stop]')) return; // link click
+    var card = ev.target.closest('.card');
+    if (card) openModal(FILTERED[+card.dataset.idx]);
+  });
+  els.rows.addEventListener('keydown', function(ev){
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    var card = ev.target.closest('.card');
+    if (!card || ev.target !== card) return;
+    ev.preventDefault();
+    openModal(FILTERED[+card.dataset.idx]);
+  });
+  els.more.addEventListener('click', showMore);
+
+  // Modal
+  var overlay = null;
+  function closeModal(){ if (overlay){ overlay.remove(); overlay = null; document.body.style.overflow=''; } }
+  function openModal(e){
+    closeModal();
+    document.body.style.overflow = 'hidden';
+    var links = getLinks(e).map(function(l){
+      return '<a class="modal-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+        provVerb(l.provider, e, l) + esc(provLabel(l.provider)) + '</a>';
+    }).join('');
+    var tags = (e.tags||[]).map(function(t){ return '<span class="rt' + (isGender(t)?' gender':'') + '">' + esc(t) + '</span>'; }).join('');
+    var related = relatedHtml(e);
+    var credits = '';
+    var c = e.credits || {};
+    CREDIT_ORDER.forEach(function(role){
+      if ((c[role]||[]).length) credits += '<div class="cred-row"><span class="cred-label">' + CREDIT_LABELS[role] + '</span><span class="cred-names">' + c[role].map(function(n){ return collabHtml(n, false); }).join(', ') + '</span></div>';
+    });
+    var sfx = CFG.sfxOf(e);
+    if (sfx.length) credits += '<div class="cred-row"><span class="cred-label">SFX</span><span class="cred-names">' + sfx.map(function(s){
+      var text = esc(CFG.sfxText(s));
+      return safeUrl(s.url) ? '<a href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener noreferrer">' + text + '</a>' : text;
+    }).join('<br>') + '</span></div>';
+
+    overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.addEventListener('click', function(ev){ if (ev.target === overlay) closeModal(); });
+    var meta = '';
+    if (e.date) meta += '<div class="meta-item"><span class="meta-label">Released</span><span class="meta-value">' + niceDate(e.date) + '</span></div>';
+    if (e.trt) meta += '<div class="meta-item"><span class="meta-label">Length</span><span class="meta-value">' + esc(e.trt) + '</span></div>';
+
+    overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' +
+      '<div class="modal-head"><div class="modal-title">' + typeBadge(e) + esc(e.title||'Untitled') + '</div>' +
+        editLink(e) +
+        '<button class="modal-close" aria-label="Close">&times;</button></div>' +
+      (meta ? '<div class="modal-meta">' + meta + '</div>' : '') +
+      (safeUrl(e.track) ? '<div class="track-player"><audio controls preload="none" src="' + safeUrl(e.track) + '"></audio></div>' : '') +
+      (trackMetaHtml(e)) +
+      (safeUrl(e.image) ? '<div class="modal-frame"><img src="' + safeUrl(e.image) + '" alt="' + esc(e.title || '') + '" loading="lazy"></div>' : '') +
+      (e.desc ? '<div class="modal-desc">' + richText(e.desc) + '</div>' : '') +
+      (safeUrl(e.track) ? '<div class="modal-links"><a class="track-dl" href="' + safeUrl(e.track) + '" download><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download track</a></div>' : '') +
+      (e.license ? '<div class="track-license">' + esc(e.license) + '</div>' : '') +
+      (links ? '<div class="modal-links">' + links + '</div>' : (safeUrl(e.track) ? '' : '<div class="modal-note">No links yet.</div>')) +
+      (tags ? '<div class="modal-tags">' + tags + '</div>' : '') +
+      (credits || related ? '<div class="modal-credits">' + related + credits + '</div>' : '') +
+    '</div>';
+    document.body.appendChild(overlay);
+    if (window.joiTrack) joiTrack.open(e);
+    overlay.querySelector('.modal-close').addEventListener('click', closeModal);
+    // Jump straight from an audio to its script, or from a script to a fill.
+    Array.prototype.forEach.call(overlay.querySelectorAll('[data-goto]'), function(a){
+      a.addEventListener('click', function(ev){
+        ev.preventDefault();
+        var target = entryById(a.getAttribute('data-goto'));
+        if (target) openModal(target);
+      });
+    });
+  }
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+
+  // Events
+  els.search.addEventListener('input', function(e){ state.q = e.target.value.toLowerCase().trim(); apply(); });
+  function syncTypeTabs(){
+    els.typeTabs.querySelectorAll('.type-tab').forEach(function(b){
+      var on = b.dataset.type === state.type;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  els.typeTabs.addEventListener('click', function(e){
+    var b = e.target.closest('.type-tab');
+    if (!b) return;
+    state.type = b.dataset.type;
+    syncTypeTabs();
+    apply();
+  });
+  els.name.addEventListener('change', function(e){ state.name = e.target.value; apply(); });
+  els.provider.addEventListener('change', function(e){ state.provider = e.target.value; apply(); });
+  els.sort.addEventListener('change', function(e){ state.sort = e.target.value; apply(); });
+  els.tbSearch.addEventListener('input', renderBrowser);
+  els.tbRare.addEventListener('change', renderBrowser);
+  els.clear.addEventListener('click', function(){
+    state = { q:'', type:'', name:'', provider:'', sort: state.sort, tags:{} };
+    els.search.value = ''; els.name.value = ''; els.provider.value = '';
+    syncTypeTabs();
+    syncChips();
+    renderBrowser();
+    apply();
+  });
+
+  // Drop the intro once it has played. It is pointer-events:none throughout, so
+  // it never blocks the page even in the window before this fires; the timeout
+  // is a backstop for the case where the animation never starts.
+  (function introTeardown(){
+    var intro = document.getElementById('intro');
+    if (!intro) return;
+    var clear = function(){ if (intro && intro.parentNode) intro.parentNode.removeChild(intro); };
+    intro.addEventListener('animationend', clear, { once: true });
+    setTimeout(clear, 2500);
+  })();
+
+  // Top bar picks up its backdrop once the page has scrolled under it.
+  (function(){
+    var bar = document.getElementById('topbar');
+    var controls = document.getElementById('controls');
+    function onScroll(){
+      bar.classList.toggle('scrolled', window.scrollY > 20);
+      controls.classList.toggle('stuck', controls.getBoundingClientRect().top <= 59);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  })();
+
+  els.rows.innerHTML = new Array(7).join('<div class="rel skeleton"><div class="thumb"></div><div class="rel-body"><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div><div class="sk-line" style="width:65%"></div></div></div>');
+  syncTypeTabs();
+  fetchData();
+})();
+</script>
+<script src="/js/track.js" defer></script>
+</body>
+</html>
