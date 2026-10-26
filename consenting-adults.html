@@ -107,16 +107,13 @@
       margin-bottom: 1rem;
     }
 
-    /* A low velvet glow for the emblem to sit in. */
+    /* The halo's colour is set in css/ca.css. */
     .hero::before {
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        radial-gradient(circle at 50% 38%, rgba(140,30,50,0.32) 0%, rgba(140,30,50,0.08) 35%, transparent 60%);
       pointer-events: none;
     }
-    .hero > * { position: relative; }
 
     .hero-eyebrow {
       font-family: "Cinzel", serif;
@@ -136,9 +133,15 @@
 
     /* The emblem carries the name, so it is the heading. */
     .hero h1 { margin: 0 auto 1.4rem; line-height: 0; }
+    /* A softer pulse than the old title's: a big halo reads as a solid
+       backdrop behind a round emblem. */
+    @keyframes emblem-glow {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(176,40,74,0.25)); }
+      50%       { filter: drop-shadow(0 0 18px rgba(176,40,74,0.45)); }
+    }
     .hero-emblem {
       width: min(340px, 72vw); height: auto; display: inline-block;
-      animation: breathe-glow 3.5s ease-in-out infinite;
+      animation: emblem-glow 3.5s ease-in-out infinite;
     }
 
     .hero-divider {
