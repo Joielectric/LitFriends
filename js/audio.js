@@ -58,7 +58,8 @@
 
   // Collaborators → clickable credit names
   let COLLAB = {};
-  function normName(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+  // The site's one rule for when two names are the same (js/site-config.js).
+  const normName = CFG.nameKey;
   function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   function entryType(entry) { return CFG.typeOf(entry); }
   function typeBadge(entry) {
@@ -98,7 +99,7 @@
     const out = [], seen = {};
     const c = entry.credits || {};
     CFG.creditKeys.forEach(role => (c[role] || []).forEach(name => {
-      const k = String(name).toLowerCase();
+      const k = normName(name);
       if (!seen[k]) { seen[k] = 1; out.push(name); }
     }));
     return out;

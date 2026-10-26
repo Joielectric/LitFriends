@@ -95,14 +95,21 @@ export function defaultProfile(slug, name) {
   };
 }
 
+// When two names are the same person — the same rule as SITE.nameKey in
+// js/site-config.js: letters and digits only, a leading Reddit "u/" ignored.
+function nameKey(s) {
+  const t = String(s == null ? "" : s).trim().toLowerCase().replace(/^\/?u\//, "");
+  return t.replace(/[^\p{L}\p{N}]/gu, "") || t;
+}
+
 // Every name already spoken for by somebody else — their display name and
 // anything they have adopted.
 function takenBy(slug, profiles) {
   const taken = new Set();
   Object.values(profiles || {}).forEach((p) => {
     if (!p || p.slug === slug) return;
-    if (p.name) taken.add(String(p.name).toLowerCase());
-    (p.aliases || []).forEach((a) => taken.add(String(a).toLowerCase()));
+    if (p.name) taken.add(nameKey(p.name));
+    (p.aliases || []).forEach((a) => taken.add(nameKey(a)));
   });
   return taken;
 }
@@ -161,7 +168,7 @@ function sanitize(input, base, allProfiles) {
     out.aliases = input.aliases
       .map((a) => clean(a, MAX.name))
       .filter((a) => {
-        const k = a.toLowerCase();
+        const k = nameKey(a);
         if (!a || seen.has(k)) return false;
         // A credited name belongs to one person. Without this, adopting a name
         // would quietly take another creator's work off their page.
