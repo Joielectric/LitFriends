@@ -308,7 +308,7 @@
     .cm-offer-title a { color: var(--text); text-decoration: none; }
     .cm-offer-title a:hover { color: var(--coral); text-decoration: underline; }
     .im-kinds label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
-    .im-status { font-size: 0.82rem; color: var(--text-dim); margin: 8px 0; min-height: 1.2em; }
+    .im-status { font-size: 0.88rem; color: var(--text-dim); margin: 8px 0; min-height: 1.2em; white-space: pre-line; line-height: 1.6; }
     .im-found { border: 1px solid var(--border); border-radius: var(--radius); margin-top: 6px; }
     .im-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border); }
     .im-spacer { flex: 1 1 auto; }
@@ -5431,12 +5431,27 @@
         }));
         if (posts.length || uploads.length) imRemember('reddit', handle, target);
         imRender('reddit');
-        imStatus('reddit',
-          `${stats.audioPosts} audio post${stats.audioPosts === 1 ? '' : 's'} and ${stats.uploads} upload${stats.uploads === 1 ? '' : 's'}` +
-          (stats.already ? `, ${stats.already} already in the catalogue` : '') +
-          (drafts.length ? `, ${drafts.length} to review. Nothing is selected yet.` : '. Nothing new.') +
-          (failed.length ? ' Not everything answered: ' + failed.join(' ') : ''),
-          failed.length ? 'bad' : drafts.length ? 'good' : '');
+        // One plain line per finding, so a source that failed is never read as
+        // "found nothing", and a short list is explained rather than empty.
+        const n = (k, one, many) => k + ' ' + (k === 1 ? one : many);
+        const gwasiFailed = failed.find(m => /GWASI/i.test(m));
+        const lines = [];
+        lines.push(gwasiFailed
+          ? 'Reddit posts: could not be read. ' + gwasiFailed +
+            ' Only your Soundgasm and HotAudio uploads were checked.'
+          : 'Reddit posts: ' + n(stats.audioPosts, 'audio post', 'audio posts') + ' found.');
+        lines.push('Soundgasm and HotAudio: ' + n(stats.uploads, 'upload', 'uploads') + ' found.');
+        failed.filter(m => m !== gwasiFailed).forEach(m => lines.push(m));
+        if (drafts.length) {
+          lines.push(n(drafts.length, 'new one', 'new ones') + ' to review below' +
+            (stats.already ? ' (' + stats.already + ' already in the catalogue)' : '') + '. Nothing is selected yet.');
+        } else if (stats.already) {
+          lines.push('Nothing new to import: ' + (stats.already === stats.uploads + stats.audioPosts || !stats.audioPosts
+            ? 'all ' + stats.already + ' are already in the catalogue.' : stats.already + ' are already in the catalogue.'));
+        } else {
+          lines.push('Nothing new to import.');
+        }
+        imStatus('reddit', lines.join('\n'), gwasiFailed && !drafts.length ? 'bad' : drafts.length ? 'good' : '');
       } finally {
         st.busy = false;
       }
