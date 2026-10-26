@@ -279,3 +279,34 @@ body[data-theme="ice"] {
   --electric: #9fd4f5;
   --electric-dim: #485f6e;
 }
+
+/* The one light theme. Its palette is complete here, but the pages that use
+ * it were built dark — white-alpha glass and lines, dark bars, dark text on
+ * accent buttons — so each of them scopes those back under
+ * body[data-theme="daylight"] (profile.html, feedback.html). Its accent is deep
+ * enough to read as text on white; a creator's own accent is darkened to match
+ * by the page before it is applied. */
+
+body[data-theme="daylight"] {
+  --bg: #f6f4ef;
+  --surface: #ffffff;
+  --surface-2: #f0ede6;
+  --surface-3: #e6e2d9;
+  --border: rgba(28,32,52,0.13);
+  --border-mid: rgba(28,32,52,0.24);
+  --border-hi: rgba(28,32,52,0.4);
+  --text: #191c28;
+  --text-mid: #464b5d;
+  --text-dim: #666b7e;
+  /* "Brighter" on a light page means more legible, so these go darker. */
+  --text-mid-bright: #383d4f;
+  --text-dim-bright: #555a6d;
+  --silver: #383d4f;
+  --silver-hi: #191c28;
+
+  --accent: #2f62d6;
+  --accent-soft: rgba(47,98,214,0.1);
+  --electric: #2f62d6;
+  --electric-dim: #9db6ec;
+  color-scheme: light;
+}

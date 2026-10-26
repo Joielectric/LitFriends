@@ -38,6 +38,56 @@
     body[data-theme="crimson"]  { --glow: 224,72,94; }
     body[data-theme="midnight"] { --glow: 124,140,255; }
     body[data-theme="ice"]      { --glow: 159,212,245; }
+    body[data-theme="daylight"] { --glow: 47,98,214; }
+
+    /* Daylight is the one light theme, and css/electric.css and
+       css/profile.css were written for dark pages: white-alpha glass and
+       lines, dark bars, dark text on the accent, a white-to-accent title.
+       Those are put right here for it alone, so the dark themes never see
+       any of this. Text on the accent is white, because the accent is always
+       deep enough for it (see js/themes.js). */
+    html:has(body[data-theme="daylight"]) { color-scheme: light; }
+    html body[data-theme="daylight"] {
+      --glass: var(--surface); --glass-hi: var(--surface-2);
+      --silver-hi: var(--text);
+    }
+    body[data-theme="daylight"] .glass, body[data-theme="daylight"] .update,
+    body[data-theme="daylight"] .link, body[data-theme="daylight"] .ag-row { box-shadow: 0 1px 3px rgba(28,32,52,0.06); }
+    body[data-theme="daylight"]::before {
+      background:
+        radial-gradient(60% 45% at 12% 0%, rgba(var(--glow),0.12) 0%, transparent 70%),
+        radial-gradient(55% 45% at 92% 8%, rgba(var(--glow),0.07) 0%, transparent 70%);
+    }
+    body[data-theme="daylight"] .topbar::before { background: rgba(246,244,239,0.82); }
+    body[data-theme="daylight"] .bottombar { background: rgba(255,255,255,0.9); box-shadow: 0 10px 30px rgba(28,32,52,0.16); }
+    body[data-theme="daylight"] .topnav a.vk-link, body[data-theme="daylight"] .bottombar a.vk-link { color: #a3294a; }
+    body[data-theme="daylight"] .topnav a.vk-link:hover { color: #7a1834; background: rgba(176,40,74,0.1); }
+    body[data-theme="daylight"] .head h1 { background-image: linear-gradient(120deg, var(--text) 0%, var(--accent) 60%, var(--accent-2) 100%); }
+    body[data-theme="daylight"] .btn-primary,
+    body[data-theme="daylight"] .ag-own-tag.active,
+    body[data-theme="daylight"] .ag-plink:hover,
+    body[data-theme="daylight"] .ag-modal-open-btn,
+    body[data-theme="daylight"] .ag-modal-open-btn:hover { color: #fff; }
+    body[data-theme="daylight"] .btn-glass:hover { background: var(--surface-3); }
+    body[data-theme="daylight"] .link-icon img { border-radius: 7px; box-shadow: 0 0 0 1px var(--line); }
+    body[data-theme="daylight"] .ag-tag.ag-tag-gender { color: #8a4b00; background: rgba(230,150,40,0.12); border-color: rgba(200,120,20,0.45); }
+    body[data-theme="daylight"] .ag-type-audio  { color: #2c58b8; border-color: rgba(44,88,184,0.4); background: rgba(44,88,184,0.08); }
+    body[data-theme="daylight"] .ag-type-script { color: #81620a; border-color: rgba(150,115,10,0.45); background: rgba(190,150,20,0.1); }
+    body[data-theme="daylight"] .ag-type-story  { color: #0f6d5a; border-color: rgba(15,109,90,0.4); background: rgba(15,109,90,0.08); }
+    body[data-theme="daylight"] .ag-type-poem   { color: #7036b0; border-color: rgba(112,54,176,0.4); background: rgba(112,54,176,0.08); }
+    body[data-theme="daylight"] .ag-type-music  { color: #0c7258; border-color: rgba(12,114,88,0.4); background: rgba(12,114,88,0.08); }
+    body[data-theme="daylight"] .ag-overlay { background: rgba(25,28,40,0.45); }
+    body[data-theme="daylight"] .ag-modal { box-shadow: 0 30px 80px rgba(28,32,52,0.28); }
+    body[data-theme="daylight"] .ag-modal-title { color: var(--text); }
+    body[data-theme="daylight"] .ag-modal-desc a { color: var(--accent); }
+    body[data-theme="daylight"] .ag-modal-desc a:hover,
+    body[data-theme="daylight"] .ag-collab-link:hover { color: var(--text); }
+    body[data-theme="daylight"] .ag-modal-frame { background: var(--surface-2); }
+    body[data-theme="daylight"] .ag-track-dl { color: #0c5a46; border-color: #2aa883; background: rgba(42,168,131,0.1); }
+    body[data-theme="daylight"] .ag-track-dl:hover { background: #2aa883; color: #fff; }
+    body[data-theme="daylight"] .ag-filter-select option { background: #fff; color: var(--text); }
+    body[data-theme="daylight"][data-bg="banner"]::before { opacity: 0.5; }
+    body[data-theme="daylight"][data-bg="banner"]::after { background: linear-gradient(180deg, rgba(255,255,255,0.35), var(--bg) 85%); }
 
     /* What sits behind the page (the creator's "Background" choice). The soft
        glow from css/profile.css is the default; "plain" drops it, and "banner"
@@ -141,6 +191,7 @@
   <div class="wrap" id="page"><div class="state">Loading…</div></div>
 
   <script src="/js/site-config.js"></script>
+  <script src="/js/themes.js"></script>
   <script src="/js/audio.js"></script>
   <script src="/js/link-icons.js"></script>
   <script src="/js/markdown.js"></script>
@@ -185,12 +236,13 @@
       // A custom accent overrides the theme's, and has already been checked
       // server-side to be a colour and nothing else: #rgb, #rgba, #rrggbb or #rrggbbaa.
       if (p.accent) {
-        var hex = p.accent.replace('#', '');
+        var accent = Themes.accentFor(p.theme, p.accent);   // darker on Daylight if need be
+        var hex = accent.replace('#', '');
         if (hex.length <= 4) hex = hex.slice(0, 3).replace(/./g, '$&$&');   // #rgb / #rgba
         var rgb = [0, 2, 4].map(function (i) { return parseInt(hex.substr(i, 2), 16); }).join(',');
         var st = document.body.style;
-        ['--accent', '--accent-2', '--cyan', '--violet', '--pink'].forEach(function (v) { st.setProperty(v, p.accent); });
-        st.setProperty('--volt', 'linear-gradient(120deg, ' + p.accent + ', ' + p.accent + ')');
+        ['--accent', '--accent-2', '--cyan', '--violet', '--pink'].forEach(function (v) { st.setProperty(v, accent); });
+        st.setProperty('--volt', 'linear-gradient(120deg, ' + accent + ', ' + accent + ')');
         if (/^[\d,]+$/.test(rgb)) st.setProperty('--glow', rgb);
       }
       // The background behind the page. "banner" needs a banner to show, so
