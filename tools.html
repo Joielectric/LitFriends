@@ -1471,7 +1471,31 @@
                 </div>
 
                 <div class="cm-tab-panel" id="tabp-profile" hidden>
-                <header class="cm-panel-head"><h2>My profile</h2><p>Your public page: picture, bio, links, updates and the card shown when it is shared.</p></header>
+                <header class="cm-panel-head"><h2>My profile</h2><p>Everything on your public page, in the order visitors see it. Fill it in top to bottom, press <strong>Save profile</strong>, then <strong>Publish</strong> when you are happy with it.</p></header>
+                  <!-- The editor follows the public page from the top down, and
+                       each part that a visitor can be spared carries its own
+                       "Show on my page" switch: switching it off folds the part
+                       away here too, so nobody fills in something that will
+                       never be seen. Nothing is deleted by hiding it. -->
+                  <style>
+                    .pf-card { border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:14px; scroll-margin-top:16px; }
+                    .pf-card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+                    .pf-card-head h3 { margin:0; font-size:0.95rem; color:var(--text); }
+                    .pf-step { color:var(--text-dim); font-weight:normal; font-size:0.78rem; margin-right:4px; }
+                    .pf-help { color:var(--text-mid); font-size:0.8rem; line-height:1.5; margin:4px 0 12px; max-width:62ch; }
+                    .pf-switch { display:inline-flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--text-mid); cursor:pointer; white-space:nowrap; }
+                    .pf-switch input { cursor:pointer; }
+                    .pf-off-note { display:none; color:var(--text-dim); font-size:0.8rem; margin-top:4px; }
+                    .pf-card.is-off { opacity:0.7; }
+                    .pf-card.is-off .pf-card-body, .pf-card.is-off .pf-help { display:none; }
+                    .pf-card.is-off .pf-off-note { display:block; }
+                    .pf-group-label { color:var(--text-dim); font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; margin:22px 0 8px; }
+                    .pf-jump { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 16px; }
+                    .pf-jump button { background:var(--surface-2, rgba(255,255,255,0.04)); border:1px solid var(--border); color:var(--text-mid); border-radius:999px; padding:3px 10px; font-size:0.75rem; cursor:pointer; }
+                    .pf-jump button:hover { color:var(--text); border-color:var(--border-mid); }
+                    .pf-savebar { position:sticky; bottom:0; z-index:5; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 0; margin-top:6px; background:var(--bg); border-top:1px solid var(--border); }
+                  </style>
+
                   <div id="pf-none" style="display:none;color:var(--text-mid);padding:14px;">
                     No profile is linked to your account yet.
                   </div>
@@ -1482,7 +1506,8 @@
                       <select id="pf-who" class="cm-input" style="width:100%" onchange="pfLoad(this.value)"></select>
                     </div>
 
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                    <!-- Status: where the page lives and whether anyone can see it. -->
+                    <div class="pf-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                       <div>
                         <span style="color:var(--text-mid);font-size:0.85rem;">Your page:</span>
                         <a id="pf-url" href="#" target="_blank" style="color:var(--coral);font-size:0.85rem;"></a>
@@ -1496,160 +1521,217 @@
                       </div>
                     </div>
 
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <label class="cm-label">Basics</label>
-                      <label class="cm-label" style="font-size:0.7rem">Display name</label>
-                      <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80" oninput="pfDrawCard()">
-                      <label class="cm-label" style="font-size:0.7rem">Tagline</label>
-                      <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="140"
-                             placeholder="Voice Artist &middot; Writer &middot; Collaborator" oninput="pfDrawCard()">
-                      <label class="cm-label" style="font-size:0.7rem">Also credited as <span style="font-weight:normal;color:var(--text-mid)">(claim the names the catalogue credits you under)</span></label>
-                      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <select id="pf-alias-pick" class="cm-input" style="flex:1 1 220px"></select>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAdoptName()">Adopt</button>
-                      </div>
-                      <div id="pf-alias-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
-                      <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:6px 0 10px;"></div>
+                    <nav class="pf-jump" aria-label="Profile sections">
+                      <button type="button" onclick="pfJump('pf-sec-top')">Top of page</button>
+                      <button type="button" onclick="pfJump('pf-sec-updates')">Latest</button>
+                      <button type="button" onclick="pfJump('pf-sec-about')">About</button>
+                      <button type="button" onclick="pfJump('pf-sec-works')">Works</button>
+                      <button type="button" onclick="pfJump('pf-sec-links')">Find me</button>
+                      <button type="button" onclick="pfJump('pf-sec-feedback')">Feedback</button>
+                      <button type="button" onclick="pfJump('pf-sec-look')">Look</button>
+                      <button type="button" onclick="pfJump('pf-sec-share')">Share card</button>
+                    </nav>
 
-                      <div class="im-hint" style="margin:0 0 12px;">
-                        To bring in your scripts from ScriptBin or your audios from Reddit, use the
-                        <a href="#" onclick="cmTab('import'); return false;">Import</a> tab.
-                      </div>
+                    <div class="pf-group-label">Your page, top to bottom</div>
 
-                      <label class="cm-label" style="font-size:0.7rem">About</label>
-                      <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
-                                placeholder="Line breaks are kept. Pasted links become links."></textarea>
-                    </div>
+                    <!-- 1. The top of the page -->
+                    <section class="pf-card" id="pf-sec-top">
+                      <div class="pf-card-head"><h3><span class="pf-step">1</span>Top of your page</h3></div>
+                      <p class="pf-help">The first thing visitors see: your banner across the top, your picture, your name and a short line about what you do. Always shown.</p>
+                      <div class="pf-card-body">
+                        <label class="cm-label" style="font-size:0.7rem">Display name</label>
+                        <input id="pf-name" class="cm-input" style="width:100%;margin-bottom:10px" maxlength="80" oninput="pfDrawCard()">
+                        <label class="cm-label" style="font-size:0.7rem">Tagline <span style="font-weight:normal;color:var(--text-mid)">(one line under your name)</span></label>
+                        <input id="pf-tagline" class="cm-input" style="width:100%;margin-bottom:14px" maxlength="140"
+                               placeholder="Voice Artist &middot; Writer &middot; Collaborator" oninput="pfDrawCard()">
 
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <label class="cm-label">Pictures</label>
-
-                      <label class="cm-label" style="font-size:0.7rem">Avatar <span style="font-weight:normal;color:var(--text-mid)">(square looks best)</span></label>
-                      <div style="display:flex;gap:10px;align-items:flex-start;">
-                        <img id="pf-avatar-preview" alt="" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--border-mid);background:var(--surface-2);">
-                        <div style="flex:1;min-width:0;">
-                          <input id="pf-avatar" class="cm-input" style="width:100%" placeholder="Upload below, or paste a URL" oninput="pfUpdatePreviews()">
-                          <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-avatar-file').click()">Upload New</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pf-avatar','pf-img-status',false,'pf-uploads-host')">Choose from uploads</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-avatar').value='';pfUpdatePreviews()">Remove</button>
+                        <label class="cm-label" style="font-size:0.7rem">Avatar <span style="font-weight:normal;color:var(--text-mid)">(your round picture &mdash; square images look best)</span></label>
+                        <div style="display:flex;gap:10px;align-items:flex-start;">
+                          <img id="pf-avatar-preview" alt="" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--border-mid);background:var(--surface-2);">
+                          <div style="flex:1;min-width:0;">
+                            <input id="pf-avatar" class="cm-input" style="width:100%" placeholder="Upload below, or paste a URL" oninput="pfUpdatePreviews()">
+                            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                              <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-avatar-file').click()">Upload New</button>
+                              <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pf-avatar','pf-img-status',false,'pf-uploads-host')">Choose from uploads</button>
+                              <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-avatar').value='';pfUpdatePreviews()">Remove</button>
+                            </div>
+                            <input type="file" id="pf-avatar-file" accept="image/*" style="display:none"
+                                   onchange="cmUploadImage(this.files[0],'pf-avatar','pf-img-status',false).then(pfUpdatePreviews);this.value=''">
                           </div>
-                          <input type="file" id="pf-avatar-file" accept="image/*" style="display:none"
-                                 onchange="cmUploadImage(this.files[0],'pf-avatar','pf-img-status',false).then(pfUpdatePreviews);this.value=''">
+                        </div>
+
+                        <label class="cm-label" style="font-size:0.7rem;margin-top:14px">Banner <span style="font-weight:normal;color:var(--text-mid)">(a wide image behind the top of the page)</span></label>
+                        <img id="pf-banner-preview" alt="" style="display:none;width:100%;max-height:110px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border-mid);margin-bottom:6px;">
+                        <input id="pf-banner" class="cm-input" style="width:100%" placeholder="Upload below, or paste a URL" oninput="pfUpdatePreviews()">
+                        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-banner-file').click()">Upload New</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pf-banner','pf-img-status',false,'pf-uploads-host')">Choose from uploads</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-banner').value='';pfUpdatePreviews()">Remove</button>
+                        </div>
+                        <input type="file" id="pf-banner-file" accept="image/*" style="display:none"
+                               onchange="cmUploadImage(this.files[0],'pf-banner','pf-img-status',false).then(pfUpdatePreviews);this.value=''">
+
+                        <span id="pf-img-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:6px"></span>
+                        <div id="pf-uploads-host"></div>
+                      </div>
+                    </section>
+
+                    <!-- 2. Latest updates -->
+                    <section class="pf-card" id="pf-sec-updates" data-section="updates">
+                      <div class="pf-card-head">
+                        <h3><span class="pf-step">2</span>Latest</h3>
+                        <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="updates" onchange="pfApplySection(this)"> Show on my page</label>
+                      </div>
+                      <p class="pf-help">Short news posts at the top of your page: a new release, a collab, a break. The newest ten are shown. Adding, editing or deleting an update saves it straight away.</p>
+                      <div class="pf-off-note">Hidden from your page. Your updates are kept &mdash; switch it on to show and edit them.</div>
+                      <div class="pf-card-body">
+                        <div style="display:grid;gap:8px;">
+                          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <input type="date" id="pu-date" class="cm-input" style="flex:0 0 150px">
+                            <input id="pu-title" class="cm-input" style="flex:1 1 200px" placeholder="Headline" maxlength="140">
+                          </div>
+                          <textarea id="pu-body" class="cm-input" style="min-height:90px" maxlength="3000"
+                                    placeholder="What is new? Markdown works, line breaks are kept."></textarea>
+                          <span style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:-4px">Markdown works: **bold**, *italic*, [link text](https://…), # heading, - list, &gt; quote. Bare links still become clickable.</span>
+                          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <input id="pu-link" class="cm-input" style="flex:2 1 200px" placeholder="Link (optional)">
+                            <input id="pu-link-label" class="cm-input" style="flex:1 1 120px" placeholder="Button text" maxlength="40">
+                          </div>
+                          <input id="pu-image" class="cm-input" placeholder="Image (optional) — upload below or paste a URL">
+                          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pu-image-file').click()">Upload New</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pu-image','pu-img-status',false,'pu-uploads-host')">Choose from uploads</button>
+                            <span style="flex:1"></span>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="puClear()">Clear</button>
+                            <button type="button" class="cm-btn" id="pu-add-btn" onclick="puSubmit()">Add update</button>
+                          </div>
+                          <input type="file" id="pu-image-file" accept="image/*" style="display:none"
+                                 onchange="cmUploadImage(this.files[0],'pu-image','pu-img-status',false);this.value=''">
+                          <span id="pu-img-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
+                          <div id="pu-uploads-host"></div>
+                        </div>
+                        <div id="pu-list" style="margin-top:12px;"></div>
+                      </div>
+                    </section>
+
+                    <!-- 3. About -->
+                    <section class="pf-card" id="pf-sec-about" data-section="about">
+                      <div class="pf-card-head">
+                        <h3><span class="pf-step">3</span>About</h3>
+                        <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="about" onchange="pfApplySection(this)"> Show on my page</label>
+                      </div>
+                      <p class="pf-help">A few paragraphs in your own words: who you are, what you make, what listeners can expect. Leave it empty and the section simply does not appear.</p>
+                      <div class="pf-off-note">Hidden from your page. What you wrote is kept.</div>
+                      <div class="pf-card-body">
+                        <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
+                                  placeholder="Line breaks are kept. Pasted links become links."></textarea>
+                      </div>
+                    </section>
+
+                    <!-- 4. Works -->
+                    <section class="pf-card" id="pf-sec-works" data-section="works">
+                      <div class="pf-card-head">
+                        <h3><span class="pf-step">4</span>Works</h3>
+                        <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="works" onchange="pfApplySection(this)"> Show on my page</label>
+                      </div>
+                      <p class="pf-help">Fills itself: every release in the catalogue that credits you, in any role. If some of your work is credited under another name &mdash; an old handle, a Reddit name &mdash; claim it here so it shows up too.</p>
+                      <div class="pf-off-note">Hidden from your page. Your releases still appear in the catalogue.</div>
+                      <div class="pf-card-body">
+                        <label class="cm-label" style="font-size:0.7rem">Also credited as</label>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                          <select id="pf-alias-pick" class="cm-input" style="flex:1 1 220px"></select>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="pfAdoptName()">Adopt</button>
+                        </div>
+                        <div id="pf-alias-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+                        <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:6px 0 10px;"></div>
+
+                        <div class="im-hint" style="margin:0;">
+                          Work missing from the catalogue altogether? Bring in your scripts from ScriptBin or your audios from Reddit on the
+                          <a href="#" onclick="cmTab('import'); return false;">Import</a> tab.
                         </div>
                       </div>
+                    </section>
 
-                      <label class="cm-label" style="font-size:0.7rem;margin-top:14px">Banner <span style="font-weight:normal;color:var(--text-mid)">(wide — sits behind the top of the page)</span></label>
-                      <img id="pf-banner-preview" alt="" style="display:none;width:100%;max-height:110px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border-mid);margin-bottom:6px;">
-                      <input id="pf-banner" class="cm-input" style="width:100%" placeholder="Upload below, or paste a URL" oninput="pfUpdatePreviews()">
-                      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-banner-file').click()">Upload New</button>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pf-banner','pf-img-status',false,'pf-uploads-host')">Choose from uploads</button>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pf-banner').value='';pfUpdatePreviews()">Remove</button>
+                    <!-- 5. Find me links -->
+                    <section class="pf-card" id="pf-sec-links" data-section="links">
+                      <div class="pf-card-head">
+                        <h3><span class="pf-step">5</span>Find me</h3>
+                        <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="links" onchange="pfApplySection(this)"> Show on my page</label>
                       </div>
-                      <input type="file" id="pf-banner-file" accept="image/*" style="display:none"
-                             onchange="cmUploadImage(this.files[0],'pf-banner','pf-img-status',false).then(pfUpdatePreviews);this.value=''">
-
-                      <span id="pf-img-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:6px"></span>
-                      <div id="pf-uploads-host"></div>
-                    </div>
-
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <label class="cm-label">Look</label>
-                      <div id="pf-themes" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
-                      <label class="cm-label" style="font-size:0.7rem">Accent colour (optional)</label>
-                      <div style="display:flex;gap:8px;align-items:center;">
-                        <input type="color" id="pf-accent-pick" style="width:44px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer"
-                               oninput="document.getElementById('pf-accent').value = this.value; pfDrawCard()">
-                        <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme" oninput="pfDrawCard()">
+                      <p class="pf-help">Buttons to your other places &mdash; Literotica, Reddit, Bluesky, Patreon and so on. Give each a label and paste the full address; the site picks the right icon from the address.</p>
+                      <div class="pf-off-note">Hidden from your page. Your links are kept.</div>
+                      <div class="pf-card-body">
+                        <div id="pf-links"></div>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">Add link</button>
                       </div>
-                    </div>
+                    </section>
+
+                    <!-- 6. Feedback -->
+                    <section class="pf-card" id="pf-sec-feedback" data-section="feedback">
+                      <div class="pf-card-head">
+                        <h3><span class="pf-step">6</span>Feedback</h3>
+                        <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="feedback" onchange="pfApplySection(this)"> Show on my page</label>
+                      </div>
+                      <p class="pf-help">A <em>Leave Feedback</em> button at the bottom of your page. It opens the site's feedback form with you already chosen. Nothing to fill in here.</p>
+                      <div class="pf-off-note">Hidden from your page.</div>
+                    </section>
+
+                    <div class="pf-group-label">How it looks and shares</div>
+
+                    <!-- Look -->
+                    <section class="pf-card" id="pf-sec-look">
+                      <div class="pf-card-head"><h3>Look</h3></div>
+                      <p class="pf-help">The colour scheme of your whole page. Pick a theme, and optionally your own accent colour for links, buttons and highlights.</p>
+                      <div class="pf-card-body">
+                        <div id="pf-themes" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+                        <label class="cm-label" style="font-size:0.7rem">Accent colour (optional)</label>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                          <input type="color" id="pf-accent-pick" style="width:44px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer"
+                                 oninput="document.getElementById('pf-accent').value = this.value; pfDrawCard()">
+                          <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme" oninput="pfDrawCard()">
+                        </div>
+                      </div>
+                    </section>
 
                     <!-- What a link to this profile looks like when it is
                          posted somewhere. A scraper does not run the page's
                          script, so the card cannot be drawn when the link is
                          opened — it is composed here and the finished picture
                          is uploaded and remembered on the profile. -->
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <label class="cm-label">Share card
-                        <span style="font-weight:normal;color:var(--text-mid)">(what Reddit, Discord, X and Facebook show when your page is linked)</span>
-                      </label>
+                    <section class="pf-card" id="pf-sec-share">
+                      <div class="pf-card-head"><h3>Share card</h3></div>
+                      <p class="pf-help">The picture Reddit, Discord, X and Facebook show when someone posts a link to your page. It is built from your avatar, banner and tagline, so set those first; it is rebuilt each time you save your profile.</p>
+                      <div class="pf-card-body">
+                        <canvas id="pf-card-canvas"
+                                style="width:100%;aspect-ratio:1200/630;border-radius:var(--radius);border:1px solid var(--border-mid);background:var(--surface-2);display:block;margin-bottom:10px"></canvas>
 
-                      <canvas id="pf-card-canvas"
-                              style="width:100%;aspect-ratio:1200/630;border-radius:var(--radius);border:1px solid var(--border-mid);background:var(--surface-2);display:block;margin-bottom:10px"></canvas>
+                        <div style="display:grid;gap:8px;margin-bottom:10px">
+                          <div>
+                            <label class="cm-label" style="font-size:0.7rem">Line above your name</label>
+                            <input id="pf-card-eyebrow" class="cm-input" style="width:100%" maxlength="40"
+                                   placeholder="EROTIC AUDIO" oninput="pfDrawCard()">
+                          </div>
+                          <div>
+                            <label class="cm-label" style="font-size:0.7rem">Logo in the corner</label>
+                            <select id="pf-card-logo" class="cm-input" style="width:100%" onchange="pfDrawCard()"></select>
+                          </div>
+                        </div>
 
-                      <div style="display:grid;gap:8px;margin-bottom:10px">
-                        <div>
-                          <label class="cm-label" style="font-size:0.7rem">Line above your name</label>
-                          <input id="pf-card-eyebrow" class="cm-input" style="width:100%" maxlength="40"
-                                 placeholder="EROTIC AUDIO" oninput="pfDrawCard()">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="pfDrawCard()">Refresh preview</button>
+                          <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="pfSaveCard()">Save share card</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="pfDownloadCard()">Download</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="pfClearCard()">Use the site's card</button>
                         </div>
-                        <div>
-                          <label class="cm-label" style="font-size:0.7rem">Logo in the corner</label>
-                          <select id="pf-card-logo" class="cm-input" style="width:100%" onchange="pfDrawCard()"></select>
-                        </div>
+                        <span id="pf-card-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:8px"></span>
+                        <input type="hidden" id="pf-share-image">
                       </div>
+                    </section>
 
-                      <p style="font-size:0.72rem;color:var(--text-dim);margin:0 0 10px">
-                        The picture uses your avatar, your banner and your tagline. Change those above and
-                        the card follows. Save it, then save your profile.
-                      </p>
-
-                      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfDrawCard()">Refresh preview</button>
-                        <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="pfSaveCard()">Save share card</button>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfDownloadCard()">Download</button>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfClearCard()">Use the site's card</button>
-                      </div>
-                      <span id="pf-card-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:8px"></span>
-                      <input type="hidden" id="pf-share-image">
-                    </div>
-
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <label class="cm-label">Sections to show</label>
-                      <div id="pf-sections" style="display:flex;gap:14px;flex-wrap:wrap;"></div>
-                    </div>
-
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <label class="cm-label">Your updates <span style="font-weight:normal;color:var(--text-mid)">(shown at the top of your page)</span></label>
-                      <div style="display:grid;gap:8px;">
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                          <input type="date" id="pu-date" class="cm-input" style="flex:0 0 150px">
-                          <input id="pu-title" class="cm-input" style="flex:1 1 200px" placeholder="Headline" maxlength="140">
-                        </div>
-                        <textarea id="pu-body" class="cm-input" style="min-height:90px" maxlength="3000"
-                                  placeholder="What is new? Markdown works, line breaks are kept."></textarea>
-                        <span style="display:block;font-size:0.72rem;color:var(--text-dim);margin-top:-4px">Markdown works: **bold**, *italic*, [link text](https://…), # heading, - list, &gt; quote. Bare links still become clickable.</span>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                          <input id="pu-link" class="cm-input" style="flex:2 1 200px" placeholder="Link (optional)">
-                          <input id="pu-link-label" class="cm-input" style="flex:1 1 120px" placeholder="Button text" maxlength="40">
-                        </div>
-                        <input id="pu-image" class="cm-input" placeholder="Image (optional) — upload below or paste a URL">
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('pu-image-file').click()">Upload New</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUploads('pu-image','pu-img-status',false,'pu-uploads-host')">Choose from uploads</button>
-                          <span style="flex:1"></span>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="puClear()">Clear</button>
-                          <button type="button" class="cm-btn" id="pu-add-btn" onclick="puSubmit()">Add update</button>
-                        </div>
-                        <input type="file" id="pu-image-file" accept="image/*" style="display:none"
-                               onchange="cmUploadImage(this.files[0],'pu-image','pu-img-status',false);this.value=''">
-                        <span id="pu-img-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
-                        <div id="pu-uploads-host"></div>
-                      </div>
-                      <div id="pu-list" style="margin-top:12px;"></div>
-                    </div>
-
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
-                      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <label class="cm-label" style="margin:0">Find me links</label>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">Add link</button>
-                      </div>
-                      <div id="pf-links"></div>
-                    </div>
-
-                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                      <button type="button" class="cm-btn" onclick="pfSave()">Save profile</button>
+                    <!-- Pinned to the bottom of the screen, so saving never means
+                         scrolling back down a long page. -->
+                    <div class="pf-savebar">
+                      <button type="button" class="cm-btn cm-btn-primary" onclick="pfSave()">Save profile</button>
                       <span id="pf-msg" style="font-size:0.85rem;"></span>
                     </div>
                   </div>
@@ -6049,13 +6131,6 @@
       { key: 'moss',     label: 'Moss',     swatch: '#5fbf94' },
       { key: 'noir',     label: 'Noir',     swatch: '#c9c9d2' },
     ];
-    const PF_SECTIONS = [
-      { key: 'updates',  label: 'Updates' },
-      { key: 'about',    label: 'About' },
-      { key: 'works',    label: 'Works' },
-      { key: 'links',    label: 'Find me' },
-      { key: 'feedback', label: 'Feedback' },
-    ];
 
     let pfProfile = null;
     let pfLinks = [];
@@ -6085,11 +6160,25 @@
     }
     function pfPickTheme(key) { if (pfProfile) { pfProfile.theme = key; pfMarkTheme(); } }
 
+    // Each part of the page carries its own "Show on my page" switch, in the
+    // card that edits it. A section is on unless it was saved as off.
     function pfRenderSections(sections) {
-      document.getElementById('pf-sections').innerHTML = PF_SECTIONS.map(s =>
-        `<label style="display:flex;align-items:center;gap:0.4rem;color:var(--text-mid);font-size:0.85rem;cursor:pointer">
-           <input type="checkbox" class="pf-section" data-key="${s.key}" ${sections[s.key] === false ? '' : 'checked'} style="cursor:pointer">${s.label}
-         </label>`).join('');
+      document.querySelectorAll('.pf-section').forEach(box => {
+        box.checked = sections[box.dataset.key] !== false;
+        pfApplySection(box);
+      });
+    }
+
+    // Switching a section off folds its card away: nobody should fill in
+    // something that will never be shown. Nothing in it is cleared.
+    function pfApplySection(box) {
+      const card = box.closest('.pf-card');
+      if (card) card.classList.toggle('is-off', !box.checked);
+    }
+
+    function pfJump(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function pfRenderLinks() {
