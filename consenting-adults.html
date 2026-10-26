@@ -102,20 +102,21 @@
       text-align: center;
       padding: 5rem 1rem 3.5rem;
       position: relative;
-      background: url('images/CA_Header.png') center center / cover no-repeat;
       border-radius: 4px;
       overflow: hidden;
       margin-bottom: 1rem;
     }
 
+    /* A low velvet glow for the emblem to sit in. */
     .hero::before {
       content: "";
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(6,3,6,0.45) 0%, rgba(6,3,6,0.15) 100%);
+        radial-gradient(circle at 50% 38%, rgba(140,30,50,0.32) 0%, rgba(140,30,50,0.08) 35%, transparent 60%);
       pointer-events: none;
     }
+    .hero > * { position: relative; }
 
     .hero-eyebrow {
       font-family: "Cinzel", serif;
@@ -133,18 +134,11 @@
       50%       { filter: drop-shadow(0 0 55px rgba(176,40,74,0.75)) drop-shadow(0 0 110px rgba(192,57,74,0.55)); }
     }
 
-    .hero h1 {
-      font-family: "Cinzel", serif;
-      font-size: clamp(2.8rem, 9vw, 5.5rem);
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      line-height: 1.1;
-      background: linear-gradient(160deg, #fde8d8 0%, var(--coral) 30%, var(--rose) 60%, #e890a0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* The emblem carries the name, so it is the heading. */
+    .hero h1 { margin: 0 auto 1.4rem; line-height: 0; }
+    .hero-emblem {
+      width: min(340px, 72vw); height: auto; display: inline-block;
       animation: breathe-glow 3.5s ease-in-out infinite;
-      margin-bottom: 1.4rem;
     }
 
     .hero-divider {
@@ -703,7 +697,7 @@
 
   <section class="hero">
     <span class="hero-eyebrow">Welcome to</span>
-    <h1>The Velvet Key</h1>
+    <h1><img class="hero-emblem" src="images/velvet-key-mark.png" alt="The Velvet Key" width="400" height="400"></h1>
     <div class="hero-divider"><span></span><i></i><span></span></div>
     <p class="hero-tagline">Intimate audio, crafted with intention.<br>Stories that know exactly what they are.</p>
     <span class="hero-sub">Adult audio &mdash; 18+ only</span>

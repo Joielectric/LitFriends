@@ -42,11 +42,15 @@
     50%       { filter: drop-shadow(0 0 22px rgba(176,40,74,1.0)) drop-shadow(0 0 50px rgba(110,20,48,0.7)); }
   }
   #ca-nav-logo {
-    font-size: 0.9rem; letter-spacing: .3em; text-transform: uppercase;
-    color: #ffffff; text-decoration: none; white-space: nowrap;
+    display: flex; align-items: center; gap: 0.6rem;
+    text-decoration: none; white-space: nowrap;
+    animation: ca-logo-breathe 3.5s ease-in-out infinite;
+  }
+  #ca-nav-logo img { width: 38px; height: 38px; flex-shrink: 0; display: block; }
+  #ca-nav-logo span {
+    font-size: 0.9rem; letter-spacing: .3em; text-transform: uppercase; color: #ffffff;
     background: linear-gradient(135deg, #ffffff, #f2c4d0 40%, #c04a6c);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    animation: ca-logo-breathe 3.5s ease-in-out infinite;
   }
   #ca-nav-links {
     display: flex; align-items: center; gap: 0; list-style: none; margin: 0; padding: 0;
@@ -165,6 +169,8 @@
   @media (max-width: 700px) {
     #ca-nav-links { display: none; }
     #ca-hamburger { display: flex; }
+    #ca-nav-logo img { width: 32px; height: 32px; }
+    #ca-nav-logo span { font-size: 0.78rem; letter-spacing: .2em; }
   }
   `;
 
@@ -185,7 +191,8 @@
   const logo = document.createElement('a');
   logo.id = 'ca-nav-logo';
   logo.href = root + 'consenting-adults.html';
-  logo.textContent = 'The Velvet Key';
+  logo.setAttribute('aria-label', 'The Velvet Key home');
+  logo.innerHTML = '<img src="' + root + 'images/velvet-key-mark.png" alt=""><span>The Velvet Key</span>';
   inner.appendChild(logo);
 
   // Desktop links
