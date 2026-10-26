@@ -745,6 +745,7 @@
                   <button class="cm-tab active" data-tab="content" onclick="cmTab('content')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Releases</button>
                   <button class="cm-tab" data-tab="import" onclick="cmTab('import')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Import</button>
                   <button class="cm-tab" data-tab="tags" onclick="cmTab('tags')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/></svg>Tags</button>
+                  <button class="cm-tab" data-tab="names" onclick="cmTab('names')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="16" r="3"/><path d="M10.5 10.5l3 3"/><path d="M14 6h4v4"/><path d="M10 18H6v-4"/></svg>Credit names</button>
                   <button class="cm-tab" data-tab="collab" onclick="cmTab('collab')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17" cy="9" r="2.8"/><path d="M16 14.6c3 .1 5.5 1.9 5.5 5.4"/></svg>Collaborators &amp; platforms</button>
                   <div class="cm-tab-group">Your page</div>
                   <button class="cm-tab" data-tab="profile" onclick="cmTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>My profile</button>
@@ -1287,6 +1288,45 @@
                         </div>
                         <div style="color:var(--text-dim);font-size:0.8rem;margin-top:8px;">
                             Merging rewrites every entry that carries the selected tags. Entries you cannot edit are left alone by the server.
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-names" hidden>
+                <header class="cm-panel-head"><h2>Credit names</h2><p>Every name credited on a release. Fold misspellings and old handles into one name so each person's work finds their page.</p></header>
+
+                <!-- Credits are typed by hand and brought in by the importers,
+                     so one person ends up under several spellings ("His bad
+                     girl 77", "His Bad girl 777", "u/Hisbadgirl24"). Adopting
+                     every variant on a profile makes typos permanent; this
+                     rewrites the credits themselves. -->
+                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
+                    <div id="cm-name-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:12px;"></div>
+
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin:0">Probably the same person <span style="font-weight:normal">(pick the name to keep, then Merge)</span></label>
+                        <button type="button" id="cm-name-merge-safe" class="cm-btn cm-btn-sm cm-btn-primary" onclick="cmNameMergeSafe()" hidden>Merge all certain</button>
+                    </div>
+                    <div id="cm-name-dupes" style="max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:16px;"></div>
+
+                    <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-bottom:6px">All credited names</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;">
+                        <input id="cm-name-search" class="cm-input cm-btn-sm" style="flex:1 1 180px" placeholder="Filter names…" oninput="cmRenderNameList()">
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmNameClearSelection()">Clear</button>
+                    </div>
+                    <div id="cm-name-list" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:10px;"></div>
+
+                    <div style="border-top:1px solid var(--border);padding-top:12px;">
+                        <div id="cm-name-selected" style="color:var(--text-mid);font-size:0.86rem;margin-bottom:8px;">Nothing selected.</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                            <input id="cm-name-target" class="cm-input cm-btn-sm" style="flex:1 1 200px" placeholder="Credit them all as…" list="cm-name-target-list">
+                            <datalist id="cm-name-target-list"></datalist>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" onclick="cmNameMergeSelected()">Merge selected</button>
+                        </div>
+                        <div style="color:var(--text-dim);font-size:0.8rem;margin-top:8px;">
+                            Merging rewrites the credits on every release that uses those names, in every role. Releases you cannot edit are left alone by the server.
                         </div>
                     </div>
                 </div>
@@ -4764,6 +4804,248 @@
       });
     }
 
+    // ── Credit names ─────────────────────────────────────────────────────
+    // The same person drifts into several credited spellings: typed by hand,
+    // brought in by an importer as "u/handle", or simply misspelled. This
+    // finds the names that are probably one person and rewrites the credits
+    // to one of them, so a typo is fixed rather than adopted.
+    let cmNameSelection = new Set();
+    let cmNameGroups = [];
+
+    // How many releases credit each name, in any role.
+    function cmNameCounts() {
+      const count = Object.create(null);
+      cmEntries.forEach(e => {
+        const seen = new Set();
+        CFG.creditKeys.forEach(role => ((e.credits || {})[role] || []).forEach(n => {
+          const name = String(n || '').trim();
+          if (!name || seen.has(name)) return;
+          seen.add(name);
+          count[name] = (count[name] || 0) + 1;
+        }));
+      });
+      return count;
+    }
+
+    // The known person a name already belongs to (site-config's artists, their
+    // aliases, and names registered from profiles), or ''.
+    function cmNamePerson(name) {
+      const k = CFG.nameKey(name);
+      return Object.keys(CFG.artistNames).find(slug => CFG.artistNames[slug].indexOf(k) !== -1) || '';
+    }
+
+    // One insertion, deletion or swap of a character apart ("hisbadgirl777"
+    // and "hisbadgirl77"). Short names are left out: "Sam" and "Pam" are
+    // two people far more often than one typo.
+    function cmNameNear(a, b) {
+      if (a.length < 6 || b.length < 6 || Math.abs(a.length - b.length) > 1) return false;
+      let i = 0;
+      while (i < a.length && a[i] === b[i]) i++;
+      if (a.length === b.length) {
+        if (a.slice(i + 1) === b.slice(i + 1)) return true;
+        return a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2);
+      }
+      const [s, l] = a.length < b.length ? [a, b] : [b, a];
+      return s.slice(i) === l.slice(i + 1);
+    }
+
+    // Groups of names that are probably one person, each with why. A group is
+    // "certain" when every link in it is the same spelling or an already known
+    // person; a near-miss spelling needs a human to look at it. With
+    // `certainOnly`, near misses are not linked at all.
+    function cmNameClusters(count, certainOnly) {
+      const names = Object.keys(count);
+      const parent = names.map((_, i) => i);
+      const find = i => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+      const why = names.map(() => new Set());
+      // Join two names' groups; the surviving root carries every reason.
+      const join = (i, j, reason) => {
+        const a = find(i), b = find(j);
+        if (a !== b) { parent[a] = b; why[a].forEach(r => why[b].add(r)); }
+        why[b].add(reason);
+      };
+      const keys = names.map(n => CFG.nameKey(n));
+      const people = names.map(cmNamePerson);
+      const byKey = {}, byPerson = {};
+      names.forEach((n, i) => {
+        if (byKey[keys[i]] === undefined) byKey[keys[i]] = i; else join(i, byKey[keys[i]], 'spelling');
+        if (people[i]) {
+          if (byPerson[people[i]] === undefined) byPerson[people[i]] = i; else join(i, byPerson[people[i]], 'person');
+        }
+      });
+      const distinct = certainOnly ? [] : Object.keys(byKey);
+      for (let x = 0; x < distinct.length; x++) {
+        for (let y = x + 1; y < distinct.length; y++) {
+          const i = byKey[distinct[x]], j = byKey[distinct[y]];
+          if (people[i] && people[j] && people[i] !== people[j]) continue;
+          if (cmNameNear(distinct[x], distinct[y])) join(i, j, 'typo');
+        }
+      }
+      const groups = {};
+      names.forEach((n, i) => {
+        const r = find(i);
+        (groups[r] = groups[r] || { names: [], reasons: new Set(), person: '' }).names.push(n);
+        if (people[i]) groups[r].person = people[i];
+      });
+      Object.keys(groups).forEach(r => why[r].forEach(x => groups[r].reasons.add(x)));
+      return Object.values(groups)
+        .filter(g => g.names.length > 1)
+        .map(g => {
+          g.names.sort((a, b) => (count[b] - count[a]) || a.localeCompare(b));
+          g.certain = !g.reasons.has('typo');
+          // A known person keeps the name their profile goes by.
+          g.keep = (g.person && CFG.artistLabels[g.person]) || g.names[0];
+          g.total = g.names.reduce((s, n) => s + count[n], 0);
+          return g;
+        })
+        .sort((a, b) => b.total - a.total);
+    }
+
+    function cmRenderNames() {
+      const count = cmNameCounts();
+      cmNameGroups = cmNameClusters(count);
+      const certain = cmNameGroups.filter(g => g.certain).length;
+      document.getElementById('cm-name-summary').textContent =
+        `${Object.keys(count).length} credited names across ${cmEntries.length} releases. ` +
+        `${cmNameGroups.length} probable ${cmNameGroups.length === 1 ? 'duplicate' : 'duplicates'}` +
+        (cmNameGroups.length ? `, ${certain} certain and ${cmNameGroups.length - certain} to check.` : '.');
+      document.getElementById('cm-name-merge-safe').hidden = !cmNameClusters(count, true).length;
+
+      const box = document.getElementById('cm-name-dupes');
+      box.innerHTML = cmNameGroups.length ? cmNameGroups.map((g, gi) => {
+        const chips = [];
+        if (g.reasons.has('spelling')) chips.push('same name, different spelling');
+        if (g.reasons.has('person')) chips.push('known to be ' + (CFG.artistLabels[g.person] || g.person));
+        if (g.reasons.has('typo')) chips.push('<span style="color:var(--amber, #e0a040)">possible typo &mdash; check</span>');
+        const parts = g.names.map(n =>
+          `<span style="color:var(--text)">${cmEsc(n)}</span><span style="color:var(--text-dim);font-size:0.82em"> ${count[n]}</span>`
+        ).join('<span style="color:var(--text-dim)"> · </span>');
+        const options = [g.keep].concat(g.names.filter(n => n !== g.keep));
+        return `<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:0.88rem;">
+          <div style="min-width:0;margin-bottom:5px">${parts}</div>
+          <div style="color:var(--text-dim);font-size:0.76rem;margin-bottom:6px">${chips.join(' · ')}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span style="color:var(--text-mid);font-size:0.8rem">Keep</span>
+            <select class="cm-input cm-btn-sm" id="cm-name-keep-${gi}" style="flex:1 1 180px">${options.map(n => `<option value="${cmEsc(n)}">${cmEsc(n)}</option>`).join('')}</select>
+            <button type="button" class="cm-btn cm-btn-sm" onclick="cmNameMergeGroup(${gi})">Merge</button>
+          </div>
+        </div>`;
+      }).join('') : '<div style="color:var(--text-dim);font-size:0.86rem;padding:4px 0;">Every person is credited under one name.</div>';
+      cmRenderNameList();
+    }
+
+    function cmRenderNameList() {
+      const count = cmNameCounts();
+      const q = (document.getElementById('cm-name-search').value || '').toLowerCase().trim();
+      const names = Object.keys(count)
+        .filter(n => !q || n.toLowerCase().indexOf(q) !== -1 || CFG.nameKey(n).indexOf(CFG.nameKey(q)) !== -1)
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+      const box = document.getElementById('cm-name-list');
+      box.innerHTML = names.length
+        ? names.map(n => {
+            const on = cmNameSelection.has(n) ? ' checked' : '';
+            return `<label style="display:inline-flex;align-items:center;gap:5px;margin:0 12px 4px 0;font-size:0.86rem;cursor:pointer;">
+              <input type="checkbox"${on} data-name="${cmEsc(n)}" onchange="cmNameToggle(this)" style="cursor:pointer">
+              <span>${cmEsc(n)}</span><span style="color:var(--text-dim);font-size:0.82em">${count[n]}</span>
+            </label>`;
+          }).join('')
+        : '<div style="color:var(--text-dim);font-size:0.86rem;padding:4px 0;">No name matches that.</div>';
+      cmRenderNameSelection();
+    }
+
+    function cmNameToggle(box) {
+      const n = box.dataset.name;
+      if (box.checked) cmNameSelection.add(n); else cmNameSelection.delete(n);
+      cmRenderNameSelection();
+    }
+
+    function cmNameClearSelection() {
+      cmNameSelection.clear();
+      document.querySelectorAll('#cm-name-list input[data-name]').forEach(b => { b.checked = false; });
+      cmRenderNameSelection();
+    }
+
+    function cmRenderNameSelection() {
+      const picked = [...cmNameSelection];
+      const label = document.getElementById('cm-name-selected');
+      const target = document.getElementById('cm-name-target');
+      const list = document.getElementById('cm-name-target-list');
+      if (!picked.length) { label.textContent = 'Nothing selected.'; list.innerHTML = ''; return; }
+      const count = cmNameCounts();
+      picked.sort((a, b) => (count[b] || 0) - (count[a] || 0));
+      label.textContent = `${picked.length} selected: ` + picked.slice(0, 8).join(', ') + (picked.length > 8 ? ', …' : '');
+      // Offer the selected names and every known person's name.
+      const offer = picked.concat(Object.values(CFG.artistLabels).filter(n => picked.indexOf(n) === -1));
+      list.innerHTML = offer.map(n => `<option value="${cmEsc(n)}">`).join('');
+      if (!target.value) target.value = picked[0];
+    }
+
+    function cmNameMergeGroup(gi) {
+      const g = cmNameGroups[gi];
+      if (!g) return;
+      const keep = document.getElementById('cm-name-keep-' + gi).value;
+      const from = g.names.filter(n => n !== keep);
+      if (!g.certain && !confirm(`Credit ${from.join(', ')} as "${keep}"?\n\nThese only look alike, so check they really are the same person.`)) return;
+      cmNameApply(new Map(from.map(n => [n, keep])), touched => `Credited as "${keep}" on ${touched} ${touched === 1 ? 'release' : 'releases'}.`);
+    }
+
+    // Only the certain links: a near-miss spelling is never merged unseen, but
+    // the sure part of a group that also holds one still is.
+    function cmNameMergeSafe() {
+      const groups = cmNameClusters(cmNameCounts(), true);
+      if (!groups.length) return;
+      const map = new Map();
+      groups.forEach(g => g.names.forEach(n => { if (n !== g.keep) map.set(n, g.keep); }));
+      if (!confirm(`Merge ${groups.length} certain ${groups.length === 1 ? 'group' : 'groups'}?\n\n` +
+        groups.map(g => `${g.names.filter(n => n !== g.keep).join(', ')} → ${g.keep}`).join('\n'))) return;
+      cmNameApply(map, touched => `Merged ${groups.length} ${groups.length === 1 ? 'group' : 'groups'} across ${touched} ${touched === 1 ? 'release' : 'releases'}.`);
+    }
+
+    function cmNameMergeSelected() {
+      const picked = [...cmNameSelection];
+      const target = (document.getElementById('cm-name-target').value || '').trim();
+      if (picked.length < 1) { cmShowMsg('Select the names to merge first.', false); return; }
+      if (!target) { cmShowMsg('Type the name to credit them as.', false); return; }
+      const from = picked.filter(n => n !== target);
+      if (!from.length) { cmShowMsg('Those are already credited as "' + target + '".', false); return; }
+      if (!confirm(`Credit ${from.join(', ')} as "${target}"?`)) return;
+      cmNameApply(new Map(from.map(n => [n, target])), touched => `Credited as "${target}" on ${touched} ${touched === 1 ? 'release' : 'releases'}.`);
+    }
+
+    // One pass over every release and role: a name in `map` becomes its value.
+    // Order is kept, and a role never lists the same person twice.
+    function cmNameApply(map, message) {
+      let touched = 0;
+      cmEntries.forEach(e => {
+        const credits = e.credits || {};
+        let changed = false;
+        Object.keys(credits).forEach(role => {
+          const list = credits[role];
+          if (!Array.isArray(list) || !list.some(n => map.has(String(n || '').trim()))) return;
+          const out = [], seen = new Set();
+          list.forEach(n => {
+            const t = String(n || '').trim();
+            const next = map.has(t) ? map.get(t) : n;
+            const k = CFG.nameKey(next);
+            if (!k || seen.has(k)) return;
+            seen.add(k);
+            out.push(next);
+          });
+          credits[role] = out;
+          changed = true;
+        });
+        if (changed) touched++;
+      });
+      if (!touched) { cmShowMsg('No releases credit those names.', false); return; }
+      cmPersist(function () {
+        cmNameSelection.clear();
+        document.getElementById('cm-name-target').value = '';
+        cmRenderNames();
+        cmRenderEntries();
+        cmShowMsg(message(touched), true);
+      });
+    }
+
     function cmPersist(onSuccess, onFail) {
       fetch('/api/content', {
         method: 'POST',
@@ -5854,11 +6136,11 @@
       const sel = document.getElementById('pf-alias-pick');
       if (!sel) return;
       const counts = pfCreditedNames();
-      const mine = new Set([String((pfProfile && pfProfile.name) || '').toLowerCase()]
-        .concat(pfAliases.map(a => a.toLowerCase())));
+      const mine = new Set([CFG.nameKey((pfProfile && pfProfile.name) || ''), CFG.nameKey((pfProfile && pfProfile.slug) || '')]
+        .concat(pfAliases.map(CFG.nameKey)));
 
       const options = Object.keys(counts)
-        .filter(n => !mine.has(n.toLowerCase()))
+        .filter(n => !mine.has(CFG.nameKey(n)))
         .sort((a, b) => (counts[b] - counts[a]) || a.toLowerCase().localeCompare(b.toLowerCase()));
 
       sel.innerHTML = '<option value="">' +
@@ -6538,6 +6820,7 @@
         p.hidden = (p.id !== 'tabp-' + name);
       });
       if (name === 'tags') cmRenderTags();
+      if (name === 'names') cmRenderNames();
       if (name === 'visits' && !vsData) vsLoad();
       try { sessionStorage.setItem('cm_tab', name); } catch (e) {}
       window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -102,7 +102,7 @@
       { slug: 'joi-electric',       name: 'JOI Electric',           icon: '/images/JOI_Icon.png',                        page: 'profiles/joi-electric.html',       tagline: 'Producer · Editor · Musician · Sound Designer' },
       { slug: 'loona-licks',        name: 'Loona Licks',            icon: '/images/LL_Icon.png',                         page: 'profiles/loona-licks.html',        tagline: 'Voice Artist · Collaborator · Currently on Hiatus' },
       { slug: 'misskittensk',       name: 'MissKittenSK',           icon: '/images/MissKittenSKClub.png',                page: 'profiles/misskittenSK.html',       tagline: 'A decade of debauched erotic audio · Retired', aliases: ['miss kitten sk'] },
-      { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       page: 'profiles/hisbadgirl77.html',       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77'] },
+      { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       page: 'profiles/hisbadgirl77.html',       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77', 'Hisbadgirl24'] },
       { slug: 'wellnobodysperfect', name: "Well Nobody's Perfect",  icon: '/images/WNP_Icon.png',                        page: 'profiles/wellnobodysperfect.html', tagline: 'Voice Artist · Funny · Delightfully Unpredictable', aliases: ['wellnobodysperfect'] },
       { slug: 'naughtiwolf',        name: 'NaughtiWolf',            icon: '/images/NW_Icon.png',                         page: 'profiles/naughtiwolf.html',        tagline: 'Voice Artist · BFE · Narrative Collaborator' },
       { slug: 'lotus-kitty',        name: 'Lotus Kitty',            icon: '/images/LK_Icon.png',                         page: 'profiles/lotus-kitty.html',        tagline: 'Voice Artist · Demisexual · Storyteller' },
@@ -114,9 +114,16 @@
   // ── Derived lookups ───────────────────────────────────────────────────
   // Built once here so no consumer has to rebuild them.
 
+  // What makes two credited names the same person: letters and digits only,
+  // with a Reddit "u/" in front ignored. So "His bad girl 77", "HisBadGirl77"
+  // and "u/hisbadgirl77" are one name, and a slug like "joi-electric" matches
+  // "JOI Electric". A name with no letters or digits at all keeps its own
+  // lowercased spelling rather than matching every other such name.
   function norm(s) {
-    return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' ');
+    var t = String(s == null ? '' : s).trim().toLowerCase().replace(/^\/?u\//, '');
+    return t.replace(/[^\p{L}\p{N}]/gu, '') || t;
   }
+  SITE.nameKey = norm;
 
   SITE.typeKeys   = SITE.entryTypes.map(function (t) { return t.key; });
   SITE.typeLabels = {};

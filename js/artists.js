@@ -20,7 +20,8 @@
   var CFG = window.SITE_CONFIG;
   if (!CFG) { console.error('artists.js: js/site-config.js must load first'); return; }
 
-  function norm(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' '); }
+  // The site's one rule for when two names are the same (js/site-config.js).
+  var norm = CFG.nameKey;
   function root() { return /\/profiles\//.test(location.pathname) ? '../' : '/'; }
 
   function fixed() {
