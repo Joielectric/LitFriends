@@ -1487,10 +1487,13 @@
                         <span style="color:var(--text-mid);font-size:0.85rem;">Your page:</span>
                         <a id="pf-url" href="#" target="_blank" style="color:var(--coral);font-size:0.85rem;"></a>
                       </div>
-                      <label style="display:flex;align-items:center;gap:0.5rem;color:var(--text-mid);font-size:0.85rem;cursor:pointer;">
-                        <input type="checkbox" id="pf-published" style="cursor:pointer">
-                        Visible to the public
-                      </label>
+                      <!-- Going public is a deliberate act, so it is a button that
+                           saves straight away rather than a box that waits for
+                           Save profile. -->
+                      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <span id="pf-state" style="font-size:0.8rem;"></span>
+                        <button type="button" id="pf-publish" class="cm-btn cm-btn-sm" onclick="pfTogglePublished()"></button>
+                      </div>
                     </div>
 
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
@@ -6479,7 +6482,8 @@
       pfCardAuto = p.shareCardAuto !== false;
       document.getElementById('pf-accent').value = p.accent || '';
       if (p.accent) document.getElementById('pf-accent-pick').value = p.accent;
-      document.getElementById('pf-published').checked = !!p.published;
+      pfPublished = !!p.published;
+      pfRenderPublished();
       const url = '/profile/' + p.slug;
       const link = document.getElementById('pf-url');
       link.href = url; link.textContent = location.origin + url;
@@ -6496,7 +6500,7 @@
       pfUpdatePreviews();
     }
 
-    function pfApi(payload, onOk) {
+    function pfApi(payload, onOk, onFail) {
       fetch('/api/profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -6505,6 +6509,7 @@
         .then(r => r.json())
         .then(data => {
           if (!data.ok) {
+            if (onFail) onFail();
             document.getElementById('pf-editor').style.display = 'none';
             const none = document.getElementById('pf-none');
             none.style.display = ''; none.textContent = data.error || 'Could not load your profile.';
@@ -6512,7 +6517,42 @@
           }
           onOk(data);
         })
-        .catch(() => pfMsg('Could not reach the server.'));
+        .catch(() => { if (onFail) onFail(); pfMsg('Could not reach the server.'); });
+    }
+
+    // Whether the profile is public. Changed only by the Publish / Unpublish
+    // button, which saves at once, so the page never goes live (or dark)
+    // waiting on a Save someone forgot to press.
+    let pfPublished = false;
+    let pfPublishing = false;
+
+    function pfRenderPublished() {
+      const state = document.getElementById('pf-state');
+      const btn = document.getElementById('pf-publish');
+      if (!state || !btn) return;
+      state.innerHTML = pfPublished
+        ? '<span style="color:#6fe3c1">&#9679; Live</span> <span style="color:var(--text-dim)">&mdash; anyone can see it</span>'
+        : '<span style="color:var(--text-dim)">&#9675; Draft &mdash; only you can see it</span>';
+      btn.disabled = pfPublishing;
+      btn.classList.toggle('cm-btn-primary', !pfPublished);
+      btn.textContent = pfPublishing
+        ? (pfPublished ? 'Publishing…' : 'Unpublishing…')
+        : (pfPublished ? 'Unpublish my profile' : 'Publish my profile');
+    }
+
+    function pfTogglePublished() {
+      if (!pfProfile || pfPublishing) return;
+      const next = !pfPublished;
+      if (!next && !confirm('Unpublish your profile? Your page will be hidden from everyone until you publish it again.')) return;
+      pfPublished = next;
+      pfPublishing = true;
+      pfRenderPublished();
+      // Publishing saves the rest of the profile too, so what goes live is
+      // what is on screen.
+      pfSave({
+        done: () => { pfPublishing = false; pfRenderPublished(); pfMsg(next ? 'Published. Your page is live.' : 'Unpublished. Your page is hidden.', true); },
+        failed: () => { pfPublished = !next; pfPublishing = false; pfRenderPublished(); },
+      });
     }
 
     function pfLoad(slug) {
@@ -6543,7 +6583,8 @@
     // A failure here never blocks the save: an out-of-date card, or none at
     // all, is a far smaller problem than losing the profile edit that prompted
     // it, and profile-page.js falls back to their avatar either way.
-    async function pfSave() {
+    // `after` = { done, failed }, both optional, run once the save settles.
+    async function pfSave(after) {
       if (!pfProfile) return;
       if (pfCardAuto && window.ShareCard) {
         const status = document.getElementById('pf-card-status');
@@ -6561,11 +6602,12 @@
           status.textContent = 'Saved your profile, but the share card could not be rebuilt: ' + err.message;
         }
       }
-      pfSaveNow();
+      pfSaveNow(after);
     }
 
-    function pfSaveNow() {
+    function pfSaveNow(after) {
       if (!pfProfile) return;
+      after = after || {};
       pfCollectLinks();
       const sections = {};
       document.querySelectorAll('.pf-section').forEach(el => { sections[el.dataset.key] = el.checked; });
@@ -6580,7 +6622,7 @@
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         aliases: pfAliases,
-        published: document.getElementById('pf-published').checked,
+        published: pfPublished,
         links: pfLinks,
         updates: pfUpdates,
         sections,
@@ -6596,7 +6638,8 @@
         } else {
           pfMsg('Saved.', true);
         }
-      });
+        if (after.done) after.done();
+      }, after.failed);
     }
 
     // ── Every profile page, static and dynamic (owner only) ─────────────────
