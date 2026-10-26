@@ -8,7 +8,7 @@
   <title>HotAudio Description Generator &mdash; JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
 
     :root {
@@ -179,8 +179,22 @@
     .sec-row select { flex: 0 1 170px; }
     .sec-row span { flex: 1; color: var(--text); font-size: 0.95rem; }
   </style>
+  <link rel="stylesheet" href="/css/templates.css">
 </head>
 <body>
+<header class="tpl-bar">
+  <a class="tpl-back" href="../tools.html"><img src="../images/JOI_Icon.png" alt="">Content Manager <span>&middot; back</span></a>
+  <nav class="tpl-switch" aria-label="Templates">
+    <a href="reddit_audio_template.html">Reddit</a>
+    <a href="hotaudio_template.html" aria-current="page">HotAudio</a>
+    <a href="literotica_template.html">Literotica</a>
+  </nav>
+</header>
+<div class="tpl-head">
+  <h1>HotAudio description</h1>
+  <p>Build the description for a HotAudio upload, in your own borders, and save the upload's link back to the catalogue.</p>
+  <div class="tpl-open"><a href="https://hotaudio.net" target="_blank" rel="noopener noreferrer">Open HotAudio &#8599;</a></div>
+</div>
   <div class="navigation-header">
     <div class="nav-title">HotAudio Description</div>
     <nav class="template-links" aria-label="Go to">
@@ -193,15 +207,17 @@
 
   <div class="main-container">
     <div class="editor-panel">
-      <div class="panel-title">Build</div>
+      <div class="panel-title">Fill in</div>
+
+      <div class="tpl-start">
 
       <div class="form-group">
-        <label class="form-label">Audio</label>
+        <label class="form-label">Start from a release</label>
         <select id="catalogSelect" class="tag-select">
           <option value="">&mdash; Select a published audio &mdash;</option>
         </select>
-        <small>Everything comes from the catalogue entry. Edit it there, not here.</small>
-      </div>
+        <small>The description is built from the catalogue entry. To change what it says, edit the entry in the Content Manager.</small>
+      </div></div>
 
       <div class="section-header">Your borders</div>
       <div class="form-group">
@@ -258,7 +274,7 @@
         <textarea id="excerpt" class="form-textarea" oninput="render()"></textarea>
       </div>
 
-      <div class="section-header">The rest of the HotAudio form</div>
+      <div class="section-header">HotAudio's other boxes</div>
       <div class="form-group">
         <div class="field-copy">
           <label class="form-label">Title</label>
