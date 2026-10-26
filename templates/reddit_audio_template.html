@@ -8,7 +8,7 @@
   <title>Reddit Post Generator — JOI Electric</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #151a2a; --surface: #1e2438; --surface-2: #262d44; --surface-3: #2f3750;
@@ -159,8 +159,22 @@
       .copy-buttons { flex-direction: column; }
     }
   </style>
+  <link rel="stylesheet" href="/css/templates.css">
 </head>
 <body>
+<header class="tpl-bar">
+  <a class="tpl-back" href="../tools.html"><img src="../images/JOI_Icon.png" alt="">Content Manager <span>&middot; back</span></a>
+  <nav class="tpl-switch" aria-label="Templates">
+    <a href="reddit_audio_template.html" aria-current="page">Reddit</a>
+    <a href="hotaudio_template.html">HotAudio</a>
+    <a href="literotica_template.html">Literotica</a>
+  </nav>
+</header>
+<div class="tpl-head">
+  <h1>Reddit post</h1>
+  <p>Build a Reddit post for a release: the bracketed title and the post body, ready to paste.</p>
+  <div class="tpl-open"><a href="https://www.reddit.com/submit" target="_blank" rel="noopener noreferrer">Open Reddit &#8599;</a></div>
+</div>
     <!-- Navigation Header -->
     <div class="navigation-header">
         <h1 class="nav-title">Reddit Audio Post Template</h1>
@@ -175,28 +189,29 @@
     <div class="main-container">
         <!-- EDITOR PANEL -->
         <div class="editor-panel">
-            <div class="panel-title">Reddit Audio Post</div>
+            <div class="panel-title">Fill in</div>
 
             <!-- LOAD FROM CATALOGUE -->
+            <div class="tpl-start">
             <div class="form-group">
-                <label class="form-label">Load from Catalogue</label>
+                <label class="form-label">Start from a release</label>
                 <select id="catalogSelect" class="tag-select">
                     <option value="">— Select a published audio —</option>
                 </select>
-                <small style="color: #888; font-size: 12px;">Auto-fills title, tags, descriptions, links (with TRT), and credits from the catalogue.</small>
-                <label style="display:flex;align-items:center;gap:6px;margin-top:8px;color:#bbb;font-size:13px;cursor:pointer">
+                <small>Pick one and everything below fills itself in: title, tags, descriptions, listen links with lengths, and credits. You can still change anything.</small>
+                <label style="display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--text-mid);font-size:0.92rem;cursor:pointer">
                     <input type="checkbox" id="useRedditNames" checked onchange="catRefreshCredits()">
                     Credit people by their Reddit name
                 </label>
-            </div>
+            </div></div>
 
             <!-- TITLE SECTION -->
-            <div class="section-header">Title Section</div>
+            <div class="section-header">Title</div>
             
             <div class="form-group">
-                <label class="form-label">Gender Tag</label>
+                <label class="form-label">Audience</label>
                 <select id="genderTag" class="tag-select">
-                    <option value="">Select Gender Tag</option>
+                    <option value="">Pick one (M4F, F4M…)</option>
                     <option value="M4F">M4F</option>
                     <option value="F4M">F4M</option>
                     <option value="M4M">M4M</option>
@@ -222,25 +237,25 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Tags (separated by commas - automatically wrapped in [ ])</label>
-                <textarea id="tags" class="form-textarea" placeholder="Enter your tags here, separated by commas"></textarea>
-                <small style="color: #888; font-size: 12px;">Enter tags separated by commas. They will automatically be wrapped in square brackets.</small>
+                <label class="form-label">Tags</label>
+                <textarea id="tags" class="form-textarea" placeholder="Whispers, Slow burn, Praise"></textarea>
+                <small>Separate them with commas; each one is put in [brackets] for you.</small>
             </div>
             
             <!-- POST CONTENT SECTION -->
-            <div class="section-header">Post Content Section</div>
+            <div class="section-header">Post</div>
             
             <div class="form-group">
-                <label class="form-label">Short Description (Bold Title)</label>
+                <label class="form-label">Opening line <span style="font-weight:400;color:var(--text-dim)">(shown in bold)</span></label>
                 <input type="text" id="shortDescription" class="form-input" placeholder="Enter the title/short description (will appear in bold)">
             </div>
             
             <div class="form-group">
-                <label class="form-label">Long Description</label>
+                <label class="form-label">Description</label>
                 <textarea id="longDescription" class="form-textarea" style="min-height: 120px;" placeholder="Detailed description of your audio content, plot, characters, scenarios, etc."></textarea>
             </div>
             
-            <div class="section-header">Audio Links</div>
+            <div class="section-header">Listen links</div>
             
             <div id="audioLinksContainer">
                 <div class="audio-link-group" data-link-index="0">
@@ -255,10 +270,12 @@
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button type="button" onclick="addAudioLink()" style="padding: 8px 16px; background: linear-gradient(145deg, #5b8de8, #2a4880); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">+ Add Audio Link</button>
-                <button type="button" onclick="removeAudioLink()" style="padding: 8px 16px; background: linear-gradient(145deg, #c0394a, #8f2436); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">- Remove Last Link</button>
+            <div class="tpl-row">
+                <button type="button" class="tpl-btn" onclick="addAudioLink()">+ Add another link</button>
+                <button type="button" class="tpl-btn danger" onclick="removeAudioLink()">Remove the last one</button>
             </div>
+
+            <div class="section-header">Credits &amp; notices</div>
             
             <div class="readonly-section">
                 <div class="readonly-section-title">18+ Disclaimer (Auto-included)</div>
@@ -278,7 +295,7 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Creator Name (for Copyright)</label>
+                <label class="form-label">Name on the copyright line</label>
                 <input type="text" id="creatorName" class="form-input" placeholder="Your name or handle for copyright notice">
                 <small id="creatorNameNote" style="display:none"></small>
             </div>
@@ -292,10 +309,10 @@
             
             <div class="copy-buttons">
                 <button class="copy-button" onclick="copyTitleToClipboard()">
-                    Copy Title
+                    1. Copy title
                 </button>
-                <button class="copy-button secondary" onclick="copyPostToClipboard()">
-                    Copy Post
+                <button class="copy-button" onclick="copyPostToClipboard()">
+                    2. Copy post
                 </button>
             </div>
             
@@ -310,7 +327,7 @@
             
             <!-- Title Preview -->
             <div class="preview-section">
-                <div class="preview-section-title">Reddit Title Preview</div>
+                <div class="preview-section-title">Title</div>
                 <div class="title-preview" id="titlePreview">
                     [Gender Tag] Audio Title [Tags]
                 </div>
@@ -319,21 +336,20 @@
             
             <!-- Post Preview -->
             <div class="preview-section">
-                <div class="preview-section-title">Reddit Post Preview</div>
+                <div class="preview-section-title">Post <span style="font-weight:400;color:var(--text-dim)">(Markdown, as Reddit takes it)</span></div>
                 <div class="post-preview" id="postPreview">
                     <!-- Post content preview will appear here -->
                 </div>
             </div>
             
             <div class="usage-tips">
-                <strong>Usage Instructions:</strong>
-                <ul>
-                    <li><strong>Step 1:</strong> Fill out all the form fields</li>
-                    <li><strong>Step 2:</strong> Copy the title and paste as your Reddit post title</li>
-                    <li><strong>Step 3:</strong> Copy the post content and paste in Reddit</li>
-                    <li><strong>Multiple Users:</strong> Template can be easily customized for different creators</li>
-                    <li><strong>Clean Format:</strong> Simple, streamlined output without extra formatting</li>
-                </ul>
+                <strong>Posting it</strong>
+                <ol>
+                    <li>On Reddit, start a new <b>Text</b> post in the subreddit and switch the editor to <b>Markdown mode</b>.</li>
+                    <li>Copy the title and paste it into the title box.</li>
+                    <li>Copy the post and paste it into the body.</li>
+                    <li>Add the subreddit's flair before you post.</li>
+                </ol>
             </div>
         </div>
     </div>

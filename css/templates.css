@@ -1,0 +1,204 @@
+/* The post templates (templates/*.html) in the site's look.
+ *
+ * Linked after each template's own <style>, so a rule here wins at equal
+ * specificity. The templates keep their markup, IDs and scripts; this only
+ * changes how they look and read:
+ *
+ *   - the site's palette and type, rounded fields and pill buttons
+ *   - a top bar that switches between the three templates
+ *   - the form's sections numbered as steps
+ *   - the preview kept in view while the form scrolls (wide screens)
+ *   - "Copied" shown as a pop-up at the bottom of the screen
+ */
+
+:root {
+  --bg: #0a0c18;
+  --surface: #121528;
+  --surface-2: #181c33;
+  --surface-3: #20253f;
+  --border: rgba(255,255,255,0.10);
+  --border-mid: rgba(255,255,255,0.18);
+  --border-hi: rgba(255,255,255,0.32);
+  --text: #f6f7ff;
+  --text-mid: #c8cee6;
+  --text-dim: #8e97b8;
+  --silver: #dfe3f2;
+  --silver-hi: #ffffff;
+  --coral: #39d5ff;
+  --rose: #b48cff;
+  --cyan: #39d5ff; --violet: #8b5cff; --pink: #ff4fd8;
+  --volt: linear-gradient(120deg, var(--cyan) 0%, var(--violet) 55%, var(--pink) 100%);
+  --radius: 12px;
+  --display: "Space Grotesk", system-ui, sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+body {
+  font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  max-width: 1320px; padding: 0 1.2rem 3rem; background: var(--bg);
+}
+body::before {
+  background:
+    radial-gradient(60% 45% at 10% 0%, rgba(57,213,255,0.10) 0%, transparent 70%),
+    radial-gradient(55% 45% at 95% 5%, rgba(139,92,255,0.14) 0%, transparent 70%);
+}
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+[style*="Cinzel"] { font-family: var(--display) !important; letter-spacing: 0 !important; text-transform: none !important; }
+small, small[style] { color: var(--text-dim) !important; font-size: 0.85rem !important; line-height: 1.5; display: block; margin-top: 0.35rem; }
+
+/* ── Top bar ────────────────────────────────────────────────────────── */
+.tpl-bar {
+  position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  margin: 0 -1.2rem 1.4rem; padding: 0.7rem 1.2rem;
+  background: rgba(10,12,24,0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.tpl-back {
+  display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text);
+  font-family: var(--display); font-weight: 600; font-size: 0.95rem;
+}
+.tpl-back img { width: 28px; height: 28px; border-radius: 8px; }
+.tpl-back span { color: var(--text-dim); font-weight: 500; }
+.tpl-switch { display: flex; gap: 0.25rem; padding: 0.25rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 999px; margin-left: auto; }
+.tpl-switch a {
+  text-decoration: none; font-family: var(--display); font-weight: 500; font-size: 0.88rem; white-space: nowrap;
+  color: var(--text-mid); padding: 0.4rem 0.85rem; border-radius: 999px; transition: background 0.15s, color 0.15s;
+}
+.tpl-switch a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+.tpl-switch a[aria-current] { color: #0a0c18; background: var(--volt); font-weight: 600; }
+@media (max-width: 760px) {
+  .tpl-switch { margin-left: 0; width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .tpl-switch a { flex: 1; text-align: center; }
+}
+/* The old header, replaced by the bar */
+.navigation-header { display: none !important; }
+
+.tpl-head { margin: 0 0 1.4rem; }
+.tpl-head h1 {
+  font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; font-size: clamp(1.8rem, 5vw, 2.4rem); line-height: 1.1;
+  background: linear-gradient(120deg, #fff 0%, var(--cyan) 55%, var(--violet) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.tpl-head p { color: var(--text-mid); margin-top: 0.35rem; max-width: 760px; }
+.tpl-open { display: inline-flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.8rem; }
+.tpl-open a {
+  font-family: var(--display); font-weight: 500; font-size: 0.82rem; text-decoration: none; color: var(--text-mid);
+  border: 1px solid var(--border-mid); border-radius: 999px; padding: 0.25rem 0.7rem;
+}
+.tpl-open a:hover { color: #fff; border-color: var(--cyan); }
+
+/* ── Panels ─────────────────────────────────────────────────────────── */
+.main-container { gap: 1.4rem; align-items: start; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.editor-panel, .preview-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; }
+@media (min-width: 1001px) {
+  .preview-panel { position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow-y: auto; }
+}
+@media (max-width: 1000px) { .main-container { grid-template-columns: 1fr; } }
+.panel-title { font-family: var(--display); font-size: 1.15rem; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--text); margin-bottom: 1.1rem; }
+.panel-title::after { display: none; }
+
+/* The form's sections, numbered as steps */
+.editor-panel { counter-reset: step; }
+.section-header {
+  display: flex; align-items: center; gap: 0.6rem; counter-increment: step;
+  font-family: var(--display); font-size: 1.02rem; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--text);
+  margin: 1.8rem 0 0.9rem; padding: 0 0 0.6rem; border-bottom: 1px solid var(--border);
+}
+.section-header::before {
+  content: counter(step); flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--volt); color: #0a0c18; font-size: 0.82rem; font-weight: 700;
+}
+.section-header:first-child { margin-top: 0; }
+
+.form-group { margin-bottom: 1rem; }
+.form-label {
+  font-family: var(--display); font-size: 0.92rem; font-weight: 600; letter-spacing: 0; text-transform: none;
+  color: var(--text); margin-bottom: 0.4rem;
+}
+.form-input, .form-textarea, .tag-select, .form-select {
+  font-family: var(--body); font-size: 0.95rem; color: var(--text);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-mid); border-radius: 10px; padding: 0.6rem 0.8rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.form-input:focus, .form-textarea:focus, .tag-select:focus, .form-select:focus {
+  outline: none; border-color: rgba(57,213,255,0.65); box-shadow: 0 0 0 3px rgba(57,213,255,0.15); background: rgba(255,255,255,0.07);
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+.tag-select option, .form-select option { background: var(--surface-2); color: var(--text); }
+#catalogSelect { border-color: rgba(57,213,255,0.45); background: rgba(57,213,255,0.06); font-weight: 500; }
+
+/* "Start from a release" — the quickest way in, so it stands out */
+.tpl-start {
+  margin: 0 0 1.4rem; padding: 1rem 1.1rem; border-radius: 16px;
+  background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--volt) border-box; border: 1.5px solid transparent;
+}
+.tpl-start .form-group { margin: 0; }
+.tpl-start .form-label { font-size: 1rem; }
+
+/* Read-only blocks the template adds for you */
+.readonly-section { background: rgba(255,255,255,0.04); border: 1px dashed var(--border-mid); border-left: 1px dashed var(--border-mid); border-radius: 12px; }
+.readonly-section-title { font-family: var(--display); font-size: 0.82rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text-mid); }
+.readonly-field { font-style: normal; color: var(--text-dim); font-size: 0.9rem; }
+.audio-link-group { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-left: 3px solid var(--cyan); border-radius: 12px; }
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.copy-buttons { gap: 0.6rem; }
+.copy-button, .load-button, .mini-copy, .tpl-btn {
+  font-family: var(--display); font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer;
+  border-radius: 999px; transition: transform 0.12s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
+}
+.copy-button { padding: 0.8rem 1.2rem; font-size: 0.98rem; border: 0; background: var(--volt); color: #0a0c18; box-shadow: 0 8px 26px rgba(139,92,255,0.35); }
+.copy-button:hover { background: var(--volt); color: #0a0c18; box-shadow: 0 10px 32px rgba(57,213,255,0.4); transform: translateY(-1px); }
+.copy-button:active, .tpl-btn:active, .mini-copy:active { transform: scale(0.97); }
+.copy-button.secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border-mid); box-shadow: none; }
+.copy-button.secondary:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: var(--border-hi); }
+.load-button, .mini-copy, .tpl-btn {
+  font-size: 0.85rem; padding: 0.4rem 0.9rem; color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border-mid);
+}
+.load-button:hover, .mini-copy:hover, .tpl-btn:hover { color: #fff; border-color: var(--cyan); background: rgba(57,213,255,0.08); }
+.tpl-btn.danger { color: #ff9aa8; border-color: rgba(255,122,144,0.4); }
+.tpl-btn.danger:hover { color: #fff; border-color: #ff7a90; background: rgba(255,122,144,0.15); }
+.tpl-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0 0 1.2rem; }
+
+/* "Copied" pops up at the bottom of the screen, wherever the button was */
+.success-message {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 9000; margin: 0;
+  max-width: min(92vw, 460px); padding: 0.75rem 1.1rem; border-radius: 14px;
+  background: rgba(20,60,44,0.94); border: 1px solid rgba(79,224,165,0.55); color: #c8ffe8;
+  font-family: var(--body); font-size: 0.95rem; font-weight: 500; letter-spacing: 0; text-transform: none;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5); animation: tpl-toast 0.25s ease;
+}
+@keyframes tpl-toast { from { opacity: 0; transform: translate(-50%, 10px); } }
+@media (prefers-reduced-motion: reduce) { .success-message { animation: none; } }
+
+/* ── Preview ────────────────────────────────────────────────────────── */
+.preview-section { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
+.preview-section-title { font-family: var(--display); font-size: 0.85rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text-mid); border-bottom: 0; padding-bottom: 0; margin-bottom: 0.6rem; }
+.title-preview { font-family: var(--display); font-weight: 600; font-size: 1.05rem; color: #fff; background: var(--surface); border: 1px solid var(--border-mid); border-radius: 12px; }
+.post-preview { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.82rem; line-height: 1.55; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; max-height: 460px; }
+.post-preview-html { background: var(--bg) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; font-family: var(--body) !important; }
+.post-preview-html a { color: var(--cyan) !important; }
+.usage-tips { background: rgba(57,213,255,0.05); border: 1px solid rgba(57,213,255,0.2); border-radius: 16px; color: var(--text-mid); font-size: 0.92rem; }
+.usage-tips strong { color: var(--text); font-family: var(--display); }
+.usage-tips ol, .usage-tips ul { margin: 0.5rem 0 0 1.2rem; }
+.usage-tips li { margin-bottom: 0.35rem; }
+.orn-preview { border-radius: 10px !important; }
+.message { border-radius: 10px; }
+details summary { color: var(--text-dim) !important; font-size: 0.88rem !important; }
+
+/* Long unbreakable lines (border art, links, code) scroll inside their own
+   box instead of pushing the page wider than the screen. */
+.main-container > * { min-width: 0; }
+.post-preview, .orn-preview, .title-preview, .post-preview-html, .readonly-field { max-width: 100%; overflow-wrap: anywhere; }
+.post-preview, .orn-preview { overflow-x: auto; }
+.post-preview-html img { max-width: 100%; height: auto; }
+@media (max-width: 600px) {
+  body { padding: 0 0.8rem 3rem; }
+  .tpl-bar { margin: 0 -0.8rem 1.2rem; padding: 0.6rem 0.8rem; }
+  .editor-panel, .preview-panel { padding: 1.1rem; border-radius: 16px; }
+  .copy-buttons { flex-direction: column; }
+}
+
+/* Status lines the templates write (collaborators loaded, CSV errors) */
+.message { font-family: var(--body) !important; font-size: 0.88rem !important; letter-spacing: 0 !important; text-transform: none !important; }
