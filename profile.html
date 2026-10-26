@@ -32,6 +32,29 @@
     body[data-theme="orchid"]   { --glow: 180,120,232; }
     body[data-theme="moss"]     { --glow: 95,191,148; }
     body[data-theme="noir"]     { --glow: 201,201,210; }
+    body[data-theme="rose"]     { --glow: 232,114,154; }
+    body[data-theme="ocean"]    { --glow: 63,180,217; }
+    body[data-theme="gold"]     { --glow: 217,176,74; }
+    body[data-theme="crimson"]  { --glow: 224,72,94; }
+    body[data-theme="midnight"] { --glow: 124,140,255; }
+    body[data-theme="ice"]      { --glow: 159,212,245; }
+
+    /* What sits behind the page (the creator's "Background" choice). The soft
+       glow from css/profile.css is the default; "plain" drops it, and "banner"
+       lays their banner across the whole page, blurred and darkened so the
+       words on top stay easy to read. */
+    body[data-bg="plain"]::before { display: none; }
+    body[data-bg="banner"]::before {
+      inset: -60px; z-index: 0;
+      background: var(--bg-image) center / cover no-repeat;
+      filter: blur(28px) saturate(1.1);
+      opacity: 0.55;
+    }
+    body[data-bg="banner"]::after {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), var(--bg) 85%);
+      opacity: 0.85;
+    }
 
     .wrap { max-width: 860px; }
     .banner { aspect-ratio: 3 / 1; border-radius: 24px; border: 1px solid var(--line); background-size: cover; background-position: center; margin-top: 0.4rem; }
@@ -169,6 +192,14 @@
         ['--accent', '--accent-2', '--cyan', '--violet', '--pink'].forEach(function (v) { st.setProperty(v, p.accent); });
         st.setProperty('--volt', 'linear-gradient(120deg, ' + p.accent + ', ' + p.accent + ')');
         if (/^[\d,]+$/.test(rgb)) st.setProperty('--glow', rgb);
+      }
+      // The background behind the page. "banner" needs a banner to show, so
+      // without one it stays the default glow. The URL is quoted with its own
+      // quotes and line breaks removed, so it cannot close the url().
+      if (p.background === 'plain') document.body.setAttribute('data-bg', 'plain');
+      if (p.background === 'banner' && p.banner) {
+        document.body.style.setProperty('--bg-image', 'url("' + String(p.banner).replace(/["\\\r\n]/g, '') + '")');
+        document.body.setAttribute('data-bg', 'banner');
       }
 
       var sections = p.sections || {};

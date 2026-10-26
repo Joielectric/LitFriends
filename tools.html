@@ -1682,15 +1682,51 @@
                     <!-- Look -->
                     <section class="pf-card" id="pf-sec-look">
                       <div class="pf-card-head"><h3>Look</h3></div>
-                      <p class="pf-help">The colour scheme of your whole page. Pick a theme, and optionally your own accent colour for links, buttons and highlights.</p>
+                      <p class="pf-help">How your whole page looks. Start with a theme &mdash; it sets the background, boxes and text colours. Then, if you like, swap in your own accent colour and choose what sits behind the page. Use <strong>Preview</strong> to see it for real.</p>
+                      <style>
+                        .pf-theme-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; margin-bottom:16px; }
+                        .pf-theme-card { cursor:pointer; text-align:left; border:1px solid var(--border); border-radius:10px; padding:0; overflow:hidden; background:none; color:var(--text-mid); font:inherit; }
+                        .pf-theme-card:hover { border-color:var(--border-mid); }
+                        .pf-theme-card[aria-pressed="true"] { border-color:var(--coral, #e8634f); box-shadow:0 0 0 1px var(--coral, #e8634f); color:var(--text); }
+                        .pf-theme-mini { height:54px; padding:8px; display:flex; flex-direction:column; gap:5px; }
+                        .pf-theme-mini i { display:block; height:6px; border-radius:3px; }
+                        .pf-theme-name { display:block; padding:5px 8px; font-size:0.78rem; }
+                        .pf-swatches { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+                        .pf-swatch { width:30px; height:30px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
+                        .pf-swatch[aria-pressed="true"] { border-color:#fff; box-shadow:0 0 0 2px var(--coral, #e8634f); }
+                        .pf-swatch-default { width:auto; height:30px; border-radius:999px; padding:0 12px; font-size:0.75rem; color:var(--text-mid); background:var(--surface-2, rgba(255,255,255,0.05)); border:1px solid var(--border); }
+                        .pf-swatch-default[aria-pressed="true"] { color:#fff; border-color:var(--coral, #e8634f); }
+                        .pf-custom { position:relative; display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px 0 4px; border-radius:999px; border:1px dashed var(--border-mid); font-size:0.75rem; color:var(--text-mid); cursor:pointer; }
+                        .pf-custom input[type=color] { width:24px; height:24px; border:0; padding:0; border-radius:50%; background:none; cursor:pointer; }
+                        .pf-custom[aria-pressed="true"] { border-style:solid; border-color:var(--coral, #e8634f); color:#fff; }
+                        .pf-accent-preview { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-bottom:14px; }
+                        .pf-accent-preview .pv-btn { padding:5px 12px; border-radius:999px; font-size:0.78rem; font-weight:600; color:#0a0c18; }
+                        .pf-accent-preview .pv-link { font-size:0.82rem; text-decoration:underline; }
+                        .pf-accent-preview .pv-name { font-weight:700; font-size:1.05rem; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+                        .pf-bg-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; }
+                        .pf-bg-card { cursor:pointer; text-align:left; border:1px solid var(--border); border-radius:10px; padding:10px; background:none; color:var(--text-mid); font:inherit; font-size:0.78rem; line-height:1.4; }
+                        .pf-bg-card strong { display:block; color:var(--text); font-size:0.85rem; margin-bottom:2px; }
+                        .pf-bg-card[aria-pressed="true"] { border-color:var(--coral, #e8634f); box-shadow:0 0 0 1px var(--coral, #e8634f); }
+                        .pf-bg-card[disabled] { opacity:0.45; cursor:not-allowed; }
+                      </style>
                       <div class="pf-card-body">
-                        <div id="pf-themes" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
-                        <label class="cm-label" style="font-size:0.7rem">Accent colour (optional)</label>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                          <input type="color" id="pf-accent-pick" style="width:44px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer"
-                                 oninput="document.getElementById('pf-accent').value = this.value; pfDrawCard()">
-                          <input id="pf-accent" class="cm-input" style="flex:1" placeholder="#5b8de8 &mdash; leave empty to use the theme" oninput="pfDrawCard()">
+                        <label class="cm-label" style="font-size:0.7rem">Theme</label>
+                        <div id="pf-themes" class="pf-theme-grid" role="group" aria-label="Theme"></div>
+
+                        <label class="cm-label" style="font-size:0.7rem">Accent colour <span style="font-weight:normal;color:var(--text-mid)">(links, buttons, your name and highlights)</span></label>
+                        <div id="pf-swatches" class="pf-swatches" role="group" aria-label="Accent colour"></div>
+                        <div id="pf-accent-preview" class="pf-accent-preview" aria-hidden="true">
+                          <span class="pv-name">Your Name</span>
+                          <span class="pv-btn">Listen now</span>
+                          <span class="pv-link">a link</span>
                         </div>
+                        <details style="margin:-6px 0 14px;">
+                          <summary style="cursor:pointer;color:var(--text-dim);font-size:0.75rem;">Type a colour code instead</summary>
+                          <input id="pf-accent" class="cm-input" style="width:100%;margin-top:6px" placeholder="#5b8de8 &mdash; leave empty to use the theme's colour" oninput="pfAccentTyped()">
+                        </details>
+
+                        <label class="cm-label" style="font-size:0.7rem">Background</label>
+                        <div id="pf-bgs" class="pf-bg-grid" role="group" aria-label="Background"></div>
                       </div>
                     </section>
 
@@ -6132,6 +6168,30 @@
       { key: 'orchid',   label: 'Orchid',   swatch: '#b478e8' },
       { key: 'moss',     label: 'Moss',     swatch: '#5fbf94' },
       { key: 'noir',     label: 'Noir',     swatch: '#c9c9d2' },
+      { key: 'rose',     label: 'Rose',     swatch: '#e8729a', bg: '#160c0f', surface: '#2c191f' },
+      { key: 'ocean',    label: 'Ocean',    swatch: '#3fb4d9', bg: '#0a1317', surface: '#16272f' },
+      { key: 'gold',     label: 'Gold',     swatch: '#d9b04a', bg: '#16130c', surface: '#2c2619' },
+      { key: 'crimson',  label: 'Crimson',  swatch: '#e0485e', bg: '#170b0c', surface: '#2e1719' },
+      { key: 'midnight', label: 'Midnight', swatch: '#7c8cff', bg: '#0a0c17', surface: '#151930' },
+      { key: 'ice',      label: 'Ice',      swatch: '#9fd4f5', bg: '#0d1114', surface: '#1b242a' },
+    ];
+    // The first five predate the bg/surface fields; their colours as css/themes.css sets them.
+    Object.assign(PF_THEMES[0], { bg: '#151a2a', surface: '#262d44' });
+    Object.assign(PF_THEMES[1], { bg: '#140d0c', surface: '#291c19' });
+    Object.assign(PF_THEMES[2], { bg: '#150e1c', surface: '#2a1d37' });
+    Object.assign(PF_THEMES[3], { bg: '#0d1512', surface: '#1c2b24' });
+    Object.assign(PF_THEMES[4], { bg: '#101011', surface: '#242427' });
+
+    // Ready-made accents, picked to read well on every theme's dark background.
+    const PF_ACCENTS = [
+      '#39d5ff', '#5b8de8', '#7c8cff', '#b478e8', '#ff4fd8', '#e8729a',
+      '#e0485e', '#d9743f', '#ffb454', '#d9b04a', '#5fbf94', '#4fe0c8', '#f2f2f7',
+    ];
+
+    const PF_BACKGROUNDS = [
+      { key: 'glow',   label: 'Soft glow', help: 'A gentle wash of your accent colour at the top. The default.' },
+      { key: 'plain',  label: 'Plain',     help: 'Just the theme’s background colour. Clean and quiet.' },
+      { key: 'banner', label: 'My banner', help: 'Your banner, blurred and darkened behind the whole page.' },
     ];
 
     let pfProfile = null;
@@ -6145,22 +6205,99 @@
       el.style.color = good ? '#6fe3c1' : '#e87a88';
     }
 
+    // ── Look: theme, accent and background ───────────────────────────────
+    // Each theme is shown as a small picture of itself (its background, a box,
+    // and its accent) rather than a name, so a creator can see what they pick.
     function pfRenderThemes() {
       document.getElementById('pf-themes').innerHTML = PF_THEMES.map(t =>
-        `<button type="button" class="cm-btn cm-btn-sm pf-theme" data-theme="${t.key}" onclick="pfPickTheme('${t.key}')"
-           style="display:flex;align-items:center;gap:6px;">
-           <span style="width:12px;height:12px;border-radius:50%;background:${t.swatch};display:inline-block"></span>${t.label}
+        `<button type="button" class="pf-theme-card pf-theme" data-theme="${t.key}" onclick="pfPickTheme('${t.key}')" aria-pressed="false">
+           <span class="pf-theme-mini" style="background:${t.bg}">
+             <i style="width:55%;background:${t.swatch}"></i>
+             <i style="width:85%;background:${t.surface}"></i>
+             <i style="width:70%;background:${t.surface}"></i>
+           </span>
+           <span class="pf-theme-name">${t.label}</span>
          </button>`).join('');
+      pfRenderSwatches();
+      pfRenderBackgrounds();
       pfMarkTheme();
     }
     function pfMarkTheme() {
       const active = (pfProfile && pfProfile.theme) || 'electric';
-      document.querySelectorAll('.pf-theme').forEach(b => {
-        b.style.borderColor = b.dataset.theme === active ? 'var(--coral)' : '';
-        b.style.color = b.dataset.theme === active ? '#fff' : '';
+      document.querySelectorAll('.pf-theme').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === active)));
+      pfMarkAccent();
+    }
+    function pfPickTheme(key) { if (pfProfile) { pfProfile.theme = key; pfMarkTheme(); pfDrawCard(); } }
+
+    function pfThemeOf() {
+      const key = (pfProfile && pfProfile.theme) || 'electric';
+      return PF_THEMES.find(t => t.key === key) || PF_THEMES[0];
+    }
+    // The accent the page will really use: their own, or the theme's.
+    function pfEffectiveAccent() {
+      const own = (document.getElementById('pf-accent').value || '').trim();
+      return /^#[0-9a-f]{3,8}$/i.test(own) ? own : pfThemeOf().swatch;
+    }
+
+    function pfRenderSwatches() {
+      document.getElementById('pf-swatches').innerHTML =
+        `<button type="button" class="pf-swatch-default" data-accent="" onclick="pfPickAccent('')" aria-pressed="false" title="Use the theme's own colour">Theme colour</button>` +
+        PF_ACCENTS.map(c =>
+          `<button type="button" class="pf-swatch" data-accent="${c}" style="background:${c}" onclick="pfPickAccent('${c}')" aria-pressed="false" title="${c}" aria-label="Accent ${c}"></button>`
+        ).join('') +
+        `<label class="pf-custom" title="Pick any colour"><input type="color" id="pf-accent-pick" oninput="pfPickAccent(this.value)">Custom&hellip;</label>`;
+    }
+
+    function pfPickAccent(c) {
+      document.getElementById('pf-accent').value = c;
+      if (c) document.getElementById('pf-accent-pick').value = c.length === 4 ? '#' + c.slice(1).replace(/./g, '$&$&') : c.slice(0, 7);
+      pfMarkAccent();
+      pfDrawCard();
+    }
+    function pfAccentTyped() { pfMarkAccent(); pfDrawCard(); }
+
+    // Which swatch is lit, and the little strip showing the colour in use.
+    function pfMarkAccent() {
+      const own = (document.getElementById('pf-accent').value || '').trim().toLowerCase();
+      const preset = !own || PF_ACCENTS.indexOf(own) !== -1;
+      document.querySelectorAll('#pf-swatches [data-accent]').forEach(b =>
+        b.setAttribute('aria-pressed', String(b.dataset.accent === own)));
+      const custom = document.querySelector('#pf-swatches .pf-custom');
+      if (custom) custom.setAttribute('aria-pressed', String(!preset));
+      // The full picker opens on their own colour when they have one.
+      const pick = document.getElementById('pf-accent-pick');
+      if (pick && /^#[0-9a-f]{6}$/.test(own)) pick.value = own;
+      const t = pfThemeOf();
+      const a = pfEffectiveAccent();
+      const pv = document.getElementById('pf-accent-preview');
+      if (!pv) return;
+      pv.style.background = t.bg;
+      pv.querySelector('.pv-btn').style.background = a;
+      pv.querySelector('.pv-link').style.color = a;
+      pv.querySelector('.pv-name').style.backgroundImage = `linear-gradient(120deg, #fff 0%, ${a} 60%)`;
+    }
+
+    function pfRenderBackgrounds() {
+      document.getElementById('pf-bgs').innerHTML = PF_BACKGROUNDS.map(b =>
+        `<button type="button" class="pf-bg-card" data-bg="${b.key}" onclick="pfPickBackground('${b.key}')" aria-pressed="false">
+           <strong>${b.label}</strong>${b.help}
+         </button>`).join('');
+      pfMarkBackground();
+    }
+    function pfPickBackground(key) { if (pfProfile) { pfProfile.background = key; pfMarkBackground(); } }
+    // "My banner" needs a banner; without one it is offered but greyed out, and
+    // the page falls back to the glow.
+    function pfMarkBackground() {
+      const active = (pfProfile && pfProfile.background) || 'glow';
+      const hasBanner = !!(document.getElementById('pf-banner').value || '').trim();
+      document.querySelectorAll('.pf-bg-card').forEach(b => {
+        b.setAttribute('aria-pressed', String(b.dataset.bg === active));
+        if (b.dataset.bg === 'banner') {
+          b.disabled = !hasBanner && active !== 'banner';
+          b.title = hasBanner ? '' : 'Add a banner under "Top of your page" first';
+        }
       });
     }
-    function pfPickTheme(key) { if (pfProfile) { pfProfile.theme = key; pfMarkTheme(); } }
 
     // Each part of the page carries its own "Show on my page" switch, in the
     // card that edits it. A section is on unless it was saved as off.
@@ -6288,6 +6425,7 @@
         el.src = url;
         el.style.display = url ? '' : 'none';
       });
+      pfMarkBackground();
       pfDrawCard();
     }
 
@@ -6338,7 +6476,7 @@
         name:    val('pf-name') || (pfProfile && pfProfile.slug) || '',
         tagline: val('pf-tagline'),
         eyebrow: val('pf-card-eyebrow') || 'EROTIC AUDIO',
-        accent:  val('pf-accent') || '#5b8de8',
+        accent:  pfEffectiveAccent(),
       };
     }
 
@@ -6572,7 +6710,6 @@
       document.getElementById('pf-share-image').value = p.shareImage || '';
       pfCardAuto = p.shareCardAuto !== false;
       document.getElementById('pf-accent').value = p.accent || '';
-      if (p.accent) document.getElementById('pf-accent-pick').value = p.accent;
       pfPublished = !!p.published;
       pfRenderPublished();
       const url = '/profile/' + p.slug;
@@ -6711,6 +6848,7 @@
         shareCardAuto: pfCardAuto,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
+        background: pfProfile.background || 'glow',
         aliases: pfAliases,
         published: pfPublished,
         links: pfLinks,
@@ -6820,7 +6958,7 @@
             name:    p.name || p.slug,
             tagline: p.tagline || '',
             eyebrow: 'EROTIC AUDIO',
-            accent:  p.accent || '#5b8de8',
+            accent:  p.accent || (PF_THEMES.find(t => t.key === p.theme) || PF_THEMES[0]).swatch,
           }, p.slug, null, p.shareImage);
 
           // A partial profile merges onto the stored one, so this changes the
