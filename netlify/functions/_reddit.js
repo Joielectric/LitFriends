@@ -57,6 +57,14 @@ function htmlToText(html) {
     .trim();
 }
 
+// A 403 or 429 is GWASI turning the site away, not a hiccup, and saying
+// "try again later" sends people round in circles.
+function gwasiRefused(status) {
+  return status === 403 || status === 429
+    ? `GWASI answered ${status}: it is not accepting requests from this site at the moment.`
+    : `GWASI answered ${status}. Try again later.`;
+}
+
 // ── GWASI ────────────────────────────────────────────────────────────────────
 
 // Each GWASI post is a row:
@@ -121,7 +129,7 @@ export function scanGwasiRows(text, handle) {
 
 export async function fromGwasi(handle) {
   const deltaRes = await get("https://gwasi.com/delta.json");
-  if (!deltaRes.ok) throw new SourceError(`GWASI answered ${deltaRes.status}. Try again later.`);
+  if (!deltaRes.ok) throw new SourceError(gwasiRefused(deltaRes.status));
   let delta;
   try {
     delta = await deltaRes.json();
@@ -132,7 +140,7 @@ export async function fromGwasi(handle) {
     throw new SourceError("GWASI returned something unexpected. The format may have changed.");
   }
   const res = await get(`https://gwasi.com/base_${delta.base}.json`, { ms: 25000 });
-  if (!res.ok) throw new SourceError(`GWASI answered ${res.status}. Try again later.`);
+  if (!res.ok) throw new SourceError(gwasiRefused(res.status));
   const text = await res.text();
 
   const byId = new Map();
@@ -223,7 +231,7 @@ export function searchOffers(offers, query) {
 
 async function loadOffers() {
   const deltaRes = await get("https://gwasi.com/delta.json");
-  if (!deltaRes.ok) throw new SourceError(`GWASI answered ${deltaRes.status}. Try again later.`);
+  if (!deltaRes.ok) throw new SourceError(gwasiRefused(deltaRes.status));
   let delta;
   try {
     delta = await deltaRes.json();
@@ -236,7 +244,7 @@ async function loadOffers() {
   if (offerCache.base === delta.base && Date.now() - offerCache.at < OFFER_TTL) return offerCache;
 
   const res = await get(`https://gwasi.com/base_${delta.base}.json`, { ms: 25000 });
-  if (!res.ok) throw new SourceError(`GWASI answered ${res.status}. Try again later.`);
+  if (!res.ok) throw new SourceError(gwasiRefused(res.status));
   let index;
   try {
     index = JSON.parse(await res.text());
