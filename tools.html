@@ -1471,7 +1471,7 @@
                 </div>
 
                 <div class="cm-tab-panel" id="tabp-profile" hidden>
-                <header class="cm-panel-head"><h2>My profile</h2><p>Everything on your public page, in the order visitors see it. Fill it in top to bottom, press <strong>Save profile</strong>, then <strong>Publish</strong> when you are happy with it.</p></header>
+                <header class="cm-panel-head"><h2>My profile</h2><p>Everything on your public page, in the order visitors see it. Fill it in top to bottom, use <strong>Preview</strong> to see how it looks, press <strong>Save profile</strong>, then <strong>Publish</strong> when you are happy with it.</p></header>
                   <!-- The editor follows the public page from the top down, and
                        each part that a visitor can be spared carries its own
                        "Show on my page" switch: switching it off folds the part
@@ -1517,6 +1517,7 @@
                            Save profile. -->
                       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                         <span id="pf-state" style="font-size:0.8rem;"></span>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfPreview()" title="See your page as visitors will, including changes you have not saved">Preview</button>
                         <button type="button" id="pf-publish" class="cm-btn cm-btn-sm" onclick="pfTogglePublished()"></button>
                       </div>
                     </div>
@@ -1732,6 +1733,7 @@
                          scrolling back down a long page. -->
                     <div class="pf-savebar">
                       <button type="button" class="cm-btn cm-btn-primary" onclick="pfSave()">Save profile</button>
+                      <button type="button" class="cm-btn" onclick="pfPreview()" title="See your page as visitors will, including changes you have not saved">Preview my page</button>
                       <span id="pf-msg" style="font-size:0.85rem;"></span>
                     </div>
                   </div>
@@ -6694,13 +6696,12 @@
       pfSaveNow(after);
     }
 
-    function pfSaveNow(after) {
-      if (!pfProfile) return;
-      after = after || {};
+    // The profile as it stands on screen: what Save sends, and what Preview shows.
+    function pfDraft() {
       pfCollectLinks();
       const sections = {};
       document.querySelectorAll('.pf-section').forEach(el => { sections[el.dataset.key] = el.checked; });
-      const profile = {
+      return {
         name: document.getElementById('pf-name').value,
         tagline: document.getElementById('pf-tagline').value,
         bio: document.getElementById('pf-bio').value,
@@ -6716,6 +6717,32 @@
         updates: pfUpdates,
         sections,
       };
+    }
+
+    // Opens the public page in a new tab, drawn from what is on screen now —
+    // unsaved edits and an unpublished page included. The draft goes through
+    // this browser's storage only; profile.html?preview=1 reads it back, and
+    // pressing Preview again refreshes a preview tab that is already open.
+    function pfPreview() {
+      if (!pfProfile) return;
+      const profile = Object.assign({}, pfDraft(), { slug: pfProfile.slug });
+      // Only what the page would accept: a link needs both halves, and the
+      // accent must be a colour.
+      profile.links = (profile.links || []).filter(l => l.label && l.url);
+      if (profile.accent && !/^#[0-9a-f]{3,8}$/i.test(profile.accent)) profile.accent = '';
+      try {
+        localStorage.setItem('cm_profile_preview', JSON.stringify({ at: Date.now(), profile }));
+      } catch (e) {
+        pfMsg('Your browser blocked the preview. Save and use the link to your page instead.', false);
+        return;
+      }
+      window.open('/profile.html?preview=1&u=' + encodeURIComponent(pfProfile.slug), 'profile-preview');
+    }
+
+    function pfSaveNow(after) {
+      if (!pfProfile) return;
+      after = after || {};
+      const profile = pfDraft();
       pfMsg('Saving…', true);
       // The server decides which profile this writes to, from who is signed in.
       const payload = { action: 'save', profile };
