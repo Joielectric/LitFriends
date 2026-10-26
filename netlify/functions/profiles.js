@@ -50,6 +50,7 @@ function safeUrl(v) {
 export const THEMES = [
   "electric", "ember", "orchid", "moss", "noir",
   "rose", "ocean", "gold", "crimson", "midnight", "ice",
+  "daylight",
 ];
 // What sits behind the page: the soft glow, nothing, or their banner blurred
 // across the whole background.

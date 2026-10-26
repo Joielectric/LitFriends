@@ -698,6 +698,7 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
+<script src="/js/themes.js"></script>
 <script src="/js/reddit-import.js"></script>
 <!-- The share-card renderer is shared with anything else that needs to draw
      one, so it is a module; the handlers below reach it through window. -->
@@ -6174,6 +6175,8 @@
       { key: 'crimson',  label: 'Crimson',  swatch: '#e0485e', bg: '#170b0c', surface: '#2e1719' },
       { key: 'midnight', label: 'Midnight', swatch: '#7c8cff', bg: '#0a0c17', surface: '#151930' },
       { key: 'ice',      label: 'Ice',      swatch: '#9fd4f5', bg: '#0d1114', surface: '#1b242a' },
+      // The one light theme; see the note on it in css/themes.css.
+      { key: 'daylight', label: 'Daylight', swatch: '#2f62d6', bg: '#f6f4ef', surface: '#e6e2d9' },
     ];
     // The first five predate the bg/surface fields; their colours as css/themes.css sets them.
     Object.assign(PF_THEMES[0], { bg: '#151a2a', surface: '#262d44' });
@@ -6183,6 +6186,7 @@
     Object.assign(PF_THEMES[4], { bg: '#101011', surface: '#242427' });
 
     // Ready-made accents, picked to read well on every theme's dark background.
+    // On Daylight the page darkens any that are too pale to read on white.
     const PF_ACCENTS = [
       '#39d5ff', '#5b8de8', '#7c8cff', '#b478e8', '#ff4fd8', '#e8729a',
       '#e0485e', '#d9743f', '#ffb454', '#d9b04a', '#5fbf94', '#4fe0c8', '#f2f2f7',
@@ -6268,13 +6272,17 @@
       const pick = document.getElementById('pf-accent-pick');
       if (pick && /^#[0-9a-f]{6}$/.test(own)) pick.value = own;
       const t = pfThemeOf();
-      const a = pfEffectiveAccent();
+      // On the light theme the page darkens a pale accent and flips the
+      // colours around it, so the strip does the same.
+      const light = window.Themes && Themes.isLight(t.key);
+      const a = light ? Themes.accentFor(t.key, pfEffectiveAccent()) : pfEffectiveAccent();
       const pv = document.getElementById('pf-accent-preview');
       if (!pv) return;
       pv.style.background = t.bg;
       pv.querySelector('.pv-btn').style.background = a;
+      pv.querySelector('.pv-btn').style.color = light ? '#fff' : '';
       pv.querySelector('.pv-link').style.color = a;
-      pv.querySelector('.pv-name').style.backgroundImage = `linear-gradient(120deg, #fff 0%, ${a} 60%)`;
+      pv.querySelector('.pv-name').style.backgroundImage = `linear-gradient(120deg, ${light ? '#191c28' : '#fff'} 0%, ${a} 60%)`;
     }
 
     function pfRenderBackgrounds() {

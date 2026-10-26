@@ -66,6 +66,40 @@ html body[data-theme] {
 html body[data-theme]::before { background: radial-gradient(60% 45% at 50% 0%, var(--accent-soft), transparent 70%); }
 body[data-theme] .banner-frame { background: var(--surface); }
 
+/* Daylight, the one light theme, puts right what this page and
+ * css/electric.css assume about a dark page — dark bars, dark marks and text
+ * on the accent, pale warning text — for itself only. The accent is always
+ * deep enough for white on it (js/themes.js). */
+html:has(body[data-theme="daylight"]) { color-scheme: light; }
+html body[data-theme="daylight"] { --err: #b8233f; --ok: #13805a; }
+body[data-theme="daylight"] .form-section, body[data-theme="daylight"] .radio-item,
+body[data-theme="daylight"] .check-item, body[data-theme="daylight"] .scale-group label { box-shadow: 0 1px 3px rgba(28,32,52,0.05); }
+body[data-theme="daylight"] .topbar::before { background: rgba(246,244,239,0.82); }
+body[data-theme="daylight"] .bottombar { background: rgba(255,255,255,0.9); box-shadow: 0 10px 30px rgba(28,32,52,0.16); }
+body[data-theme="daylight"] .topnav a.vk-link, body[data-theme="daylight"] .bottombar a.vk-link { color: #a3294a; }
+body[data-theme="daylight"] .topnav a.vk-link:hover { color: #7a1834; background: rgba(176,40,74,0.1); }
+body[data-theme="daylight"] .btn-primary,
+body[data-theme="daylight"] .scale-group input[type="radio"]:checked + label,
+body[data-theme="daylight"] button[type="submit"],
+body[data-theme="daylight"] .thankyou-glyph { color: #fff; }
+body[data-theme="daylight"] .scale-group input[type="radio"]:checked + label,
+body[data-theme="daylight"] button[type="submit"] { box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent); }
+body[data-theme="daylight"] .check-item input[type="checkbox"]:checked::after { border-color: #fff; }
+body[data-theme="daylight"] .radio-item input[type="radio"]:checked,
+body[data-theme="daylight"] .grid-table input[type="radio"]:checked { box-shadow: inset 0 0 0 4px var(--surface); }
+body[data-theme="daylight"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23464b5d' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+body[data-theme="daylight"] select option { background: #fff; }
+body[data-theme="daylight"] input[type="range"]::-webkit-slider-thumb { box-shadow: 0 0 0 1px var(--line-hi), 0 2px 8px rgba(28,32,52,0.25); }
+body[data-theme="daylight"] input[type="range"]::-moz-range-thumb { box-shadow: 0 0 0 1px var(--line-hi), 0 2px 8px rgba(28,32,52,0.25); }
+body[data-theme="daylight"] .star-group input:checked ~ label,
+body[data-theme="daylight"] .star-group label:hover,
+body[data-theme="daylight"] .star-group label:hover ~ label { color: #e0a210; }
+body[data-theme="daylight"] .age-gate-warning { background: rgba(184,35,63,0.07); border-color: rgba(184,35,63,0.4); }
+body[data-theme="daylight"] .age-gate-warning p { color: #8f1f36; }
+body[data-theme="daylight"] .age-gate-warning strong { color: #6e1428; }
+
 /* === HEADER === */
 .banner-frame { border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: var(--bg-2, var(--surface)); margin: 0.4rem 0 1.2rem; }
 .banner-frame img { width: 100%; height: auto; display: block; max-height: 260px; object-fit: cover; object-position: center; }
@@ -481,6 +515,7 @@ footer { margin-top: 2rem; }
 <script src="/js/electric.js"></script>
 
 <script src="/js/site-config.js"></script>
+<script src="/js/themes.js"></script>
 <script>
 // A creator links here from their own page as ?for=<slug>; the form then asks
 // about their work and files the response under them.
@@ -541,10 +576,11 @@ if (FOR && FOR !== 'joi-electric') {
     // different theme goes on <body>; its accent then drives the gradient.
     if (p.theme && p.theme !== "electric") document.body.setAttribute("data-theme", p.theme);
     if (p.accent) {
+      var accent = Themes.accentFor(p.theme, p.accent);   // darker on Daylight if need be
       ["--electric", "--accent", "--cyan", "--violet", "--pink"].forEach(function (v) {
-        document.body.style.setProperty(v, p.accent);
+        document.body.style.setProperty(v, accent);
       });
-      document.body.style.setProperty("--volt", "linear-gradient(120deg, " + p.accent + ", " + p.accent + ")");
+      document.body.style.setProperty("--volt", "linear-gradient(120deg, " + accent + ", " + accent + ")");
     }
 
     var banner = document.querySelector(".banner-frame");
