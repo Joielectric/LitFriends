@@ -89,6 +89,16 @@
     .feedback-cta p { color: var(--text-mid); max-width: 440px; margin: 0 auto 1.2rem; }
     #page > footer { margin: 3.5rem -1.2rem 0; }
     .state { text-align: center; padding: 5rem 1rem; color: var(--text-mid); }
+    .preview-bar {
+      position: sticky; top: 0; z-index: 9500; text-align: center;
+      padding: 0.55rem 1rem; font-size: 0.85rem; line-height: 1.4;
+      background: #f5c542; color: #1a1400;
+    }
+    .preview-bar button {
+      margin-left: 0.6rem; font: inherit; font-size: 0.8rem; cursor: pointer;
+      background: rgba(0,0,0,0.12); color: inherit; border: 1px solid rgba(0,0,0,0.35);
+      border-radius: 999px; padding: 0.1rem 0.7rem;
+    }
     #audio-grid { margin-top: 0.5rem; }
   </style>
   <script src="/js/age-gate.js"></script>
@@ -231,6 +241,36 @@
       show('<div class="state">No profile named.</div>');
       return;
     }
+
+    // ?preview=1: the Content Manager's Preview button. It hands over what is
+    // on the editor's screen right now — saved or not, published or not —
+    // through this browser's storage, so a creator sees their page before
+    // anyone else can. Nothing is fetched or saved, and the page is the same
+    // escaped render as the real one.
+    if (new URLSearchParams(location.search).get('preview') === '1') {
+      var meta = document.createElement('meta');
+      meta.name = 'robots'; meta.content = 'noindex';
+      document.head.appendChild(meta);
+      var draft = null;
+      try { draft = JSON.parse(localStorage.getItem('cm_profile_preview') || 'null'); } catch (e) {}
+      if (!draft || !draft.profile || draft.profile.slug !== slug) {
+        show('<div class="state">Nothing to preview. Open this from the Preview button in the Content Manager.</div>');
+        return;
+      }
+      var bar = document.createElement('div');
+      bar.className = 'preview-bar';
+      bar.innerHTML = '<strong>Preview</strong> &mdash; only you can see this. ' +
+        (draft.profile.published ? 'Your page is live; unsaved changes are not.' : 'Your page is not published yet.') +
+        ' <button type="button" onclick="window.close()">Close preview</button>';
+      document.body.insertBefore(bar, document.body.firstChild);
+      render(draft.profile);
+      // Pressing Preview again in the editor refreshes this tab.
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'cm_profile_preview') location.reload();
+      });
+      return;
+    }
+
     fetch('/api/profile/' + encodeURIComponent(slug))
       .then(function (r) { return r.json(); })
       .then(function (data) {
