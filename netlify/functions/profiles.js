@@ -47,7 +47,13 @@ function safeUrl(v) {
   return u;
 }
 
-export const THEMES = ["electric", "ember", "orchid", "moss", "noir"];
+export const THEMES = [
+  "electric", "ember", "orchid", "moss", "noir",
+  "rose", "ocean", "gold", "crimson", "midnight", "ice",
+];
+// What sits behind the page: the soft glow, nothing, or their banner blurred
+// across the whole background.
+export const BACKGROUNDS = ["glow", "plain", "banner"];
 export const SECTIONS = ["updates", "about", "works", "feedback", "links"];
 
 /** What a profile looks like before anyone has edited it. */
@@ -71,6 +77,7 @@ export function defaultProfile(slug, name) {
     shareCardAuto: true,
     theme: "electric",
     accent: "",
+    background: "glow",
     links: [],
     // Other names this person is credited under in the catalogue. Credits are
     // free text and drift — a Reddit handle here, a display name there — so a
@@ -125,6 +132,9 @@ function sanitize(input, base, allProfiles) {
   if (input.shareCardAuto !== undefined) out.shareCardAuto = !!input.shareCardAuto;
   if (input.theme !== undefined) {
     out.theme = THEMES.includes(input.theme) ? input.theme : base.theme;
+  }
+  if (input.background !== undefined) {
+    out.background = BACKGROUNDS.includes(input.background) ? input.background : (base.background || "glow");
   }
   // A free-text colour would end up inside a style attribute, so only allow the
   // one shape that cannot escape it.

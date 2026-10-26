@@ -138,3 +138,144 @@ body[data-theme="noir"] {
   --electric: #c9c9d2;
   --electric-dim: #5c5c66;
 }
+
+/* The six added later are generated from a background hue and an accent the
+ * same way the five above were tuned by hand, so they sit alongside them. */
+
+body[data-theme="rose"] {
+  --bg: #160c0f;
+  --surface: #211217;
+  --surface-2: #2c191f;
+  --surface-3: #372027;
+  --border: rgba(232,114,154,0.24);
+  --border-mid: rgba(232,114,154,0.45);
+  --border-hi: rgba(232,114,154,0.7);
+  --text: #fbeff3;
+  --text-mid: #dcbcc7;
+  --text-dim: #ab8793;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #ebd5dd;
+  --text-dim-bright: #d0b3bd;
+  --silver: #ebd5dd;
+  --silver-hi: #fbeff3;
+
+  --accent: #e8729a;
+  --accent-soft: rgba(232,114,154,0.14);
+  --electric: #e8729a;
+  --electric-dim: #683345;
+}
+
+body[data-theme="ocean"] {
+  --bg: #0a1317;
+  --surface: #101d23;
+  --surface-2: #16272f;
+  --surface-3: #1d303a;
+  --border: rgba(63,180,217,0.24);
+  --border-mid: rgba(63,180,217,0.45);
+  --border-hi: rgba(63,180,217,0.7);
+  --text: #eff7fb;
+  --text-mid: #bcd1dc;
+  --text-dim: #879fab;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #d5e4eb;
+  --text-dim-bright: #b3c7d0;
+  --silver: #d5e4eb;
+  --silver-hi: #eff7fb;
+
+  --accent: #3fb4d9;
+  --accent-soft: rgba(63,180,217,0.14);
+  --electric: #3fb4d9;
+  --electric-dim: #1c5162;
+}
+
+body[data-theme="gold"] {
+  --bg: #16130c;
+  --surface: #211d12;
+  --surface-2: #2c2619;
+  --surface-3: #373020;
+  --border: rgba(217,176,74,0.24);
+  --border-mid: rgba(217,176,74,0.45);
+  --border-hi: rgba(217,176,74,0.7);
+  --text: #fbf7ef;
+  --text-mid: #dcd3bc;
+  --text-dim: #aba087;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #ebe5d5;
+  --text-dim-bright: #d0c8b3;
+  --silver: #ebe5d5;
+  --silver-hi: #fbf7ef;
+
+  --accent: #d9b04a;
+  --accent-soft: rgba(217,176,74,0.14);
+  --electric: #d9b04a;
+  --electric-dim: #624f21;
+}
+
+body[data-theme="crimson"] {
+  --bg: #170b0c;
+  --surface: #231012;
+  --surface-2: #2e1719;
+  --surface-3: #391d20;
+  --border: rgba(224,72,94,0.24);
+  --border-mid: rgba(224,72,94,0.45);
+  --border-hi: rgba(224,72,94,0.7);
+  --text: #fbeff0;
+  --text-mid: #dcbcbe;
+  --text-dim: #ab878a;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #ebd5d7;
+  --text-dim-bright: #d0b3b6;
+  --silver: #ebd5d7;
+  --silver-hi: #fbeff0;
+
+  --accent: #e0485e;
+  --accent-soft: rgba(224,72,94,0.14);
+  --electric: #e0485e;
+  --electric-dim: #65202a;
+}
+
+body[data-theme="midnight"] {
+  --bg: #0a0c17;
+  --surface: #0f1224;
+  --surface-2: #151930;
+  --surface-3: #1c203b;
+  --border: rgba(124,140,255,0.24);
+  --border-mid: rgba(124,140,255,0.45);
+  --border-hi: rgba(124,140,255,0.7);
+  --text: #eff0fb;
+  --text-mid: #bcc0dc;
+  --text-dim: #878cab;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #d5d8eb;
+  --text-dim-bright: #b3b7d0;
+  --silver: #d5d8eb;
+  --silver-hi: #eff0fb;
+
+  --accent: #7c8cff;
+  --accent-soft: rgba(124,140,255,0.14);
+  --electric: #7c8cff;
+  --electric-dim: #383f73;
+}
+
+body[data-theme="ice"] {
+  --bg: #0d1114;
+  --surface: #141a1f;
+  --surface-2: #1b242a;
+  --surface-3: #232d34;
+  --border: rgba(159,212,245,0.24);
+  --border-mid: rgba(159,212,245,0.45);
+  --border-hi: rgba(159,212,245,0.7);
+  --text: #eff6fb;
+  --text-mid: #bccfdc;
+  --text-dim: #879cab;
+  /* For pages that deliberately read brighter — see the note above. */
+  --text-mid-bright: #d5e2eb;
+  --text-dim-bright: #b3c4d0;
+  --silver: #d5e2eb;
+  --silver-hi: #eff6fb;
+
+  --accent: #9fd4f5;
+  --accent-soft: rgba(159,212,245,0.14);
+  --electric: #9fd4f5;
+  --electric-dim: #485f6e;
+}
