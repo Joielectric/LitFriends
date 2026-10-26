@@ -44,12 +44,11 @@ body { background: var(--bg); }
     radial-gradient(ellipse 40% 30% at 20% 80%, rgba(110,20,48,0.14) 0%, transparent 60%),
     radial-gradient(ellipse 40% 30% at 80% 70%, rgba(80,24,70,0.14) 0%, transparent 60%);
 }
-/* Words above the veil, so darkening the smoke never dims them */
+/* The hero is see-through now that the emblem has replaced the smoke picture:
+   only a faint halo behind the emblem, with the stars and waves showing round it. */
 .hero > * { position: relative; z-index: 1; }
 .hero::before {
-  background:
-    radial-gradient(ellipse 60% 55% at 50% 50%, rgba(8,4,10,0.72) 0%, rgba(8,4,10,0.45) 100%),
-    linear-gradient(180deg, rgba(40,6,24,0.25), rgba(8,4,10,0.55));
+  background: radial-gradient(circle at 50% 40%, rgba(140,30,50,0.16) 0%, rgba(140,30,50,0.05) 30%, transparent 55%);
 }
 body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 :focus-visible { outline: 2px solid var(--ca-a); outline-offset: 3px; border-radius: 6px; }
