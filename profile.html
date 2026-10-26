@@ -229,7 +229,14 @@
       // Everyone but the site's owner is a collaborator, whose page belongs to
       // The Velvet Key collective: its bars, and its home in the footer.
       var collective = p.slug !== CFG.identity.owner;
-      if (collective && window.SiteNav) SiteNav.collective(p.slug);
+      // SiteNav comes from js/electric.js at the foot of the page. A fetched
+      // profile renders after it has loaded, but a preview renders straight
+      // away, before the parser has reached it, so that waits for the page.
+      if (collective) {
+        var dress = function () { if (window.SiteNav) SiteNav.collective(p.slug); };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', dress);
+        else dress();
+      }
       // The site's own theme is the base look already, so only another one
       // goes on <body>.
       if (p.theme && p.theme !== 'electric') document.body.setAttribute('data-theme', p.theme);
