@@ -1,4 +1,4 @@
-import { siteStore } from "./_site.js";
+import { siteStore, readJsonWithLegacy } from "./_site.js";
 import { authorize, unauthorized } from "./_auth.js";
 import { readCreators, findCreator } from "./_creators.js";
 
@@ -216,6 +216,29 @@ function sanitize(input, base, allProfiles) {
 
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
+// A new profile also becomes a collaborator: the shared list the catalogue
+// links credited names through and the Content Manager offers in its credit
+// pickers. Someone already there under the same name (nameKey, above) is
+// left as they are, link and all. Their link is their profile on this site.
+//
+// It never stands in the way of the profile itself: if the catalogue cannot be
+// read or written, the profile is still created and this is simply skipped.
+async function addCollaborator(profile) {
+  try {
+    const { store, data } = await readJsonWithLegacy("content", "audio");
+    const current = (data && data.collaborators) || [];
+    const key = nameKey(profile.name);
+    if (!key || current.some((c) => c && nameKey(c.name) === key)) return;
+    const collaborators = current.concat({
+      name: profile.name, url: "/profile/" + encodeURIComponent(profile.slug),
+      banner: "", reddit: profile.reddit || "", profile: profile.slug,
+    });
+    await store.setJSON("audio", { ...(data || { entries: [] }), collaborators });
+  } catch {
+    /* the profile matters more; see above */
+  }
+}
+
 async function readAll() {
   const data = await siteStore("profiles").get(KEY, { type: "json" });
   return data && data.profiles && typeof data.profiles === "object" ? data.profiles : {};
@@ -282,6 +305,7 @@ export default async (req) => {
       profile = defaultProfile(slug, (rec && rec.name) || auth.name || slug);
       all[slug] = profile;
       await writeAll(all);
+      await addCollaborator(profile);
     }
     return json({ ok: true, profile, slug, isOwner: !!auth.isOwner });
   }
@@ -290,6 +314,7 @@ export default async (req) => {
     // Same naming as "mine": the invite is what the site calls them, so a
     // profile created by a save is not named after whatever Google returned.
     let base = all[slug];
+    const isNew = !base;
     if (!base) {
       const rec = findCreator(await readCreators(), auth.email);
       base = defaultProfile(slug, (rec && rec.name) || auth.name || slug);
@@ -300,6 +325,7 @@ export default async (req) => {
     delete profile.__refused;
     all[slug] = profile;
     await writeAll(all);
+    if (isNew) await addCollaborator(profile);
     return json({ ok: true, profile, refused: refused || [] });
   }
 

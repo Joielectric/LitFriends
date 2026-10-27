@@ -2357,6 +2357,7 @@
     let cmEntries = [];
     let cmWho = {};
     let cmCollaborators = [];
+    let cmCollabRemoved = [];   // profile slugs of collaborators deleted in this tab
     let cmNews = [];
     let cmProviders = [];
     let cmEditingId = null;
@@ -2912,6 +2913,9 @@
       if (!confirm('Delete collaborator "' + c.name + '"?')) return;
       const i = cmCollaborators.indexOf(c);
       if (i > -1) cmCollaborators.splice(i, 1);
+      // One a profile made is kept by the server unless it is told this was
+      // on purpose (see collaboratorsRemoved in netlify/functions/content.js).
+      if (c.profile) cmCollabRemoved.push(c.profile);
       cmEditingCollab = null;
       const box = document.getElementById('cm-collab-edit'); if (box) box.style.display = 'none';
       const sel = document.getElementById('cm-collab-edit-select'); if (sel) sel.value = '';
@@ -5175,7 +5179,7 @@
         headers: { 'Content-Type': 'application/json' },
         // `complete`: this list came from the full read, hidden work and all,
         // so anything missing from it really was deleted (netlify/functions/content.js).
-        body: JSON.stringify({ entries: cmEntries, collaborators: cmCollaborators, news: cmNews, providers: cmProviders, complete: true }),
+        body: JSON.stringify({ entries: cmEntries, collaborators: cmCollaborators, collaboratorsRemoved: cmCollabRemoved, news: cmNews, providers: cmProviders, complete: true }),
       })
         .then(r => r.json())
         .then(data => {
@@ -5188,6 +5192,8 @@
           // edits to other people's work — so take back what it actually
           // stored rather than trusting what we sent.
           if (Array.isArray(data.entries)) cmEntries = data.entries;
+          // Collaborators too: a new profile may have added one since this loaded.
+          if (Array.isArray(data.collaborators)) { cmCollaborators = data.collaborators; cmCollabRemoved = []; }
           onSuccess(data);
         })
         .catch(() => {

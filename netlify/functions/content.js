@@ -172,12 +172,22 @@ export default async (req) => {
     const keepOwn = (list, current) =>
       auth.isOwner && Array.isArray(list) ? list : current || [];
 
-    const collaborators = keepOwn(body.collaborators, existing && existing.collaborators);
+    // A collaborator made by a new profile (netlify/functions/profiles.js)
+    // may have arrived after the owner's tab loaded the list, so a save that
+    // leaves one out keeps it, unless the owner deleted it in that tab.
+    const storedCollabs = (existing && existing.collaborators) || [];
+    let collaborators = keepOwn(body.collaborators, storedCollabs);
+    if (collaborators !== storedCollabs) {
+      const removed = new Set(Array.isArray(body.collaboratorsRemoved) ? body.collaboratorsRemoved : []);
+      const sent = new Set(collaborators.map((c) => c && c.profile).filter(Boolean));
+      collaborators = collaborators.concat(storedCollabs.filter((c) =>
+        c && c.profile && !sent.has(c.profile) && !removed.has(c.profile)));
+    }
     const news = keepOwn(body.news, existing && existing.news);
     const providers = keepOwn(body.providers, existing && existing.providers);
 
     await store.setJSON("audio", { entries: merged, collaborators, news, providers });
-    return new Response(JSON.stringify({ ok: true, entries: merged, skipped }), { status: 200, headers: CORS });
+    return new Response(JSON.stringify({ ok: true, entries: merged, collaborators, skipped }), { status: 200, headers: CORS });
   }
 
   return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });
