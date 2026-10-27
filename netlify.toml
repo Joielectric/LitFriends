@@ -18,3 +18,106 @@
 # The route is declared by the function itself (netlify/functions/profile-page.js,
 # `export const config = { path: "/profile/*" }`), so there is no redirect rule
 # here to drift out of step with it.
+
+# Hand-built collaborator pages that have been taken down. The files stay in
+# /profiles so a page can come back by deleting its rules (and restoring its
+# `page` in js/site-config.js, its card in consenting-adults.html and its line
+# in js/nav.js); `force` is what stops Netlify serving the file that is still
+# there. Each page has two rules, with and without .html, since Netlify serves
+# both. Someone with a published profile goes to it, everyone else to the
+# collective's home. 302, since none of this need be for good.
+[[redirects]]
+  from = "/profiles/loona-licks.html"
+  to = "/profile/loona-licks"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/loona-licks"
+  to = "/profile/loona-licks"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/misskittenSK.html"
+  to = "/profile/misskittensk"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/misskittenSK"
+  to = "/profile/misskittensk"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/hisbadgirl77.html"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/hisbadgirl77"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/wellnobodysperfect.html"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/wellnobodysperfect"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/naughtiwolf.html"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/naughtiwolf"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/lotus-kitty.html"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/lotus-kitty"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/filthy-bunny.html"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/filthy-bunny"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/la-sphynxxx.html"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/la-sphynxxx"
+  to = "/consenting-adults.html"
+  status = 302
+  force = true

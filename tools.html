@@ -6924,7 +6924,8 @@
         (CFG.artists || []).forEach(a => {
           const p = live[a.slug];
           if (p) rows.push(plRow(p, a));
-          rows.push({
+          // Only while their hand-built page is still up.
+          if (a.page) rows.push({
             name: a.name, slug: a.slug, tagline: a.tagline || '',
             href: '/' + a.page, kind: 'static',
           });

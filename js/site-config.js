@@ -96,18 +96,21 @@
     ],
 
     // ── Artists with a page on this site ──────────────────────────────────
-    // A credited name matching one of these links to the local page in
-    // preference to the collaborator's external link.
+    // A credited name matching one with a `page` links to that hand-built page
+    // in preference to the collaborator's external link. The ones without a
+    // page had theirs taken down (netlify.toml redirects the old URLs); they
+    // stay for the names they are credited under, and js/artists.js lists
+    // them by their published profile if they have one.
     artists: [
       { slug: 'joi-electric',       name: 'JOI Electric',           icon: '/images/JOI_Icon.png',                        page: 'profiles/joi-electric.html',       tagline: 'Producer · Editor · Musician · Sound Designer' },
-      { slug: 'loona-licks',        name: 'Loona Licks',            icon: '/images/LL_Icon.png',                         page: 'profiles/loona-licks.html',        tagline: 'Voice Artist · Collaborator · Currently on Hiatus' },
-      { slug: 'misskittensk',       name: 'MissKittenSK',           icon: '/images/MissKittenSKClub.png',                page: 'profiles/misskittenSK.html',       tagline: 'A decade of debauched erotic audio · Retired', aliases: ['miss kitten sk'] },
-      { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       page: 'profiles/hisbadgirl77.html',       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77', 'Hisbadgirl24'] },
-      { slug: 'wellnobodysperfect', name: "Well Nobody's Perfect",  icon: '/images/WNP_Icon.png',                        page: 'profiles/wellnobodysperfect.html', tagline: 'Voice Artist · Funny · Delightfully Unpredictable', aliases: ['wellnobodysperfect'] },
-      { slug: 'naughtiwolf',        name: 'NaughtiWolf',            icon: '/images/NW_Icon.png',                         page: 'profiles/naughtiwolf.html',        tagline: 'Voice Artist · BFE · Narrative Collaborator' },
-      { slug: 'lotus-kitty',        name: 'Lotus Kitty',            icon: '/images/LK_Icon.png',                         page: 'profiles/lotus-kitty.html',        tagline: 'Voice Artist · Demisexual · Storyteller' },
-      { slug: 'filthy-bunny',       name: 'Filthy Bunny',           icon: '/images/Filthy_Bunny_Avatar_GreenEyes.png',   page: 'profiles/filthy-bunny.html',       tagline: 'Voice Artist · Writer · Switchy Sub' },
-      { slug: 'la-sphynxxx',        name: 'LaSphynxxx',             icon: '/images/LS_ICON.png',                         page: 'profiles/la-sphynxxx.html',        tagline: 'Voice Artist · Singer · Free Content · Open Requests', aliases: ['la sphynxxx', 'sphynxxx'] },
+      { slug: 'loona-licks',        name: 'Loona Licks',            icon: '/images/LL_Icon.png',                         tagline: 'Voice Artist · Collaborator · Currently on Hiatus' },
+      { slug: 'misskittensk',       name: 'MissKittenSK',           icon: '/images/MissKittenSKClub.png',                tagline: 'A decade of debauched erotic audio · Retired', aliases: ['miss kitten sk'] },
+      { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77', 'Hisbadgirl24'] },
+      { slug: 'wellnobodysperfect', name: "Well Nobody's Perfect",  icon: '/images/WNP_Icon.png',                        tagline: 'Voice Artist · Funny · Delightfully Unpredictable', aliases: ['wellnobodysperfect'] },
+      { slug: 'naughtiwolf',        name: 'NaughtiWolf',            icon: '/images/NW_Icon.png',                         tagline: 'Voice Artist · BFE · Narrative Collaborator' },
+      { slug: 'lotus-kitty',        name: 'Lotus Kitty',            icon: '/images/LK_Icon.png',                         tagline: 'Voice Artist · Demisexual · Storyteller' },
+      { slug: 'filthy-bunny',       name: 'Filthy Bunny',           icon: '/images/Filthy_Bunny_Avatar_GreenEyes.png',   tagline: 'Voice Artist · Writer · Switchy Sub' },
+      { slug: 'la-sphynxxx',        name: 'LaSphynxxx',             icon: '/images/LS_ICON.png',                         tagline: 'Voice Artist · Singer · Free Content · Open Requests', aliases: ['la sphynxxx', 'sphynxxx'] },
     ],
   };
 

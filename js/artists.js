@@ -1,8 +1,9 @@
 /* Every artist in the collective, not just the ones with a hand-built page.
  *
- * js/site-config.js lists the artists whose pages live in /profiles. Anyone
- * who joins later gets a profile in the Content Manager instead, served at
- * /profile/<slug>. This puts the two together:
+ * js/site-config.js lists the artists whose pages live in /profiles (those
+ * with a `page`; the rest are there only for their credits). Anyone else gets
+ * a profile in the Content Manager instead, served at /profile/<slug>. This
+ * puts the two together:
  *
  *   Artists.load()  -> Promise of [{ slug, name, icon, tagline, bio, href, isNew }]
  *                      hand-built artists first, in their usual order, then
@@ -24,8 +25,13 @@
   var norm = CFG.nameKey;
   function root() { return /\/profiles\//.test(location.pathname) ? '../' : '/'; }
 
+  // Only artists whose hand-built page is still up. One whose page has been
+  // taken down stays in site-config for their credits, and is listed by their
+  // published profile instead, if they have one.
+  function withPage() { return CFG.artists.filter(function (a) { return a.page; }); }
+
   function fixed() {
-    return CFG.artists.map(function (a) {
+    return withPage().map(function (a) {
       return {
         slug: a.slug, name: a.name, icon: a.icon, tagline: a.tagline || '', bio: '',
         href: a.page ? root() + a.page.replace(/^\//, '') : '/profile/' + encodeURIComponent(a.slug),
@@ -44,7 +50,7 @@
         var list = fixed();
         // Anyone already listed, by slug or by any name they are credited under.
         var known = {};
-        CFG.artists.forEach(function (a) {
+        withPage().forEach(function (a) {
           (CFG.artistNames[a.slug] || [norm(a.slug), norm(a.name)]).forEach(function (n) { known[n] = 1; });
         });
         var extra = (d && d.profiles || []).filter(function (p) {
@@ -53,8 +59,9 @@
 
         extra.forEach(function (p) {
           var href = '/profile/' + encodeURIComponent(p.slug);
-          // Credits under their name, slug or aliases now lead to their profile.
-          [p.name, p.slug].concat(p.aliases || []).forEach(function (n) {
+          // Credits under their name, slug or aliases (site-config's too, for
+          // someone whose hand-built page is gone) now lead to their profile.
+          [p.name, p.slug].concat(p.aliases || [], CFG.artistNames[p.slug] || []).forEach(function (n) {
             if (!norm(n)) return;
             CFG.profilePages[norm(n)] = href;
             CFG.registerArtistName(p.slug, n);
