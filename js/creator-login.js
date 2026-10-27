@@ -48,6 +48,8 @@
     '#cl-box .cl-google:hover{box-shadow:0 0 0 3px rgba(255,255,255,0.18)}' +
     '#cl-box .cl-google svg{width:18px;height:18px}' +
     '#cl-box a.cl-mail{color:#39d5ff;font-weight:600;white-space:nowrap}' +
+    '#cl-box p.cl-fine{margin:1rem 0 0;font-size:0.78rem;color:#8e97b8}' +
+    '#cl-box p.cl-fine a{color:#c8cee6}' +
     '#cl-close{position:absolute;top:10px;right:12px;width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;' +
     'background:transparent;color:#8e97b8;font-size:1.4rem;line-height:1}' +
     '#cl-close:hover{color:#fff;background:rgba(255,255,255,0.08)}';
@@ -87,6 +89,7 @@
           '<p style="margin:0"><strong>Interested in an invitation?</strong> Email ' +
           '<a class="cl-mail" href="mailto:' + EMAIL + '?subject=Creator%20invitation">' + EMAIL + '</a>.</p>' +
         '</div>' +
+        '<p class="cl-fine">How we handle your details: <a href="/privacy.html">Privacy Policy</a></p>' +
       '</div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
