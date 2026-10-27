@@ -1376,7 +1376,7 @@ body {
       });
     },
 
-    init({ container, artist, showFilters, limit, perPage }) {
+    init({ container, artist, ownOnly, showFilters, limit, perPage }) {
       injectStyles();
       const el = typeof container === 'string' ? document.querySelector(container) : container;
       if (!el) return;
@@ -1392,6 +1392,10 @@ body {
           COLLAB = {};
           (data.collaborators || []).forEach(c => { if (c && c.name) COLLAB[normName(c.name)] = c; });
           if (artist) entries = entries.filter(e => artistInEntry(e, artist));
+          // Only what this artist added themselves, not work someone else
+          // added and credited them on. Work with no owner is the site
+          // owner's, from before creators kept their own.
+          if (artist && ownOnly) entries = entries.filter(e => (e.owner || CFG.identity.owner) === artist);
           if (limit) entries = entries.slice(0, limit);
           el.innerHTML = '';
           if (showFilters) {

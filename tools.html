@@ -1646,6 +1646,11 @@
                         <div id="pf-alias-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
                         <div id="pf-alias-hint" style="font-size:0.72rem;color:var(--text-dim);margin:6px 0 10px;"></div>
 
+                        <label class="pf-switch" style="margin:4px 0;">
+                          <input type="checkbox" id="pf-others-credits" onchange="pfOthersCreditsNote()"> Include work others added that credits me
+                        </label>
+                        <div id="pf-others-note" style="font-size:0.72rem;color:var(--text-dim);margin:0 0 10px;"></div>
+
                         <div class="im-hint" style="margin:0;">
                           Work missing from the catalogue altogether? Bring in your scripts from ScriptBin or your audios from Reddit on the
                           <a href="#" onclick="cmTab('import'); return false;">Import</a> tab.
@@ -6809,6 +6814,8 @@
       document.getElementById('pf-banner').value = p.banner || '';
       document.getElementById('pf-share-image').value = p.shareImage || '';
       pfCardAuto = p.shareCardAuto !== false;
+      document.getElementById('pf-others-credits').checked = p.othersCredits !== false;
+      pfOthersCreditsNote();
       document.getElementById('pf-accent').value = p.accent || '';
       pfPublished = !!p.published;
       pfRenderPublished();
@@ -6933,6 +6940,14 @@
       pfSaveNow(after);
     }
 
+    // Says what the "work others added" switch does in its current position.
+    function pfOthersCreditsNote() {
+      const on = document.getElementById('pf-others-credits').checked;
+      document.getElementById('pf-others-note').textContent = on
+        ? 'Your page lists every release that credits you, including ones another creator added.'
+        : 'Your page lists only releases you added yourself. Others that credit you still appear in the catalogue.';
+    }
+
     // The profile as it stands on screen: what Save sends, and what Preview shows.
     function pfDraft() {
       pfCollectLinks();
@@ -6946,6 +6961,7 @@
         banner: document.getElementById('pf-banner').value,
         shareImage: document.getElementById('pf-share-image').value,
         shareCardAuto: pfCardAuto,
+        othersCredits: document.getElementById('pf-others-credits').checked,
         accent: document.getElementById('pf-accent').value,
         theme: pfProfile.theme,
         background: pfProfile.background || 'glow',
