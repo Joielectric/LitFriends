@@ -4,7 +4,7 @@
   "icons": [
     { "src": "/images/velvet-key-icon-128.png", "sizes": "512x512", "type": "image/png" }
   ],
-  "start_url": "/",
+  "start_url": "/the-velvet-key.html",
   "display": "standalone",
   "background_color": "#060306",
   "theme_color": "#060306"

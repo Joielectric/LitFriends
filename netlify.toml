@@ -19,105 +19,119 @@
 # `export const config = { path: "/profile/*" }`), so there is no redirect rule
 # here to drift out of step with it.
 
+# The Velvet Key's home was consenting-adults.html, the collective's old name.
+# Links to it are out there, so both spellings land on the page it became.
+[[redirects]]
+  from = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/consenting-adults"
+  to = "/the-velvet-key.html"
+  status = 301
+  force = true
+
 # Hand-built collaborator pages that have been taken down. The files stay in
 # /profiles so a page can come back by deleting its rules (and restoring its
-# `page` in js/site-config.js, its card in consenting-adults.html and its line
+# `page` in js/site-config.js, its card in the-velvet-key.html and its line
 # in js/nav.js); `force` is what stops Netlify serving the file that is still
 # there. Each page has two rules, with and without .html, since Netlify serves
 # both. They go to the collective's home: a creator's /profile/<slug> only
 # works while that profile is published. 302, since none of this need be for good.
 [[redirects]]
   from = "/profiles/loona-licks.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/loona-licks"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/misskittenSK.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/misskittenSK"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/hisbadgirl77.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/hisbadgirl77"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/wellnobodysperfect.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/wellnobodysperfect"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/naughtiwolf.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/naughtiwolf"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/lotus-kitty.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/lotus-kitty"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/filthy-bunny.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/filthy-bunny"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/la-sphynxxx.html"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/la-sphynxxx"
-  to = "/consenting-adults.html"
+  to = "/the-velvet-key.html"
   status = 302
   force = true
