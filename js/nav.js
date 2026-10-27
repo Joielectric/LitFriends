@@ -10,7 +10,7 @@
     { label: 'Artists', href: null, children: [
       { label: 'JOI Electric',        href: root + 'profiles/joi-electric.html' },
     ]},
-    { label: 'Tools',   href: root + 'tools.html', admin: true },
+    { label: 'Log in',  href: root + 'tools.html', admin: true },
   ];
 
   const CSS = `
@@ -117,43 +117,6 @@
     color: #8a6058; padding: 0.8rem 1.8rem 0.3rem;
   }
   .ca-mobile-sub { padding-left: 2.6rem; }
-
-  /* Admin modal */
-  #ca-admin-modal {
-    display: none; position: fixed; inset: 0; z-index: 10000;
-    background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
-    align-items: center; justify-content: center;
-  }
-  #ca-admin-modal.open { display: flex; }
-  #ca-admin-box {
-    background: #0c090c; border: 1px solid rgba(200,120,110,0.3);
-    border-top: 2px solid #d0607a;
-    padding: 2rem 2.4rem; width: 100%; max-width: 380px; border-radius: 2px;
-    font-family: "Cinzel", serif;
-  }
-  #ca-admin-box h3 {
-    font-size: 0.78rem; letter-spacing: .32em; text-transform: uppercase;
-    color: #d8c8c0; margin-bottom: 1.4rem;
-  }
-  #ca-admin-pw {
-    width: 100%; padding: 10px 12px;
-    background: #120f12; border: 1px solid rgba(200,120,110,0.2);
-    border-radius: 2px; color: #f0e4d8;
-    font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.05rem;
-    margin-bottom: 0.8rem;
-  }
-  #ca-admin-pw:focus { outline: none; border-color: #d0607a; }
-  #ca-admin-msg { font-size: 0.68rem; color: #d0607a; letter-spacing: .08em; min-height: 1.2em; margin-bottom: 0.8rem; }
-  #ca-admin-btns { display: flex; gap: 0.6rem; }
-  .ca-admin-submit, .ca-admin-cancel {
-    flex: 1; padding: 9px; background: transparent;
-    border: 1px solid rgba(200,120,110,0.3); color: #d8c8c0;
-    font-family: "Cinzel", serif; font-size: 0.65rem; letter-spacing: .14em; text-transform: uppercase;
-    cursor: pointer; border-radius: 2px; transition: border-color .2s, color .2s;
-  }
-  .ca-admin-submit { border-color: #d0607a; color: #d0607a; }
-  .ca-admin-submit:hover { background: #d0607a; color: #fff; }
-  .ca-admin-cancel:hover { border-color: #d8c8c0; color: #f5ece8; }
 
   /* Push page content below nav */
   body { padding-top: 72px !important; overflow-x: hidden !important; }
@@ -305,61 +268,12 @@
     });
   }
 
-  // Admin modal
-  const modal = document.createElement('div');
-  modal.id = 'ca-admin-modal';
-  modal.innerHTML = `
-    <div id="ca-admin-box">
-      <h3>Admin Access</h3>
-      <input id="ca-admin-pw" type="password" placeholder="Password" autocomplete="current-password">
-      <div id="ca-admin-msg"></div>
-      <div id="ca-admin-btns">
-        <button class="ca-admin-submit" id="ca-admin-go">Enter</button>
-        <button class="ca-admin-cancel" id="ca-admin-cancel">Cancel</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  let pendingHref = '';
-
+  // Creators sign in with Google on the Content Manager. The door to it is
+  // js/creator-login.js, which first says the space is invite only.
   function openAdminModal(href) {
-    // If already on tools page, no gate needed
-    if (isTools) { location.href = href; return; }
-    pendingHref = href;
-    document.getElementById('ca-admin-msg').textContent = '';
-    document.getElementById('ca-admin-pw').value = '';
-    modal.classList.add('open');
-    setTimeout(() => document.getElementById('ca-admin-pw').focus(), 80);
+    if (isTools || !window.CreatorLogin) { location.href = href; return; }
+    CreatorLogin.open();
   }
-
-  function closeAdminModal() { modal.classList.remove('open'); }
-
-  async function submitAdmin() {
-    const pw = document.getElementById('ca-admin-pw').value;
-    const msg = document.getElementById('ca-admin-msg');
-    if (!pw) { msg.textContent = 'Enter the password.'; return; }
-    msg.textContent = 'Checking…';
-    try {
-      const res = await fetch('/api/content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', password: pw }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        sessionStorage.setItem('ca_admin_pw', pw);
-        closeAdminModal();
-        location.href = pendingHref;
-      } else {
-        msg.textContent = data.env_set === false ? 'Server not configured.' : 'Incorrect password.';
-      }
-    } catch {
-      msg.textContent = 'Could not reach server.';
-    }
-  }
-
-  modal.addEventListener('click', e => { if (e.target === modal) closeAdminModal(); });
 
   // Insert nav before everything else in body
   document.body.insertBefore(nav, document.body.firstChild);
@@ -371,15 +285,4 @@
     ham.classList.toggle('open', open);
   });
 
-  // Wire modal buttons (after body insert so elements exist)
-  document.getElementById('ca-admin-go').addEventListener('click', submitAdmin);
-  document.getElementById('ca-admin-cancel').addEventListener('click', closeAdminModal);
-  document.getElementById('ca-admin-pw').addEventListener('keydown', e => { if (e.key === 'Enter') submitAdmin(); });
-
-  // If already has a cached password (same session), skip gate
-  const cached = sessionStorage.getItem('ca_admin_pw');
-  if (cached) {
-    // Silently stash it; the modal won't show since we check isTools inline
-    // Tools page itself still requires its own password input
-  }
 })();

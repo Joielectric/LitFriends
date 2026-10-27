@@ -59,6 +59,8 @@
         '<div class="topnav">' + links(slug).slice(1).map(function (l) {
           return '<a href="' + l.href + '"' + (l.key === current ? ' aria-current="page"' : '') + '>' + l.label + '</a>';
         }).join('') + '</div>';
+      // Redrawing the bar took its Log in button with it.
+      if (window.CreatorLogin) CreatorLogin.attach();
     }
     var bottom = document.querySelector('.bottombar');
     if (bottom) {
