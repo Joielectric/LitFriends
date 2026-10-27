@@ -790,14 +790,13 @@
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                           <input id="cm-bulk-search" class="cm-input cm-btn-sm" style="flex:1 1 160px" placeholder="Title, tag or creator…" oninput="cmRenderBulk()">
                           <select id="cm-bulk-type" class="cm-input cm-btn-sm" style="flex:0 1 130px" onchange="cmRenderBulk()"></select>
-                          <select id="cm-bulk-source" class="cm-input cm-btn-sm" style="flex:0 1 150px" onchange="cmRenderBulk()">
-                            <option value="">Any source</option>
-                            <option value="scriptbin">Imported from ScriptBin</option>
-                            <option value="manual">Added by hand</option>
-                            <option value="uncredited">Nobody credited</option>
-                            <option value="nodate">No date</option>
-                          </select>
+                          <!-- Filled from the sources in the catalogue when the panel opens (cmBulkFillFilters) -->
+                          <select id="cm-bulk-source" class="cm-input cm-btn-sm" style="flex:0 1 150px" onchange="cmRenderBulk()"></select>
+                          <select id="cm-bulk-ownerf" class="cm-input cm-btn-sm owner-only" style="display:none;flex:0 1 200px" onchange="cmRenderBulk()" title="Whose entries: who imported or posted them"></select>
                         </div>
+                        <p id="cm-bulk-hidden-note" style="display:none;color:var(--text-mid);font-size:0.8rem;margin:-2px 0 8px;">
+                          <strong style="color:#e8a34f;">Hidden</strong> entries belong to a creator whose profile is unpublished or gone, so the public catalogue leaves them out. Move them to another creator, or publish the profile, and they show again.
+                        </p>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
                           <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkPick(true)">Select all shown</button>
                           <button type="button" class="cm-btn cm-btn-sm" onclick="cmBulkPick(false)">None</button>
@@ -5282,8 +5281,58 @@
             CFG.entryTypes.map(x => `<option value="${x.key}">${cmEsc(x.plural)}</option>`).join('');
         }
         if (cmWho.isOwner) cmBulkFillOwners();
+        cmBulkFillFilters();
         cmRenderBulk();
+        // Which profiles are published decides what the public catalogue
+        // hides, so ask once and mark the hidden ones when the answer comes.
+        if (cmWho.isOwner) cmBulkLoadPublished();
       }
+    }
+
+    // Slugs with a published profile, from the same public list the site
+    // reads. null until known (or if it cannot be had): then nothing is marked.
+    let cmBulkPublished = null;
+    function cmBulkLoadPublished() {
+      fetch('/api/profiles').then(r => r.json()).then(d => {
+        cmBulkPublished = new Set((d.profiles || []).map(p => p && p.slug).filter(Boolean));
+        cmBulkFillFilters();
+        cmRenderBulk();
+      }).catch(() => {});
+    }
+    // The same rule netlify/functions/content.js applies to the public read.
+    function cmBulkIsHidden(e) {
+      if (!cmBulkPublished || !e.owner || e.owner === CFG.identity.owner) return false;
+      return !cmBulkPublished.has(e.owner);
+    }
+    function cmOwnerName(slug) {
+      const c = cmOwnerChoices().find(x => x.slug === slug);
+      return (c && c.name) || slug;
+    }
+
+    // The source and owner filters list what is actually in the catalogue,
+    // with counts, so a pile of one creator's imports is easy to find.
+    function cmBulkFillFilters() {
+      const mine = cmEntries.filter(cmCanEdit);
+      const count = key => mine.reduce((m, e) => { const k = key(e); m[k] = (m[k] || 0) + 1; return m; }, {});
+      const keep = (id, html) => { const s = document.getElementById(id); const was = s.value; s.innerHTML = html; s.value = was; if (s.value !== was) s.value = ''; };
+
+      const sources = count(e => e.source || '');
+      keep('cm-bulk-source', '<option value="">Any source</option>' +
+        Object.keys(sources).filter(Boolean).sort().map(s =>
+          `<option value="src:${cmEsc(s)}">Imported from ${cmEsc(s)} (${sources[s]})</option>`).join('') +
+        `<option value="manual">Added by hand (${sources[''] || 0})</option>` +
+        '<option value="uncredited">Nobody credited</option>' +
+        '<option value="nodate">No date</option>');
+
+      if (!cmWho.isOwner) return;
+      const owners = count(e => e.owner || '');
+      const hiddenOwner = slug => !!cmBulkPublished && !!slug && slug !== CFG.identity.owner && !cmBulkPublished.has(slug);
+      keep('cm-bulk-ownerf', '<option value="">Anyone’s</option>' +
+        (Object.values(owners).length && cmBulkPublished ? '<option value=":hidden">Hidden from the catalogue</option>' : '') +
+        Object.keys(owners).filter(Boolean)
+          .sort((a, b) => cmOwnerName(a).toLowerCase().localeCompare(cmOwnerName(b).toLowerCase()))
+          .map(s => `<option value="${cmEsc(s)}">${cmEsc(cmOwnerName(s))} (${owners[s]})${hiddenOwner(s) ? ' · hidden' : ''}</option>`).join('') +
+        (owners[''] ? `<option value=":none">No owner, the original catalogue (${owners['']})</option>` : ''));
     }
 
     // Only ever offers what this person may actually change.
@@ -5291,18 +5340,22 @@
       const q = (document.getElementById('cm-bulk-search').value || '').toLowerCase().trim();
       const type = document.getElementById('cm-bulk-type').value;
       const source = document.getElementById('cm-bulk-source').value;
+      const owner = cmWho.isOwner ? document.getElementById('cm-bulk-ownerf').value : '';
 
       return cmEntries.filter(e => {
         if (!cmCanEdit(e)) return false;
         if (q && !cmEntryHaystack(e).includes(q)) return false;
         if (type && cmTypeOf(e) !== type) return false;
-        if (source === 'scriptbin' && e.source !== 'scriptbin') return false;
+        if (source.startsWith('src:') && e.source !== source.slice(4)) return false;
         if (source === 'manual' && e.source) return false;
         if (source === 'nodate' && e.date) return false;
         if (source === 'uncredited') {
           const c = e.credits || {};
           if (CFG.creditKeys.some(r => (c[r] || []).some(n => String(n || '').trim()))) return false;
         }
+        if (owner === ':hidden' && !cmBulkIsHidden(e)) return false;
+        if (owner === ':none' && e.owner) return false;
+        if (owner && owner[0] !== ':' && e.owner !== owner) return false;
         return true;
       });
     }
@@ -5310,17 +5363,44 @@
     function cmRenderBulk() {
       const list = cmBulkMatching();
       const chosen = new Set(cmBulkChosen());
+      const anyHidden = list.some(cmBulkIsHidden);
+      document.getElementById('cm-bulk-hidden-note').style.display = anyHidden ? '' : 'none';
       document.getElementById('cm-bulk-list').innerHTML = list.length
-        ? list.map(e => `
-          <label style="display:flex;gap:8px;align-items:center;padding:4px 0;cursor:pointer;">
-            <input type="checkbox" class="cm-bulk-pick" data-id="${cmEsc(e.id)}" ${chosen.has(e.id) ? 'checked' : ''} onchange="cmBulkCount()" style="cursor:pointer">
-            <span style="min-width:0;color:var(--text);font-size:0.88rem;">
-              ${cmTypeOf(e) === 'audio' ? '' : '[' + cmEsc(cmTypeLabel(e)) + '] '}${cmEsc(e.title || 'Untitled')}
-              <span style="color:var(--text-dim);">${e.date ? ' &middot; ' + cmEsc(e.date) : ' &middot; no date'}${e.source ? ' &middot; ' + cmEsc(e.source) : ''}</span>
-            </span>
-          </label>`).join('')
+        ? list.map(e => {
+          const names = [...new Set(Object.values(e.credits || {}).flat().filter(Boolean))];
+          const facts = [
+            e.date || 'no date',
+            e.source || 'by hand',
+            cmWho.isOwner ? 'owner: ' + (e.owner ? cmOwnerName(e.owner) : 'none') : '',
+            names.length ? 'credited: ' + names.join(', ') : 'nobody credited',
+          ].filter(Boolean);
+          return `
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);">
+            <label style="display:flex;gap:8px;align-items:flex-start;flex:1;min-width:0;cursor:pointer;">
+              <input type="checkbox" class="cm-bulk-pick" data-id="${cmEsc(e.id)}" ${chosen.has(e.id) ? 'checked' : ''} onchange="cmBulkCount()" style="cursor:pointer;margin-top:3px">
+              <span style="min-width:0;color:var(--text);font-size:0.88rem;">
+                ${cmTypeOf(e) === 'audio' ? '' : '[' + cmEsc(cmTypeLabel(e)) + '] '}${cmEsc(e.title || 'Untitled')}
+                ${cmBulkIsHidden(e) ? '<span style="color:#e8a34f;font-size:0.75rem;border:1px solid rgba(232,163,79,0.5);border-radius:999px;padding:0 6px;margin-left:4px;">hidden</span>' : ''}
+                <span style="display:block;color:var(--text-dim);font-size:0.78rem;">${facts.map(cmEsc).join(' &middot; ')}</span>
+              </span>
+            </label>
+            <button type="button" class="cm-btn cm-btn-sm" style="padding:3px 10px" data-id="${cmEsc(e.id)}" onclick="cmBulkOpen(this.dataset.id)">Edit</button>
+          </div>`;
+        }).join('')
         : '<div class="cm-collab-empty">Nothing matches.</div>';
       cmBulkCount();
+    }
+
+    // One entry in the full form, for a change the bulk tools cannot make.
+    function cmBulkOpen(id) {
+      const all = document.getElementById('cm-all-creators');
+      if (cmWho.isOwner && all && !all.checked && !cmPickable().some(x => x.id === id)) {
+        all.checked = true;
+        cmRenderEntries();
+      }
+      const sel = document.getElementById('cm-entry-select');
+      if (sel) { sel.value = id; cmEntrySelected(); }
+      cmEditEntry(id);
     }
 
     function cmBulkChosen() {
@@ -5347,6 +5427,7 @@
         change(e); n++;
       });
       cmPersist(function () {
+        cmBulkFillFilters();
         cmRenderBulk();
         cmRenderEntries();
         cmShowMsg(`${what} ${n} entr${n === 1 ? 'y' : 'ies'}.`, true);
@@ -5402,10 +5483,12 @@
       cmBulkApply('Moved to ' + name + ':', e => {
         const from = e.owner || CFG.identity.owner;
         if (swap && from !== slug) {
-          const old = CFG.artistNames[from] || [cmNorm(from)];
+          // artistNames holds site-config's name keys (no spaces), so compare
+          // with that same rule; cmNorm keeps spaces and never matched.
+          const old = CFG.artistNames[from] || [CFG.nameKey(from)];
           const credits = e.credits || {};
           Object.keys(credits).forEach(role => {
-            const swapped = (credits[role] || []).map(n => old.includes(cmNorm(n)) ? name : n);
+            const swapped = (credits[role] || []).map(n => old.includes(CFG.nameKey(n)) ? name : n);
             credits[role] = swapped.filter((n, i) => swapped.findIndex(m => cmNorm(m) === cmNorm(n)) === i);
           });
           e.credits = credits;
@@ -5429,6 +5512,7 @@
       const before = cmEntries.length;
       cmEntries = cmEntries.filter(e => !(gone.has(e.id) && cmCanEdit(e)));
       cmPersist(function () {
+        cmBulkFillFilters();
         cmRenderBulk();
         cmRenderEntries();
         cmShowMsg(`Deleted ${before - cmEntries.length} entries.`, true);
