@@ -5,7 +5,7 @@
   const isTools = /\/tools\.html/.test(location.pathname);
 
   const LINKS = [
-    { label: 'Home',    href: root + 'consenting-adults.html' },
+    { label: 'Home',    href: root + 'the-velvet-key.html' },
     { label: 'Listen',  href: root + 'velvet-key-catalog.html' },
     { label: 'Artists', href: null, children: [
       { label: 'JOI Electric',        href: root + 'profiles/joi-electric.html' },
@@ -182,7 +182,7 @@
   // Logo
   const logo = document.createElement('a');
   logo.id = 'ca-nav-logo';
-  logo.href = root + 'consenting-adults.html';
+  logo.href = root + 'the-velvet-key.html';
   logo.setAttribute('aria-label', 'The Velvet Key home');
   logo.innerHTML = '<img src="' + root + 'images/velvet-key-mark.png" alt=""><span>The Velvet Key</span>';
   inner.appendChild(logo);

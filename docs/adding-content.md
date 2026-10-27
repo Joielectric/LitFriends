@@ -8,7 +8,7 @@ All audio content is managed through the **Content Manager** — a password-prot
 
 ## Step 1 — Access the Content Manager
 
-1. Go to [consentingadults.netlify.app](https://consentingadults.netlify.app)
+1. Go to [joielectric.com](https://joielectric.com)
 2. Click **Tools** in the top navigation bar
 3. Sign in with Google when prompted
 4. You're now in the Content Manager

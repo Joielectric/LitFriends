@@ -8,7 +8,7 @@
  *     <script src="/js/age-gate.js"></script>
  *
  * It answers to the same sessionStorage flags as the gates on index.html
- * (joi_verified) and consenting-adults.html (ca_verified): a visitor who has
+ * (joi_verified) and the-velvet-key.html (ca_verified): a visitor who has
  * already said yes on either is not asked again, and saying yes here counts
  * for both. Colours come from the page's own custom properties, so the box
  * takes on each page's theme. A page without them falls back to the site's
