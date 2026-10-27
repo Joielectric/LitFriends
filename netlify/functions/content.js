@@ -73,6 +73,32 @@ function mergeEntries(incoming, stored, auth) {
   return { entries: [...accepted, ...preserved.filter((e) => !keptIds.has(e.id))], skipped };
 }
 
+// Work a creator imported or posted is public only while their profile is:
+// once it is unpublished, or gone, so is their work, from every catalogue and
+// list that reads /api/content. Nothing is deleted. The Content Manager still
+// loads all of it (the "verify" read), and it all comes back if the profile is
+// published again. Work with no owner is the original catalogue, and the site
+// owner's is the site's own, so both always show.
+//
+// If the profiles cannot be read, everything shows: a storage hiccup should not
+// empty half the catalogue.
+async function shownTest() {
+  let profiles;
+  try {
+    const data = await siteStore("profiles").get("profiles", { type: "json" });
+    profiles = data && data.profiles && typeof data.profiles === "object" ? data.profiles : null;
+  } catch {
+    profiles = null;
+  }
+  if (!profiles) return () => true;
+  return (entry) => {
+    const owner = entry && entry.owner;
+    if (!owner || owner === OWNER_SLUG) return true;
+    const p = profiles[owner];
+    return !!(p && p.published);
+  };
+}
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Content-Type": "application/json",
@@ -85,10 +111,12 @@ export default async (req) => {
 
   const store = siteStore("content");
 
-  // Public read
+  // Public read: everything but the work of a creator whose profile is gone.
   if (req.method === "GET") {
     const { data } = await readJsonWithLegacy("content", "audio");
-    return new Response(JSON.stringify(data || { entries: [] }), { status: 200, headers: CORS });
+    const isShown = await shownTest();
+    const out = data ? { ...data, entries: (data.entries || []).filter(isShown) } : { entries: [] };
+    return new Response(JSON.stringify(out), { status: 200, headers: CORS });
   }
 
   // Password-protected actions
@@ -127,7 +155,16 @@ export default async (req) => {
     const { data: existing } = await readJsonWithLegacy("content", "audio");
     const stored = (existing && existing.entries) || [];
 
-    const { entries: merged, skipped } = mergeEntries(entries, stored, auth);
+    let { entries: merged, skipped } = mergeEntries(entries, stored, auth);
+
+    // A save built from the public read never saw the hidden work, so its
+    // leaving it out is not a deletion. Only the Content Manager, which loads
+    // everything, says its list is complete.
+    if (!body.complete) {
+      const isShown = await shownTest();
+      const kept = new Set(merged.map((e) => e.id));
+      merged = merged.concat(stored.filter((e) => !isShown(e) && !kept.has(e.id)));
+    }
 
     // The shared lists — collaborators, news, platforms — belong to the site,
     // not to any one creator, so only the owner may change them. Everyone
