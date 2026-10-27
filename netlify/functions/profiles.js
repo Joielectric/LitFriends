@@ -84,6 +84,9 @@ export function defaultProfile(slug, name) {
     // free text and drift — a Reddit handle here, a display name there — so a
     // creator's work is found by any name they answer to, not just this one.
     aliases: [],
+    // Whether their Works also lists work someone else added to the catalogue
+    // and credited them on. Off, it lists only what they added themselves.
+    othersCredits: true,
     // Their username on ScriptBin, so their scripts can be pulled in.
     scriptbin: "",
     // Their Reddit username, so their audio posts can be pulled in.
@@ -131,6 +134,7 @@ function sanitize(input, base, allProfiles) {
   if (input.banner !== undefined) out.banner = safeUrl(input.banner);
   if (input.shareImage !== undefined) out.shareImage = safeUrl(input.shareImage);
   if (input.shareCardAuto !== undefined) out.shareCardAuto = !!input.shareCardAuto;
+  if (input.othersCredits !== undefined) out.othersCredits = !!input.othersCredits;
   if (input.theme !== undefined) {
     out.theme = THEMES.includes(input.theme) ? input.theme : base.theme;
   }
