@@ -19,6 +19,22 @@
 # `export const config = { path: "/profile/*" }`), so there is no redirect rule
 # here to drift out of step with it.
 
+# thevelvetkeysociety.com is The Velvet Key's own address, on this same site
+# beside joielectric.com. Its front door is the collective's home rather than
+# JOI Electric's index.html; the address stays the bare domain (200, a
+# rewrite). These come first because Netlify uses the first rule that matches.
+[[redirects]]
+  from = "https://thevelvetkeysociety.com/"
+  to = "/the-velvet-key.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "https://www.thevelvetkeysociety.com/"
+  to = "/the-velvet-key.html"
+  status = 200
+  force = true
+
 # The Velvet Key's home was consenting-adults.html, the collective's old name.
 # Links to it are out there, so both spellings land on the page it became.
 [[redirects]]
