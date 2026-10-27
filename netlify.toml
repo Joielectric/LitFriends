@@ -24,29 +24,29 @@
 # `page` in js/site-config.js, its card in consenting-adults.html and its line
 # in js/nav.js); `force` is what stops Netlify serving the file that is still
 # there. Each page has two rules, with and without .html, since Netlify serves
-# both. Someone with a published profile goes to it, everyone else to the
-# collective's home. 302, since none of this need be for good.
+# both. They go to the collective's home: a creator's /profile/<slug> only
+# works while that profile is published. 302, since none of this need be for good.
 [[redirects]]
   from = "/profiles/loona-licks.html"
-  to = "/profile/loona-licks"
+  to = "/consenting-adults.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/loona-licks"
-  to = "/profile/loona-licks"
+  to = "/consenting-adults.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/misskittenSK.html"
-  to = "/profile/misskittensk"
+  to = "/consenting-adults.html"
   status = 302
   force = true
 
 [[redirects]]
   from = "/profiles/misskittenSK"
-  to = "/profile/misskittensk"
+  to = "/consenting-adults.html"
   status = 302
   force = true
 

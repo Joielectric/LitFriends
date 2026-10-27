@@ -5174,7 +5174,9 @@
       fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entries: cmEntries, collaborators: cmCollaborators, news: cmNews, providers: cmProviders }),
+        // `complete`: this list came from the full read, hidden work and all,
+        // so anything missing from it really was deleted (netlify/functions/content.js).
+        body: JSON.stringify({ entries: cmEntries, collaborators: cmCollaborators, news: cmNews, providers: cmProviders, complete: true }),
       })
         .then(r => r.json())
         .then(data => {
