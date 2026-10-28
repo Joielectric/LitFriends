@@ -1809,27 +1809,38 @@
                     <div id="cr-msg" style="margin-top:10px;min-height:1em;font-size:0.85rem;"></div>
                   </div>
 
-                  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                      <label class="cm-label" style="margin:0">Who has access</label>
-                      <button type="button" class="cm-btn cm-btn-sm" onclick="crLoad()">Refresh</button>
-                    </div>
-                    <div id="cr-list"><div class="cm-collab-empty">Click Refresh to load.</div></div>
-                  </div>
-
+                  <!-- One row per person: their sign-in (invited / active) and their page
+                       (live / draft / none) side by side, where they used to be two lists
+                       that named most people twice. -->
+                  <style>
+                    .cr-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:9px 2px; border-bottom:1px solid var(--border); }
+                    .cr-row:last-child { border-bottom:0; }
+                    .cr-main { min-width:0; flex:1 1 260px; }
+                    .cr-name { color:var(--text); font-weight:600; word-break:break-word; }
+                    .cr-meta { color:var(--text-dim); font-size:0.78rem; word-break:break-all; margin-top:1px; }
+                    .cr-chip { display:inline-block; font-size:0.68rem; font-weight:600; letter-spacing:0.02em; padding:1px 7px; border-radius:999px; margin-left:6px; vertical-align:2px; border:1px solid currentColor; }
+                    .cr-actions { display:flex; gap:6px; flex-wrap:wrap; }
+                    .cr-actions .cm-btn { text-decoration:none; }
+                    .cr-remove { background:none; border:0; color:var(--text-dim); font-size:0.78rem; cursor:pointer; padding:4px 6px; text-decoration:underline; }
+                    .cr-remove:hover { color:#e87a88; }
+                  </style>
                   <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-                      <label class="cm-label" style="margin:0">All profile pages</label>
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
+                      <label class="cm-label" style="margin:0">Creators</label>
                       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        <!-- Creators who have never opened the card builder
-                             would otherwise share under their avatar alone.
-                             This builds one for each of them in a pass. -->
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="plBuildCards()">Build missing share cards</button>
-                        <input id="pl-search" class="cm-input cm-btn-sm" placeholder="Search…" style="max-width:180px" oninput="plRender()">
+                        <input id="cr-search" class="cm-input cm-btn-sm" placeholder="Search name or email…" style="max-width:200px" oninput="crRender()">
+                        <select id="cr-filter" class="cm-input cm-btn-sm" style="max-width:170px" onchange="crRender()">
+                          <option value="">Everyone</option>
+                          <option value="live">Page live</option>
+                          <option value="draft">Page in draft</option>
+                          <option value="nopage">No page yet</option>
+                          <option value="invited">Not signed in yet</option>
+                        </select>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="crLoad(); plLoad();">Refresh</button>
                       </div>
                     </div>
-                    <span id="pl-cards-status" style="display:block;font-size:0.72rem;color:var(--text-dim);margin-bottom:8px"></span>
-                    <div id="pl-list"><div class="cm-collab-empty">Loading…</div></div>
+                    <div id="cr-summary" style="color:var(--text-dim);font-size:0.78rem;margin-bottom:6px;"></div>
+                    <div id="cr-list"><div class="cm-collab-empty">Loading…</div></div>
                   </div>
                 </div>
 
@@ -7013,132 +7024,16 @@
       }, after.failed);
     }
 
-    // ── Every profile page, static and dynamic (owner only) ─────────────────
-    // Two kinds exist side by side: the hand-built pages listed in site-config,
-    // and the records creators edit themselves. A slug can have both — the
-    // dynamic one is what its creator controls, so it is listed first and the
-    // old page is still reachable underneath.
-    let plRows = [];
+    // ── Every profile (owner only) ──────────────────────────────────────────
+    // Loaded for the Creators list, and kept for the lookups elsewhere that
+    // want every creator's display name.
     let plProfilesById = {};
 
     function plLoad() {
       pfApi({ action: 'list' }, data => {
-        // A copy: the loop below deletes from `live` as it pairs each dynamic
-        // profile with its static page, and `plProfilesById` is meant to keep
-        // every profile for the lookups elsewhere. Sharing one object here
-        // emptied it of everyone who has a page in site-config.
         plProfilesById = data.profiles || {};
-        const live = { ...plProfilesById };
-        const rows = [];
-        (CFG.artists || []).forEach(a => {
-          const p = live[a.slug];
-          if (p) rows.push(plRow(p, a));
-          // Only while their hand-built page is still up.
-          if (a.page) rows.push({
-            name: a.name, slug: a.slug, tagline: a.tagline || '',
-            href: '/' + a.page, kind: 'static',
-          });
-          delete live[a.slug];
-        });
-        // Creators who joined after site-config was written have no static page.
-        Object.keys(live).sort().forEach(slug => rows.push(plRow(live[slug], null)));
-        plRows = rows;
-        plRender();
+        crRender();
       });
-    }
-
-    /** Builds a share card for every creator who has none.
-     *
-     *  The card is normally rebuilt when a creator saves their profile, but
-     *  the ones who existed before any of this did have never saved since, and
-     *  would go on sharing under their avatar alone. This walks them once.
-     *
-     *  Only the owner can reach it: writing another creator's profile is an
-     *  owner-only power, and the server enforces that whatever this sends. */
-    async function plBuildCards() {
-      const status = document.getElementById('pl-cards-status');
-      if (!window.ShareCard) { status.textContent = 'The card renderer is still loading.'; return; }
-
-      const targets = Object.values(plProfilesById || {}).filter(
-        p => p && !p.shareImage && p.shareCardAuto !== false,
-      );
-      if (!targets.length) { status.textContent = 'Every profile already has a card.'; return; }
-
-      let built = 0;
-      const failed = [];
-      for (const p of targets) {
-        status.textContent = `Building ${built + failed.length + 1} of ${targets.length}: ${p.name || p.slug}…`;
-        try {
-          const { url } = await pfBuildCard({
-            banner:  p.banner || '',
-            avatar:  p.avatar || '',
-            logo:    '/images/JOI_Icon.png',
-            name:    p.name || p.slug,
-            tagline: p.tagline || '',
-            eyebrow: 'EROTIC AUDIO',
-            accent:  p.accent || (PF_THEMES.find(t => t.key === p.theme) || PF_THEMES[0]).swatch,
-          }, p.slug, null, p.shareImage);
-
-          // A partial profile merges onto the stored one, so this changes the
-          // card and nothing else about them. Called directly rather than
-          // through pfApi, whose failure path hides the profile editor — a
-          // side effect that has no business firing from a backfill.
-          const res = await fetch('/api/profiles', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'save', slug: p.slug, profile: { shareImage: url } }),
-          });
-          const out = await res.json().catch(() => ({}));
-          if (!out.ok) throw new Error(out.error || `Save failed (${res.status})`);
-          built++;
-        } catch (err) {
-          failed.push(`${p.name || p.slug} (${err.message})`);
-        }
-      }
-
-      status.textContent = failed.length
-        ? `Built ${built}. Could not build: ${failed.join(', ')}.`
-        : `Built ${built} card${built === 1 ? '' : 's'}.`;
-      plLoad();
-    }
-
-    function plRow(p, artist) {
-      return {
-        name: p.name || (artist && artist.name) || p.slug,
-        slug: p.slug,
-        tagline: p.tagline || '',
-        href: '/profile/' + encodeURIComponent(p.slug),
-        kind: p.published ? 'live' : 'draft',
-      };
-    }
-
-    const PL_BADGE = {
-      live:   { text: 'Live',   color: '#6fe3c1' },
-      draft:  { text: 'Draft',  color: 'var(--text-dim)' },
-      static: { text: 'Static', color: 'var(--coral)' },
-    };
-
-    function plRender() {
-      const q = (document.getElementById('pl-search').value || '').trim().toLowerCase();
-      const rows = q
-        ? plRows.filter(r => (r.name + ' ' + r.slug + ' ' + r.tagline).toLowerCase().includes(q))
-        : plRows;
-      const host = document.getElementById('pl-list');
-      if (!rows.length) {
-        host.innerHTML = '<div class="cm-collab-empty">Nothing matches.</div>';
-        return;
-      }
-      host.innerHTML = rows.map(r => {
-        const b = PL_BADGE[r.kind];
-        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
-          <div style="min-width:0;flex:1 1 240px;">
-            <div style="color:var(--text);word-break:break-word;">${cmEsc(r.name)}
-              <span style="color:${b.color};font-size:0.72rem;margin-left:6px;">${b.text}</span></div>
-            <div style="color:var(--text-dim);font-size:0.78rem;word-break:break-all;">${cmEsc(r.href)}</div>
-          </div>
-          <a class="cm-btn cm-btn-sm" href="${cmEsc(r.href)}" target="_blank" style="text-decoration:none;">Open &#8599;</a>
-        </div>`;
-      }).join('');
     }
 
     // ── Creators (owner only) ───────────────────────────────────────────────
@@ -7206,25 +7101,86 @@
       crApi({ action: 'remove', email }, () => crMsg(`Removed ${email}.`, true));
     }
 
+    // One row per person, joining their invitation (if any) to their profile
+    // (if any) by profile name. The owner signs in through OWNER_EMAIL rather
+    // than an invitation, so their row has a page but no sign-in record.
+    function crRows() {
+      const bySlug = {};
+      const row = slug => (bySlug[slug] = bySlug[slug] || { slug });
+      (crCreators || []).forEach(c => { if (c.slug) Object.assign(row(c.slug), { invite: c }); });
+      Object.values(plProfilesById || {}).forEach(p => { if (p && p.slug) row(p.slug).profile = p; });
+      // A hand-built page still up (today only the owner's) is their page too.
+      (CFG.artists || []).forEach(a => { if (a.page && bySlug[a.slug]) bySlug[a.slug].staticPage = '/' + a.page; });
+      return Object.values(bySlug).map(r => {
+        r.name = (r.profile && r.profile.name) || (r.invite && r.invite.name) || r.slug;
+        r.page = r.profile ? (r.profile.published ? 'live' : 'draft') : (r.staticPage ? 'live' : 'none');
+        r.signin = r.slug === CFG.identity.owner ? 'owner' : r.invite ? (r.invite.status === 'active' ? 'active' : 'invited') : 'none';
+        r.href = r.profile ? '/profile/' + encodeURIComponent(r.slug) : (r.staticPage || '');
+        return r;
+      }).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    }
+
+    const CR_PAGE = {
+      live:  { text: 'Live',       color: '#6fe3c1' },
+      draft: { text: 'Draft',      color: 'var(--text-dim)' },
+      none:  { text: 'No page',    color: 'var(--text-dim)' },
+    };
+    const CR_SIGNIN = {
+      owner:   { text: 'Owner',          color: 'var(--coral, #e8634f)' },
+      active:  { text: 'Signed in',      color: '#8ab4ff' },
+      invited: { text: 'Invited',        color: '#ffc56b' },
+      none:    { text: 'No access',      color: 'var(--text-dim)' },
+    };
+
     function crRender() {
       const host = document.getElementById('cr-list');
-      if (!crCreators.length) {
-        host.innerHTML = '<div class="cm-collab-empty">Nobody invited yet.</div>';
+      if (!host) return;
+      const all = crRows();
+      const q = (document.getElementById('cr-search').value || '').trim().toLowerCase();
+      const f = document.getElementById('cr-filter').value;
+      const rows = all.filter(r => {
+        if (q && !(r.name + ' ' + r.slug + ' ' + ((r.invite && r.invite.email) || '')).toLowerCase().includes(q)) return false;
+        if (f === 'live' || f === 'draft') return r.page === f;
+        if (f === 'nopage') return r.page === 'none';
+        if (f === 'invited') return r.signin === 'invited';
+        return true;
+      });
+      const count = k => all.filter(k).length;
+      document.getElementById('cr-summary').textContent =
+        `${all.length} ${all.length === 1 ? 'creator' : 'creators'} · ${count(r => r.page === 'live')} live · ` +
+        `${count(r => r.page === 'draft')} in draft · ${count(r => r.signin === 'invited')} not signed in yet`;
+      if (!rows.length) {
+        host.innerHTML = `<div class="cm-collab-empty">${all.length ? 'Nobody matches.' : 'Nobody invited yet.'}</div>`;
         return;
       }
-      host.innerHTML = crCreators.map(c => {
-        const seen = c.lastSeenAt ? new Date(c.lastSeenAt).toLocaleDateString() : 'never signed in';
-        const badge = c.status === 'active' ? '#6fe3c1' : 'var(--text-dim)';
-        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
-          <div style="min-width:0;flex:1 1 240px;">
-            <div style="color:var(--text);word-break:break-word;">${cmEsc(c.name || c.slug)}
-              <span style="color:${badge};font-size:0.75rem;margin-left:6px;">${cmEsc(c.status || '')}</span></div>
-            <div style="color:var(--text-mid);font-size:0.8rem;word-break:break-all;">${cmEsc(c.email)}</div>
-            <div style="color:var(--text-dim);font-size:0.78rem;">/profile/${cmEsc(c.slug)} &middot; ${cmEsc(seen)}</div>
+      host.innerHTML = rows.map(r => {
+        const pg = CR_PAGE[r.page], si = CR_SIGNIN[r.signin];
+        const email = r.invite ? r.invite.email : '';
+        const seen = r.invite
+          ? (r.invite.lastSeenAt ? 'last signed in ' + new Date(r.invite.lastSeenAt).toLocaleDateString() : 'never signed in')
+          : '';
+        const meta = [email, seen].filter(Boolean).map(cmEsc).join(' &middot; ') || '/profile/' + cmEsc(r.slug);
+        const slugArg = cmEsc(JSON.stringify(r.slug));
+        return `<div class="cr-row">
+          <div class="cr-main">
+            <span class="cr-name">${cmEsc(r.name)}</span><span class="cr-chip" style="color:${pg.color}">${pg.text}</span><span class="cr-chip" style="color:${si.color}">${si.text}</span>
+            <div class="cr-meta">${meta}</div>
           </div>
-          <button type="button" class="cm-btn cm-btn-sm" onclick="crRemove('${cmEsc(c.email)}')">Remove</button>
+          <div class="cr-actions">
+            ${r.href ? `<a class="cm-btn cm-btn-sm" href="${cmEsc(r.href)}" target="_blank" rel="noopener">Open &#8599;</a>` : ''}
+            ${r.profile ? `<button type="button" class="cm-btn cm-btn-sm" onclick="crEditProfile(${slugArg})">Edit profile</button>` : ''}
+            ${r.invite ? `<button type="button" class="cr-remove" onclick="crRemove(${cmEsc(JSON.stringify(email))})">Remove access</button>` : ''}
+          </div>
         </div>`;
       }).join('');
+    }
+
+    // Opens My profile on this creator's page, as the owner's profile picker would.
+    function crEditProfile(slug) {
+      cmTab('profile');
+      const sel = document.getElementById('pf-who');
+      if (sel) sel.value = slug;
+      pfLoad(slug);
     }
 
     function cmTab(name) {
