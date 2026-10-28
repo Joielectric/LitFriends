@@ -151,7 +151,8 @@
           <thead><tr><th>Name</th><th>What it is for</th><th>How long</th></tr></thead>
           <tbody>
             <tr><td><code>joi_session</code> (cookie)</td><td>Keeps a creator signed in to the Content Manager. Only set when a creator signs in.</td><td>30 days, or until you sign out</td></tr>
-            <tr><td><code>joi_verified</code>, <code>ca_verified</code></td><td>Remembers that you confirmed you are 18 or over, so you aren&rsquo;t asked on every page.</td><td>Until you close the tab</td></tr>
+            <tr><td><code>age_verified_until</code></td><td>Remembers on this device that you confirmed you are 18 or over, so you aren&rsquo;t asked on every visit.</td><td>30 days, then you are asked again</td></tr>
+            <tr><td><code>joi_verified</code>, <code>ca_verified</code></td><td>The same confirmation, for the rest of the visit.</td><td>Until you close the tab</td></tr>
             <tr><td><code>joi_vid</code>, <code>joi_sess</code></td><td>The random visitor and visit IDs used for the statistics above.</td><td>Until you clear your browser&rsquo;s site data</td></tr>
             <tr><td><code>cm_*</code>, <code>im_sec</code></td><td>Content Manager conveniences for creators, such as remembering you have signed in before, which tab or section you were on, and the profile preview.</td><td>Until you clear your browser&rsquo;s site data (tab and section: until you close the tab)</td></tr>
           </tbody>

@@ -524,17 +524,27 @@
   // ── Age gate ───────────────────────────────────────────────────────────────
   (function () {
     var gate = document.getElementById('age-gate');
+    // Same rule as js/age-gate.js: a yes is remembered on this device for 30
+    // days (age_verified_until), and the older per-tab flags still count.
+    function ageOk(flag) {
+      try { if (Number(localStorage.getItem('age_verified_until')) > Date.now()) return true; } catch (e) {}
+      try { return sessionStorage.getItem('joi_verified') === 'true' || sessionStorage.getItem('ca_verified') === 'true' || sessionStorage.getItem(flag) === 'true'; } catch (e) { return false; }
+    }
+    function ageRemember(flag) {
+      try { sessionStorage.setItem(flag, 'true'); } catch (e) {}
+      try { localStorage.setItem('age_verified_until', String(Date.now() + 30 * 864e5)); } catch (e) {}
+    }
     function enter() {
       JOILightning.strike(1);
       JOILightning.startAmbient();
     }
-    if (sessionStorage.getItem('joi_verified') === 'true') {
+    if (ageOk('joi_verified')) {
       gate.classList.add('hidden');
       setTimeout(enter, 250);
       return;
     }
     document.getElementById('age-yes').addEventListener('click', function () {
-      sessionStorage.setItem('joi_verified', 'true');
+      ageRemember('joi_verified');
       gate.classList.add('hidden');
       setTimeout(enter, 120);
     });

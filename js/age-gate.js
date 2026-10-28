@@ -7,10 +7,12 @@
  *
  *     <script src="/js/age-gate.js"></script>
  *
- * It answers to the same sessionStorage flags as the gates on index.html
- * (joi_verified) and the-velvet-key.html (ca_verified): a visitor who has
- * already said yes on either is not asked again, and saying yes here counts
- * for both. Colours come from the page's own custom properties, so the box
+ * A yes is remembered on this device for REMEMBER_DAYS (localStorage, under
+ * age_verified_until), so a returning visitor is not asked on every visit.
+ * The gates on index.html and the-velvet-key.html read and write the same
+ * key, and the older per-tab flags (joi_verified, ca_verified in
+ * sessionStorage) still count: a yes on any of them counts for all.
+ * Colours come from the page's own custom properties, so the box
  * takes on each page's theme. A page without them falls back to the site's
  * default blue.
  */
@@ -18,8 +20,15 @@
   'use strict';
 
   var KEYS = ['joi_verified', 'ca_verified'];
+  var REMEMBER_KEY = 'age_verified_until';
+  var REMEMBER_DAYS = 30;
 
+  // Storage can be blocked (private windows, strict settings); then the
+  // visitor is simply asked again, never locked out.
   function verified() {
+    try {
+      if (Number(localStorage.getItem(REMEMBER_KEY)) > Date.now()) return true;
+    } catch (e) {}
     try {
       for (var i = 0; i < KEYS.length; i++) {
         if (sessionStorage.getItem(KEYS[i]) === 'true') return true;
@@ -27,6 +36,18 @@
     } catch (e) {}
     return false;
   }
+
+  function remember() {
+    try {
+      for (var i = 0; i < KEYS.length; i++) sessionStorage.setItem(KEYS[i], 'true');
+    } catch (e) {}
+    try {
+      localStorage.setItem(REMEMBER_KEY, String(Date.now() + REMEMBER_DAYS * 864e5));
+    } catch (e) {}
+  }
+
+  // For the two pages with gates of their own (index.html, consenting-adults.html).
+  window.AgeGate = { verified: verified, remember: remember };
 
   if (verified()) return;
 
@@ -94,9 +115,7 @@
 
     var yes = gate.querySelector('.age-yes');
     yes.addEventListener('click', function () {
-      try {
-        for (var i = 0; i < KEYS.length; i++) sessionStorage.setItem(KEYS[i], 'true');
-      } catch (e) {}
+      remember();
       root.classList.remove('age-locked');
       gate.parentNode.removeChild(gate);
     });
