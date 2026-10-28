@@ -1511,7 +1511,7 @@
                     <div class="pf-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                       <div>
                         <span style="color:var(--text-mid);font-size:0.85rem;">Your page:</span>
-                        <a id="pf-url" href="#" target="_blank" style="color:var(--coral);font-size:0.85rem;"></a>
+                        <a id="pf-url" href="#" target="_blank" rel="noopener noreferrer" style="color:var(--coral);font-size:0.85rem;"></a>
                       </div>
                       <!-- Going public is a deliberate act, so it is a button that
                            saves straight away rather than a box that waits for
@@ -6562,6 +6562,8 @@
       { label: 'The Velvet Key', url: '/images/velvet-key-mark.png' },
     ];
 
+    const PF_PUBLIC_ORIGIN = 'https://thevelvetkeysociety.com';
+
     let pfCardTimer = null;
     // Whether this profile's card is rebuilt on every save. Off only when the
     // creator has said they would rather share under the site's own card.
@@ -6831,9 +6833,11 @@
       document.getElementById('pf-accent').value = p.accent || '';
       pfPublished = !!p.published;
       pfRenderPublished();
-      const url = '/profile/' + p.slug;
+      // Creator pages are shared under The Velvet Key's own address, whichever
+      // domain this Content Manager happens to be open on.
+      const url = PF_PUBLIC_ORIGIN + '/profile/' + encodeURIComponent(p.slug);
       const link = document.getElementById('pf-url');
-      link.href = url; link.textContent = location.origin + url;
+      link.href = url; link.textContent = url;
       pfLinks = (p.links || []).slice();
       pfUpdates = (p.updates || []).slice();
       pfRenderThemes();
