@@ -143,6 +143,7 @@ export default async (req) => {
         email: auth.email, isOwner: !!auth.isOwner, via: auth.via,
         role: auth.role || (auth.isOwner ? "owner" : "creator"),
         slug: auth.slug || "",
+        termsAt: auth.termsAt || "",
         viewAs: auth.viewAs || "",
       };
       return new Response(JSON.stringify({ ok: true, who, ...(data || { entries: [] }) }), { status: 200, headers: CORS });

@@ -23,6 +23,13 @@
 # beside joielectric.com. Its front door is the collective's home rather than
 # JOI Electric's index.html; the address stays the bare domain (200, a
 # rewrite). These come first because Netlify uses the first rule that matches.
+# The old how-to page for adding to the catalogue. Its steps live in the
+# Content Manager now, under Get started.
+[[redirects]]
+  from = "/docs/adding-content*"
+  to = "/tools.html#guide"
+  status = 301
+
 [[redirects]]
   from = "https://thevelvetkeysociety.com/"
   to = "/the-velvet-key.html"

@@ -570,6 +570,38 @@
 
     /* Section intros */
     .cm-panel-head { margin: 0 0 1.2rem; }
+    /* Get started */
+    .gs-tab-count { display:inline-block; min-width:1.3em; padding:0 6px; border-radius:999px; background:var(--coral); color:#111; font-size:0.7rem; font-weight:700; line-height:1.5; text-align:center; }
+    .gs-tab-count:empty { display:none; }
+    .gs-state { color:var(--text-mid); font-size:0.8rem; }
+    .gs-terms { border-color:var(--coral); }
+    .gs-terms-list { margin:0 0 12px; padding-left:1.3rem; color:var(--text-mid); font-size:0.88rem; line-height:1.6; }
+    .gs-terms-list b { color:var(--text); font-weight:600; }
+    .gs-terms-list a, #gs-guide a, #tabp-start .pf-help a { color:var(--coral); }
+    .gs-terms-act { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .gs-bar { height:6px; border-radius:999px; background:var(--border); overflow:hidden; margin:8px 0 12px; }
+    .gs-bar span { display:block; height:100%; width:0; background:var(--coral); transition:width .4s; }
+    .gs-list { list-style:none; margin:0; padding:0; }
+    .gs-list li { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--border); }
+    .gs-list li:first-child { border-top:0; }
+    .gs-mark { flex:none; width:22px; height:22px; border-radius:50%; border:1.5px solid var(--border-mid); display:grid; place-items:center; font-size:0.75rem; color:var(--text-dim); }
+    .gs-list li.done .gs-mark { background:#6fe3c1; border-color:#6fe3c1; color:#111; }
+    .gs-list .gs-text { flex:1; min-width:0; }
+    .gs-list .gs-text b { display:block; color:var(--text); font-weight:600; font-size:0.9rem; }
+    .gs-list .gs-text span { color:var(--text-mid); font-size:0.8rem; }
+    .gs-list li.done .gs-text b { color:var(--text-mid); text-decoration:line-through; text-decoration-color:var(--text-dim); }
+    .gs-ways { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; }
+    .gs-way { border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; }
+    .gs-way h4 { margin:0 0 8px; font-size:0.9rem; color:var(--text); }
+    .gs-tag { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:#6fe3c1; border:1px solid rgba(111,227,193,0.5); border-radius:999px; padding:1px 6px; margin-left:4px; vertical-align:middle; }
+    .gs-btns { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .gs-steps { margin:0; padding-left:1.3rem; color:var(--text-mid); font-size:0.85rem; line-height:1.5; }
+    .gs-steps li { margin:0 0 8px; }
+    .gs-steps b { color:var(--text); font-weight:600; }
+    .gs-show { margin-left:6px; background:none; border:1px solid var(--border-mid); color:var(--coral); border-radius:999px; padding:1px 9px; font-size:0.72rem; cursor:pointer; white-space:nowrap; }
+    .gs-show:hover { border-color:var(--coral); }
+    @keyframes gsPulse { 0%, 100% { box-shadow:0 0 0 0 rgba(255,140,105,0); } 30%, 70% { box-shadow:0 0 0 4px rgba(255,140,105,0.75); } }
+    .gs-pulse { animation:gsPulse 1.2s ease-in-out 2; border-radius:var(--radius); }
     .cm-panel-head h2 { font-family: var(--display); font-weight: 700; font-size: 1.55rem; letter-spacing: -0.01em; color: var(--text); line-height: 1.2; }
     .cm-panel-head p { color: var(--text-mid); font-size: .95rem; margin-top: .25rem; max-width: 720px; }
 
@@ -730,7 +762,7 @@
   <div class="header">
     <h1>Content Manager</h1>
     <div class="header-divider"><span></span><i></i><span></span></div>
-    <a href="docs/adding-content.html" target="_blank" style="display:inline-block;margin-top:0.8rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5b8de8;text-decoration:none;border-bottom:1px solid rgba(91,141,232,0.4);padding-bottom:2px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='#eaf0fa';this.style.borderColor='rgba(91,141,232,0.9)'" onmouseout="this.style.color='#5b8de8';this.style.borderColor='rgba(91,141,232,0.4)'">How to add content &#8599;</a>
+    <a href="#guide" onclick="event.preventDefault(); gsShowGuide()" style="display:inline-block;margin-top:0.8rem;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5b8de8;text-decoration:none;border-bottom:1px solid rgba(91,141,232,0.4);padding-bottom:2px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='#eaf0fa';this.style.borderColor='rgba(91,141,232,0.9)'" onmouseout="this.style.color='#5b8de8';this.style.borderColor='rgba(91,141,232,0.4)'">How to add to the catalogue</a>
   </div>
         
         <!-- ===== CONTENT MANAGER ===== -->
@@ -743,6 +775,8 @@
                 <div id="cm-msg" class="cm-msg"></div>
 
                 <nav class="cm-tabs" aria-label="Sections">
+                  <div class="cm-tab-group">Start here</div>
+                  <button class="cm-tab" data-tab="start" onclick="cmTab('start')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Get started <span id="gs-tab-count" class="gs-tab-count"></span></button>
                   <div class="cm-tab-group">Publish</div>
                   <button class="cm-tab active" data-tab="content" onclick="cmTab('content')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Releases</button>
                   <button class="cm-tab" data-tab="import" onclick="cmTab('import')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Import</button>
@@ -762,7 +796,79 @@
                   <button class="cm-tab" data-tab="templates" onclick="cmTab('templates')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>Post templates</button>
                 </nav>
 
-                <div class="cm-tab-panel" id="tabp-content">
+                <div class="cm-tab-panel" id="tabp-start" hidden>
+                <header class="cm-panel-head"><h2 id="gs-hello">Welcome to The Velvet Key</h2><p>Everything you need to get your page live, in order. Work down the list. Each step opens the right place for you, and ticks itself off once it's done.</p></header>
+                <!-- Get started: the creator terms, a setup checklist that reads
+                     what is already filled in, and a walkthrough for getting
+                     work into the catalogue. The code is under "Get started"
+                     in the script below. -->
+
+                <section class="pf-card gs-terms" id="gs-terms" hidden>
+                    <div class="pf-card-head"><h3>First, the creator terms</h3><span id="gs-terms-state" class="gs-state"></span></div>
+                    <p class="pf-help" id="gs-terms-help">Please read these once. The rest of the Content Manager opens when you accept.</p>
+                    <ol class="gs-terms-list">
+                        <li><b>You are 18 or older</b>, and so is everyone who voices, writes or appears in your work.</li>
+                        <li><b>You only list work you made or worked on</b>, and you credit the people you made it with: writers, voices, editors, music, sound effects and art.</li>
+                        <li><b>You have the rights to what you post.</b> That includes scripts, music, sound effects and images you use.</li>
+                        <li><b>Nothing involving minors</b> or anyone presented as one, nothing about real people without their consent, and nothing illegal.</li>
+                        <li><b>Your work stays yours.</b> You let The Velvet Key show your profile, listings, images and links, and make share cards from them.</li>
+                        <li><b>We can hide or remove</b> any profile or listing, or end access, if these terms aren't followed.</li>
+                        <li><b>Problems or takedown requests</b> go to <a href="mailto:joi@joielectric.com">joi@joielectric.com</a>. How we handle your details is in the <a href="/privacy.html" target="_blank">Privacy Policy</a>.</li>
+                    </ol>
+                    <div id="gs-terms-act" class="gs-terms-act">
+                        <label class="pf-switch" style="white-space:normal"><input type="checkbox" id="gs-terms-ok" onchange="document.getElementById('gs-terms-btn').disabled = !this.checked"> I've read the creator terms and agree to them</label>
+                        <button type="button" id="gs-terms-btn" class="cm-btn cm-btn-primary cm-btn-sm" onclick="gsAcceptTerms()" disabled>Accept and continue</button>
+                        <span id="gs-terms-msg" class="im-hint" role="status" style="margin:0"></span>
+                    </div>
+                </section>
+
+                <section class="pf-card" id="gs-check">
+                    <div class="pf-card-head"><h3>Set up your page</h3><span id="gs-progress" class="gs-state"></span></div>
+                    <div class="gs-bar"><span id="gs-bar"></span></div>
+                    <ol id="gs-list" class="gs-list"></ol>
+                </section>
+
+                <section class="pf-card" id="gs-guide">
+                    <div class="pf-card-head"><h3>How to add to the catalogue</h3></div>
+                    <p class="pf-help">Your works page lists everything in the catalogue that you added or are credited on. There are two ways to get work in. If it's already posted on ScriptBin, Reddit or Literotica, import it. Anything else, add by hand.</p>
+
+                    <div class="gs-ways">
+                        <div class="gs-way">
+                            <h4>Import what's already posted <span class="gs-tag">Fastest</span></h4>
+                            <ol class="im-steps">
+                                <li><b>Pick where it lives</b> and type your username there.</li>
+                                <li><b>Check</b>. Everything found is listed, and nothing is saved yet.</li>
+                                <li><b>Review</b> the list. Use <b>Edit</b> on any line to fix its title, tags or credits.</li>
+                                <li><b>Tick</b> the ones you want and press <b>Import selected</b>.</li>
+                            </ol>
+                            <div class="gs-btns">
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'im-scriptbin-handle', 'scriptbin')">Scripts from ScriptBin</button>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'im-reddit-handle', 'reddit')">Audios from Reddit</button>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'im-literotica-handle', 'literotica')">Works from Literotica</button>
+                            </div>
+                        </div>
+                        <div class="gs-way">
+                            <h4>Add one by hand</h4>
+                            <p class="im-hint" style="margin:0 0 6px">In <b>Releases</b>, scroll past your list to the form. Press <b>Show me</b> to jump to each part.</p>
+                            <ol class="gs-steps">
+                                <li><span><b>Type and title.</b> Audio, script, story and so on, then its name.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-title')">Show me</button></li>
+                                <li><span><b>Platform links.</b> Press <b>+ Add Platform</b> for each place it's posted. Icons are added for you.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-links-list')">Show me</button></li>
+                                <li><span><b>Tags.</b> The audience tag first, like F4M, then what it is. The tag helper reads a bracketed title for you.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-tags')">Show me</button></li>
+                                <li><span><b>Credits.</b> Pick yourself and everyone you made it with. Press <b>+ New</b> for someone who isn't listed yet.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-people-voiceArtists')">Show me</button></li>
+                                <li><span><b>Save Entry.</b> It's in the catalogue straight away, and on your page once your page is published.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-save-btn')">Show me</button></li>
+                            </ol>
+                        </div>
+                    </div>
+                    <p class="im-hint" style="margin:12px 0 0">To change something later, find it in <b>Releases</b> and choose it from the list. Its details load into the same form.</p>
+                </section>
+
+                <section class="pf-card">
+                    <div class="pf-card-head"><h3>Need a hand?</h3></div>
+                    <p class="pf-help" style="margin-bottom:0">Email <a href="mailto:joi@joielectric.com">joi@joielectric.com</a> with a question, a bug or an idea. Feedback has shaped most of what's here, so keep it coming.</p>
+                </section>
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-content" hidden>
                 <header class="cm-panel-head"><h2>Releases</h2><p>Add a new release or edit one you have already published. Everything here appears in the catalogues.</p></header>
                 <!-- Add / Edit form -->
                 <!-- Existing entries: pick one to edit, or scroll past to add a new one -->
@@ -4701,6 +4807,13 @@
     // the form, and #profile=<slug> opens that profile. The hash is dropped
     // once it has been read, so a later reload is an ordinary visit.
     function cmOpenFromHash() {
+      if (/^#(guide|start)$/.test(location.hash || '')) {
+        const to = location.hash === '#guide' ? 'gs-guide' : 'gs-check';
+        history.replaceState(null, '', location.pathname + location.search);
+        gsScroll(to);
+        return;
+      }
+
       const asProfile = String(location.hash || '').match(/^#profile=(.+)$/);
       if (asProfile) {
         const slug = decodeURIComponent(asProfile[1]);
@@ -6849,6 +6962,7 @@
         ? 'A card is saved for this profile.'
         : "No card saved — your page shares with the site's card.";
       pfUpdatePreviews();
+      gsRender();
     }
 
     function pfApi(payload, onOk, onFail) {
@@ -6901,7 +7015,7 @@
       // Publishing saves the rest of the profile too, so what goes live is
       // what is on screen.
       pfSave({
-        done: () => { pfPublishing = false; pfRenderPublished(); pfMsg(next ? 'Published. Your page is live.' : 'Unpublished. Your page is hidden.', true); },
+        done: () => { pfPublishing = false; pfRenderPublished(); gsRender(); pfMsg(next ? 'Published. Your page is live.' : 'Unpublished. Your page is hidden.', true); },
         failed: () => { pfPublished = !next; pfPublishing = false; pfRenderPublished(); },
       });
     }
@@ -7007,6 +7121,7 @@
         return;
       }
       window.open('/profile.html?preview=1&u=' + encodeURIComponent(pfProfile.slug), 'profile-preview');
+      try { localStorage.setItem('cm_previewed_' + pfProfile.slug, '1'); } catch (e) {}
     }
 
     function pfSaveNow(after) {
@@ -7188,6 +7303,12 @@
     }
 
     function cmTab(name) {
+      if (name !== 'start' && cmWho && cmWho.email && !gsTermsOk()) {
+        name = 'start';
+        const msg = document.getElementById('gs-terms-msg');
+        if (msg) msg.textContent = 'Accept the creator terms to open the rest.';
+      }
+      if (name === 'start') gsRender();
       document.querySelectorAll('.cm-tab').forEach(function (b) {
         b.classList.toggle('active', b.dataset.tab === name);
       });
@@ -7201,11 +7322,151 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     function cmRestoreTab() {
-      var name = 'content';
-      try { name = sessionStorage.getItem('cm_tab') || 'content'; } catch (e) {}
+      // A creator who hasn't finished setting up starts at Get started.
+      var name = (cmWho.isOwner || gsSetupDone()) ? 'content' : 'start';
+      try { name = sessionStorage.getItem('cm_tab') || name; } catch (e) {}
       if (!document.getElementById('tabp-' + name)) name = 'content';
       cmTab(name);
     }
+
+    // ── Get started ─────────────────────────────────────────────────────────
+    // A creator's first stop: accept the creator terms, then a checklist
+    // that reads what is already filled in rather than anything ticked by
+    // hand, so it stays true however the work got done.
+
+    function gsTermsOk() {
+      // The owner sets the terms rather than accepting them, and viewing as a
+      // creator only looks.
+      return !!(cmWho.isOwner || cmWho.viewAs || cmWho.termsAt);
+    }
+
+    function gsMine() {
+      const slug = cmWho.slug || '';
+      return slug ? cmEntries.filter(e => CFG.creditedIn(e, slug) || e.owner === slug).length : 0;
+    }
+
+    function gsPreviewed() {
+      try { return !!localStorage.getItem('cm_previewed_' + (cmWho.slug || '')); } catch (e) { return false; }
+    }
+
+    function gsSteps() {
+      const val = id => (document.getElementById(id) || {}).value || '';
+      const mine = gsMine();
+      return [
+        { done: gsTermsOk(), title: 'Accept the creator terms', note: 'Once, at the top of this page.', go: () => { document.getElementById('gs-terms').hidden = false; gsScroll('gs-terms'); } },
+        { done: !!val('pf-avatar').trim(), title: 'Add your picture', note: 'In My profile, under Top of your page.', go: () => gsShow('profile', 'pf-avatar') },
+        { done: !!val('pf-bio').trim(), title: 'Write a short bio', note: 'A few lines about you and your work.', go: () => gsShow('profile', 'pf-bio') },
+        { done: mine > 0, title: 'Add your works to the catalogue', note: mine ? mine + ' in the catalogue so far.' : 'Import them or add them by hand. See below.', go: () => gsScroll('gs-guide') },
+        { done: (typeof pfLinks !== 'undefined') && pfLinks.some(l => l.url), title: 'Add where people can find you', note: 'Your Reddit, Patreon, Soundgasm and so on.', go: () => gsShow('profile', 'pf-sec-links') },
+        { done: gsPreviewed(), title: 'Preview your page', note: 'See it as visitors will, before anyone else can.', go: () => gsShow('profile', 'pf-publish', null, () => pfPreview()) },
+        { done: !!pfPublished, title: 'Publish your profile', note: 'You can unpublish at any time.', go: () => gsShow('profile', 'pf-publish') },
+      ];
+    }
+
+    function gsRender() {
+      const hello = document.getElementById('gs-hello');
+      if (!hello) return;
+      const name = (document.getElementById('pf-name') || {}).value || '';
+      hello.textContent = name ? 'Welcome, ' + name : 'Welcome to The Velvet Key';
+
+      const terms = document.getElementById('gs-terms');
+      const termsDone = gsTermsOk();
+      terms.hidden = termsDone && !cmWho.isOwner;
+      document.getElementById('gs-terms-act').style.display = termsDone ? 'none' : '';
+      document.getElementById('gs-terms-help').textContent = cmWho.isOwner
+        ? 'What every creator accepts on their first visit. You don\'t need to accept them yourself.'
+        : 'Please read these once. The rest of the Content Manager opens when you accept.';
+      document.getElementById('gs-terms-state').textContent = cmWho.termsAt
+        ? 'Accepted ' + new Date(cmWho.termsAt).toLocaleDateString() : '';
+
+      const steps = gsSteps();
+      const done = steps.filter(s => s.done).length;
+      document.getElementById('gs-progress').textContent = done + ' of ' + steps.length + ' done';
+      document.getElementById('gs-bar').style.width = Math.round(done / steps.length * 100) + '%';
+      const list = document.getElementById('gs-list');
+      list.innerHTML = '';
+      steps.forEach(s => {
+        const li = document.createElement('li');
+        if (s.done) li.className = 'done';
+        li.innerHTML = '<span class="gs-mark">' + (s.done ? '&#10003;' : '') + '</span>' +
+          '<span class="gs-text"><b>' + cmEsc(s.title) + '</b><span>' + cmEsc(s.note) + '</span></span>';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cm-btn cm-btn-sm';
+        btn.textContent = s.done ? 'Open' : 'Do this';
+        btn.onclick = s.go;
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+
+      const left = steps.length - done;
+      document.getElementById('gs-tab-count').textContent = cmWho.isOwner || !left ? '' : left;
+      if (!left && cmWho.slug) { try { localStorage.setItem('cm_setup_done_' + cmWho.slug, '1'); } catch (e) {} }
+    }
+
+    function gsSetupDone() {
+      try { return localStorage.getItem('cm_setup_done_' + (cmWho.slug || '')) === '1'; } catch (e) { return false; }
+    }
+
+    function gsAcceptTerms() {
+      const btn = document.getElementById('gs-terms-btn');
+      const msg = document.getElementById('gs-terms-msg');
+      btn.disabled = true;
+      msg.textContent = 'Saving\u2026';
+      fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'accept-terms' }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) throw new Error(data.error || 'Could not save that.');
+          cmWho.termsAt = data.termsAt || new Date().toISOString();
+          msg.textContent = '';
+          gsRender();
+          gsScroll('gs-check');
+        })
+        .catch(err => {
+          btn.disabled = false;
+          msg.textContent = (err && err.message) || 'Could not reach the server. Try again.';
+        });
+    }
+
+    function gsScroll(id) {
+      if (!document.getElementById('tabp-start').hidden) {
+        gsPulse(document.getElementById(id));
+      } else {
+        cmTab('start');
+        setTimeout(() => gsPulse(document.getElementById(id)), 350);
+      }
+    }
+
+    // Opens a tab and points at one thing in it: scrolled to the middle of
+    // the screen and outlined for a moment, so "Show me" really shows.
+    function gsShow(tab, id, importSection, then) {
+      cmTab(tab);
+      if (importSection) imSection(importSection);
+      setTimeout(() => {
+        let el = document.getElementById(id);
+        if (!el) return;
+        // A list inside a box is easier to spot by its box.
+        if (/^cm-(links-list|people-)/.test(id)) el = el.closest('.cm-full') || el;
+        gsPulse(el);
+        if (/^(INPUT|TEXTAREA)$/.test(el.tagName)) el.focus({ preventScroll: true });
+        if (then) then();
+      }, 350);
+    }
+
+    function gsPulse(el) {
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('gs-pulse');
+      void el.offsetWidth;
+      el.classList.add('gs-pulse');
+      setTimeout(() => el.classList.remove('gs-pulse'), 2600);
+    }
+
+    function gsShowGuide() { gsScroll('gs-guide'); }
 
     function cmShowMsg(text, ok) {
       const el = document.getElementById('cm-msg');

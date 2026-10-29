@@ -1,4 +1,4 @@
-import { readCreators, findCreator, touchCreator } from "./_creators.js";
+import { readCreators, findCreator, touchCreator, termsAcceptedAt } from "./_creators.js";
 import { cookieFromRequest, readSession } from "./_session.js";
 
 // Who is allowed to change things, and as whom.
@@ -153,6 +153,7 @@ export async function identify(rawEmail, name, via) {
       ok: true, email, name: name || "", via, isOwner,
       role: isOwner ? "owner" : (rec && rec.role) || "creator",
       slug: (rec && rec.slug) || (isOwner ? OWNER_SLUG : ""),
+      termsAt: termsAcceptedAt(rec),
     };
   }
 
@@ -172,6 +173,7 @@ export async function identify(rawEmail, name, via) {
     ok: true, email, name: name || rec.name || "", via, isOwner,
     role: isOwner ? "owner" : rec.role || "creator",
     slug: rec.slug || "",
+    termsAt: termsAcceptedAt(rec),
   };
 }
 
@@ -237,6 +239,7 @@ async function viewAs(req, body, who) {
     isOwner: false,
     role: rec.role === "owner" ? "creator" : rec.role || "creator",
     slug: rec.slug,
+    termsAt: termsAcceptedAt(rec),
     viewAs: who.email,
   };
 }

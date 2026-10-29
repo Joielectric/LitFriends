@@ -1,11 +1,14 @@
 import { verifyGoogleToken, identify, unauthorized } from "./_auth.js";
 import { createSession, sessionCookie, cookieFromRequest, readSession } from "./_session.js";
+import { readCreators, writeCreators, findCreator, TERMS_VERSION } from "./_creators.js";
 
 // Starting and ending a session.
 //
 //   POST /api/session { credential }  -> sign in with a Google ID token
 //   POST /api/session { action: "who" }  -> who the current cookie says you are
 //   POST /api/session { action: "out" }  -> sign out
+//   POST /api/session { action: "accept-terms" } -> record that the signed-in
+//                                                   creator accepted the terms
 //
 // This is the only place a Google token needs to reach: it is exchanged once
 // for a session cookie that lasts a month, so the Content Manager stops asking
@@ -23,6 +26,7 @@ const publicWho = (who) => ({
   email: who.email, isOwner: !!who.isOwner, via: who.via,
   role: who.role || (who.isOwner ? "owner" : "creator"),
   slug: who.slug || "",
+  termsAt: who.termsAt || "",
 });
 
 export default async (req) => {
@@ -52,6 +56,24 @@ export default async (req) => {
     const who = await identify(email, "", "session");
     if (!who.ok) return json({ ok: false, error: who.error }, 401, sessionCookie("", 0));
     return json({ ok: true, who: publicWho(who) });
+  }
+
+  // Accepting the creator terms: stamped on their creator record with the
+  // version they saw, so a change of wording can ask again.
+  if (body.action === "accept-terms") {
+    const email = await readSession(cookieFromRequest(req));
+    if (!email) return json({ ok: false, error: "No session" }, 401);
+    const who = await identify(email, "", "session");
+    if (!who.ok) return json({ ok: false, error: who.error }, 401);
+    const creators = await readCreators();
+    const rec = findCreator(creators, who.email);
+    // The owner signs in through ADMIN_EMAILS and may have no record; the
+    // terms are theirs to set, not to accept.
+    if (!rec) return json({ ok: true, termsAt: "" });
+    rec.termsAt = new Date().toISOString();
+    rec.termsVersion = TERMS_VERSION;
+    await writeCreators(creators);
+    return json({ ok: true, termsAt: rec.termsAt });
   }
 
   // ── Signing in ───────────────────────────────────────────────────────────
