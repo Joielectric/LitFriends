@@ -21,6 +21,14 @@ import { siteStore } from "./_site.js";
 
 const KEY = "creators";
 
+// The creator terms shown on Get started in the Content Manager. Bump this
+// when the wording changes and everyone is asked to accept them again.
+export const TERMS_VERSION = "2026-10-29";
+
+/** When this record accepted the current terms, or "" if it has not. */
+export const termsAcceptedAt = (rec) =>
+  rec && rec.termsVersion === TERMS_VERSION ? rec.termsAt || "" : "";
+
 const norm = (v) => String(v == null ? "" : v).trim().toLowerCase();
 
 export const slugify = (v) =>
