@@ -6,8 +6,8 @@
   <title>CYOAudio</title>
   <!-- cyoaudio.com's front door until the player is built (see the
        cyoaudio.com rules in netlify.toml). Dressed as an invitation to a
-       masquerade ball. -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0710'/%3E%3Cpath fill-rule='evenodd' fill='%23d9a441' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
+       masquerade ball, drawn as old gold ink on near-black paper. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070407'/%3E%3Cpath fill='none' stroke='%23b38a45' stroke-width='3' stroke-linejoin='round' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
   <meta name="description" content="Choose-your-own-adventure audio. Behind every mask, a different story. Coming soon.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CYOAudio">
@@ -23,23 +23,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0b0610;
-      --wine: #3a0f22;
-      --ink: #f3e9e2;
-      --muted: #b8a39a;
-      --gold: #d9a441;
-      --gold-hi: #f5d58a;
-      --gold-lo: #8a6122;
-      --line: rgba(217, 164, 65, 0.45);
+      --bg: #050305;
+      --paper: #0b070a;
+      --ink: #b38a45;        /* old gold leaf, not shiny */
+      --ink-hi: #d1ad66;
+      --ink-dim: rgba(179, 138, 69, .38);
+      --blood: #4a0f1b;
+      --text: #d9cfc4;
+      --muted: #8c7d72;
     }
 
     html, body { min-height: 100%; }
     body {
       background:
-        radial-gradient(ellipse at 50% 35%, rgba(90, 20, 50, .55) 0%, transparent 60%),
-        radial-gradient(ellipse at 50% 120%, rgba(217, 164, 65, .10) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 40%, rgba(60, 10, 24, .45) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0, 0, 0, .85) 100%),
         var(--bg);
-      color: var(--ink);
+      color: var(--text);
       font-family: "Cormorant Garamond", Georgia, serif;
       display: flex;
       align-items: center;
@@ -48,226 +48,243 @@
       padding: 40px 16px;
       overflow-x: hidden;
       text-align: center;
-      position: relative;
     }
 
-    /* Damask wallpaper, faint enough to read as texture rather than pattern. */
-    .damask {
+    /* Paper grain over everything, so the flat darks read as a surface. */
+    body::after {
+      content: "";
       position: fixed;
       inset: 0;
-      opacity: .07;
       pointer-events: none;
-      z-index: 0;
+      z-index: 5;
+      opacity: .16;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    /* Candlelight: specks of gold that drift up and fade, like light off
-       sequins across a ballroom. Placed by the script at the bottom. */
-    .glints { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-    .glint {
+    /* A few dim embers drifting up, like candle sparks in a dark hall. */
+    .embers { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ember {
       position: absolute;
       bottom: -10px;
-      width: 4px;
-      height: 4px;
       border-radius: 50%;
-      background: var(--gold-hi);
-      box-shadow: 0 0 8px 2px rgba(245, 213, 138, .6);
+      background: #c9873a;
+      box-shadow: 0 0 6px 1px rgba(201, 135, 58, .45);
       opacity: 0;
       animation: rise linear infinite;
     }
     @keyframes rise {
-      0% { transform: translateY(0); opacity: 0; }
-      15% { opacity: .9; }
-      80% { opacity: .5; }
-      100% { transform: translateY(-105vh); opacity: 0; }
+      0% { transform: translate(0, 0); opacity: 0; }
+      20% { opacity: .55; }
+      100% { transform: translate(30px, -105vh); opacity: 0; }
     }
 
-    /* The invitation card itself, with a double gold rule and corner flourishes. */
     .card {
       position: relative;
       z-index: 1;
-      width: min(560px, 100%);
-      padding: 48px 32px 40px;
-      background: linear-gradient(180deg, rgba(40, 12, 28, .85), rgba(16, 8, 18, .92));
-      border: 1px solid var(--line);
-      outline: 1px solid rgba(217, 164, 65, .2);
-      outline-offset: -10px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .6), inset 0 0 60px rgba(217, 164, 65, .05);
+      width: min(580px, 100%);
+      padding: 44px 30px 40px;
+      background: var(--paper);
+      box-shadow: 0 40px 120px rgba(0, 0, 0, .9);
     }
+    /* The card's frame is drawn, not ruled: see the .frame SVG. */
+    .frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .frame rect { fill: none; stroke: var(--ink); vector-effect: non-scaling-stroke; }
+
     .corner {
       position: absolute;
-      width: 56px;
-      height: 56px;
+      width: 70px;
+      height: 70px;
       fill: none;
-      stroke: var(--gold);
-      stroke-width: 1.4;
-      opacity: .85;
+      stroke: var(--ink);
+      stroke-width: 1.1;
+      stroke-linecap: round;
     }
-    .corner.tl { top: 4px; left: 4px; }
-    .corner.tr { top: 4px; right: 4px; transform: scaleX(-1); }
-    .corner.bl { bottom: 4px; left: 4px; transform: scaleY(-1); }
-    .corner.br { bottom: 4px; right: 4px; transform: scale(-1, -1); }
+    .corner.tl { top: 6px; left: 6px; }
+    .corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
+    .corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+    .corner.br { bottom: 6px; right: 6px; transform: scale(-1, -1); }
 
     .mask {
-      width: min(300px, 78%);
+      width: min(340px, 92%);
       height: auto;
       display: block;
-      margin: 0 auto 8px;
-      filter: drop-shadow(0 6px 18px rgba(217, 164, 65, .25));
-      animation: sway 7s ease-in-out infinite;
-      transform-origin: 50% 70%;
-    }
-    @keyframes sway {
-      0%, 100% { transform: rotate(-1.5deg); }
-      50% { transform: rotate(1.5deg); }
+      margin: 0 auto;
+      overflow: visible;
     }
 
     .invited {
       font-family: "Pinyon Script", cursive;
-      font-size: clamp(1.6rem, 6vw, 2.1rem);
-      color: var(--gold-hi);
-      margin-top: 6px;
+      font-size: clamp(1.5rem, 6vw, 2rem);
+      color: var(--ink-hi);
+      margin-top: 4px;
+      filter: url(#rough-text);
     }
 
     .wordmark {
       font-family: "Cinzel Decorative", "Cinzel", serif;
-      font-weight: 700;
-      font-size: clamp(2.3rem, 10vw, 3.6rem);
-      letter-spacing: .06em;
+      font-weight: 400;
+      font-size: clamp(2.2rem, 10vw, 3.4rem);
+      letter-spacing: .07em;
       line-height: 1.1;
-      margin-top: 6px;
-      background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 55%, var(--gold-lo) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      margin-top: 4px;
+      color: var(--ink);
+      filter: url(#rough-text);
     }
 
     .sub {
       font-family: "Cinzel", serif;
-      font-size: .78rem;
-      letter-spacing: .34em;
+      font-size: .74rem;
+      letter-spacing: .36em;
       text-transform: uppercase;
       color: var(--muted);
       margin-top: 10px;
     }
 
-    .rule {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      justify-content: center;
-      margin: 26px auto;
-      color: var(--gold);
-      width: 70%;
-    }
-    .rule::before, .rule::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--line), transparent);
-    }
+    .rule { width: 62%; height: 22px; margin: 22px auto; display: block; overflow: visible; }
 
     .lede {
-      font-size: clamp(1.2rem, 4.2vw, 1.45rem);
+      font-size: clamp(1.15rem, 4.2vw, 1.4rem);
       font-style: italic;
       font-weight: 300;
       max-width: 32ch;
       margin: 0 auto;
-      line-height: 1.45;
+      line-height: 1.5;
+      color: var(--text);
     }
 
     .soon {
       font-family: "Cinzel", serif;
-      font-weight: 600;
-      font-size: .9rem;
-      letter-spacing: .3em;
+      font-weight: 400;
+      font-size: .86rem;
+      letter-spacing: .32em;
       text-transform: uppercase;
-      color: var(--gold);
+      color: var(--ink-hi);
       margin-top: 28px;
     }
 
     .fine {
       font-family: "Cinzel", serif;
-      font-size: .66rem;
-      letter-spacing: .25em;
+      font-size: .64rem;
+      letter-spacing: .26em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-top: 22px;
-      opacity: .8;
+      margin-top: 20px;
+      opacity: .75;
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .mask { animation: none; }
-      .glints { display: none; }
+      .embers { display: none; }
     }
   </style>
 </head>
 <body>
-  <svg class="damask" aria-hidden="true">
+  <!-- Shared filters. "rough" wobbles a line the way a pen does; it is what
+       stops the drawing looking computer-perfect. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <pattern id="dmk" width="80" height="120" patternUnits="userSpaceOnUse">
-        <g fill="none" stroke="#d9a441" stroke-width="1.2">
-          <path d="M40 10 C 55 30, 60 45, 40 60 C 20 45, 25 30, 40 10 Z"/>
-          <path d="M40 60 C 52 72, 56 88, 40 110 C 24 88, 28 72, 40 60 Z"/>
-          <path d="M40 35 C 50 40, 70 38, 76 26 M40 35 C 30 40, 10 38, 4 26"/>
-          <path d="M40 85 C 50 80, 70 82, 76 94 M40 85 C 30 80, 10 82, 4 94"/>
-          <circle cx="0" cy="60" r="3"/><circle cx="80" cy="60" r="3"/>
-        </g>
+      <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7"/>
+        <feDisplacementMap in="SourceGraphic" scale="3.2"/>
+      </filter>
+      <filter id="rough2" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="21"/>
+        <feDisplacementMap in="SourceGraphic" scale="2.4"/>
+      </filter>
+      <filter id="rough-text" x="-5%" y="-20%" width="110%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="1" seed="4"/>
+        <feDisplacementMap in="SourceGraphic" scale="1.6"/>
+      </filter>
+      <!-- Engraver's hatching for the shaded parts of the mask. -->
+      <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+        <line x1="0" y1="0" x2="0" y2="5" stroke="#b38a45" stroke-width=".7"/>
+      </pattern>
+      <pattern id="xhatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-42)">
+        <line x1="0" y1="0" x2="0" y2="5" stroke="#b38a45" stroke-width=".6"/>
       </pattern>
     </defs>
-    <rect width="100%" height="100%" fill="url(#dmk)"/>
   </svg>
-  <div class="glints" aria-hidden="true"></div>
+
+  <div class="embers" aria-hidden="true"></div>
 
   <main class="card">
-    <svg class="corner tl" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
-    <svg class="corner tr" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
-    <svg class="corner bl" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
-    <svg class="corner br" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
+    <svg class="frame" aria-hidden="true">
+      <rect style="x:1px;y:1px;width:calc(100% - 2px);height:calc(100% - 2px)" stroke-width="1" filter="url(#rough2)" opacity=".7"/>
+      <rect style="x:11px;y:11px;width:calc(100% - 22px);height:calc(100% - 22px)" stroke-width=".7" filter="url(#rough)" opacity=".4"/>
+    </svg>
+    <svg class="corner tl" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
+    <svg class="corner tr" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
+    <svg class="corner bl" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
+    <svg class="corner br" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
 
-    <!-- A Venetian half-mask with a feather plume. -->
-    <svg class="mask" viewBox="0 0 300 170" aria-hidden="true">
+    <!-- A Venetian half-mask in pen and ink: outline drawn twice like a
+         sketch, hatched shading, beaded eye rims, trailing ribbons, and
+         feathers whose barbs are drawn by the script below. -->
+    <svg class="mask" viewBox="0 0 320 210" aria-hidden="true">
       <defs>
-        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#f5d58a"/>
-          <stop offset=".5" stop-color="#d9a441"/>
-          <stop offset="1" stop-color="#8a6122"/>
-        </linearGradient>
-        <linearGradient id="plume" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stop-color="#5a1430"/>
-          <stop offset="1" stop-color="#c0394a"/>
-        </linearGradient>
+        <clipPath id="maskShape">
+          <path clip-rule="evenodd" d="M160 92 C 130 70, 70 64, 28 90 C 36 124, 60 158, 108 162 C 132 164, 148 148, 160 140 C 172 148, 188 164, 212 162 C 260 158, 284 124, 292 90 C 250 64, 190 70, 160 92 Z M68 114 C 84 98, 120 98, 136 118 C 120 132, 86 134, 68 114 Z M252 114 C 236 98, 200 98, 184 118 C 200 132, 234 134, 252 114 Z"/>
+        </clipPath>
       </defs>
-      <!-- feathers -->
-      <g fill="url(#plume)" stroke="#d9a441" stroke-width=".8" stroke-opacity=".6">
-        <path d="M232 62 C 236 30, 250 10, 270 2 C 268 26, 256 48, 232 62 Z"/>
-        <path d="M226 64 C 222 34, 228 12, 244 0 C 248 24, 242 46, 226 64 Z"/>
-        <path d="M238 66 C 252 44, 272 34, 296 34 C 284 52, 264 64, 238 66 Z"/>
+
+      <!-- ribbons, behind the mask -->
+      <g fill="none" stroke="#b38a45" stroke-width="1" stroke-linecap="round" filter="url(#rough)" opacity=".85">
+        <path d="M30 96 C 18 120, 26 150, 12 180 C 8 190, 14 200, 22 206"/>
+        <path d="M34 100 C 28 126, 38 152, 28 182 C 26 190, 30 198, 36 202"/>
+        <path d="M18 150 C 22 152, 28 152, 32 148"/>
+        <path d="M290 96 C 302 120, 294 150, 308 180 C 312 190, 306 200, 298 206"/>
+        <path d="M286 100 C 292 126, 282 152, 292 182 C 294 190, 290 198, 284 202"/>
+        <path d="M302 150 C 298 152, 292 152, 288 148"/>
       </g>
-      <g fill="none" stroke="#f5d58a" stroke-width=".8" stroke-opacity=".7">
-        <path d="M232 62 C 242 40, 254 20, 270 2"/>
-        <path d="M226 64 C 230 40, 234 20, 244 0"/>
-        <path d="M238 66 C 256 54, 274 42, 296 34"/>
+
+      <!-- feathers, filled in by the script -->
+      <g id="feathers" fill="none" stroke="#b38a45" stroke-linecap="round" filter="url(#rough2)"></g>
+
+      <!-- solid dark body so the background doesn't show through the hatching -->
+      <path fill="#0b070a" fill-rule="evenodd" d="M160 92 C 130 70, 70 64, 28 90 C 36 124, 60 158, 108 162 C 132 164, 148 148, 160 140 C 172 148, 188 164, 212 162 C 260 158, 284 124, 292 90 C 250 64, 190 70, 160 92 Z M68 114 C 84 98, 120 98, 136 118 C 120 132, 86 134, 68 114 Z M252 114 C 236 98, 200 98, 184 118 C 200 132, 234 134, 252 114 Z"/>
+
+      <!-- shading: light hatch on the lower cheeks, cross-hatch deepest under the eyes -->
+      <g clip-path="url(#maskShape)" filter="url(#rough)">
+        <path fill="url(#hatch)" opacity=".55" d="M20 120 C 60 150, 120 150, 160 128 C 200 150, 260 150, 300 120 L 300 170 L 20 170 Z"/>
+        <path fill="url(#xhatch)" opacity=".5" d="M24 136 C 60 162, 110 164, 160 140 C 210 164, 260 162, 296 136 L 296 170 L 24 170 Z"/>
+        <ellipse cx="102" cy="122" rx="44" ry="20" fill="url(#xhatch)" opacity=".35"/>
+        <ellipse cx="218" cy="122" rx="44" ry="20" fill="url(#xhatch)" opacity=".35"/>
+        <path fill="url(#hatch)" opacity=".3" d="M40 88 C 80 72, 130 74, 160 94 C 190 74, 240 72, 280 88 L 280 96 C 240 82, 190 84, 160 102 C 130 84, 80 82, 40 96 Z"/>
       </g>
-      <!-- mask body, eyes cut out -->
-      <path fill="url(#gold)" fill-rule="evenodd" d="
-        M150 72 C 120 50, 60 44, 18 70 C 26 104, 50 138, 98 142 C 122 144, 138 128, 150 120
-        C 162 128, 178 144, 202 142 C 250 138, 274 104, 282 70 C 240 44, 180 50, 150 72 Z
-        M58 94 C 74 78, 110 78, 126 98 C 110 112, 76 114, 58 94 Z
-        M242 94 C 226 78, 190 78, 174 98 C 190 112, 224 114, 242 94 Z"/>
-      <!-- filigree -->
-      <g fill="none" stroke="#5a3a10" stroke-width="1.3" stroke-linecap="round" opacity=".75">
-        <path d="M150 80 C 146 92, 150 104, 150 112"/>
-        <path d="M40 78 C 60 66, 90 64, 112 72"/>
-        <path d="M260 78 C 240 66, 210 64, 188 72"/>
-        <path d="M54 118 C 70 128, 88 130, 104 124"/>
-        <path d="M246 118 C 230 128, 212 130, 196 124"/>
-        <path d="M92 70 C 96 62, 106 62, 104 70 C 103 74, 98 74, 98 70"/>
-        <path d="M208 70 C 204 62, 194 62, 196 70 C 197 74, 202 74, 202 70"/>
+
+      <!-- outline, twice, as a sketching hand goes over its line -->
+      <g fill="none" stroke="#b38a45" stroke-linejoin="round" stroke-linecap="round">
+        <path filter="url(#rough)" stroke-width="1.6" d="M160 92 C 130 70, 70 64, 28 90 C 36 124, 60 158, 108 162 C 132 164, 148 148, 160 140 C 172 148, 188 164, 212 162 C 260 158, 284 124, 292 90 C 250 64, 190 70, 160 92 Z"/>
+        <path filter="url(#rough2)" stroke-width=".8" opacity=".7" d="M160 94 C 131 72, 72 66, 30 91 C 38 125, 62 157, 108 161 C 132 163, 147 147, 160 139 C 173 147, 188 163, 212 161 C 258 157, 282 125, 290 91 C 248 66, 189 72, 160 94 Z"/>
+        <path filter="url(#rough)" stroke-width="1.5" d="M68 114 C 84 98, 120 98, 136 118 C 120 132, 86 134, 68 114 Z M252 114 C 236 98, 200 98, 184 118 C 200 132, 234 134, 252 114 Z"/>
       </g>
-      <g fill="#f5d58a">
-        <circle cx="150" cy="70" r="4"/>
-        <circle cx="38" cy="96" r="2.4"/><circle cx="262" cy="96" r="2.4"/>
-        <circle cx="140" cy="132" r="1.8"/><circle cx="160" cy="132" r="1.8"/>
+
+      <!-- beaded rims around the eyes -->
+      <g fill="none" stroke="#d1ad66" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5" filter="url(#rough2)">
+        <path d="M62 114 C 80 92, 124 92, 142 118 C 124 138, 82 140, 62 114 Z"/>
+        <path d="M258 114 C 240 92, 196 92, 178 118 C 196 138, 238 140, 258 114 Z"/>
+      </g>
+
+      <!-- filigree scrolls -->
+      <g fill="none" stroke="#d1ad66" stroke-width="1" stroke-linecap="round" filter="url(#rough2)">
+        <path d="M160 100 C 156 112, 164 120, 160 132"/>
+        <path d="M152 104 C 144 100, 140 108, 146 110 M168 104 C 176 100, 180 108, 174 110"/>
+        <path d="M46 98 C 52 90, 62 92, 60 98 C 58 102, 52 100, 54 96"/>
+        <path d="M274 98 C 268 90, 258 92, 260 98 C 262 102, 268 100, 266 96"/>
+        <path d="M40 118 C 44 132, 54 140, 64 142 M280 118 C 276 132, 266 140, 256 142"/>
+        <path d="M90 84 C 104 78, 122 80, 134 88 M230 84 C 216 78, 198 80, 186 88"/>
+        <path d="M120 150 C 128 152, 136 150, 142 146 M200 150 C 192 152, 184 150, 178 146"/>
+      </g>
+      <g fill="#d1ad66" filter="url(#rough2)">
+        <circle cx="160" cy="90" r="3.6"/>
+        <circle cx="160" cy="90" r="6.5" fill="none" stroke="#d1ad66" stroke-width=".8"/>
       </g>
     </svg>
 
@@ -275,7 +292,14 @@
     <h1 class="wordmark">CYOAudio</h1>
     <p class="sub">A masquerade of voices</p>
 
-    <div class="rule" aria-hidden="true">&#10086;</div>
+    <svg class="rule" viewBox="0 0 300 22" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="none" stroke="#b38a45" stroke-width="1" stroke-linecap="round" filter="url(#rough2)">
+        <path d="M4 11 C 60 9, 100 13, 132 11"/>
+        <path d="M168 11 C 200 9, 240 13, 296 11"/>
+        <path d="M150 3 C 158 7, 158 15, 150 19 C 142 15, 142 7, 150 3 Z"/>
+        <path d="M132 11 C 138 6, 142 8, 140 12 M168 11 C 162 6, 158 8, 160 12"/>
+      </g>
+    </svg>
 
     <p class="lede">Behind every mask, a different story. Wander the ballroom, choose a stranger, and follow wherever their voice leads you.</p>
 
@@ -284,20 +308,65 @@
   </main>
 
   <script>
-    // Scatter the drifting glints. Each gets its own lane, size, speed and
-    // start, so they never move in step.
+    // Draw the feathers barb by barb, so each one is a little uneven, the way
+    // a hand would ink them. Each feather is a curved quill from base to tip.
+    (function () {
+      var NS = "http://www.w3.org/2000/svg";
+      var g = document.getElementById("feathers");
+      var feathers = [
+        { b: [236, 86], c: [244, 40], t: [282, 6], len: 15 },
+        { b: [228, 88], c: [222, 44], t: [244, 2], len: 13 },
+        { b: [244, 90], c: [270, 56], t: [316, 40], len: 13 },
+        { b: [222, 90], c: [200, 52], t: [206, 14], len: 10 }
+      ];
+      var rnd = function (a, b) { return a + Math.random() * (b - a); };
+      feathers.forEach(function (f) {
+        var pt = function (t) {
+          var u = 1 - t;
+          return [u * u * f.b[0] + 2 * u * t * f.c[0] + t * t * f.t[0],
+                  u * u * f.b[1] + 2 * u * t * f.c[1] + t * t * f.t[1]];
+        };
+        var d = "M" + f.b + " Q" + f.c + " " + f.t;
+        var quill = document.createElementNS(NS, "path");
+        quill.setAttribute("d", d);
+        quill.setAttribute("stroke-width", "1.3");
+        g.appendChild(quill);
+        var barbs = "";
+        for (var t = 0.12; t < 0.97; t += 0.03) {
+          var p = pt(t), q = pt(t + 0.01);
+          var dx = q[0] - p[0], dy = q[1] - p[1], m = Math.hypot(dx, dy) || 1;
+          dx /= m; dy /= m;
+          // Barbs sweep toward the tip and shorten near it.
+          var L = f.len * Math.sin(Math.PI * Math.min(1, t * 1.1)) * rnd(0.8, 1.1);
+          [-1, 1].forEach(function (s) {
+            var nx = -dy * s, ny = dx * s;
+            var ex = p[0] + (nx * 0.8 + dx * 0.6) * L, ey = p[1] + (ny * 0.8 + dy * 0.6) * L;
+            var cx = p[0] + nx * L * 0.5, cy = p[1] + ny * L * 0.5;
+            barbs += "M" + p[0].toFixed(1) + " " + p[1].toFixed(1) +
+                     " Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + ex.toFixed(1) + " " + ey.toFixed(1);
+          });
+        }
+        var b = document.createElementNS(NS, "path");
+        b.setAttribute("d", barbs);
+        b.setAttribute("stroke-width", ".55");
+        b.setAttribute("opacity", ".75");
+        g.appendChild(b);
+      });
+    })();
+
+    // A few dim embers drifting up.
     (function () {
       if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      var box = document.querySelector(".glints");
-      for (var i = 0; i < 28; i++) {
-        var g = document.createElement("span");
-        g.className = "glint";
-        var size = 2 + Math.random() * 3;
-        g.style.left = (Math.random() * 100) + "%";
-        g.style.width = g.style.height = size + "px";
-        g.style.animationDuration = (12 + Math.random() * 14) + "s";
-        g.style.animationDelay = (-Math.random() * 26) + "s";
-        box.appendChild(g);
+      var box = document.querySelector(".embers");
+      for (var i = 0; i < 14; i++) {
+        var e = document.createElement("span");
+        e.className = "ember";
+        var size = 1.5 + Math.random() * 2;
+        e.style.left = (Math.random() * 100) + "%";
+        e.style.width = e.style.height = size + "px";
+        e.style.animationDuration = (16 + Math.random() * 16) + "s";
+        e.style.animationDelay = (-Math.random() * 32) + "s";
+        box.appendChild(e);
       }
     })();
   </script>
