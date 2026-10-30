@@ -42,9 +42,9 @@
   status = 200
   force = true
 
-# cyoaudio.com is the choose-your-own-adventure audio site, also on this same
-# site so it shares sign-in and the catalogue with The Velvet Key. Until the
-# player is built, its front door is a coming soon page.
+# cyoaudio.com is the choose-your-own-adventure audio site, served from this
+# same Netlify site. Until the player is built, its front door is a coming
+# soon page.
 [[redirects]]
   from = "https://cyoaudio.com/"
   to = "/cyoaudio.html"
