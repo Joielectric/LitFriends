@@ -5,227 +5,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CYOAudio</title>
   <!-- cyoaudio.com's front door until the player is built (see the
-       cyoaudio.com rules in netlify.toml). A candlelit wall of masquerade
-       masks, with the invitation set in a gilded frame over it. -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0706'/%3E%3Cpath fill-rule='evenodd' fill='%23c9a14a' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
-  <meta name="description" content="Choose-your-own-adventure audio. Behind every mask, a different story. Coming soon.">
+       cyoaudio.com rules in netlify.toml). Just the name, in the dark, with
+       masks half-seen in the shadows behind it. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060506'/%3E%3Cpath fill-rule='evenodd' fill='%23c9a14a' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
+  <meta name="description" content="CYOAudio. Doors opening soon.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CYOAudio">
   <meta property="og:url" content="https://cyoaudio.com/">
-  <meta property="og:title" content="CYOAudio: You are cordially invited">
-  <meta property="og:description" content="Choose-your-own-adventure audio. Behind every mask, a different story. The doors open soon.">
-  <meta property="og:image" content="https://cyoaudio.com/images/cyoaudio/masquerade.webp">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:title" content="CYOAudio">
+  <meta property="og:description" content="Doors opening soon.">
+  <meta name="twitter:card" content="summary">
   <link rel="canonical" href="https://cyoaudio.com/">
-  <link rel="preload" as="image" href="images/cyoaudio/masquerade.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0706;
+      --bg: #060506;
       --gold: #c9a14a;
-      --gold-hi: #f0d79a;
+      --gold-hi: #ecd08e;
       --gold-lo: #6e4f1c;
-      --text: #e8ddd0;
-      --muted: #a39484;
+      --muted: #8a7d70;
     }
 
-    html, body { min-height: 100%; }
+    html, body { height: 100%; }
     body {
       background: var(--bg);
-      color: var(--text);
-      font-family: "Cormorant Garamond", Georgia, serif;
+      color: var(--gold);
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 48px 16px;
-      overflow-x: hidden;
+      overflow: hidden;
       text-align: center;
-      position: relative;
     }
 
-    /* The wall of masks, darkened toward the middle so the invitation reads,
-       and toward the edges so it sinks into the room. */
-    .scene {
+    /* Masks in the shadows: the photo of the mask wall, drained of colour and
+       pushed almost to black, so only their shapes come through. */
+    .shadows {
       position: fixed;
-      inset: 0;
+      inset: -4%;
       z-index: 0;
-      background:
-        radial-gradient(ellipse 60% 70% at 50% 50%, rgba(10, 7, 6, .72) 0%, rgba(10, 7, 6, .35) 60%, rgba(10, 7, 6, .8) 100%),
-        linear-gradient(180deg, rgba(10, 7, 6, .25) 0%, rgba(10, 7, 6, .1) 40%, rgba(10, 7, 6, .85) 100%),
-        url("images/cyoaudio/masquerade.webp") 62% center / cover no-repeat;
-      animation: drift 40s ease-in-out infinite alternate;
+      background: url("images/cyoaudio/masquerade.webp") 60% center / cover no-repeat;
+      filter: grayscale(.8) brightness(.5) contrast(1.2) blur(1px);
+      opacity: .6;
+      animation: drift 50s ease-in-out infinite alternate;
     }
-    @keyframes drift {
-      from { transform: scale(1.04); }
-      to { transform: scale(1.1) translateX(-1.5%); }
-    }
-
-    /* Candlelight: a warm glow over the candelabra that breathes unevenly. */
-    .candle {
-      position: fixed;
-      z-index: 0;
-      left: 72%;
-      top: 34%;
-      width: 40vmax;
-      height: 40vmax;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(255, 190, 110, .16) 0%, rgba(255, 170, 80, .05) 35%, transparent 65%);
-      pointer-events: none;
-      animation: flicker 3.2s infinite;
-      mix-blend-mode: screen;
-    }
-    @keyframes flicker {
-      0%, 100% { opacity: .85; }
-      18% { opacity: 1; }
-      22% { opacity: .7; }
-      40% { opacity: .95; }
-      55% { opacity: .78; }
-      70% { opacity: 1; }
-      85% { opacity: .82; }
-    }
-
-    /* The invitation, mounted in a gilded frame like those on the wall. The
-       moulding is a gold gradient border; the inner rule is the lip of the
-       frame; the dotted line inside it is the beading. */
-    .frame {
-      position: relative;
-      z-index: 1;
-      width: min(560px, 100%);
-      padding: 14px;
-      background:
-        linear-gradient(135deg, #7a5820 0%, #f0d79a 18%, #a8792c 34%, #e6c47a 50%, #6e4f1c 66%, #d8b466 82%, #8a6424 100%);
-      box-shadow:
-        0 30px 90px rgba(0, 0, 0, .85),
-        0 0 0 1px rgba(0, 0, 0, .6),
-        inset 0 0 0 1px rgba(255, 240, 200, .35),
-        inset 0 0 12px rgba(60, 35, 5, .8);
-    }
-    .frame::before {
-      /* corner rosettes on the moulding */
+    .shadows::after {
       content: "";
       position: absolute;
-      inset: 3px;
-      background:
-        radial-gradient(circle at 0 0, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px),
-        radial-gradient(circle at 100% 0, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px),
-        radial-gradient(circle at 0 100%, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px),
-        radial-gradient(circle at 100% 100%, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px);
-      pointer-events: none;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(6, 5, 6, .55) 0%, rgba(6, 5, 6, .25) 50%, rgba(6, 5, 6, .9) 100%);
     }
-    .inner {
-      position: relative;
-      padding: 46px 30px 40px;
-      background:
-        radial-gradient(ellipse at 50% 0%, rgba(80, 20, 30, .35) 0%, transparent 60%),
-        rgba(12, 8, 7, .93);
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .9), inset 0 6px 24px rgba(0, 0, 0, .9);
-      outline: 1px dotted rgba(201, 161, 74, .55);
-      outline-offset: -10px;
+    @media (max-width: 700px) {
+      /* On a phone, frame the feathered mask rather than the candles. */
+      .shadows { background-position: 70% center; }
+    }
+    @keyframes drift {
+      from { transform: scale(1); }
+      to { transform: scale(1.06) translateX(-1%); }
     }
 
-    .invited {
-      font-family: "Pinyon Script", cursive;
-      font-size: clamp(1.6rem, 6vw, 2.2rem);
-      color: var(--gold-hi);
-      text-shadow: 0 0 18px rgba(240, 215, 154, .25);
-    }
+    .wordmark, .soon { position: relative; z-index: 1; }
 
     .wordmark {
       font-family: "Cinzel Decorative", "Cinzel", serif;
-      font-weight: 700;
-      font-size: clamp(2.3rem, 10vw, 3.6rem);
-      letter-spacing: .05em;
-      line-height: 1.1;
-      margin-top: 4px;
-      background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 50%, var(--gold-lo) 100%);
+      font-weight: 400;
+      font-size: clamp(2.6rem, 12vw, 6rem);
+      letter-spacing: .06em;
+      line-height: 1;
+      background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 55%, var(--gold-lo) 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .8));
-    }
-
-    .sub {
-      font-family: "Cinzel", serif;
-      font-size: .76rem;
-      letter-spacing: .36em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 10px;
-    }
-
-    .rule {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      justify-content: center;
-      margin: 24px auto;
-      color: var(--gold);
-      width: 66%;
-      font-size: 1.1rem;
-    }
-    .rule::before, .rule::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201, 161, 74, .6), transparent);
-    }
-
-    .lede {
-      font-size: clamp(1.18rem, 4.2vw, 1.45rem);
-      font-style: italic;
-      font-weight: 300;
-      max-width: 32ch;
-      margin: 0 auto;
-      line-height: 1.5;
+      filter: drop-shadow(0 0 24px rgba(201, 161, 74, .18));
+      opacity: 0;
+      animation: appear 2.4s ease .3s forwards;
     }
 
     .soon {
       font-family: "Cinzel", serif;
-      font-weight: 600;
-      font-size: .88rem;
-      letter-spacing: .32em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-top: 28px;
-    }
-
-    .fine {
-      font-family: "Cinzel", serif;
-      font-size: .64rem;
-      letter-spacing: .26em;
+      font-size: clamp(.72rem, 2.6vw, .9rem);
+      letter-spacing: .42em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-top: 20px;
-      opacity: .8;
+      margin-top: 26px;
+      padding-left: .42em; /* balance the trailing letter-spacing */
+      opacity: 0;
+      animation: appear 2s ease 1.4s forwards;
     }
 
+    @keyframes appear { to { opacity: 1; } }
+
     @media (prefers-reduced-motion: reduce) {
-      .scene, .candle { animation: none; }
+      .shadows { animation: none; }
+      .wordmark, .soon { animation: none; opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div class="scene" aria-hidden="true"></div>
-  <div class="candle" aria-hidden="true"></div>
-
-  <main class="frame">
-    <div class="inner">
-      <p class="invited">You are cordially invited</p>
-      <h1 class="wordmark">CYOAudio</h1>
-      <p class="sub">A masquerade of voices</p>
-
-      <div class="rule" aria-hidden="true">&#10086;</div>
-
-      <p class="lede">Behind every mask, a different story. Wander the ballroom, choose a stranger, and follow wherever their voice leads you.</p>
-
-      <p class="soon">The doors open soon</p>
-      <p class="fine">Strictly adults 18+ &middot; Masks required</p>
-    </div>
-  </main>
+  <div class="shadows" aria-hidden="true"></div>
+  <h1 class="wordmark">CYOAudio</h1>
+  <p class="soon">Doors opening soon</p>
 </body>
 </html>
