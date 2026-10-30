@@ -5,169 +5,301 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CYOAudio</title>
   <!-- cyoaudio.com's front door until the player is built (see the
-       cyoaudio.com rules in netlify.toml). -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23140b16'/%3E%3Cpath d='M14 40 L28 40 L40 22 M28 40 L40 48' stroke='%23d9a441' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='14' cy='40' r='5' fill='%23c0394a'/%3E%3Ccircle cx='46' cy='18' r='5' fill='%23d9a441'/%3E%3Ccircle cx='46' cy='50' r='5' fill='%23d9a441'/%3E%3C/svg%3E">
-  <meta name="description" content="Choose-your-own-adventure audio. Listen, choose, and follow the voice that calls you. Coming soon.">
+       cyoaudio.com rules in netlify.toml). Dressed as an invitation to a
+       masquerade ball. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0710'/%3E%3Cpath fill-rule='evenodd' fill='%23d9a441' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
+  <meta name="description" content="Choose-your-own-adventure audio. Behind every mask, a different story. Coming soon.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CYOAudio">
   <meta property="og:url" content="https://cyoaudio.com/">
-  <meta property="og:title" content="CYOAudio: Coming soon">
-  <meta property="og:description" content="Choose-your-own-adventure audio. Listen, choose, and follow the voice that calls you.">
+  <meta property="og:title" content="CYOAudio: You are cordially invited">
+  <meta property="og:description" content="Choose-your-own-adventure audio. Behind every mask, a different story. The doors open soon.">
   <meta name="twitter:card" content="summary">
   <link rel="canonical" href="https://cyoaudio.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #120a14;
-      --ink: #f1e6ea;
-      --muted: #a8929e;
+      --bg: #0b0610;
+      --wine: #3a0f22;
+      --ink: #f3e9e2;
+      --muted: #b8a39a;
       --gold: #d9a441;
-      --crimson: #c0394a;
-      --line: rgba(217, 164, 65, 0.35);
+      --gold-hi: #f5d58a;
+      --gold-lo: #8a6122;
+      --line: rgba(217, 164, 65, 0.45);
     }
 
-    html, body { height: 100%; }
+    html, body { min-height: 100%; }
     body {
-      background: radial-gradient(ellipse at 50% 30%, #2a1424 0%, var(--bg) 62%) fixed, var(--bg);
+      background:
+        radial-gradient(ellipse at 50% 35%, rgba(90, 20, 50, .55) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 120%, rgba(217, 164, 65, .10) 0%, transparent 55%),
+        var(--bg);
       color: var(--ink);
       font-family: "Cormorant Garamond", Georgia, serif;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 48px 16px;
+      padding: 40px 16px;
       overflow-x: hidden;
       text-align: center;
+      position: relative;
     }
 
-    /* The branching paths: a single voice that splits into choices. Each path
-       draws itself in, then its end lights up as if it were waiting for you. */
-    .paths { width: min(420px, 90vw); height: auto; margin-bottom: 28px; }
-    .paths path {
-      fill: none;
-      stroke: var(--line);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-dasharray: 400;
-      stroke-dashoffset: 400;
-      animation: draw 2.4s ease forwards;
+    /* Damask wallpaper, faint enough to read as texture rather than pattern. */
+    .damask {
+      position: fixed;
+      inset: 0;
+      opacity: .07;
+      pointer-events: none;
+      z-index: 0;
     }
-    .paths path:nth-of-type(2) { animation-delay: .5s; }
-    .paths path:nth-of-type(3) { animation-delay: .9s; }
-    .paths path:nth-of-type(4) { animation-delay: 1.3s; }
-    .paths path:nth-of-type(5) { animation-delay: 1.6s; }
-    .paths .start { fill: var(--crimson); }
-    .paths .end {
-      fill: var(--gold);
+
+    /* Candlelight: specks of gold that drift up and fade, like light off
+       sequins across a ballroom. Placed by the script at the bottom. */
+    .glints { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .glint {
+      position: absolute;
+      bottom: -10px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold-hi);
+      box-shadow: 0 0 8px 2px rgba(245, 213, 138, .6);
       opacity: 0;
-      animation: glow 3.2s ease-in-out infinite;
+      animation: rise linear infinite;
     }
-    .paths .end:nth-of-type(2) { animation-delay: 2.2s; }
-    .paths .end:nth-of-type(3) { animation-delay: 2.7s; }
-    .paths .end:nth-of-type(4) { animation-delay: 3.2s; }
-    .paths .end:nth-of-type(5) { animation-delay: 3.6s; }
-    .paths .end:nth-of-type(6) { animation-delay: 4s; }
+    @keyframes rise {
+      0% { transform: translateY(0); opacity: 0; }
+      15% { opacity: .9; }
+      80% { opacity: .5; }
+      100% { transform: translateY(-105vh); opacity: 0; }
+    }
 
-    @keyframes draw { to { stroke-dashoffset: 0; } }
-    @keyframes glow {
-      0%, 100% { opacity: .25; }
-      50% { opacity: 1; }
+    /* The invitation card itself, with a double gold rule and corner flourishes. */
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(560px, 100%);
+      padding: 48px 32px 40px;
+      background: linear-gradient(180deg, rgba(40, 12, 28, .85), rgba(16, 8, 18, .92));
+      border: 1px solid var(--line);
+      outline: 1px solid rgba(217, 164, 65, .2);
+      outline-offset: -10px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .6), inset 0 0 60px rgba(217, 164, 65, .05);
     }
-    @media (prefers-reduced-motion: reduce) {
-      .paths path { animation: none; stroke-dashoffset: 0; }
-      .paths .end { animation: none; opacity: .8; }
+    .corner {
+      position: absolute;
+      width: 56px;
+      height: 56px;
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.4;
+      opacity: .85;
+    }
+    .corner.tl { top: 4px; left: 4px; }
+    .corner.tr { top: 4px; right: 4px; transform: scaleX(-1); }
+    .corner.bl { bottom: 4px; left: 4px; transform: scaleY(-1); }
+    .corner.br { bottom: 4px; right: 4px; transform: scale(-1, -1); }
+
+    .mask {
+      width: min(300px, 78%);
+      height: auto;
+      display: block;
+      margin: 0 auto 8px;
+      filter: drop-shadow(0 6px 18px rgba(217, 164, 65, .25));
+      animation: sway 7s ease-in-out infinite;
+      transform-origin: 50% 70%;
+    }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-1.5deg); }
+      50% { transform: rotate(1.5deg); }
+    }
+
+    .invited {
+      font-family: "Pinyon Script", cursive;
+      font-size: clamp(1.6rem, 6vw, 2.1rem);
+      color: var(--gold-hi);
+      margin-top: 6px;
     }
 
     .wordmark {
-      font-family: "Cinzel", serif;
-      font-weight: 600;
-      font-size: clamp(2.4rem, 9vw, 4.2rem);
-      letter-spacing: .14em;
-      line-height: 1;
+      font-family: "Cinzel Decorative", "Cinzel", serif;
+      font-weight: 700;
+      font-size: clamp(2.3rem, 10vw, 3.6rem);
+      letter-spacing: .06em;
+      line-height: 1.1;
+      margin-top: 6px;
+      background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 55%, var(--gold-lo) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
-    .wordmark span { color: var(--gold); }
 
-    .soon {
-      font-family: "Inter", system-ui, sans-serif;
+    .sub {
+      font-family: "Cinzel", serif;
       font-size: .78rem;
-      font-weight: 500;
-      letter-spacing: .32em;
+      letter-spacing: .34em;
       text-transform: uppercase;
-      color: var(--crimson);
-      margin-top: 18px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      margin: 26px auto;
+      color: var(--gold);
+      width: 70%;
+    }
+    .rule::before, .rule::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line), transparent);
     }
 
     .lede {
-      font-size: clamp(1.25rem, 4vw, 1.6rem);
+      font-size: clamp(1.2rem, 4.2vw, 1.45rem);
       font-style: italic;
       font-weight: 300;
-      max-width: 34ch;
-      margin: 28px auto 0;
-      line-height: 1.4;
+      max-width: 32ch;
+      margin: 0 auto;
+      line-height: 1.45;
     }
 
-    .steps {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 32px;
-      list-style: none;
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: .85rem;
-      color: var(--muted);
+    .soon {
+      font-family: "Cinzel", serif;
+      font-weight: 600;
+      font-size: .9rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 28px;
     }
-    .steps li {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 8px 16px;
-    }
-    .steps b { color: var(--gold); font-weight: 500; margin-right: 6px; }
 
-    footer {
-      margin-top: 56px;
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: .8rem;
+    .fine {
+      font-family: "Cinzel", serif;
+      font-size: .66rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
       color: var(--muted);
-      line-height: 1.7;
+      margin-top: 22px;
+      opacity: .8;
     }
-    footer a { color: var(--ink); text-decoration-color: var(--line); text-underline-offset: 3px; }
-    footer a:hover { color: var(--gold); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mask { animation: none; }
+      .glints { display: none; }
+    }
   </style>
 </head>
 <body>
-  <svg class="paths" viewBox="0 0 420 200" aria-hidden="true">
-    <path d="M30 100 C 110 100, 130 100, 180 100"/>
-    <path d="M180 100 C 240 100, 260 30, 380 30"/>
-    <path d="M180 100 C 250 100, 280 100, 380 100"/>
-    <path d="M180 100 C 240 100, 260 170, 380 170"/>
-    <path d="M280 100 C 320 100, 330 65, 380 65"/>
-    <circle class="start" cx="30" cy="100" r="7"/>
-    <circle class="end" cx="380" cy="30" r="6"/>
-    <circle class="end" cx="380" cy="65" r="6"/>
-    <circle class="end" cx="380" cy="100" r="6"/>
-    <circle class="end" cx="380" cy="170" r="6"/>
-    <circle class="end" cx="180" cy="100" r="4"/>
+  <svg class="damask" aria-hidden="true">
+    <defs>
+      <pattern id="dmk" width="80" height="120" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#d9a441" stroke-width="1.2">
+          <path d="M40 10 C 55 30, 60 45, 40 60 C 20 45, 25 30, 40 10 Z"/>
+          <path d="M40 60 C 52 72, 56 88, 40 110 C 24 88, 28 72, 40 60 Z"/>
+          <path d="M40 35 C 50 40, 70 38, 76 26 M40 35 C 30 40, 10 38, 4 26"/>
+          <path d="M40 85 C 50 80, 70 82, 76 94 M40 85 C 30 80, 10 82, 4 94"/>
+          <circle cx="0" cy="60" r="3"/><circle cx="80" cy="60" r="3"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#dmk)"/>
   </svg>
+  <div class="glints" aria-hidden="true"></div>
 
-  <h1 class="wordmark">CYO<span>A</span>udio</h1>
-  <p class="soon">Coming soon</p>
+  <main class="card">
+    <svg class="corner tl" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
+    <svg class="corner tr" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
+    <svg class="corner bl" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
+    <svg class="corner br" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 V12 Q4 4 12 4 H52 M10 46 V16 Q10 10 16 10 H46 M18 18 C 26 18, 28 26, 22 28 C 18 29, 17 24, 20 23"/></svg>
 
-  <p class="lede">Audio stories where you choose the path. Listen, decide, and follow the voice that calls to you.</p>
+    <!-- A Venetian half-mask with a feather plume. -->
+    <svg class="mask" viewBox="0 0 300 170" aria-hidden="true">
+      <defs>
+        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f5d58a"/>
+          <stop offset=".5" stop-color="#d9a441"/>
+          <stop offset="1" stop-color="#8a6122"/>
+        </linearGradient>
+        <linearGradient id="plume" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#5a1430"/>
+          <stop offset="1" stop-color="#c0394a"/>
+        </linearGradient>
+      </defs>
+      <!-- feathers -->
+      <g fill="url(#plume)" stroke="#d9a441" stroke-width=".8" stroke-opacity=".6">
+        <path d="M232 62 C 236 30, 250 10, 270 2 C 268 26, 256 48, 232 62 Z"/>
+        <path d="M226 64 C 222 34, 228 12, 244 0 C 248 24, 242 46, 226 64 Z"/>
+        <path d="M238 66 C 252 44, 272 34, 296 34 C 284 52, 264 64, 238 66 Z"/>
+      </g>
+      <g fill="none" stroke="#f5d58a" stroke-width=".8" stroke-opacity=".7">
+        <path d="M232 62 C 242 40, 254 20, 270 2"/>
+        <path d="M226 64 C 230 40, 234 20, 244 0"/>
+        <path d="M238 66 C 256 54, 274 42, 296 34"/>
+      </g>
+      <!-- mask body, eyes cut out -->
+      <path fill="url(#gold)" fill-rule="evenodd" d="
+        M150 72 C 120 50, 60 44, 18 70 C 26 104, 50 138, 98 142 C 122 144, 138 128, 150 120
+        C 162 128, 178 144, 202 142 C 250 138, 274 104, 282 70 C 240 44, 180 50, 150 72 Z
+        M58 94 C 74 78, 110 78, 126 98 C 110 112, 76 114, 58 94 Z
+        M242 94 C 226 78, 190 78, 174 98 C 190 112, 224 114, 242 94 Z"/>
+      <!-- filigree -->
+      <g fill="none" stroke="#5a3a10" stroke-width="1.3" stroke-linecap="round" opacity=".75">
+        <path d="M150 80 C 146 92, 150 104, 150 112"/>
+        <path d="M40 78 C 60 66, 90 64, 112 72"/>
+        <path d="M260 78 C 240 66, 210 64, 188 72"/>
+        <path d="M54 118 C 70 128, 88 130, 104 124"/>
+        <path d="M246 118 C 230 128, 212 130, 196 124"/>
+        <path d="M92 70 C 96 62, 106 62, 104 70 C 103 74, 98 74, 98 70"/>
+        <path d="M208 70 C 204 62, 194 62, 196 70 C 197 74, 202 74, 202 70"/>
+      </g>
+      <g fill="#f5d58a">
+        <circle cx="150" cy="70" r="4"/>
+        <circle cx="38" cy="96" r="2.4"/><circle cx="262" cy="96" r="2.4"/>
+        <circle cx="140" cy="132" r="1.8"/><circle cx="160" cy="132" r="1.8"/>
+      </g>
+    </svg>
 
-  <ul class="steps">
-    <li><b>I</b>Listen</li>
-    <li><b>II</b>Choose</li>
-    <li><b>III</b>Follow</li>
-  </ul>
+    <p class="invited">You are cordially invited</p>
+    <h1 class="wordmark">CYOAudio</h1>
+    <p class="sub">A masquerade of voices</p>
 
-  <footer>
-    For adults 18+
-  </footer>
+    <div class="rule" aria-hidden="true">&#10086;</div>
+
+    <p class="lede">Behind every mask, a different story. Wander the ballroom, choose a stranger, and follow wherever their voice leads you.</p>
+
+    <p class="soon">The doors open soon</p>
+    <p class="fine">Strictly adults 18+ &middot; Masks required</p>
+  </main>
+
+  <script>
+    // Scatter the drifting glints. Each gets its own lane, size, speed and
+    // start, so they never move in step.
+    (function () {
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      var box = document.querySelector(".glints");
+      for (var i = 0; i < 28; i++) {
+        var g = document.createElement("span");
+        g.className = "glint";
+        var size = 2 + Math.random() * 3;
+        g.style.left = (Math.random() * 100) + "%";
+        g.style.width = g.style.height = size + "px";
+        g.style.animationDuration = (12 + Math.random() * 14) + "s";
+        g.style.animationDelay = (-Math.random() * 26) + "s";
+        box.appendChild(g);
+      }
+    })();
+  </script>
 </body>
 </html>
