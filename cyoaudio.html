@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CYOAudio</title>
   <!-- cyoaudio.com's front door until the player is built (see the
-       cyoaudio.com rules in netlify.toml). Dressed as an invitation to a
-       masquerade ball, drawn as old gold ink on near-black paper. -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070407'/%3E%3Cpath fill='none' stroke='%23b38a45' stroke-width='3' stroke-linejoin='round' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
+       cyoaudio.com rules in netlify.toml). A candlelit wall of masquerade
+       masks, with the invitation set in a gilded frame over it. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0706'/%3E%3Cpath fill-rule='evenodd' fill='%23c9a14a' d='M32 26 C26 20 14 18 6 24 C8 34 14 44 24 44 C28 44 30 40 32 38 C34 40 36 44 40 44 C50 44 56 34 58 24 C50 18 38 20 32 26 Z M13 30 C17 26 24 26 27 31 C24 35 17 35 13 30 Z M51 30 C47 26 40 26 37 31 C40 35 47 35 51 30 Z'/%3E%3C/svg%3E">
   <meta name="description" content="Choose-your-own-adventure audio. Behind every mask, a different story. Coming soon.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CYOAudio">
   <meta property="og:url" content="https://cyoaudio.com/">
   <meta property="og:title" content="CYOAudio: You are cordially invited">
   <meta property="og:description" content="Choose-your-own-adventure audio. Behind every mask, a different story. The doors open soon.">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://cyoaudio.com/images/cyoaudio/masquerade.webp">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://cyoaudio.com/">
+  <link rel="preload" as="image" href="images/cyoaudio/masquerade.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
@@ -23,150 +25,172 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #050305;
-      --paper: #0b070a;
-      --ink: #b38a45;        /* old gold leaf, not shiny */
-      --ink-hi: #d1ad66;
-      --ink-dim: rgba(179, 138, 69, .38);
-      --blood: #4a0f1b;
-      --text: #d9cfc4;
-      --muted: #8c7d72;
+      --bg: #0a0706;
+      --gold: #c9a14a;
+      --gold-hi: #f0d79a;
+      --gold-lo: #6e4f1c;
+      --text: #e8ddd0;
+      --muted: #a39484;
     }
 
     html, body { min-height: 100%; }
     body {
-      background:
-        radial-gradient(ellipse at 50% 40%, rgba(60, 10, 24, .45) 0%, transparent 55%),
-        radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0, 0, 0, .85) 100%),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
       font-family: "Cormorant Garamond", Georgia, serif;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 40px 16px;
+      padding: 48px 16px;
       overflow-x: hidden;
       text-align: center;
+      position: relative;
     }
 
-    /* Paper grain over everything, so the flat darks read as a surface. */
-    body::after {
-      content: "";
+    /* The wall of masks, darkened toward the middle so the invitation reads,
+       and toward the edges so it sinks into the room. */
+    .scene {
       position: fixed;
       inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 50% 50%, rgba(10, 7, 6, .72) 0%, rgba(10, 7, 6, .35) 60%, rgba(10, 7, 6, .8) 100%),
+        linear-gradient(180deg, rgba(10, 7, 6, .25) 0%, rgba(10, 7, 6, .1) 40%, rgba(10, 7, 6, .85) 100%),
+        url("images/cyoaudio/masquerade.webp") 62% center / cover no-repeat;
+      animation: drift 40s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      from { transform: scale(1.04); }
+      to { transform: scale(1.1) translateX(-1.5%); }
+    }
+
+    /* Candlelight: a warm glow over the candelabra that breathes unevenly. */
+    .candle {
+      position: fixed;
+      z-index: 0;
+      left: 72%;
+      top: 34%;
+      width: 40vmax;
+      height: 40vmax;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(255, 190, 110, .16) 0%, rgba(255, 170, 80, .05) 35%, transparent 65%);
       pointer-events: none;
-      z-index: 5;
-      opacity: .16;
-      mix-blend-mode: overlay;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+      animation: flicker 3.2s infinite;
+      mix-blend-mode: screen;
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: .85; }
+      18% { opacity: 1; }
+      22% { opacity: .7; }
+      40% { opacity: .95; }
+      55% { opacity: .78; }
+      70% { opacity: 1; }
+      85% { opacity: .82; }
     }
 
-    /* A few dim embers drifting up, like candle sparks in a dark hall. */
-    .embers { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-    .ember {
-      position: absolute;
-      bottom: -10px;
-      border-radius: 50%;
-      background: #c9873a;
-      box-shadow: 0 0 6px 1px rgba(201, 135, 58, .45);
-      opacity: 0;
-      animation: rise linear infinite;
-    }
-    @keyframes rise {
-      0% { transform: translate(0, 0); opacity: 0; }
-      20% { opacity: .55; }
-      100% { transform: translate(30px, -105vh); opacity: 0; }
-    }
-
-    .card {
+    /* The invitation, mounted in a gilded frame like those on the wall. The
+       moulding is a gold gradient border; the inner rule is the lip of the
+       frame; the dotted line inside it is the beading. */
+    .frame {
       position: relative;
       z-index: 1;
-      width: min(580px, 100%);
-      padding: 44px 30px 40px;
-      background: var(--paper);
-      box-shadow: 0 40px 120px rgba(0, 0, 0, .9);
+      width: min(560px, 100%);
+      padding: 14px;
+      background:
+        linear-gradient(135deg, #7a5820 0%, #f0d79a 18%, #a8792c 34%, #e6c47a 50%, #6e4f1c 66%, #d8b466 82%, #8a6424 100%);
+      box-shadow:
+        0 30px 90px rgba(0, 0, 0, .85),
+        0 0 0 1px rgba(0, 0, 0, .6),
+        inset 0 0 0 1px rgba(255, 240, 200, .35),
+        inset 0 0 12px rgba(60, 35, 5, .8);
     }
-    /* The card's frame is drawn, not ruled: see the .frame SVG. */
-    .frame {
+    .frame::before {
+      /* corner rosettes on the moulding */
+      content: "";
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      inset: 3px;
+      background:
+        radial-gradient(circle at 0 0, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px),
+        radial-gradient(circle at 100% 0, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px),
+        radial-gradient(circle at 0 100%, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px),
+        radial-gradient(circle at 100% 100%, #fff1c8 0 3px, #8a6424 4px 7px, transparent 8px);
       pointer-events: none;
-      overflow: visible;
     }
-    .frame rect { fill: none; stroke: var(--ink); vector-effect: non-scaling-stroke; }
-
-    .corner {
-      position: absolute;
-      width: 70px;
-      height: 70px;
-      fill: none;
-      stroke: var(--ink);
-      stroke-width: 1.1;
-      stroke-linecap: round;
-    }
-    .corner.tl { top: 6px; left: 6px; }
-    .corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
-    .corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
-    .corner.br { bottom: 6px; right: 6px; transform: scale(-1, -1); }
-
-    .mask {
-      width: min(340px, 92%);
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      overflow: visible;
+    .inner {
+      position: relative;
+      padding: 46px 30px 40px;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(80, 20, 30, .35) 0%, transparent 60%),
+        rgba(12, 8, 7, .93);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .9), inset 0 6px 24px rgba(0, 0, 0, .9);
+      outline: 1px dotted rgba(201, 161, 74, .55);
+      outline-offset: -10px;
     }
 
     .invited {
       font-family: "Pinyon Script", cursive;
-      font-size: clamp(1.5rem, 6vw, 2rem);
-      color: var(--ink-hi);
-      margin-top: 4px;
-      filter: url(#rough-text);
+      font-size: clamp(1.6rem, 6vw, 2.2rem);
+      color: var(--gold-hi);
+      text-shadow: 0 0 18px rgba(240, 215, 154, .25);
     }
 
     .wordmark {
       font-family: "Cinzel Decorative", "Cinzel", serif;
-      font-weight: 400;
-      font-size: clamp(2.2rem, 10vw, 3.4rem);
-      letter-spacing: .07em;
+      font-weight: 700;
+      font-size: clamp(2.3rem, 10vw, 3.6rem);
+      letter-spacing: .05em;
       line-height: 1.1;
       margin-top: 4px;
-      color: var(--ink);
-      filter: url(#rough-text);
+      background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 50%, var(--gold-lo) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .8));
     }
 
     .sub {
       font-family: "Cinzel", serif;
-      font-size: .74rem;
+      font-size: .76rem;
       letter-spacing: .36em;
       text-transform: uppercase;
       color: var(--muted);
       margin-top: 10px;
     }
 
-    .rule { width: 62%; height: 22px; margin: 22px auto; display: block; overflow: visible; }
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      margin: 24px auto;
+      color: var(--gold);
+      width: 66%;
+      font-size: 1.1rem;
+    }
+    .rule::before, .rule::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201, 161, 74, .6), transparent);
+    }
 
     .lede {
-      font-size: clamp(1.15rem, 4.2vw, 1.4rem);
+      font-size: clamp(1.18rem, 4.2vw, 1.45rem);
       font-style: italic;
       font-weight: 300;
       max-width: 32ch;
       margin: 0 auto;
       line-height: 1.5;
-      color: var(--text);
     }
 
     .soon {
       font-family: "Cinzel", serif;
-      font-weight: 400;
-      font-size: .86rem;
+      font-weight: 600;
+      font-size: .88rem;
       letter-spacing: .32em;
       text-transform: uppercase;
-      color: var(--ink-hi);
+      color: var(--gold);
       margin-top: 28px;
     }
 
@@ -177,198 +201,31 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-top: 20px;
-      opacity: .75;
+      opacity: .8;
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .embers { display: none; }
+      .scene, .candle { animation: none; }
     }
   </style>
 </head>
 <body>
-  <!-- Shared filters. "rough" wobbles a line the way a pen does; it is what
-       stops the drawing looking computer-perfect. -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
-        <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7"/>
-        <feDisplacementMap in="SourceGraphic" scale="3.2"/>
-      </filter>
-      <filter id="rough2" x="-10%" y="-10%" width="120%" height="120%">
-        <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="21"/>
-        <feDisplacementMap in="SourceGraphic" scale="2.4"/>
-      </filter>
-      <filter id="rough-text" x="-5%" y="-20%" width="110%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="1" seed="4"/>
-        <feDisplacementMap in="SourceGraphic" scale="1.6"/>
-      </filter>
-      <!-- Engraver's hatching for the shaded parts of the mask. -->
-      <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
-        <line x1="0" y1="0" x2="0" y2="5" stroke="#b38a45" stroke-width=".7"/>
-      </pattern>
-      <pattern id="xhatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-42)">
-        <line x1="0" y1="0" x2="0" y2="5" stroke="#b38a45" stroke-width=".6"/>
-      </pattern>
-    </defs>
-  </svg>
+  <div class="scene" aria-hidden="true"></div>
+  <div class="candle" aria-hidden="true"></div>
 
-  <div class="embers" aria-hidden="true"></div>
+  <main class="frame">
+    <div class="inner">
+      <p class="invited">You are cordially invited</p>
+      <h1 class="wordmark">CYOAudio</h1>
+      <p class="sub">A masquerade of voices</p>
 
-  <main class="card">
-    <svg class="frame" aria-hidden="true">
-      <rect style="x:1px;y:1px;width:calc(100% - 2px);height:calc(100% - 2px)" stroke-width="1" filter="url(#rough2)" opacity=".7"/>
-      <rect style="x:11px;y:11px;width:calc(100% - 22px);height:calc(100% - 22px)" stroke-width=".7" filter="url(#rough)" opacity=".4"/>
-    </svg>
-    <svg class="corner tl" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
-    <svg class="corner tr" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
-    <svg class="corner bl" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
-    <svg class="corner br" viewBox="0 0 70 70" filter="url(#rough2)" aria-hidden="true"><path d="M8 62 C 8 30, 10 12, 30 9 C 46 7, 56 8, 62 8 M15 50 C 15 28, 18 16, 34 15 M22 22 C 34 20, 40 30, 32 34 C 26 37, 22 30, 28 28 M40 15 C 46 12, 52 16, 48 20 M15 38 C 12 44, 16 50, 20 46"/></svg>
+      <div class="rule" aria-hidden="true">&#10086;</div>
 
-    <!-- A Venetian half-mask in pen and ink: outline drawn twice like a
-         sketch, hatched shading, beaded eye rims, trailing ribbons, and
-         feathers whose barbs are drawn by the script below. -->
-    <svg class="mask" viewBox="0 0 320 210" aria-hidden="true">
-      <defs>
-        <clipPath id="maskShape">
-          <path clip-rule="evenodd" d="M160 92 C 130 70, 70 64, 28 90 C 36 124, 60 158, 108 162 C 132 164, 148 148, 160 140 C 172 148, 188 164, 212 162 C 260 158, 284 124, 292 90 C 250 64, 190 70, 160 92 Z M68 114 C 84 98, 120 98, 136 118 C 120 132, 86 134, 68 114 Z M252 114 C 236 98, 200 98, 184 118 C 200 132, 234 134, 252 114 Z"/>
-        </clipPath>
-      </defs>
+      <p class="lede">Behind every mask, a different story. Wander the ballroom, choose a stranger, and follow wherever their voice leads you.</p>
 
-      <!-- ribbons, behind the mask -->
-      <g fill="none" stroke="#b38a45" stroke-width="1" stroke-linecap="round" filter="url(#rough)" opacity=".85">
-        <path d="M30 96 C 18 120, 26 150, 12 180 C 8 190, 14 200, 22 206"/>
-        <path d="M34 100 C 28 126, 38 152, 28 182 C 26 190, 30 198, 36 202"/>
-        <path d="M18 150 C 22 152, 28 152, 32 148"/>
-        <path d="M290 96 C 302 120, 294 150, 308 180 C 312 190, 306 200, 298 206"/>
-        <path d="M286 100 C 292 126, 282 152, 292 182 C 294 190, 290 198, 284 202"/>
-        <path d="M302 150 C 298 152, 292 152, 288 148"/>
-      </g>
-
-      <!-- feathers, filled in by the script -->
-      <g id="feathers" fill="none" stroke="#b38a45" stroke-linecap="round" filter="url(#rough2)"></g>
-
-      <!-- solid dark body so the background doesn't show through the hatching -->
-      <path fill="#0b070a" fill-rule="evenodd" d="M160 92 C 130 70, 70 64, 28 90 C 36 124, 60 158, 108 162 C 132 164, 148 148, 160 140 C 172 148, 188 164, 212 162 C 260 158, 284 124, 292 90 C 250 64, 190 70, 160 92 Z M68 114 C 84 98, 120 98, 136 118 C 120 132, 86 134, 68 114 Z M252 114 C 236 98, 200 98, 184 118 C 200 132, 234 134, 252 114 Z"/>
-
-      <!-- shading: light hatch on the lower cheeks, cross-hatch deepest under the eyes -->
-      <g clip-path="url(#maskShape)" filter="url(#rough)">
-        <path fill="url(#hatch)" opacity=".55" d="M20 120 C 60 150, 120 150, 160 128 C 200 150, 260 150, 300 120 L 300 170 L 20 170 Z"/>
-        <path fill="url(#xhatch)" opacity=".5" d="M24 136 C 60 162, 110 164, 160 140 C 210 164, 260 162, 296 136 L 296 170 L 24 170 Z"/>
-        <ellipse cx="102" cy="122" rx="44" ry="20" fill="url(#xhatch)" opacity=".35"/>
-        <ellipse cx="218" cy="122" rx="44" ry="20" fill="url(#xhatch)" opacity=".35"/>
-        <path fill="url(#hatch)" opacity=".3" d="M40 88 C 80 72, 130 74, 160 94 C 190 74, 240 72, 280 88 L 280 96 C 240 82, 190 84, 160 102 C 130 84, 80 82, 40 96 Z"/>
-      </g>
-
-      <!-- outline, twice, as a sketching hand goes over its line -->
-      <g fill="none" stroke="#b38a45" stroke-linejoin="round" stroke-linecap="round">
-        <path filter="url(#rough)" stroke-width="1.6" d="M160 92 C 130 70, 70 64, 28 90 C 36 124, 60 158, 108 162 C 132 164, 148 148, 160 140 C 172 148, 188 164, 212 162 C 260 158, 284 124, 292 90 C 250 64, 190 70, 160 92 Z"/>
-        <path filter="url(#rough2)" stroke-width=".8" opacity=".7" d="M160 94 C 131 72, 72 66, 30 91 C 38 125, 62 157, 108 161 C 132 163, 147 147, 160 139 C 173 147, 188 163, 212 161 C 258 157, 282 125, 290 91 C 248 66, 189 72, 160 94 Z"/>
-        <path filter="url(#rough)" stroke-width="1.5" d="M68 114 C 84 98, 120 98, 136 118 C 120 132, 86 134, 68 114 Z M252 114 C 236 98, 200 98, 184 118 C 200 132, 234 134, 252 114 Z"/>
-      </g>
-
-      <!-- beaded rims around the eyes -->
-      <g fill="none" stroke="#d1ad66" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5" filter="url(#rough2)">
-        <path d="M62 114 C 80 92, 124 92, 142 118 C 124 138, 82 140, 62 114 Z"/>
-        <path d="M258 114 C 240 92, 196 92, 178 118 C 196 138, 238 140, 258 114 Z"/>
-      </g>
-
-      <!-- filigree scrolls -->
-      <g fill="none" stroke="#d1ad66" stroke-width="1" stroke-linecap="round" filter="url(#rough2)">
-        <path d="M160 100 C 156 112, 164 120, 160 132"/>
-        <path d="M152 104 C 144 100, 140 108, 146 110 M168 104 C 176 100, 180 108, 174 110"/>
-        <path d="M46 98 C 52 90, 62 92, 60 98 C 58 102, 52 100, 54 96"/>
-        <path d="M274 98 C 268 90, 258 92, 260 98 C 262 102, 268 100, 266 96"/>
-        <path d="M40 118 C 44 132, 54 140, 64 142 M280 118 C 276 132, 266 140, 256 142"/>
-        <path d="M90 84 C 104 78, 122 80, 134 88 M230 84 C 216 78, 198 80, 186 88"/>
-        <path d="M120 150 C 128 152, 136 150, 142 146 M200 150 C 192 152, 184 150, 178 146"/>
-      </g>
-      <g fill="#d1ad66" filter="url(#rough2)">
-        <circle cx="160" cy="90" r="3.6"/>
-        <circle cx="160" cy="90" r="6.5" fill="none" stroke="#d1ad66" stroke-width=".8"/>
-      </g>
-    </svg>
-
-    <p class="invited">You are cordially invited</p>
-    <h1 class="wordmark">CYOAudio</h1>
-    <p class="sub">A masquerade of voices</p>
-
-    <svg class="rule" viewBox="0 0 300 22" preserveAspectRatio="none" aria-hidden="true">
-      <g fill="none" stroke="#b38a45" stroke-width="1" stroke-linecap="round" filter="url(#rough2)">
-        <path d="M4 11 C 60 9, 100 13, 132 11"/>
-        <path d="M168 11 C 200 9, 240 13, 296 11"/>
-        <path d="M150 3 C 158 7, 158 15, 150 19 C 142 15, 142 7, 150 3 Z"/>
-        <path d="M132 11 C 138 6, 142 8, 140 12 M168 11 C 162 6, 158 8, 160 12"/>
-      </g>
-    </svg>
-
-    <p class="lede">Behind every mask, a different story. Wander the ballroom, choose a stranger, and follow wherever their voice leads you.</p>
-
-    <p class="soon">The doors open soon</p>
-    <p class="fine">Strictly adults 18+ &middot; Masks required</p>
+      <p class="soon">The doors open soon</p>
+      <p class="fine">Strictly adults 18+ &middot; Masks required</p>
+    </div>
   </main>
-
-  <script>
-    // Draw the feathers barb by barb, so each one is a little uneven, the way
-    // a hand would ink them. Each feather is a curved quill from base to tip.
-    (function () {
-      var NS = "http://www.w3.org/2000/svg";
-      var g = document.getElementById("feathers");
-      var feathers = [
-        { b: [236, 86], c: [244, 40], t: [282, 6], len: 15 },
-        { b: [228, 88], c: [222, 44], t: [244, 2], len: 13 },
-        { b: [244, 90], c: [270, 56], t: [316, 40], len: 13 },
-        { b: [222, 90], c: [200, 52], t: [206, 14], len: 10 }
-      ];
-      var rnd = function (a, b) { return a + Math.random() * (b - a); };
-      feathers.forEach(function (f) {
-        var pt = function (t) {
-          var u = 1 - t;
-          return [u * u * f.b[0] + 2 * u * t * f.c[0] + t * t * f.t[0],
-                  u * u * f.b[1] + 2 * u * t * f.c[1] + t * t * f.t[1]];
-        };
-        var d = "M" + f.b + " Q" + f.c + " " + f.t;
-        var quill = document.createElementNS(NS, "path");
-        quill.setAttribute("d", d);
-        quill.setAttribute("stroke-width", "1.3");
-        g.appendChild(quill);
-        var barbs = "";
-        for (var t = 0.12; t < 0.97; t += 0.03) {
-          var p = pt(t), q = pt(t + 0.01);
-          var dx = q[0] - p[0], dy = q[1] - p[1], m = Math.hypot(dx, dy) || 1;
-          dx /= m; dy /= m;
-          // Barbs sweep toward the tip and shorten near it.
-          var L = f.len * Math.sin(Math.PI * Math.min(1, t * 1.1)) * rnd(0.8, 1.1);
-          [-1, 1].forEach(function (s) {
-            var nx = -dy * s, ny = dx * s;
-            var ex = p[0] + (nx * 0.8 + dx * 0.6) * L, ey = p[1] + (ny * 0.8 + dy * 0.6) * L;
-            var cx = p[0] + nx * L * 0.5, cy = p[1] + ny * L * 0.5;
-            barbs += "M" + p[0].toFixed(1) + " " + p[1].toFixed(1) +
-                     " Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + ex.toFixed(1) + " " + ey.toFixed(1);
-          });
-        }
-        var b = document.createElementNS(NS, "path");
-        b.setAttribute("d", barbs);
-        b.setAttribute("stroke-width", ".55");
-        b.setAttribute("opacity", ".75");
-        g.appendChild(b);
-      });
-    })();
-
-    // A few dim embers drifting up.
-    (function () {
-      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      var box = document.querySelector(".embers");
-      for (var i = 0; i < 14; i++) {
-        var e = document.createElement("span");
-        e.className = "ember";
-        var size = 1.5 + Math.random() * 2;
-        e.style.left = (Math.random() * 100) + "%";
-        e.style.width = e.style.height = size + "px";
-        e.style.animationDuration = (16 + Math.random() * 16) + "s";
-        e.style.animationDelay = (-Math.random() * 32) + "s";
-        box.appendChild(e);
-      }
-    })();
-  </script>
 </body>
 </html>
