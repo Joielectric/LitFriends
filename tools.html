@@ -700,6 +700,51 @@
     .load-button { border-radius: 999px; font-weight: 600; }
     .tool-card h3 { letter-spacing: 0 !important; font-weight: 600; }
 
+
+    /* ── Table view of a creator's releases ── */
+    .cmt { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .cmt-bar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+    .cmt-bar #cmt-search { flex: 1 1 200px; }
+    .cmt-count { color: var(--text-dim); font-size: 0.82rem; margin-left: auto; }
+    .cmt-hint { color: var(--text-dim); font-size: 0.8rem; margin: 0 0 8px; }
+    .cmt-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; max-height: 70vh; overflow-y: auto; }
+    .cmt-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 860px; }
+    .cmt-table th { position: sticky; top: 0; z-index: 1; background: var(--surface-2); text-align: left; font-family: var(--display); font-weight: 600; font-size: 0.78rem; color: var(--text-dim); padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .cmt-table td { padding: 0.25rem 0.3rem; border-bottom: 1px solid var(--border); vertical-align: middle; position: relative; }
+    .cmt-table tr:last-child td { border-bottom: 0; }
+    .cmt-table tr:hover td { background: rgba(255,255,255,0.025); }
+    .cmt-cell { width: 100%; min-width: 0; font: inherit; color: var(--text); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.4rem 0.45rem; transition: border-color .15s, background .15s; }
+    .cmt-cell:hover { border-color: var(--border-mid); }
+    .cmt-cell:focus { outline: none; border-color: rgba(57,213,255,0.65); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(57,213,255,0.12); }
+    select.cmt-cell option { background: var(--surface-2); }
+    .cmt-title { min-width: 170px; font-weight: 600; }
+    .cmt-tags { min-width: 140px; }
+    .cmt-short { min-width: 160px; }
+    .cmt-len { width: 70px; }
+    .cmt-date { width: 135px; }
+    .cmt-type { min-width: 92px; }
+    .cmt-info { color: var(--text-mid); font-size: 0.8rem; padding: 0 0.45rem; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+    .cmt-state { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; pointer-events: none; }
+    .cmt-state.saving { color: var(--text-dim); }
+    .cmt-state.saved { color: #6fe3c1; }
+    .cmt-state.error { color: #ff9aa8; }
+    .cmt-empty { color: var(--text-dim); padding: 1.2rem; text-align: center; }
+    /* More stays in reach at the row's end while the middle scrolls */
+    .cmt-table th:last-child, .cmt-table td:last-child { position: sticky; right: 0; background: var(--surface); box-shadow: -8px 0 12px -8px rgba(0,0,0,0.6); }
+    .cmt-table th:last-child { background: var(--surface-2); z-index: 2; }
+    /* Phones: each release becomes a card, each cell a labelled field */
+    @media (max-width: 720px) {
+      .cmt-scroll { border: 0; max-height: none; overflow: visible; }
+      .cmt-table, .cmt-table tbody, .cmt-table tr, .cmt-table td { display: block; width: 100%; min-width: 0; }
+      .cmt-table thead { display: none; }
+      .cmt-table tr { border: 1px solid var(--border); border-radius: 14px; padding: 0.5rem; margin-bottom: 0.7rem; background: var(--surface); }
+      .cmt-table td { border: 0; padding: 0.15rem 0; }
+      .cmt-table td:last-child { position: static; box-shadow: none; background: none; }
+      .cmt-table td[data-label]::before { content: attr(data-label); display: block; font-family: var(--display); font-size: 0.72rem; font-weight: 600; color: var(--text-dim); margin: 0.3rem 0 0.1rem 0.45rem; }
+      .cmt-title, .cmt-tags, .cmt-short, .cmt-len, .cmt-date, .cmt-type { min-width: 0; width: 100%; }
+      .cmt-info { max-width: none; white-space: normal; }
+    }
+
     /* ── Sign in ─────────────────────────────────────────────────────── */
     .gate-wrap { position: fixed; inset: 0; z-index: 100000; background: #0a0c18; display: flex; align-items: center; justify-content: center; padding: 1rem;
       background-image: radial-gradient(50% 40% at 30% 20%, rgba(57,213,255,0.12), transparent 70%), radial-gradient(50% 40% at 75% 80%, rgba(139,92,255,0.16), transparent 70%); }
@@ -881,8 +926,9 @@
                     <!-- Backup, and bulk work -->
                     <div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;">
                       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                        <span style="color:var(--text-mid);font-size:0.85rem;">Edit in a spreadsheet</span>
+                        <span style="color:var(--text-mid);font-size:0.85rem;">Edit many at once</span>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                          <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" id="cm-table-toggle" onclick="cmTableToggle()">Table view</button>
                           <button type="button" class="cm-btn cm-btn-sm" onclick="cmSheetExport()">Export to spreadsheet</button>
                           <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-sheet-file').click()">Import spreadsheet</button>
                           <button type="button" class="cm-btn cm-btn-sm" onclick="cmBackup()">Download backup</button>
@@ -891,11 +937,29 @@
                         </div>
                       </div>
                       <p style="color:var(--text-dim);font-size:0.82rem;margin:8px 0 0;line-height:1.5;">
-                        Export your releases, edit them in Excel or Google Sheets, save as <b>CSV UTF-8</b>, then import the file back.
+                        <b>Table view</b> lets you change your releases right here, a cell at a time. For big jobs,
+                        export your releases, edit them in Excel or Google Sheets, save as <b>CSV UTF-8</b>, then import the file back.
                         Rows keep their <b>ID</b> and update that release; a row with no ID is added as new. Nothing is saved until you check the changes.
                       </p>
                       <input type="file" id="cm-sheet-file" accept=".csv,text/csv,.txt" style="display:none" onchange="cmSheetImport(this)">
                       <div id="cm-sheet-preview" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;"></div>
+                      <div id="cm-table" class="cmt" style="display:none">
+                        <div class="cmt-bar">
+                          <input id="cmt-search" class="cm-input cm-btn-sm" placeholder="Search your releases…" oninput="cmTableRender()">
+                          <select id="cmt-type" class="cm-input cm-btn-sm" onchange="cmTableRender()"></select>
+                          <select id="cmt-sort" class="cm-input cm-btn-sm" onchange="cmTableRender()">
+                            <option value="new">Newest first</option>
+                            <option value="old">Oldest first</option>
+                            <option value="az">Title A&ndash;Z</option>
+                          </select>
+                          <span id="cmt-count" class="cmt-count"></span>
+                        </div>
+                        <p class="cmt-hint">Click a cell to change it; it saves when you move on. Use <b>More</b> for descriptions, links, credits and the rest.</p>
+                        <div class="cmt-scroll"><table class="cmt-table">
+                          <thead><tr><th>Title</th><th>Type</th><th>Date</th><th>Length</th><th>Tags</th><th>Short description</th><th>Credits</th><th>Links</th><th></th></tr></thead>
+                          <tbody id="cmt-body"></tbody>
+                        </table></div>
+                      </div>
                       <input type="file" id="cm-restore-file" accept=".json,application/json" style="display:none" onchange="cmRestore(this)">
 
                       <div id="cm-bulk" class="cm-bulk-panel" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
@@ -4683,6 +4747,7 @@
         cmClearForm();
         cmRenderEntries();
         cmRebuildTagList();
+        cmTableRefresh();
         cmShowMsg('Saved!', true);
       });
     }
@@ -4727,7 +4792,7 @@
     function cmDeleteEntry(id) {
       if (!confirm('Delete this entry?')) return;
       cmEntries = cmEntries.filter(e => e.id !== id);
-      cmPersist(() => { cmRenderEntries(); cmShowMsg('Deleted.', true); });
+      cmPersist(() => { cmRenderEntries(); cmTableRefresh(); cmShowMsg('Deleted.', true); });
     }
 
     function cmClearForm() {
@@ -5731,8 +5796,140 @@
         cmSheetCancel();
         cmRenderEntries();
         cmRebuildTagList();
+        cmTableRefresh();
         cmShowMsg(`Saved: ${p.added.length} new, ${p.updated.length} updated.`, true);
       }, () => { cmEntries = before; });
+    }
+
+    // ── Table view ──────────────────────────────────────────────────────────
+    // The creator's own releases as a table they edit in place: each cell
+    // saves when they leave it, one save at a time, and goes back to what it
+    // was if the save fails. Fields too long or too nested for a cell
+    // (descriptions, links, credits, HotAudio versions, sound effects) open in
+    // the full form through More. The server judges every save as it does the
+    // form's (netlify/functions/content.js).
+    let cmtQueue = Promise.resolve();
+
+    function cmTableToggle(open) {
+      const box = document.getElementById('cm-table');
+      const show = open === undefined ? box.style.display === 'none' : open;
+      box.style.display = show ? 'block' : 'none';
+      document.getElementById('cm-table-toggle').textContent = show ? 'Close table' : 'Table view';
+      if (!show) return;
+      const t = document.getElementById('cmt-type');
+      if (!t.options.length) {
+        t.innerHTML = '<option value="">Every type</option>' +
+          CFG.entryTypes.map(x => `<option value="${x.key}">${cmEsc(x.plural)}</option>`).join('');
+      }
+      cmTableRender();
+    }
+
+    function cmTableRows() {
+      const q = (document.getElementById('cmt-search').value || '').trim().toLowerCase();
+      const type = document.getElementById('cmt-type').value;
+      const sort = document.getElementById('cmt-sort').value;
+      const rows = cmSheetRows().filter(e =>
+        (!type || CFG.typeOf(e) === type) && (!q || cmEntryHaystack(e).includes(q)));
+      rows.sort(sort === 'az'
+        ? (a, b) => String(a.title || '').localeCompare(String(b.title || ''), undefined, { sensitivity: 'base' })
+        : sort === 'old'
+          ? (a, b) => String(a.date || '').localeCompare(String(b.date || ''))
+          : (a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+      return rows;
+    }
+
+    function cmTableRender() {
+      const body = document.getElementById('cmt-body');
+      if (!body) return;
+      const rows = cmTableRows();
+      const total = cmSheetRows().length;
+      document.getElementById('cmt-count').textContent = rows.length === total
+        ? `${total} release${total === 1 ? '' : 's'}` : `${rows.length} of ${total}`;
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="9" class="cmt-empty">${total ? 'Nothing matches that search.' : 'No releases yet. Add one with the form below, or import a spreadsheet.'}</td></tr>`;
+        return;
+      }
+      const typeOpts = sel => CFG.entryTypes.map(t => `<option value="${t.key}"${t.key === sel ? ' selected' : ''}>${cmEsc(t.label)}</option>`).join('');
+      body.innerHTML = rows.map(e => {
+        const credits = CM_ROLES.filter(r => ((e.credits || {})[r] || []).length)
+          .map(r => `${CFG.creditLabels[r]}: ${e.credits[r].join(', ')}`).join(' · ');
+        const links = [...new Set((e.links || []).map(l => cmProviderLabel(l.provider)))].join(', ');
+        const id = cmEsc(e.id);
+        return `<tr data-id="${id}">
+          <td data-label="Title"><input class="cmt-cell cmt-title" data-field="title" value="${cmEsc(e.title || '')}" aria-label="Title"></td>
+          <td data-label="Type"><select class="cmt-cell cmt-type" data-field="type" aria-label="Type">${typeOpts(CFG.typeOf(e))}</select></td>
+          <td data-label="Date"><input type="date" class="cmt-cell cmt-date" data-field="date" value="${cmEsc(e.date || '')}" aria-label="Date"></td>
+          <td data-label="Length"><input class="cmt-cell cmt-len" data-field="trt" value="${cmEsc(e.trt || '')}" placeholder="18:42" aria-label="Length"></td>
+          <td data-label="Tags"><input class="cmt-cell cmt-tags" data-field="tags" value="${cmEsc((e.tags || []).join(', '))}" aria-label="Tags"></td>
+          <td data-label="Short description"><input class="cmt-cell cmt-short" data-field="shortDesc" value="${cmEsc(e.shortDesc || '')}" aria-label="Short description"></td>
+          <td data-label="Credits"><span class="cmt-info" title="${cmEsc(credits)}">${cmEsc(credits || 'Nobody yet')}</span></td>
+          <td data-label="Links"><span class="cmt-info" title="${cmEsc(links)}">${cmEsc(links || 'None')}</span></td>
+          <td><button type="button" class="cm-btn cm-btn-sm" onclick="cmTableMore('${id}')">More</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // One field of one release, written from its cell.
+    function cmTableApply(entry, field, value) {
+      if (field === 'title') entry.title = value.trim();
+      else if (field === 'type') { entry.type = value; if (value !== 'audio') entry.fills = ''; }
+      else if (field === 'date') entry.date = value;
+      else if (field === 'trt') entry.trt = value.trim();
+      else if (field === 'tags') entry.tags = cmNormalizeTagList(value);
+      else if (field === 'shortDesc') entry.shortDesc = value.trim();
+    }
+    const cmTableShown = (entry, field) => field === 'tags' ? (entry.tags || []).join(', ')
+      : field === 'type' ? CFG.typeOf(entry) : (entry[field] || '');
+
+    function cmTableState(td, kind, text) {
+      let el = td.querySelector('.cmt-state');
+      if (!el) { el = document.createElement('span'); td.appendChild(el); }
+      el.className = 'cmt-state ' + kind; el.textContent = text;
+      if (kind === 'saved') setTimeout(() => { if (el.textContent === text) el.remove(); }, 1800);
+    }
+
+    function cmTableChanged(ev) {
+      const cell = ev.target.closest('.cmt-cell');
+      if (!cell) return;
+      const id = cell.closest('tr').dataset.id, field = cell.dataset.field, td = cell.closest('td');
+      const entry = cmEntries.find(e => e.id === id);
+      if (!entry || !cmCanEdit(entry)) return;
+      const shownBefore = cmTableShown(entry, field);
+      if (cmWho.viewAs) { cell.value = shownBefore; cmShowMsg('Nothing can be changed while you are viewing as someone else.', false); return; }
+      if (field === 'title' && !cell.value.trim()) { cell.value = shownBefore; cmShowMsg('A release needs a title.', false); return; }
+      const before = JSON.parse(JSON.stringify(entry));
+      cmTableApply(entry, field, cell.value);
+      cell.value = cmTableShown(entry, field);   // tags come back tidied
+      if (JSON.stringify(before) === JSON.stringify(entry)) return;
+      cmTableState(td, 'saving', '…');
+      cmtQueue = cmtQueue.then(() => new Promise(done => cmPersist(() => {
+        cmTableState(td, 'saved', '✓');
+        if (field === 'title' || field === 'date') cmRenderEntries();
+        if (field === 'tags') cmRebuildTagList();
+        done();
+      }, () => {
+        // Put the release, and the cell, back as they were.
+        const now = cmEntries.find(e => e.id === id);
+        if (now) Object.keys(now).forEach(k => { if (!(k in before)) delete now[k]; }), Object.assign(now, before);
+        cell.value = shownBefore;
+        cmTableState(td, 'error', '✕');
+        done();
+      })));
+    }
+    document.addEventListener('change', ev => { if (ev.target.closest && ev.target.closest('#cmt-body')) cmTableChanged(ev); });
+    // Enter in a cell moves on, which is what saves it.
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' && ev.target.classList && ev.target.classList.contains('cmt-cell') && ev.target.tagName === 'INPUT') ev.target.blur();
+    });
+
+    // Changes made elsewhere (the form, an import) show in an open table.
+    function cmTableRefresh() {
+      const box = document.getElementById('cm-table');
+      if (box && box.style.display !== 'none') cmTableRender();
+    }
+
+    function cmTableMore(id) {
+      cmEditEntry(id);
     }
 
     function cmToggleBulk() {
