@@ -6,6 +6,7 @@
 
   const LINKS = [
     { label: 'Home',    href: root + 'the-velvet-key.html' },
+    { label: 'About',   href: root + 'velvet-key-about.html' },
     { label: 'Listen',  href: root + 'velvet-key-catalog.html' },
     { label: 'Artists', href: null, children: [
       { label: 'JOI Electric',        href: root + 'profiles/joi-electric.html' },
