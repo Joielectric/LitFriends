@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/velvet-key-icon-128.png">
+  <link rel="apple-touch-icon" href="images/velvet-key-icon-512.png">
+  <link rel="manifest" href="manifest-ca.json">
+  <title>About &middot; The Velvet Key</title>
+  <meta name="description" content="The Velvet Key is a collective of voice artists, writers and producers making intimate audio together. What it is, what it offers listeners and creators, and how to join.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="The Velvet Key">
+  <meta property="og:url" content="https://thevelvetkeysociety.com/about">
+  <meta property="og:title" content="About · The Velvet Key">
+  <meta property="og:description" content="A collective of voice artists, writers and producers making intimate audio together.">
+  <meta property="og:image" content="https://thevelvetkeysociety.com/images/share/the-velvet-key.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://thevelvetkeysociety.com/about">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/ca.css">
+  <style>
+    /* Palette and buttons (.vk-btn) come from css/ca.css, as on the home page. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body { color: var(--text); min-height: 100vh; overflow-x: clip; }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(60% 45% at 15% 0%, rgba(142,28,60,0.22) 0%, transparent 70%),
+        radial-gradient(55% 45% at 90% 15%, rgba(96,30,84,0.22) 0%, transparent 70%),
+        radial-gradient(70% 50% at 50% 100%, rgba(90,14,40,0.30) 0%, transparent 70%);
+    }
+    .page { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 1.5rem 1.4rem 4rem; }
+    a { color: var(--rose); }
+
+    .about-hero { text-align: center; padding: 2.4rem 0 2.6rem; }
+    .about-hero img { width: 140px; height: 140px; margin-bottom: 1.2rem; filter: drop-shadow(0 0 30px rgba(142,28,60,0.5)); }
+    .eyebrow {
+      display: inline-block; font-family: var(--display); font-weight: 600; font-size: 0.85rem; color: var(--ca-a);
+      background: rgba(208,96,122,0.12); border: 1px solid rgba(208,96,122,0.35); border-radius: 999px; padding: 0.25rem 0.8rem; margin-bottom: 0.9rem;
+    }
+    .about-hero h1 {
+      font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; font-size: clamp(2.3rem, 7vw, 3.6rem);
+      background: linear-gradient(120deg, #fff 0%, #f2d0da 35%, var(--ca-a) 70%, #a8284e 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;
+    }
+    .lead { font-size: clamp(1.05rem, 2.4vw, 1.2rem); line-height: 1.7; color: var(--text-mid); max-width: 680px; margin: 0 auto; }
+    .lead strong { color: #fff; font-weight: 600; }
+
+    section { margin: 3.2rem 0; scroll-margin-top: 90px; }
+    h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: -0.01em; color: #fff; margin-bottom: 0.5rem; }
+    .sec-lead { color: var(--text-mid); line-height: 1.7; max-width: 700px; margin-bottom: 1.4rem; }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 22px; padding: 1.6rem 1.5rem;
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .panel h3 { display: flex; align-items: center; gap: 0.6rem; font-family: var(--display); font-weight: 700; font-size: 1.3rem; color: #fff; margin-bottom: 1rem; }
+    .panel h3 .ico { width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: var(--ca-volt); color: #fff; flex-shrink: 0; }
+    .panel h3 svg { width: 20px; height: 20px; }
+    .features { list-style: none; display: grid; gap: 0.9rem; }
+    .features li { color: var(--text-mid); line-height: 1.6; font-size: 0.97rem; padding-left: 1.4rem; position: relative; }
+    .features li::before { content: ""; position: absolute; left: 0.2rem; top: 0.6em; width: 7px; height: 7px; border-radius: 50%; background: var(--ca-a); box-shadow: 0 0 10px rgba(208,96,122,0.7); }
+    .features b { color: #fff; font-family: var(--display); font-weight: 600; }
+
+    .steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; counter-reset: step; }
+    @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+    .steps li { counter-increment: step; background: var(--ca-glass); border: 1px solid var(--ca-line); border-radius: 18px; padding: 1.3rem 1.2rem; color: var(--text-mid); line-height: 1.6; }
+    .steps li::before {
+      content: counter(step); display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%;
+      background: var(--ca-volt); color: #fff; font-family: var(--display); font-weight: 700; margin-bottom: 0.7rem;
+    }
+    .steps b { display: block; color: #fff; font-family: var(--display); font-weight: 600; font-size: 1.05rem; margin-bottom: 0.2rem; }
+
+    .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .value { border-left: 2px solid var(--ca-a); padding: 0.2rem 0 0.2rem 1rem; }
+    .value b { display: block; font-family: var(--display); font-weight: 600; color: #fff; margin-bottom: 0.25rem; }
+    .value p { color: var(--text-mid); line-height: 1.6; font-size: 0.95rem; }
+
+    .cta {
+      text-align: center; padding: 2.2rem 1.6rem; border-radius: 24px; position: relative; overflow: hidden;
+      background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--ca-volt) border-box; border: 1.5px solid transparent;
+    }
+    .cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 70% at 50% 0%, rgba(142,28,60,0.28), transparent 70%); pointer-events: none; }
+    .cta > * { position: relative; }
+    .cta p { color: var(--text-mid); max-width: 560px; margin: 0 auto; line-height: 1.7; }
+    .cta .note { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.4rem; }
+
+    /* Buttons, as on the home page */
+    .hero-ctas { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; margin: 1.3rem 0 0.6rem; }
+    .vk-btn {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0.8rem 1.5rem;
+      border-radius: 999px; font-family: var(--display); font-weight: 600; font-size: 1rem; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.25s, background 0.25s;
+    }
+    .vk-btn:active { transform: scale(0.97); }
+    .vk-btn-primary { background: var(--ca-volt); color: #fff; box-shadow: 0 8px 28px rgba(142,28,60,0.45); }
+    .vk-btn-primary:hover { transform: translateY(-2px); }
+    .vk-btn-glass { background: var(--ca-glass-hi); color: var(--text); border: 1px solid var(--ca-line-hi); }
+    .vk-btn-glass:hover { background: rgba(255,255,255,0.13); transform: translateY(-2px); }
+    @media (max-width: 520px) { .vk-btn { width: 100%; } .panel { padding: 1.3rem 1.1rem; } }
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--ca-line); color: var(--text-dim); font-size: 0.85rem; }
+    footer a { color: inherit; }
+  </style>
+  <script src="/js/age-gate.js"></script>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="about-hero">
+    <img src="images/velvet-key-mark.png" alt="" width="140" height="140">
+    <div><span class="eyebrow">About</span></div>
+    <h1>The Velvet Key</h1>
+    <p class="lead"><strong>A collective of voice artists, writers and producers making intimate audio together.</strong> Every piece is crafted with intention, credited to everyone who made it, and made for adults who know exactly what they came for.</p>
+  </header>
+
+  <section id="what">
+    <h2>What it is</h2>
+    <p class="sec-lead">The Velvet Key brings independent creators together under one roof. Writers find voices for their scripts, voices find producers, and the finished work lives in one catalogue where listeners can find it and follow the names to the people behind it. It is in a soft launch: open to listeners, and to creators by invitation.</p>
+
+    <div class="split">
+      <div class="panel">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg></span>For listeners</h3>
+        <ul class="features">
+          <li><b>One catalogue of everything.</b> Audio, scripts, stories, poems and music from every artist, newest first.</li>
+          <li><b>Find what you&rsquo;re in the mood for.</b> Search by title, tag or creator, and filter by audience, type, platform or length.</li>
+          <li><b>Listen where you like.</b> Each release links to wherever it&rsquo;s posted, and some play right on the page.</li>
+          <li><b>Meet the artists.</b> Every creator has a page with their work, links and latest news.</li>
+          <li><b>Say what moved you.</b> Each creator has an anonymous feedback form, read by them and no one else.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></span>For creators</h3>
+        <ul class="features">
+          <li><b>Collaborators.</b> Pair your voice with a script, your script with a voice, your audio with a producer.</li>
+          <li><b>A page of your own.</b> Your profile, links and news, in your own colours, with a preview card for when it&rsquo;s shared.</li>
+          <li><b>Proper credit.</b> Voice, writing, production, music and art are each credited, and every name links to its artist.</li>
+          <li><b>Bring in what you&rsquo;ve made.</b> Import your work from Literotica, ScriptBin, Soundgasm and HotAudio instead of typing it out.</li>
+          <li><b>Ready-made posts.</b> Turn any release into a Reddit, HotAudio or Literotica post in a couple of clicks.</li>
+          <li><b>Hear from listeners.</b> Your own feedback form, and visitor numbers for your page.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="join">
+    <h2>How joining works</h2>
+    <p class="sec-lead">For now, creators join by invitation. It keeps the collective small enough to know each other while it finds its feet.</p>
+    <ol class="steps">
+      <li><b>Ask</b>Email <a href="mailto:joi@joielectric.com?subject=Joining%20The%20Velvet%20Key">joi@joielectric.com</a> with a little about what you make and where we can hear it.</li>
+      <li><b>Get your invitation</b>It goes to the Google account you&rsquo;ll sign in with.</li>
+      <li><b>Make it yours</b>Sign in, build your page, add your work, and start finding collaborators.</li>
+    </ol>
+  </section>
+
+  <section id="values">
+    <h2>What we hold to</h2>
+    <div class="values">
+      <div class="value"><b>Credit where it&rsquo;s due</b><p>Every person who made a piece is named on it, and their name leads to their work.</p></div>
+      <div class="value"><b>Adults only</b><p>Everything here is made by adults, for adults. Every visitor confirms they&rsquo;re 18 or over.</p></div>
+      <div class="value"><b>Your privacy</b><p>Feedback is anonymous, and we keep only what the site needs. <a href="/privacy.html">Read the privacy policy</a>.</p></div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Make something with us</h2>
+    <p>If you make intimate audio, or want to, there&rsquo;s room for you here.</p>
+    <div class="hero-ctas">
+      <a class="vk-btn vk-btn-primary" href="mailto:joi@joielectric.com?subject=Joining%20The%20Velvet%20Key">Ask to join</a>
+      <a class="vk-btn vk-btn-glass" href="velvet-key-catalog.html">Start listening</a>
+    </div>
+    <p class="note">Invite only during the soft launch.</p>
+  </section>
+
+</div>
+
+<footer>
+  The Velvet Key &mdash; All content intended for adults 18 and over &middot; <a href="/privacy.html">Privacy</a>
+</footer>
+
+<script src="/js/site-config.js"></script>
+<script src="/js/artists.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/track.js" defer></script>
+<script src="/js/creator-login.js"></script>
+</body>
+</html>

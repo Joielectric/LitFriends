@@ -45,6 +45,17 @@
 # cyoaudio.com is the choose-your-own-adventure audio site, served from this
 # same Netlify site. Until the player is built, its front door is a coming
 # soon page.
+# The Velvet Key's About page, at a short address on its own domain.
+[[redirects]]
+  from = "https://thevelvetkeysociety.com/about"
+  to = "/velvet-key-about.html"
+  status = 200
+  force = true
+[[redirects]]
+  from = "https://www.thevelvetkeysociety.com/about"
+  to = "/velvet-key-about.html"
+  status = 200
+  force = true
 [[redirects]]
   from = "https://cyoaudio.com/"
   to = "/cyoaudio.html"
