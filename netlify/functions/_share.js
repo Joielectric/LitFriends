@@ -27,7 +27,7 @@ const SITES = {
   ca: {
     name: "The Velvet Key",
     tagline: "Every voice here wanted to be heard.",
-    card: "/images/share/the-velvet-key.png",
+    card: "/images/share/the-velvet-key-wordmark.png",
   },
 };
 
