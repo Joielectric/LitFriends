@@ -148,7 +148,7 @@
   logo.id = 'ca-nav-logo';
   logo.href = root + 'the-velvet-key.html';
   logo.setAttribute('aria-label', 'The Velvet Key home');
-  logo.innerHTML = '<img src="' + root + 'images/velvet-key-mark.png" alt=""><span>The Velvet Key</span>';
+  logo.innerHTML = '<img src="' + root + 'images/vk-monogram-mark.png" alt=""><span>The Velvet Key</span>';
   inner.appendChild(logo);
 
   // Desktop links
