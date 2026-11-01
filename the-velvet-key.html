@@ -131,18 +131,25 @@
       50%       { filter: drop-shadow(0 0 55px rgba(176,40,74,0.75)) drop-shadow(0 0 110px rgba(192,57,74,0.55)); }
     }
 
-    /* The emblem carries the name, so it is the heading. */
-    .hero h1 { margin: 0 auto 1.4rem; line-height: 0; }
-    /* A softer pulse than the old title's: a big halo reads as a solid
-       backdrop behind a round emblem. */
-    @keyframes emblem-glow {
-      0%, 100% { filter: drop-shadow(0 0 6px rgba(176,40,74,0.25)); }
-      50%       { filter: drop-shadow(0 0 18px rgba(176,40,74,0.45)); }
+    /* The name, set in type: a wordmark in the same Cinzel gold as the
+       logo, with a slow glow behind it. */
+    @keyframes wordmark-glow {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(176,40,74,0.30)); }
+      50%       { filter: drop-shadow(0 0 22px rgba(176,40,74,0.55)); }
     }
-    .hero-emblem {
-      width: min(340px, 72vw); height: auto; display: inline-block;
-      animation: emblem-glow 3.5s ease-in-out infinite;
+    html body .hero h1.hero-wordmark {
+      display: flex; flex-direction: column; align-items: center; margin: 0.4rem auto 1.4rem;
+      font-family: "Cinzel", serif; font-weight: 600; text-transform: uppercase; line-height: 1.05;
+      background: none; -webkit-text-fill-color: initial; color: inherit;
+      animation: wordmark-glow 3.5s ease-in-out infinite;
     }
+    .hero-wordmark span {
+      background: linear-gradient(160deg, #fff1d2 0%, #e8c27a 35%, #c08a3e 65%, #8a5a22 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+    }
+    .hero-wordmark .wm-the { font-size: clamp(0.95rem, 2.4vw, 1.35rem); font-weight: 500; letter-spacing: 0.5em; padding-left: 0.5em; margin-bottom: 0.35rem; }
+    .hero-wordmark .wm-name { font-size: clamp(2.6rem, 9vw, 5.2rem); letter-spacing: 0.06em; }
+    @media (prefers-reduced-motion: reduce) { .hero-wordmark { animation: none !important; } }
 
     .hero-divider {
       display: flex;
@@ -700,7 +707,7 @@
 
   <section class="hero">
     <span class="hero-eyebrow">Welcome to</span>
-    <h1><img class="hero-emblem" src="images/velvet-key-mark.png" alt="The Velvet Key" width="400" height="400"></h1>
+    <h1 class="hero-wordmark"><span class="wm-the">The</span><span class="wm-name">Velvet Key</span></h1>
     <div class="hero-divider"><span></span><i></i><span></span></div>
     <p class="hero-tagline">Intimate audio, crafted with intention.<br>Stories that know exactly what they are.</p>
     <p class="hero-creators">A showcase for voice artists, writers and producers. Put your work where listeners are looking.</p>
