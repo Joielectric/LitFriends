@@ -1,6 +1,6 @@
 /* The Velvet Key (the-velvet-key.html) in the site's newer look:
  * Space Grotesk and Inter, glass cards, pill buttons, a gradient accent.
- * It keeps its own coral-and-crimson palette, splash video and starfield.
+ * It keeps its own palette, waves and starfield.
  *
  * Linked after the page's own <style>, so a rule here wins at equal
  * specificity. The menu is injected by js/nav.js after this sheet, so those
@@ -125,7 +125,6 @@ body { font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antia
 .age-btn-yes { background: var(--ca-volt); color: #fff; border: 0; box-shadow: 0 8px 28px rgba(142,28,60,0.4); }
 .age-btn-yes:hover { color: #fff; transform: translateY(-2px); }
 .age-btn-no { background: var(--ca-glass-hi); border: 1px solid var(--ca-line-hi); color: var(--text); }
-#splash-skip { font-family: var(--display); font-weight: 600; letter-spacing: 0; text-transform: none; border-radius: 999px; }
 
 footer { font-family: var(--body); letter-spacing: 0; text-transform: none; font-size: 0.82rem; }
 
