@@ -1001,7 +1001,7 @@
                                 <li><span><b>Type and title.</b> Audio, script, story and so on, then its name.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-title')">Show me</button></li>
                                 <li><span><b>Platform links.</b> Press <b>+ Add Platform</b> for each place it's posted. Icons are added for you.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-links-list')">Show me</button></li>
                                 <li><span><b>Tags.</b> The audience tag first, like F4M, then what it is. The tag helper reads a bracketed title for you.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-tags')">Show me</button></li>
-                                <li><span><b>Credits.</b> Pick yourself and everyone you made it with. Press <b>+ New</b> for someone who isn't listed yet.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-people-voiceArtists')">Show me</button></li>
+                                <li><span><b>Credits.</b> Needed. Pick yourself and everyone you made it with. Press <b>+ New</b> for someone who isn't listed yet.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-people-voiceArtists')">Show me</button></li>
                                 <li><span><b>Save Entry.</b> It's in the catalogue straight away, and on your page once your page is published.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-save-btn')">Show me</button></li>
                             </ol>
                         </div>
@@ -1307,11 +1307,11 @@
                     <section class="ew-step" data-step="credits">
                         <button type="button" class="ew-step-head" onclick="ewOpen('credits')" aria-expanded="false">
                             <span class="ew-num"></span>
-                            <span class="ew-step-title">Who made it? <span class="ew-opt">Optional</span></span>
+                            <span class="ew-step-title">Who made it? <span class="ew-req">Needed</span></span>
                             <span class="ew-state"></span>
                         </button>
                         <div class="ew-body">
-                        <div class="ew-help"><p>Under each role, pick the person from the list, or press <b>+ New</b> if they aren&rsquo;t listed yet.</p><p><b>Credit yourself too.</b> That&rsquo;s how this release appears on your page.</p><p class="ew-tip">Used sound effects? Add each pack under SFX at the bottom.</p></div>
+                        <div class="ew-help"><p>Credit everyone who made this with you: the voices, the writer, whoever edited, produced, scored or drew the art. Full credits send listeners to every collaborator&rsquo;s page, and every one of them gets the release on theirs.</p><p>Under each role, pick the person from the list, or press <b>+ New</b> if they aren&rsquo;t listed yet. <b>Credit yourself too.</b> That&rsquo;s how this release appears on your page.</p><p class="ew-tip">At least one person is needed to save.</p><p class="ew-tip">Used sound effects? Add each pack under SFX at the bottom.</p></div>
                     <div class="cm-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
                         <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(pick collaborators)</span></label>
                         <div class="cm-credits-grid">
@@ -4998,6 +4998,14 @@
       const links = cmGetLinks();
       if (!title) { cmShowMsg('Title is required.', false); ewSay('Add a title before saving.', false); ewOpen('basics'); return; }
       if (!links.length) { cmShowMsg('Add at least one platform link.', false); ewSay('Add at least one platform link before saving.', false); ewOpen('links'); return; }
+      // Crediting everyone is how collaborators find each other, so the form
+      // won't save a release with nobody on it.
+      if (!Object.values(cmCredits || {}).flat().some(Boolean)) {
+        cmShowMsg('Credit at least one person.', false);
+        ewSay('Credit everyone who made it, yourself included, before saving.', false);
+        ewOpen('credits');
+        return;
+      }
 
       const tracks = cmGetTracks();
       const entry = {
@@ -8203,8 +8211,8 @@
           }
           case 'credits': {
             const names = [...new Set(Object.values(cmCredits || {}).flat().filter(Boolean))];
-            return { done: names.length > 0,
-                     text: names.length ? names.slice(0, 3).join(', ') + (names.length > 3 ? ' +' + (names.length - 3) : '') : 'Nobody yet. Credit yourself so it shows on your page' };
+            return { done: names.length > 0, need: !names.length,
+                     text: names.length ? names.slice(0, 3).join(', ') + (names.length > 3 ? ' +' + (names.length - 3) : '') : 'Needs at least one person' };
           }
         }
       } catch (e) {}
