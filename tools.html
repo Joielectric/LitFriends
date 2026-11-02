@@ -298,6 +298,106 @@
     .im-seg:hover { color: var(--text); border-color: var(--coral); }
     .im-seg.active { color: #fff; border-color: var(--coral); background: rgba(57,213,255,.1); }
     .im-sec[hidden], .im-found[hidden] { display: none; }
+    .im-n {
+      display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+      width: 22px; height: 22px; border-radius: 50%; margin-right: 6px;
+      background: rgba(57,213,255,.14); border: 1px solid var(--coral); color: var(--text);
+      font-family: var(--display); font-size: .72rem; font-weight: 700;
+    }
+    .im-flow { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 1.2rem; padding: 0; }
+    .im-flow li { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; color: var(--text-mid); font-size: .86rem; line-height: 1.45; }
+    .im-flow b { color: var(--text); }
+    .im-step-label { display: flex; align-items: center; margin: 1.2rem 0 8px; }
+    .im-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.2rem; }
+    .im-cards .im-seg { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 12px 14px; min-height: 84px; text-transform: none; letter-spacing: 0; }
+    .im-cards .im-seg b { font-size: .95rem; color: var(--text); text-transform: none; }
+    .im-cards .im-seg span { font-family: var(--body); font-size: .8rem; color: var(--text-dim); line-height: 1.4; }
+    .im-sec { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+    .im-sec-title { font-family: var(--display); font-size: 1.1rem; color: var(--text); margin-bottom: 4px; }
+    .im-sheet-steps { list-style: none; counter-reset: sh; margin: 10px 0 0; padding: 0; }
+    .im-sheet-steps li { counter-increment: sh; display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--border); color: var(--text-mid); font-size: .88rem; line-height: 1.5; }
+    .im-sheet-steps li > span { flex: 1 1 320px; }
+    .im-sheet-steps li > span::before { content: counter(sh); display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; margin-right: 8px; border: 1px solid var(--coral); color: var(--text); font-family: var(--display); font-size: .72rem; font-weight: 700; }
+    .im-sheet-steps b { color: var(--text); }
+    @media (max-width: 768px) {
+      .im-flow, .im-cards { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Edit many */
+    .bk-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .bk-head h3 { font-family: var(--display); font-size: 1.05rem; color: var(--text); margin-bottom: 4px; }
+    .bk-head .pf-help { margin: 0; max-width: 560px; }
+    .bk-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .bk-card .cmt, .bk-card .cm-bulk-panel { margin-top: 12px; }
+
+    /* Guided entry form */
+    .ew-choose { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.6rem; }
+    .ew-choice { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin: 0; }
+    .ew-choice h3 { font-family: var(--display); font-size: 1.05rem; color: var(--text); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .ew-choice > p { color: var(--text-mid); font-size: .88rem; margin-bottom: 10px; }
+    .ew-choice .ew-alt { color: var(--text-dim); font-size: .8rem; margin: 10px 0 0; }
+    .ew-count { font-family: var(--body); font-size: .8rem; font-weight: 400; color: var(--text-dim); }
+    .ew { border-top: 1px solid var(--border); padding-top: 1.4rem; scroll-margin-top: 80px; }
+    .ew-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .ew-mode { font-family: var(--display); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); }
+    .ew.editing .ew-mode { color: var(--coral); }
+    .ew-title { font-family: var(--display); font-size: 1.3rem; color: var(--text); margin-top: 2px; }
+    .ew-head-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .ew-all { display: flex; gap: 6px; align-items: center; color: var(--text-mid); font-size: .82rem; cursor: pointer; }
+    .ew-say { border: 1px solid rgba(111,227,193,.5); background: rgba(111,227,193,.08); color: var(--text); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 12px; font-size: .88rem; }
+    .ew-say.bad { border-color: rgba(232,163,79,.6); background: rgba(232,163,79,.08); }
+    .ew-say[hidden] { display: none; }
+    .ew-rail { list-style: none; display: flex; gap: 6px; overflow-x: auto; padding: 0 0 6px; margin: 0 0 12px; scrollbar-width: thin; }
+    .ew-rail button {
+      display: flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer;
+      background: transparent; border: 1px solid var(--border-mid); border-radius: 999px;
+      color: var(--text-mid); font: 500 .8rem var(--body); padding: 5px 12px 5px 5px;
+    }
+    .ew-rail button:hover { color: var(--text); border-color: var(--coral); }
+    .ew .ew-num {
+      display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+      width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-hi);
+      font: 700 .72rem var(--display); color: var(--text);
+    }
+    .ew-rail .current button { border-color: var(--coral); color: var(--text); background: rgba(57,213,255,.1); }
+    .ew .done .ew-num, .ew .done > .ew-step-head .ew-num { background: #2f9e7d; border-color: #6fe3c1; color: #fff; }
+    .ew .need .ew-num { border-color: #e8a34f; }
+    .ew-step { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; scroll-margin-top: 80px; }
+    .ew-step[hidden], .ew [data-for][hidden] { display: none; }
+    .ew-step.open { border-color: var(--coral); box-shadow: 0 0 0 1px rgba(57,213,255,.15); }
+    .ew-step-head {
+      width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer;
+      background: transparent; border: 0; color: var(--text); padding: 12px 14px; font: 600 .98rem var(--display);
+    }
+    .ew-step-title { flex: 1 1 auto; }
+    .ew-req, .ew-opt { font: 500 .66rem var(--body); letter-spacing: .04em; text-transform: uppercase; margin-left: 6px; padding: 2px 6px; border-radius: 4px; vertical-align: middle; }
+    .ew-req { color: #e8a34f; border: 1px solid rgba(232,163,79,.5); }
+    .ew-opt { color: var(--text-dim); border: 1px solid var(--border); }
+    .ew-state { font: 400 .78rem var(--body); color: var(--text-dim); text-align: right; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ew .done .ew-state { color: #6fe3c1; }
+    .ew-body { display: none; padding: 0 14px 14px; }
+    .ew-step.open .ew-body, .ew.all .ew-body { display: block; }
+    .ew-body > * + * { margin-top: 12px; }
+    .ew-help { border-left: 3px solid var(--coral); background: rgba(57,213,255,.06); padding: 10px 12px; color: var(--text-mid); font-size: .9rem; line-height: 1.55; border-radius: 0 var(--radius) var(--radius) 0; }
+    .ew-help p + p, .ew-help ol + p, .ew-help p + ol { margin-top: 6px; }
+    .ew-help ol { padding-left: 1.3rem; }
+    .ew-help b { color: var(--text); }
+    .ew-help .ew-tip { color: var(--text-dim); font-size: .84rem; }
+    .ew-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .ew-nav { display: flex; justify-content: space-between; gap: 8px; }
+    .ew-nav .ew-back[disabled] { visibility: hidden; }
+    .ew.all .ew-nav { display: none; }
+    .ew-review { list-style: none; padding: 0; margin: 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    .ew-review li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--border); font-size: .88rem; color: var(--text-mid); }
+    .ew-review li:first-child { border-top: 0; }
+    .ew-review li > span:nth-child(2) { flex: 1 1 auto; }
+    .ew-review li b { color: var(--text); }
+    .ew-review .ew-fix { background: none; border: 0; color: var(--coral); cursor: pointer; font: 500 .8rem var(--body); padding: 0; }
+    @media (max-width: 768px) {
+      .ew-choose, .ew-2col { grid-template-columns: 1fr; }
+      .ew-body > .cm-full[style*="grid"] { grid-template-columns: 1fr !important; }
+      .ew-state { display: none; }
+    }
     .im-find { display: flex; gap: 8px; flex-wrap: wrap; }
     .im-find .cm-input { flex: 1 1 240px; min-width: 0; }
     .im-kinds { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.86rem; color: var(--text-mid); }
@@ -825,6 +925,7 @@
                   <div class="cm-tab-group">Publish</div>
                   <button class="cm-tab active" data-tab="content" onclick="cmTab('content')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Releases</button>
                   <button class="cm-tab" data-tab="import" onclick="cmTab('import')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Import</button>
+                  <button class="cm-tab" data-tab="bulk" onclick="cmTab('bulk')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Edit many</button>
                   <button class="cm-tab" data-tab="tags" onclick="cmTab('tags')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/></svg>Tags</button>
                   <button class="cm-tab" data-tab="names" onclick="cmTab('names')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="16" r="3"/><path d="M10.5 10.5l3 3"/><path d="M14 6h4v4"/><path d="M10 18H6v-4"/></svg>Credit names</button>
                   <button class="cm-tab" data-tab="collab" onclick="cmTab('collab')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17" cy="9" r="2.8"/><path d="M16 14.6c3 .1 5.5 1.9 5.5 5.4"/></svg>Collaborators &amp; platforms</button>
@@ -875,7 +976,7 @@
 
                 <section class="pf-card" id="gs-guide">
                     <div class="pf-card-head"><h3>How to add to the catalogue</h3></div>
-                    <p class="pf-help">Your works page lists everything in the catalogue that you added or are credited on. There are two ways to get work in. If it's already posted on ScriptBin, Reddit or Literotica, import it. Anything else, add by hand.</p>
+                    <p class="pf-help">Your works page lists everything in the catalogue that you added or are credited on. There are two ways to get work in. If it's already posted on ScriptBin, Reddit or Literotica, or you have it in a spreadsheet, import it. Anything else, add by hand.</p>
 
                     <div class="gs-ways">
                         <div class="gs-way">
@@ -890,11 +991,12 @@
                                 <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'im-scriptbin-handle', 'scriptbin')">Scripts from ScriptBin</button>
                                 <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'im-reddit-handle', 'reddit')">Audios from Reddit</button>
                                 <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'im-literotica-handle', 'literotica')">Works from Literotica</button>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="gsShow('import', 'cm-sheet-pick', 'sheet')">From a spreadsheet</button>
                             </div>
                         </div>
                         <div class="gs-way">
                             <h4>Add one by hand</h4>
-                            <p class="im-hint" style="margin:0 0 6px">In <b>Releases</b>, scroll past your list to the form. Press <b>Show me</b> to jump to each part.</p>
+                            <p class="im-hint" style="margin:0 0 6px">In <b>Releases</b>, press <b>Start a new release</b>. The form walks you through it a step at a time, with a note on each. Press <b>Show me</b> to jump to a step.</p>
                             <ol class="gs-steps">
                                 <li><span><b>Type and title.</b> Audio, script, story and so on, then its name.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-title')">Show me</button></li>
                                 <li><span><b>Platform links.</b> Press <b>+ Add Platform</b> for each place it's posted. Icons are added for you.</span><button type="button" class="gs-show" onclick="gsShow('content', 'cm-links-list')">Show me</button></li>
@@ -914,35 +1016,505 @@
                 </div>
 
                 <div class="cm-tab-panel" id="tabp-content" hidden>
-                <header class="cm-panel-head"><h2>Releases</h2><p>Add a new release or edit one you have already published. Everything here appears in the catalogues.</p></header>
-                <!-- Add / Edit form -->
-                <!-- Existing entries: pick one to edit, or scroll past to add a new one -->
-                <div class="cm-entries-list">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px">
-                        <label class="cm-label" style="margin:0">Edit an Entry</label>
-                        <span style="color:var(--text-mid);font-size:0.9rem" id="cm-count">0 entries</span>
+                <header class="cm-panel-head"><h2>Releases</h2><p>Add a release one at a time, or pick one you&rsquo;ve already added to change it. Everything here appears in the catalogue.</p></header>
+
+                <div class="ew-choose">
+                    <div class="ew-choice">
+                        <h3>Add a new release</h3>
+                        <p>The form below walks you through it, one step at a time.</p>
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="ewStartNew()">Start a new release</button>
+                        <p class="ew-alt">Adding lots? <a href="#" onclick="cmTab('import'); return false;">Import them</a> from ScriptBin, Reddit, Literotica or a spreadsheet instead.</p>
                     </div>
-                    <input id="cm-entry-search" class="cm-input" placeholder="Filter by title, tag, or creator…" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
-                    <!-- Backup, and bulk work -->
-                    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;">
-                      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                        <span style="color:var(--text-mid);font-size:0.85rem;">Edit many at once</span>
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                          <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" id="cm-table-toggle" onclick="cmTableToggle()">Table view</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmSheetExport()">Export to spreadsheet</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-sheet-file').click()">Import spreadsheet</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmBackup()">Download backup</button>
-                          <button type="button" class="cm-btn cm-btn-sm owner-only" style="display:none" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
-                          <button type="button" class="cm-btn cm-btn-sm owner-only" style="display:none" onclick="cmToggleBulk()">Bulk edit</button>
+                    <div class="ew-choice cm-entries-list">
+                        <h3>Change one you&rsquo;ve added <span id="cm-count" class="ew-count">0 entries</span></h3>
+                        <input id="cm-entry-search" class="cm-input" placeholder="Search by title, tag or creator&hellip;" style="width:100%;margin-bottom:8px" oninput="cmRenderEntries()">
+                    <label id="cm-all-creators-row" style="display:none;align-items:center;gap:0.5rem;margin-bottom:8px;color:var(--text-mid);font-size:0.85rem;cursor:pointer;">
+                      <input type="checkbox" id="cm-all-creators" onchange="cmRenderEntries()" style="cursor:pointer">
+                      Show other creators&rsquo; entries
+                    </label>
+                    <select id="cm-entry-select" class="cm-input" style="width:100%" onchange="cmEntrySelected()">
+                        <option value="">Select an entry…</option>
+                    </select>
+                    <div id="cm-entry-actions" style="display:none;margin-top:10px;">
+                        <div id="cm-entry-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:8px;"></div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="cm-btn" onclick="cmEditSelected()">Edit</button>
+                            <button class="cm-btn cm-btn-danger" onclick="cmDeleteSelected()">Delete</button>
                         </div>
+                    </div>
+                        <p class="ew-alt">Changing lots at once? Use <a href="#" onclick="cmTab('bulk'); return false;">Edit many</a>.</p>
+                    </div>
+                </div>
+
+                <!-- The add / edit form, as a guided series of steps. Every
+                     field keeps its id, so the code that fills and saves it is
+                     unchanged; the steps are only how it is laid out. See
+                     "Guided entry form" in the script. -->
+                <div class="ew" id="ew">
+                    <div class="ew-head">
+                        <div>
+                            <span class="ew-mode" id="ew-mode">New release</span>
+                            <h3 class="ew-title" id="ew-title">Add a new release</h3>
+                        </div>
+                        <div class="ew-head-tools">
+                            <button type="button" class="cm-btn cm-btn-sm" id="ew-cancel" onclick="ewStartNew()" hidden>Stop editing, start a new one</button>
+                            <label class="ew-all"><input type="checkbox" id="ew-all" onchange="ewShowAll(this.checked)"> Show every step at once</label>
+                        </div>
+                    </div>
+                    <div class="ew-say" id="ew-say" hidden></div>
+                    <ol class="ew-rail" id="ew-rail" aria-label="Steps"></ol>
+
+                    <section class="ew-step" data-step="basics">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('basics')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">What are you adding? <span class="ew-req">Needed</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>First choose what kind of release this is. The rest of the form adjusts to it: audio gets a step for the script it fills, music gets a step for the track file.</p><p>Then type the <b>title</b> the way it appears where you posted it.</p><p class="ew-tip">Have a bracketed Reddit title, like <i>[F4M] [Comfort] Title</i>? Paste it into Tags in the <b>Describe it</b> step and the tag helper will split it into a title and tags for you.</p></div>
+                    <div class="cm-full" style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
+                        <div>
+                            <label class="cm-label">Type</label>
+                            <select id="cm-type" class="cm-input" style="width:100%;min-width:0" onchange="cmTypeChanged()"></select>
+                        </div>
+                        <div>
+                            <label class="cm-label">Title</label>
+                            <input id="cm-title" class="cm-input" placeholder="Title" style="width:100%">
+                        </div>
+                    </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="links">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('links')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Where can people find it? <span class="ew-req">Needed</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>Add a link for every place it&rsquo;s posted: Soundgasm, HotAudio, Reddit, Patreon, ScriptBin and so on.</p><ol><li>Press <b>+ Add Platform</b>.</li><li>Choose the site.</li><li>Paste the full address from your browser.</li></ol><p class="ew-tip">At least one link is needed to save. The icons on your page are added for you.</p></div>
+                    <div class="cm-full" style="border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <label class="cm-label" style="margin-bottom:0">Platform Links</label>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddLink()">+ Add Platform</button>
+                        </div>
+                        <div id="cm-links-list"></div>
+                    </div>
+                    <div class="cm-full">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                            <label class="cm-label" style="margin:0">HotAudio versions <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddTrack()">+ Add version</button>
+                        </div>
+                        <div id="cm-hotaudio-tracks"></div>
+                        <div class="im-hint" style="margin:6px 0 0">What HotAudio calls each version on its own site, like t/2983 with music and t/2984 voice only. Its description links to each of them, and these are kept apart from the HotAudio link above.</div>
+                    </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="script">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('script')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Which script is it from? <span class="ew-opt">Optional</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p data-for="audio">If this audio fills someone&rsquo;s script, search for it below by title, tag or writer and pick it. The script and your fill then link to each other in the catalogue. Improv or your own idea? Skip this step.</p><p data-for="other">If you offered this on Reddit, <b>Find the offer</b> keeps that post as a link, so listeners can find the fills.</p><p class="ew-tip" data-for="audio">Was the script offered on Reddit? <b>Find the offer</b> adds that post too.</p></div>
+                    <div class="cm-full" id="cm-fills-row">
+                        <label class="cm-label">Script Filled <span style="font-weight:normal;color:var(--text-mid)">(optional, any creator’s script in the catalogue)</span></label>
+                        <input type="hidden" id="cm-fills">
+                        <div id="cm-fills-current" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;"></div>
+                        <input id="cm-fills-search" class="cm-input" style="width:100%;min-width:0" autocomplete="off"
+                               placeholder="Search scripts by title, tag, writer or ScriptBin username…"
+                               oninput="cmRenderFillsResults()" onkeydown="cmFillsKey(event)">
+                        <div id="cm-fills-results" style="max-height:260px;overflow-y:auto;margin-top:6px;"></div>
+                        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">
+                            Every creator’s scripts are searchable here. For a script with no entry anywhere in the catalogue, add a script platform link above instead.
+                        </div>
+                    </div>
+                    <div class="cm-full" id="cm-offer-row">
+                        <label class="cm-label">Script Offer on Reddit <span style="font-weight:normal;color:var(--text-mid)">(optional, kept as a Script Offer link)</span></label>
+                        <div id="cm-offer-current" class="im-hint" style="margin:0 0 8px"></div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <input id="cm-offer-src" class="cm-input" style="flex:1 1 260px"
+                                   placeholder="Paste the Reddit link of your fill, or leave this empty to search by title"
+                                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
+                            <input id="cm-offer-writer" class="cm-input" style="flex:0 1 180px"
+                                   placeholder="Writer on Reddit"
+                                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmOfferFind()">Find the offer</button>
+                        </div>
+                        <div id="cm-offer-status" class="im-status"></div>
+                        <div id="cm-offer-results" class="im-list" style="max-height:280px"></div>
+                    </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="describe">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('describe')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Describe it <span class="ew-opt">Optional</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p><b>Tags</b> are how listeners find work in the catalogue. Add the words someone would search for, separated by commas. Put the audience tag first, like F4M. The tag helper suggests ones already in use.</p><p>The <b>short description</b> is one line on the card (up to 100 characters). The <b>long description</b> shows when someone opens it. Line breaks are kept and links become clickable.</p></div>
+                    <div class="cm-full">
+                        <label class="cm-label" for="cm-tags">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma separated)</span></label>
+                        <input id="cm-tags" class="cm-input" data-tags data-tags-title="#cm-title" placeholder="GFE, soft, comfort" style="width:100%">
+                        <datalist id="cm-tag-suggestions"></datalist>
+                        <div class="im-hint" style="margin-bottom:0">Tag helper reads a pasted bracketed title (and can fill in the title), and offers audience tags and the tags already in use.</div>
+                    </div>
+                        <div class="cm-full">
+                        <label class="cm-label">Short Description <span style="font-weight:normal;color:var(--text-mid)">(optional, max 100 chars)</span></label>
+                        <input id="cm-short-desc" class="cm-input" placeholder="Brief one-line summary" maxlength="100" style="width:100%;margin-bottom:8px">
+                        <label class="cm-label">Long Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
+                        <textarea id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc. (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
+                        </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="cover">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('cover')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Add a cover image <span class="ew-opt">Optional</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>Releases with a picture stand out in the catalogue. <b>Upload New</b> for an image on your device, <b>Choose from uploads</b> to reuse one, or paste the address of an image online.</p><p class="ew-tip">Square images look best. It&rsquo;s shown in a frame, so it doesn&rsquo;t need a border of its own.</p></div>
+                        <div class="cm-full">
+                        <label class="cm-label" style="margin-top:8px">Cover Image <span style="font-weight:normal;color:var(--text-mid)">(optional, shown in a frame)</span></label>
+                        <div style="display:flex;gap:10px;align-items:flex-start;">
+                            <div id="cm-image-preview" style="display:none;flex:0 0 auto;width:70px;height:70px;border:1px solid var(--border-mid);border-radius:var(--radius);overflow:hidden;background:var(--surface-2);">
+                                <img id="cm-image-preview-img" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                            </div>
+                            <div style="flex:1 1 auto;min-width:0;">
+                                <input id="cm-image" class="cm-input" placeholder="https://… or images/covers/cover.webp" style="width:100%"
+                                    oninput="cmUpdateImagePreview()">
+                                <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image-file').click()">Upload New</button>
+                                    <button type="button" id="cm-uploads-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleUploads()">Choose from uploads</button>
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image').value='';cmUpdateImagePreview()">Remove</button>
+                                    <span id="cm-image-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
+                                </div>
+                                <input type="file" id="cm-image-file" accept="image/*" style="display:none"
+                                    onchange="cmUploadImage(this.files[0]);this.value=''">
+                            </div>
+                        </div>
+
+                        <!-- Library of already-uploaded covers -->
+                        <div id="cm-image-uploads-host"></div>
+                        <div id="cm-uploads-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                                <span id="cm-uploads-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
+                                <span style="display:flex;gap:6px;align-items:center">
+                                    <!-- The owner's own uploads unless they ask for someone else's -->
+                                    <select id="cm-uploads-scope" class="cm-input owner-only" style="display:none;width:auto;padding:3px 6px;font-size:0.75rem"
+                                        title="Whose uploads to show" onchange="cmLoadUploads()">
+                                        <option value="mine">My uploads</option>
+                                    </select>
+                                    <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadUploads()">Refresh</button>
+                                </span>
+                            </div>
+                            <div id="cm-uploads-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:280px;overflow-y:auto;"></div>
+                        </div>
+                        </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="track" hidden>
+                        <button type="button" class="ew-step-head" onclick="ewOpen('track')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Add the track <span class="ew-opt">Optional</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>Upload the music file so people can play and download it here. Then add the tempo, what it works well for, and how others may use it.</p></div>
+                    <div class="cm-full" id="cm-music-fields" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+                        <label class="cm-label" style="margin-bottom:10px">Music Details <span style="font-weight:normal;color:var(--text-mid)">(mood/vibe goes in Tags above)</span></label>
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Track file <span style="font-weight:normal">(enables the player &amp; download)</span></label>
+                        <input id="cm-track" class="cm-input" placeholder="Upload below, or paste a URL" style="width:100%;margin-bottom:8px">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-track-file').click()">Upload track</button>
+                            <button type="button" id="cm-tracks-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleTracks()">Choose from uploads</button>
+                            <span id="cm-track-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
+                        </div>
+                        <input type="file" id="cm-track-file" accept="audio/*" style="display:none" onchange="cmUploadTrack(this.files[0]);this.value=''">
+                        <div id="cm-tracks-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
+                                <span id="cm-tracks-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadTracks()">Refresh</button>
+                            </div>
+                            <div id="cm-tracks-list" style="max-height:260px;overflow-y:auto;"></div>
+                        </div>
+                        <div style="height:10px"></div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div>
+                                <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Tempo <span style="font-weight:normal">(optional)</span></label>
+                                <input id="cm-tempo" class="cm-input" placeholder="slow / mid / fast or 92 BPM" style="width:100%">
+                            </div>
+                            <div>
+                                <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Intended use <span style="font-weight:normal">(optional)</span></label>
+                                <input id="cm-use" class="cm-input" placeholder="background audio, outro, transition" style="width:100%">
+                            </div>
+                        </div>
+                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-top:10px">License / usage note</label>
+                        <input id="cm-license" class="cm-input" placeholder="Free for personal projects — credit appreciated, no resale" style="width:100%">
+                    </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="when">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('when')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">When was it released, and how long is it? <span class="ew-opt">Optional</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>The <b>date</b> sets its place in the catalogue, newest first. It starts as today, so change it to the day it was first posted.</p><p>The <b>length</b> is optional, written like 14:32.</p></div>
+                        <div class="ew-2col">
+                    <div>
+                        <label class="cm-label">Date</label>
+                        <input type="date" id="cm-date" class="cm-input" style="width:100%">
+                    </div>
+                    <div>
+                        <label class="cm-label">Total Run Time <span style="font-weight:normal;color:var(--text-mid)">(TRT, optional)</span></label>
+                        <input id="cm-trt" class="cm-input" placeholder="e.g. 14:32" style="width:100%">
+                    </div>
+                        </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="credits">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('credits')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Who made it? <span class="ew-opt">Optional</span></span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>Under each role, pick the person from the list, or press <b>+ New</b> if they aren&rsquo;t listed yet.</p><p><b>Credit yourself too.</b> That&rsquo;s how this release appears on your page.</p><p class="ew-tip">Used sound effects? Add each pack under SFX at the bottom.</p></div>
+                    <div class="cm-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+                        <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(pick collaborators)</span></label>
+                        <div class="cm-credits-grid">
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Voice Artist(s)</label>
+                                <div class="cm-people" id="cm-people-voiceArtists"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="voiceArtists"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('voiceArtists')">+ New</button></div>
+                            </div>
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Writer(s)</label>
+                                <div class="cm-people" id="cm-people-writers"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="writers"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('writers')">+ New</button></div>
+                            </div>
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Producer(s)</label>
+                                <div class="cm-people" id="cm-people-producers"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="producers"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('producers')">+ New</button></div>
+                            </div>
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Editor(s)</label>
+                                <div class="cm-people" id="cm-people-editors"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="editors"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('editors')">+ New</button></div>
+                            </div>
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Musician(s)</label>
+                                <div class="cm-people" id="cm-people-musicians"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="musicians"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('musicians')">+ New</button></div>
+                            </div>
+                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Artwork</label>
+                                <div class="cm-people" id="cm-people-artwork"></div>
+                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="artwork"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('artwork')">+ New</button></div>
+                            </div>
+                        </div>
+                        <div style="margin-top:14px">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                                <label class="cm-label" style="margin:0;font-size:0.88rem;color:var(--text-mid)">SFX <span style="font-weight:normal">(optional)</span></label>
+                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddSfx()">+ Add SFX</button>
+                            </div>
+                            <div id="cm-sfx"></div>
+                            <div class="im-hint" style="margin:6px 0 0">The licence, then a short credit line like "The Sauce Pack by u/name" or "Rain pack from Freesound". The link is optional.</div>
+                        </div>
+                    </div>
+                        <div class="ew-nav">
+                            <button type="button" class="cm-btn cm-btn-sm ew-back" onclick="ewGo(this, -1)">Back</button>
+                            <button type="button" class="cm-btn cm-btn-sm cm-btn-primary ew-next" onclick="ewGo(this, 1)">Next</button>
+                        </div>
+                        </div>
+                    </section>
+                    <section class="ew-step" data-step="review">
+                        <button type="button" class="ew-step-head" onclick="ewOpen('review')" aria-expanded="false">
+                            <span class="ew-num"></span>
+                            <span class="ew-step-title">Check and save </span>
+                            <span class="ew-state"></span>
+                        </button>
+                        <div class="ew-body">
+                        <div class="ew-help"><p>Here&rsquo;s where everything stands. Steps marked <b>Needed</b> must be done before saving. Everything else can wait and be added later.</p></div>
+                        <ul class="ew-review" id="ew-review"></ul>
+                    <div style="display:flex;align-items:flex-end;gap:10px">
+                        <button id="cm-save-btn" class="cm-btn cm-btn-primary" onclick="cmSaveEntry()" style="width:100%">Save Entry</button>
+                        <button class="cm-btn cm-btn-sm" onclick="cmClearForm()" style="background:var(--border);color:var(--coral);border:1px solid var(--border-mid)">Clear</button>
+                    </div>
+                        </div>
+                    </section>
+                </div>
+
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-import" hidden>
+                <header class="cm-panel-head"><h2>Import</h2><p>Bring in work you&rsquo;ve already posted, many at a time, instead of adding each one by hand.</p></header>
+                <!-- Bringing in work already published elsewhere. The code is
+                     under "Import" in the script below; the spreadsheet is
+                     under "Spreadsheet round trip". -->
+                <ol class="im-flow">
+                    <li><span class="im-n">1</span><b>Choose</b> where your work is.</li>
+                    <li><span class="im-n">2</span><b>Find</b> it. Nothing is saved yet.</li>
+                    <li><span class="im-n">3</span><b>Review</b> the list, fixing anything with <b>Edit</b>.</li>
+                    <li><span class="im-n">4</span><b>Import</b> the ones you tick.</li>
+                </ol>
+                    <div class="owner-only" style="display:none;margin-top:12px;">
+                        <label class="cm-label" style="font-size:0.7rem">Importing for</label>
+                        <select id="im-who" class="cm-input" style="width:100%;max-width:360px" onchange="imWhoChanged()"></select>
+                    </div>
+                    <div id="im-who-note" class="im-hint" style="margin-bottom:0"></div>
+
+                <label class="cm-label im-step-label"><span class="im-n">1</span> Where is your work?</label>
+                <div class="im-segs im-cards">
+                    <button type="button" class="im-seg" data-sec="scriptbin" onclick="imSection('scriptbin')"><b>ScriptBin</b><span>Your scripts</span></button>
+                    <button type="button" class="im-seg" data-sec="reddit" onclick="imSection('reddit')"><b>Reddit</b><span>Your audio posts, with their Soundgasm and HotAudio links</span></button>
+                    <button type="button" class="im-seg" data-sec="literotica" onclick="imSection('literotica')"><b>Literotica</b><span>Your audio, stories and poems</span></button>
+                    <button type="button" class="im-seg" data-sec="sheet" onclick="imSection('sheet')"><b>Spreadsheet</b><span>Anything else, from a CSV file</span></button>
+                </div>
+                <datalist id="im-names"></datalist>
+
+                <section class="im-sec" data-sec="scriptbin" hidden>
+                    <h3 class="im-sec-title">Scripts from ScriptBin</h3>
+                    <p class="im-hint">Your public scripts on scriptbin.works. Usernames there are case sensitive, so match the capitals in your profile address.</p>
+                    <label class="cm-label im-step-label" for="im-scriptbin-handle"><span class="im-n">2</span> Your username on ScriptBin</label>
+                    <div class="im-find">
+                        <input id="im-scriptbin-handle" class="cm-input" placeholder="ScriptBin username, like cuddle_with_me"
+                               onkeydown="if (event.key === 'Enter') imCheckScriptbin()">
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckScriptbin()">Check for scripts</button>
+                    </div>
+                    <div id="im-scriptbin-status" class="im-status"></div>
+                    <div id="im-scriptbin-found" class="im-found" hidden>
+                        <div class="im-toolbar">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('scriptbin', true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('scriptbin', false)">None</button>
+                            <span class="im-spacer"></span>
+                            <button type="button" id="im-scriptbin-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('scriptbin')" disabled>Import selected</button>
+                        </div>
+                        <div id="im-scriptbin-list" class="im-list"></div>
+                    </div>
+                </section>
+
+                <section class="im-sec" data-sec="reddit" hidden>
+                    <h3 class="im-sec-title">Audios from Reddit</h3>
+                    <p class="im-hint">Your audio posts on Reddit, found through GWASI, with links and descriptions from your Soundgasm and HotAudio pages under the same name. A post whose audio is on neither is offered with just its Reddit link.</p>
+                    <label class="cm-label im-step-label" for="im-reddit-handle"><span class="im-n">2</span> Your username on Reddit</label>
+                    <div class="im-find">
+                        <input id="im-reddit-handle" class="cm-input" placeholder="Reddit username, like u/cuddle_with_me"
+                               onkeydown="if (event.key === 'Enter') imCheckReddit()">
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckReddit()">Check for audios</button>
+                    </div>
+                    <div id="im-reddit-status" class="im-status"></div>
+                    <div id="im-reddit-found" class="im-found" hidden>
+                        <div class="im-toolbar">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('reddit', true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('reddit', false)">None</button>
+                            <span class="im-spacer"></span>
+                            <button type="button" id="im-reddit-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('reddit')" disabled>Import selected</button>
+                        </div>
+                        <div id="im-reddit-list" class="im-list"></div>
+                    </div>
+                </section>
+
+                <section class="im-sec" data-sec="literotica" hidden>
+                    <h3 class="im-sec-title">Works from Literotica</h3>
+                    <p class="im-hint">Your audio, stories and poems on literotica.com, read from your public works pages. Titles, descriptions, categories, dates and series come across. The tags on each work's own page do not, so add those with Edit.</p>
+                    <label class="cm-label im-step-label" for="im-literotica-handle"><span class="im-n">2</span> Your username on Literotica</label>
+                    <div class="im-find">
+                        <input id="im-literotica-handle" class="cm-input" placeholder="Literotica username, like JOI_Electric"
+                               onkeydown="if (event.key === 'Enter') imCheckLiterotica()">
+                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckLiterotica()">Check for works</button>
+                    </div>
+                    <div class="im-kinds">
+                        <label><input type="checkbox" class="im-lit-kind" value="audio" checked> Audio</label>
+                        <label><input type="checkbox" class="im-lit-kind" value="stories" checked> Stories</label>
+                        <label><input type="checkbox" class="im-lit-kind" value="poetry" checked> Poems</label>
+                    </div>
+                    <div id="im-literotica-status" class="im-status"></div>
+                    <div id="im-literotica-found" class="im-found" hidden>
+                        <div class="im-toolbar">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('literotica', true)">Select all</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('literotica', false)">None</button>
+                            <span class="im-spacer"></span>
+                            <button type="button" id="im-literotica-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('literotica')" disabled>Import selected</button>
+                        </div>
+                        <div id="im-literotica-list" class="im-list"></div>
+                    </div>
+                </section>
+
+                <section class="im-sec" data-sec="sheet" hidden>
+                    <h3 class="im-sec-title">From a spreadsheet</h3>
+                    <p class="im-hint">For work that isn&rsquo;t on ScriptBin, Reddit or Literotica, or for changing lots of releases at once in Excel or Google Sheets.</p>
+                    <ol class="im-sheet-steps">
+                        <li><span><b>Download your releases as a spreadsheet.</b> Use it as your template: it has every column the catalogue reads, with your releases already filled in.</span>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmSheetExport()">Download spreadsheet</button></li>
+                        <li><span><b>Add or change rows</b> in Excel or Google Sheets, one release per row. Leave the <b>ID</b> empty on a new row. A row that keeps its ID updates that release.</span></li>
+                        <li><span><b>Save it as CSV UTF-8.</b> In Excel: File, Save As, then &ldquo;CSV UTF-8&rdquo;. In Google Sheets: File, Download, then &ldquo;Comma-separated values&rdquo;.</span></li>
+                        <li><span><b>Choose the file.</b> You&rsquo;ll see every change it would make, and nothing is saved until you confirm.</span>
+                            <button type="button" id="cm-sheet-pick" class="cm-btn cm-btn-sm cm-btn-primary" onclick="document.getElementById('cm-sheet-file').click()">Choose CSV file</button></li>
+                    </ol>
+                    <input type="file" id="cm-sheet-file" accept=".csv,text/csv,.txt" style="display:none" onchange="cmSheetImport(this)">
+                    <div id="cm-sheet-preview" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;"></div>
+                </section>
+                </div>
+
+                <div class="cm-tab-panel" id="tabp-bulk" hidden>
+                <header class="cm-panel-head"><h2>Edit many</h2><p>Change lots of releases at once, keep a backup, and tidy up loose ends.</p></header>
+
+                    <div id="cm-unclaimed-box" style="display:none;border:1px solid rgba(232,163,79,0.4);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;background:rgba(232,163,79,0.06);">
+                      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <span id="cm-unclaimed-count" style="color:#e8a34f;font-size:0.85rem;"></span>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUnclaimed()">Show</button>
                       </div>
-                      <p style="color:var(--text-dim);font-size:0.82rem;margin:8px 0 0;line-height:1.5;">
-                        <b>Table view</b> lets you change your releases right here, a cell at a time. For big jobs,
-                        export your releases, edit them in Excel or Google Sheets, save as <b>CSV UTF-8</b>, then import the file back.
-                        Rows keep their <b>ID</b> and update that release; a row with no ID is added as new. Nothing is saved until you check the changes.
-                      </p>
-                      <input type="file" id="cm-sheet-file" accept=".csv,text/csv,.txt" style="display:none" onchange="cmSheetImport(this)">
-                      <div id="cm-sheet-preview" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;"></div>
+                      <div id="cm-unclaimed-body" style="display:none;margin-top:10px;">
+                        <p style="color:var(--text-mid);font-size:0.8rem;margin-bottom:8px;">
+                          Nobody is credited on these, so they do not appear on any profile. Claim them and the credit is added for you.
+                        </p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+                          <select id="cm-claim-as" class="cm-input cm-btn-sm" style="flex:1 1 160px"></select>
+                          <select id="cm-claim-role" class="cm-input cm-btn-sm" style="flex:0 1 140px"></select>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimAll(true)">All</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimAll(false)">None</button>
+                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimSelected()">Claim selected</button>
+                        </div>
+                        <div id="cm-unclaimed-list" style="max-height:240px;overflow-y:auto;"></div>
+                      </div>
+                    </div>
+
+                <section class="pf-card bk-card">
+                    <div class="bk-head">
+                        <div>
+                            <h3>Table view</h3>
+                            <p class="pf-help">All your releases in one table. Click a cell to change it, and it saves when you move on. <b>More</b> on a row opens the full form.</p>
+                        </div>
+                        <button type="button" class="cm-btn cm-btn-sm cm-btn-primary" id="cm-table-toggle" onclick="cmTableToggle()">Table view</button>
+                    </div>
                       <div id="cm-table" class="cmt" style="display:none">
                         <div class="cmt-bar">
                           <input id="cmt-search" class="cm-input cm-btn-sm" placeholder="Search your releases…" oninput="cmTableRender()">
@@ -960,8 +1532,29 @@
                           <tbody id="cmt-body"></tbody>
                         </table></div>
                       </div>
-                      <input type="file" id="cm-restore-file" accept=".json,application/json" style="display:none" onchange="cmRestore(this)">
+                </section>
 
+                <section class="pf-card bk-card">
+                    <div class="bk-head">
+                        <div>
+                            <h3>Edit in a spreadsheet</h3>
+                            <p class="pf-help">Download your releases, change them in Excel or Google Sheets, then bring the file back in on the Import tab. You&rsquo;ll check every change before it&rsquo;s saved.</p>
+                        </div>
+                        <div class="bk-btns">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmSheetExport()">Download spreadsheet</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmTab('import'); imSection('sheet');">Import a spreadsheet</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="pf-card bk-card owner-only" style="display:none">
+                    <div class="bk-head">
+                        <div>
+                            <h3>Bulk changes</h3>
+                            <p class="pf-help">Pick a set of releases, then add or remove tags, set the date, move them to another creator, or delete them.</p>
+                        </div>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleBulk()">Bulk edit</button>
+                    </div>
                       <div id="cm-bulk" class="cm-bulk-panel" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
                         <p style="color:#e8a34f;font-size:0.8rem;margin-bottom:10px;">
                           Take a backup before deleting. Nothing here can be undone from inside the site.
@@ -1001,326 +1594,20 @@
                           </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div id="cm-unclaimed-box" style="display:none;border:1px solid rgba(232,163,79,0.4);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;background:rgba(232,163,79,0.06);">
-                      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                        <span id="cm-unclaimed-count" style="color:#e8a34f;font-size:0.85rem;"></span>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="cmToggleUnclaimed()">Show</button>
-                      </div>
-                      <div id="cm-unclaimed-body" style="display:none;margin-top:10px;">
-                        <p style="color:var(--text-mid);font-size:0.8rem;margin-bottom:8px;">
-                          Nobody is credited on these, so they do not appear on any profile. Claim them and the credit is added for you.
-                        </p>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
-                          <select id="cm-claim-as" class="cm-input cm-btn-sm" style="flex:1 1 160px"></select>
-                          <select id="cm-claim-role" class="cm-input cm-btn-sm" style="flex:0 1 140px"></select>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimAll(true)">All</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimAll(false)">None</button>
-                          <button type="button" class="cm-btn cm-btn-sm" onclick="cmClaimSelected()">Claim selected</button>
-                        </div>
-                        <div id="cm-unclaimed-list" style="max-height:240px;overflow-y:auto;"></div>
-                      </div>
-                    </div>
-
-                    <label id="cm-all-creators-row" style="display:none;align-items:center;gap:0.5rem;margin-bottom:8px;color:var(--text-mid);font-size:0.85rem;cursor:pointer;">
-                      <input type="checkbox" id="cm-all-creators" onchange="cmRenderEntries()" style="cursor:pointer">
-                      Show other creators&rsquo; entries
-                    </label>
-                    <select id="cm-entry-select" class="cm-input" style="width:100%" onchange="cmEntrySelected()">
-                        <option value="">Select an entry…</option>
-                    </select>
-                    <div id="cm-entry-actions" style="display:none;margin-top:10px;">
-                        <div id="cm-entry-summary" style="color:var(--text-mid);font-size:0.9rem;margin-bottom:8px;"></div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <button class="cm-btn" onclick="cmEditSelected()">Edit</button>
-                            <button class="cm-btn cm-btn-danger" onclick="cmDeleteSelected()">Delete</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="cm-form-grid">
-                    <div class="cm-full" style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:end;">
-                        <div>
-                            <label class="cm-label">Type</label>
-                            <select id="cm-type" class="cm-input" style="width:100%;min-width:0" onchange="cmTypeChanged()"></select>
-                        </div>
-                        <div>
-                            <label class="cm-label">Title</label>
-                            <input id="cm-title" class="cm-input" placeholder="Title" style="width:100%">
-                        </div>
-                    </div>
-
-                    <!-- Multi-platform links -->
-                    <div class="cm-full" style="border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                            <label class="cm-label" style="margin-bottom:0">Platform Links</label>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddLink()">+ Add Platform</button>
-                        </div>
-                        <div id="cm-links-list"></div>
-                    </div>
-
-                    <!-- Script fill: audio entries only -->
-                    <div class="cm-full" id="cm-fills-row">
-                        <label class="cm-label">Script Filled <span style="font-weight:normal;color:var(--text-mid)">(optional, any creator’s script in the catalogue)</span></label>
-                        <input type="hidden" id="cm-fills">
-                        <div id="cm-fills-current" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;"></div>
-                        <input id="cm-fills-search" class="cm-input" style="width:100%;min-width:0" autocomplete="off"
-                               placeholder="Search scripts by title, tag, writer or ScriptBin username…"
-                               oninput="cmRenderFillsResults()" onkeydown="cmFillsKey(event)">
-                        <div id="cm-fills-results" style="max-height:260px;overflow-y:auto;margin-top:6px;"></div>
-                        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">
-                            Every creator’s scripts are searchable here. For a script with no entry anywhere in the catalogue, add a script platform link above instead.
-                        </div>
-                    </div>
-
-                    <!-- The offer on Reddit the script was posted in, which a
-                         Reddit post of this audio prints beside the audio. -->
-                    <div class="cm-full" id="cm-offer-row">
-                        <label class="cm-label">Script Offer on Reddit <span style="font-weight:normal;color:var(--text-mid)">(optional, kept as a Script Offer link)</span></label>
-                        <div id="cm-offer-current" class="im-hint" style="margin:0 0 8px"></div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <input id="cm-offer-src" class="cm-input" style="flex:1 1 260px"
-                                   placeholder="Paste the Reddit link of your fill, or leave this empty to search by title"
-                                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
-                            <input id="cm-offer-writer" class="cm-input" style="flex:0 1 180px"
-                                   placeholder="Writer on Reddit"
-                                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); cmOfferFind(); }">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmOfferFind()">Find the offer</button>
-                        </div>
-                        <div id="cm-offer-status" class="im-status"></div>
-                        <div id="cm-offer-results" class="im-list" style="max-height:280px"></div>
-                    </div>
-
-                    <div class="cm-full">
-                        <label class="cm-label" for="cm-tags">Tags <span style="font-weight:normal;color:var(--text-mid)">(comma separated)</span></label>
-                        <input id="cm-tags" class="cm-input" data-tags data-tags-title="#cm-title" placeholder="GFE, soft, comfort" style="width:100%">
-                        <datalist id="cm-tag-suggestions"></datalist>
-                        <div class="im-hint" style="margin-bottom:0">Tag helper reads a pasted bracketed title (and can fill in the title), and offers audience tags and the tags already in use.</div>
-                    </div>
-                    <div class="cm-full">
-                        <label class="cm-label">Short Description <span style="font-weight:normal;color:var(--text-mid)">(optional, max 100 chars)</span></label>
-                        <input id="cm-short-desc" class="cm-input" placeholder="Brief one-line summary" maxlength="100" style="width:100%;margin-bottom:8px">
-                        <label class="cm-label">Long Description <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
-                        <textarea id="cm-desc" class="cm-input" placeholder="Full description, scene details, etc. (line breaks are kept; paste links and they'll become clickable)" style="width:100%;min-height:90px;resize:vertical;"></textarea>
-                        <label class="cm-label" style="margin-top:8px">Cover Image <span style="font-weight:normal;color:var(--text-mid)">(optional, shown in a frame)</span></label>
-                        <div style="display:flex;gap:10px;align-items:flex-start;">
-                            <div id="cm-image-preview" style="display:none;flex:0 0 auto;width:70px;height:70px;border:1px solid var(--border-mid);border-radius:var(--radius);overflow:hidden;background:var(--surface-2);">
-                                <img id="cm-image-preview-img" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
-                            </div>
-                            <div style="flex:1 1 auto;min-width:0;">
-                                <input id="cm-image" class="cm-input" placeholder="https://… or images/covers/cover.webp" style="width:100%"
-                                    oninput="cmUpdateImagePreview()">
-                                <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
-                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image-file').click()">Upload New</button>
-                                    <button type="button" id="cm-uploads-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleUploads()">Choose from uploads</button>
-                                    <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-image').value='';cmUpdateImagePreview()">Remove</button>
-                                    <span id="cm-image-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
-                                </div>
-                                <input type="file" id="cm-image-file" accept="image/*" style="display:none"
-                                    onchange="cmUploadImage(this.files[0]);this.value=''">
-                            </div>
-                        </div>
-
-                        <!-- Library of already-uploaded covers -->
-                        <div id="cm-image-uploads-host"></div>
-                        <div id="cm-uploads-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-                                <span id="cm-uploads-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
-                                <span style="display:flex;gap:6px;align-items:center">
-                                    <!-- The owner's own uploads unless they ask for someone else's -->
-                                    <select id="cm-uploads-scope" class="cm-input owner-only" style="display:none;width:auto;padding:3px 6px;font-size:0.75rem"
-                                        title="Whose uploads to show" onchange="cmLoadUploads()">
-                                        <option value="mine">My uploads</option>
-                                    </select>
-                                    <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadUploads()">Refresh</button>
-                                </span>
-                            </div>
-                            <div id="cm-uploads-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:280px;overflow-y:auto;"></div>
-                        </div>
-                    </div>
-
-                    <!-- Beats-only fields -->
-                    <div class="cm-full" id="cm-music-fields" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
-                        <label class="cm-label" style="margin-bottom:10px">Music Details <span style="font-weight:normal;color:var(--text-mid)">(mood/vibe goes in Tags above)</span></label>
-                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Track file <span style="font-weight:normal">(enables the player &amp; download)</span></label>
-                        <input id="cm-track" class="cm-input" placeholder="Upload below, or paste a URL" style="width:100%;margin-bottom:8px">
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-track-file').click()">Upload track</button>
-                            <button type="button" id="cm-tracks-toggle" class="cm-btn cm-btn-sm" onclick="cmToggleTracks()">Choose from uploads</button>
-                            <span id="cm-track-status" style="font-size:0.72rem;color:var(--text-dim)"></span>
-                        </div>
-                        <input type="file" id="cm-track-file" accept="audio/*" style="display:none" onchange="cmUploadTrack(this.files[0]);this.value=''">
-                        <div id="cm-tracks-panel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
-                                <span id="cm-tracks-summary" style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--text-dim);letter-spacing:.06em">Loading…</span>
-                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmLoadTracks()">Refresh</button>
-                            </div>
-                            <div id="cm-tracks-list" style="max-height:260px;overflow-y:auto;"></div>
-                        </div>
-                        <div style="height:10px"></div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                            <div>
-                                <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Tempo <span style="font-weight:normal">(optional)</span></label>
-                                <input id="cm-tempo" class="cm-input" placeholder="slow / mid / fast or 92 BPM" style="width:100%">
-                            </div>
-                            <div>
-                                <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid)">Intended use <span style="font-weight:normal">(optional)</span></label>
-                                <input id="cm-use" class="cm-input" placeholder="background audio, outro, transition" style="width:100%">
-                            </div>
-                        </div>
-                        <label class="cm-label" style="font-size:0.8rem;color:var(--text-mid);margin-top:10px">License / usage note</label>
-                        <input id="cm-license" class="cm-input" placeholder="Free for personal projects — credit appreciated, no resale" style="width:100%">
-                    </div>
-                    <div>
-                        <label class="cm-label">Date</label>
-                        <input type="date" id="cm-date" class="cm-input" style="width:100%">
-                    </div>
-                    <div>
-                        <label class="cm-label">Total Run Time <span style="font-weight:normal;color:var(--text-mid)">(TRT, optional)</span></label>
-                        <input id="cm-trt" class="cm-input" placeholder="e.g. 14:32" style="width:100%">
-                    </div>
-                    <div class="cm-full">
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-                            <label class="cm-label" style="margin:0">HotAudio versions <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddTrack()">+ Add version</button>
-                        </div>
-                        <div id="cm-hotaudio-tracks"></div>
-                        <div class="im-hint" style="margin:6px 0 0">What HotAudio calls each version on its own site, like t/2983 with music and t/2984 voice only. Its description links to each of them, and these are kept apart from the HotAudio link above.</div>
-                    </div>
-
-                    <!-- Credits (pick from collaborators) -->
-                    <div class="cm-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
-                        <label class="cm-label" style="margin-bottom:12px">Credits <span style="font-weight:normal;color:var(--text-mid)">(pick collaborators)</span></label>
-                        <div class="cm-credits-grid">
-                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Voice Artist(s)</label>
-                                <div class="cm-people" id="cm-people-voiceArtists"></div>
-                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="voiceArtists"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('voiceArtists')">+ New</button></div>
-                            </div>
-                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Writer(s)</label>
-                                <div class="cm-people" id="cm-people-writers"></div>
-                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="writers"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('writers')">+ New</button></div>
-                            </div>
-                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Producer(s)</label>
-                                <div class="cm-people" id="cm-people-producers"></div>
-                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="producers"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('producers')">+ New</button></div>
-                            </div>
-                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Editor(s)</label>
-                                <div class="cm-people" id="cm-people-editors"></div>
-                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="editors"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('editors')">+ New</button></div>
-                            </div>
-                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Musician(s)</label>
-                                <div class="cm-people" id="cm-people-musicians"></div>
-                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="musicians"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('musicians')">+ New</button></div>
-                            </div>
-                            <div><label class="cm-label" style="font-size:0.88rem;color:var(--text-mid)">Artwork</label>
-                                <div class="cm-people" id="cm-people-artwork"></div>
-                                <div class="cm-people-add"><select class="cm-input cm-people-select" data-role="artwork"></select><button type="button" class="cm-btn cm-btn-sm" onclick="cmNewCollab('artwork')">+ New</button></div>
-                            </div>
-                        </div>
-                        <div style="margin-top:14px">
-                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-                                <label class="cm-label" style="margin:0;font-size:0.88rem;color:var(--text-mid)">SFX <span style="font-weight:normal">(optional)</span></label>
-                                <button type="button" class="cm-btn cm-btn-sm" onclick="cmAddSfx()">+ Add SFX</button>
-                            </div>
-                            <div id="cm-sfx"></div>
-                            <div class="im-hint" style="margin:6px 0 0">The licence, then a short credit line like "The Sauce Pack by u/name" or "Rain pack from Freesound". The link is optional.</div>
-                        </div>
-                    </div>
-
-                    <div style="display:flex;align-items:flex-end;gap:10px">
-                        <button id="cm-save-btn" class="cm-btn cm-btn-primary" onclick="cmSaveEntry()" style="width:100%">Save Entry</button>
-                        <button class="cm-btn cm-btn-sm" onclick="cmClearForm()" style="background:var(--border);color:var(--coral);border:1px solid var(--border-mid)">Clear</button>
-                    </div>
-                </div>
-
-                </div>
-
-                <div class="cm-tab-panel" id="tabp-import" hidden>
-                <header class="cm-panel-head"><h2>Import</h2><p>Bring in your work from Literotica, ScriptBin or Reddit instead of typing each one out.</p></header>
-                <!-- Bringing in work already published elsewhere. The code is
-                     under "Import" in the script below. -->
-                <div class="im-intro">
-                    <label class="cm-label" style="margin-bottom:8px">Import your work</label>
-                    <ol class="im-steps">
-                        <li><b>Find</b> it by your username on that site.</li>
-                        <li><b>Review</b> what was found. Use <b>Edit</b> on any line to fix its details and credits.</li>
-                        <li><b>Import</b> the lines you tick. Nothing is saved before that.</li>
-                    </ol>
-                    <div class="owner-only" style="display:none;margin-top:12px;">
-                        <label class="cm-label" style="font-size:0.7rem">Importing for</label>
-                        <select id="im-who" class="cm-input" style="width:100%;max-width:360px" onchange="imWhoChanged()"></select>
-                    </div>
-                    <div id="im-who-note" class="im-hint" style="margin-bottom:0"></div>
-                </div>
-
-                <div class="im-segs">
-                    <button type="button" class="im-seg active" data-sec="scriptbin" onclick="imSection('scriptbin')">Scripts from ScriptBin</button>
-                    <button type="button" class="im-seg" data-sec="reddit" onclick="imSection('reddit')">Audios from Reddit</button>
-                    <button type="button" class="im-seg" data-sec="literotica" onclick="imSection('literotica')">Works from Literotica</button>
-                </div>
-                <datalist id="im-names"></datalist>
-
-                <section class="im-sec" data-sec="literotica" hidden>
-                    <p class="im-hint">Your audio, stories and poems on literotica.com, read from your public works pages. Titles, descriptions, categories, dates and series come across. The tags on each work's own page do not, so add those with Edit.</p>
-                    <div class="im-find">
-                        <input id="im-literotica-handle" class="cm-input" placeholder="Literotica username, like JOI_Electric"
-                               onkeydown="if (event.key === 'Enter') imCheckLiterotica()">
-                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckLiterotica()">Check for works</button>
-                    </div>
-                    <div class="im-kinds">
-                        <label><input type="checkbox" class="im-lit-kind" value="audio" checked> Audio</label>
-                        <label><input type="checkbox" class="im-lit-kind" value="stories" checked> Stories</label>
-                        <label><input type="checkbox" class="im-lit-kind" value="poetry" checked> Poems</label>
-                    </div>
-                    <div id="im-literotica-status" class="im-status"></div>
-                    <div id="im-literotica-found" class="im-found" hidden>
-                        <div class="im-toolbar">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('literotica', true)">Select all</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('literotica', false)">None</button>
-                            <span class="im-spacer"></span>
-                            <button type="button" id="im-literotica-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('literotica')" disabled>Import selected</button>
-                        </div>
-                        <div id="im-literotica-list" class="im-list"></div>
-                    </div>
                 </section>
 
-                <section class="im-sec" data-sec="scriptbin">
-                    <p class="im-hint">Your public scripts on scriptbin.works. Usernames there are case sensitive, so match the capitals in your profile address.</p>
-                    <div class="im-find">
-                        <input id="im-scriptbin-handle" class="cm-input" placeholder="ScriptBin username, like cuddle_with_me"
-                               onkeydown="if (event.key === 'Enter') imCheckScriptbin()">
-                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckScriptbin()">Check for scripts</button>
-                    </div>
-                    <div id="im-scriptbin-status" class="im-status"></div>
-                    <div id="im-scriptbin-found" class="im-found" hidden>
-                        <div class="im-toolbar">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('scriptbin', true)">Select all</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('scriptbin', false)">None</button>
-                            <span class="im-spacer"></span>
-                            <button type="button" id="im-scriptbin-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('scriptbin')" disabled>Import selected</button>
+                <section class="pf-card bk-card">
+                    <div class="bk-head">
+                        <div>
+                            <h3>Backup</h3>
+                            <p class="pf-help">A copy of your releases as one file, to keep somewhere safe.</p>
                         </div>
-                        <div id="im-scriptbin-list" class="im-list"></div>
-                    </div>
-                </section>
-
-                <section class="im-sec" data-sec="reddit" hidden>
-                    <p class="im-hint">Your audio posts on Reddit, found through GWASI, with links and descriptions from your Soundgasm and HotAudio pages under the same name. A post whose audio is on neither is offered with just its Reddit link.</p>
-                    <div class="im-find">
-                        <input id="im-reddit-handle" class="cm-input" placeholder="Reddit username, like u/cuddle_with_me"
-                               onkeydown="if (event.key === 'Enter') imCheckReddit()">
-                        <button type="button" class="cm-btn cm-btn-primary" onclick="imCheckReddit()">Check for audios</button>
-                    </div>
-                    <div id="im-reddit-status" class="im-status"></div>
-                    <div id="im-reddit-found" class="im-found" hidden>
-                        <div class="im-toolbar">
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('reddit', true)">Select all</button>
-                            <button type="button" class="cm-btn cm-btn-sm" onclick="imAll('reddit', false)">None</button>
-                            <span class="im-spacer"></span>
-                            <button type="button" id="im-reddit-import" class="cm-btn cm-btn-sm cm-btn-primary" onclick="imImport('reddit')" disabled>Import selected</button>
+                        <div class="bk-btns">
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="cmBackup()">Download backup</button>
+                            <button type="button" class="cm-btn cm-btn-sm owner-only" style="display:none" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
                         </div>
-                        <div id="im-reddit-list" class="im-list"></div>
                     </div>
+                    <input type="file" id="cm-restore-file" accept=".json,application/json" style="display:none" onchange="cmRestore(this)">
                 </section>
                 </div>
 
@@ -3411,6 +3698,7 @@
           cmOpenFromHash();
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
+          ewSync();
         })
         .catch(() => {
           // Show the box rather than leave the page waiting on nothing.
@@ -4299,6 +4587,7 @@
       const music = document.getElementById('cm-music-fields');
       if (music) music.style.display = (t === 'music') ? 'block' : 'none';
       if (isAudio) cmRenderFillsOptions();
+      ewSync();
     }
 
     // ── The script offer behind a fill ────────────────────────────────────────
@@ -4707,8 +4996,8 @@
     function cmSaveEntry() {
       const title = document.getElementById('cm-title').value.trim();
       const links = cmGetLinks();
-      if (!title) { cmShowMsg('Title is required.', false); return; }
-      if (!links.length) { cmShowMsg('Add at least one platform link.', false); return; }
+      if (!title) { cmShowMsg('Title is required.', false); ewSay('Add a title before saving.', false); ewOpen('basics'); return; }
+      if (!links.length) { cmShowMsg('Add at least one platform link.', false); ewSay('Add at least one platform link before saving.', false); ewOpen('links'); return; }
 
       const tracks = cmGetTracks();
       const entry = {
@@ -4735,6 +5024,7 @@
         sfx:     cmGetSfx(),
       };
 
+      const wasEdit = !!cmEditingId;
       if (cmEditingId) {
         const idx = cmEntries.findIndex(e => e.id === cmEditingId);
         if (idx > -1) cmEntries[idx] = entry;
@@ -4749,6 +5039,8 @@
         cmRebuildTagList();
         cmTableRefresh();
         cmShowMsg('Saved!', true);
+        ewSay('Saved \u201c' + title + '\u201d' + (wasEdit ? '.' : ' to the catalogue.') + ' The form is ready for the next one.', true);
+        ewOpen('basics');
       });
     }
 
@@ -4783,10 +5075,13 @@
       document.getElementById('cm-tempo').value = e.tempo || '';
       document.getElementById('cm-use').value = e.useCase || '';
       document.getElementById('cm-license').value = e.license || '';
-      const formTop = document.getElementById('cm-panel').getBoundingClientRect().top + window.pageYOffset - 80;
-      window.scrollTo({ top: formTop, behavior: 'smooth' });
       document.getElementById('cm-save-btn').textContent = 'Update Entry';
       document.getElementById('cm-save-btn').style.borderColor = 'var(--coral)';
+      // The table and bulk tools open entries from the Edit many tab.
+      if (document.getElementById('tabp-content').hidden) cmTab('content');
+      ewSay('', true);
+      ewOpen('basics', false);
+      setTimeout(() => document.getElementById('ew').scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     }
 
     function cmDeleteEntry(id) {
@@ -4812,6 +5107,7 @@
       cmRenderCredits();
       cmSetSfx([]);
       document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
+      ewSync();
     }
 
     function cmEntryHaystack(e) {
@@ -6312,7 +6608,7 @@
     function imInit() {
       let sec = 'scriptbin';
       try { sec = sessionStorage.getItem('im_sec') || sec; } catch (e) {}
-      imSection(IM_SOURCES[sec] ? sec : 'scriptbin');
+      imSection(IM_SOURCES[sec] || sec === 'sheet' ? sec : 'scriptbin');
       imFillWho();
     }
 
@@ -7856,6 +8152,177 @@
       cmTab(name);
     }
 
+    // ── Guided entry form ───────────────────────────────────────────────────
+    // The Releases form laid out as steps, each with a note on what to do.
+    // The fields are the same ones cmEditEntry fills and cmSaveEntry reads;
+    // this only opens and closes the steps and reports how far along each is.
+    // "Show every step at once" opens them all, for anyone who knows the form.
+
+    function ewSteps() { return [...document.querySelectorAll('#ew .ew-step')]; }
+    function ewShown() { return ewSteps().filter(s => !s.hidden); }
+    function ewStep(key) { return document.querySelector('#ew .ew-step[data-step="' + key + '"]'); }
+    function ewName(s) { return s.querySelector('.ew-step-title').firstChild.textContent.trim(); }
+    let ewCurrent = 'basics';
+
+    function ewVal(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    // What each step has so far: done or not, needed to save or not, and a
+    // few words on it for the step's header and the review list.
+    function ewState(key) {
+      try {
+        switch (key) {
+          case 'basics': {
+            const t = ewVal('cm-title');
+            return { done: !!t, need: !t, text: t ? cmTypeLabel({ type: ewVal('cm-type') || 'audio' }) + ': ' + t : 'Needs a title' };
+          }
+          case 'links': {
+            const n = cmGetLinks().length;
+            return { done: n > 0, need: !n, text: n ? n + ' link' + (n === 1 ? '' : 's') : 'Needs a link' };
+          }
+          case 'script': {
+            const row = cmOfferLinkRow();
+            const bits = [ewVal('cm-fills') && 'script picked',
+                          row && row.querySelector('input').value.trim() && 'offer linked'].filter(Boolean);
+            return { done: bits.length > 0, text: bits.join(', ') || 'Skipped' };
+          }
+          case 'describe': {
+            const tags = ewVal('cm-tags').split(',').map(x => x.trim()).filter(Boolean).length;
+            const bits = [tags && tags + ' tag' + (tags === 1 ? '' : 's'),
+                          ewVal('cm-short-desc') && 'short description',
+                          ewVal('cm-desc') && 'long description'].filter(Boolean);
+            return { done: bits.length > 0, text: bits.join(', ') || 'Not yet' };
+          }
+          case 'cover': return { done: !!ewVal('cm-image'), text: ewVal('cm-image') ? 'Image added' : 'No image' };
+          case 'track': return { done: !!ewVal('cm-track'), text: ewVal('cm-track') ? 'Track added' : 'No track' };
+          case 'when': {
+            const d = ewVal('cm-date'), t = ewVal('cm-trt');
+            return { done: !!d, text: [d, t].filter(Boolean).join(', ') || 'No date' };
+          }
+          case 'credits': {
+            const names = [...new Set(Object.values(cmCredits || {}).flat().filter(Boolean))];
+            return { done: names.length > 0,
+                     text: names.length ? names.slice(0, 3).join(', ') + (names.length > 3 ? ' +' + (names.length - 3) : '') : 'Nobody yet. Credit yourself so it shows on your page' };
+          }
+        }
+      } catch (e) {}
+      return { done: false, text: '' };
+    }
+
+    function ewSync() {
+      const ew = document.getElementById('ew');
+      if (!ew) return;
+      const type = ewVal('cm-type') || 'audio';
+
+      // Steps that don't apply to this type of release.
+      ewStep('script').hidden = type === 'music';
+      ewStep('track').hidden = type !== 'music';
+      ew.querySelectorAll('[data-for]').forEach(el => {
+        el.hidden = (el.dataset.for === 'audio') !== (type === 'audio');
+      });
+
+      const editing = !!cmEditingId;
+      ew.classList.toggle('editing', editing);
+      document.getElementById('ew-mode').textContent = editing ? 'Editing' : 'New release';
+      document.getElementById('ew-title').textContent = editing
+        ? '“' + (ewVal('cm-title') || 'Untitled') + '”'
+        : 'Add a new release';
+      document.getElementById('ew-cancel').hidden = !editing;
+
+      const shown = ewShown();
+      if (!shown.some(s => s.dataset.step === ewCurrent)) ewCurrent = 'basics';
+      const all = ew.classList.contains('all');
+      const rail = [], review = [];
+      shown.forEach((s, i) => {
+        const key = s.dataset.step;
+        const st = key === 'review' ? { done: false, text: '' } : ewState(key);
+        const name = ewName(s);
+        const mark = st.done ? '✓' : String(i + 1);
+        s.querySelector('.ew-num').textContent = mark;
+        s.querySelector('.ew-state').textContent = st.text;
+        s.classList.toggle('done', st.done);
+        s.classList.toggle('need', !!st.need);
+        s.classList.toggle('open', key === ewCurrent);
+        s.querySelector('.ew-step-head').setAttribute('aria-expanded', String(all || key === ewCurrent));
+        const back = s.querySelector('.ew-back');
+        if (back) back.disabled = i === 0;
+        const next = s.querySelector('.ew-next');
+        if (next && shown[i + 1]) next.textContent = 'Next: ' + ewName(shown[i + 1]).replace(/\?$/, '');
+        rail.push('<li class="' + (st.done ? 'done ' : '') + (st.need ? 'need ' : '') + (key === ewCurrent ? 'current' : '') + '">' +
+          '<button type="button" onclick="ewOpen(\'' + key + '\')"><span class="ew-num">' + mark + '</span>' +
+          cmEsc(name.replace(/\?$/, '')) + '</button></li>');
+        if (key !== 'review') {
+          review.push('<li class="' + (st.done ? 'done' : '') + (st.need ? ' need' : '') + '"><span class="ew-num">' + mark + '</span>' +
+            '<span><b>' + cmEsc(name) + '</b><br>' + cmEsc(st.need ? st.text + ' (needed to save)' : st.text) + '</span>' +
+            '<button type="button" class="ew-fix" onclick="ewOpen(\'' + key + '\')">' + (st.done ? 'Change' : 'Go there') + '</button></li>');
+        }
+      });
+      document.getElementById('ew-rail').innerHTML = rail.join('');
+      document.getElementById('ew-review').innerHTML = review.join('');
+    }
+
+    // Anything typed, picked or added in the form updates the steps.
+    let ewTimer = 0;
+    function ewSoon() { clearTimeout(ewTimer); ewTimer = setTimeout(ewSync, 80); }
+    ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, e => {
+      if (e.target && e.target.closest && e.target.closest('#ew')) ewSoon();
+    }));
+
+    function ewOpen(key, scroll) {
+      const s = ewStep(key);
+      if (!s || s.hidden) return;
+      ewCurrent = key;
+      ewSync();
+      if (scroll !== false) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+    }
+
+    // Back and Next move between the steps that apply to this release.
+    function ewGo(btn, dir) {
+      const shown = ewShown();
+      const to = shown[shown.indexOf(btn.closest('.ew-step')) + dir];
+      if (to) ewOpen(to.dataset.step);
+    }
+
+    // Opens whichever step holds a field, for Get started's "Show me".
+    function ewReveal(el) {
+      const s = el && el.closest ? el.closest('.ew-step') : null;
+      if (s && !s.classList.contains('open')) ewOpen(s.dataset.step, false);
+    }
+
+    function ewShowAll(on) {
+      document.getElementById('ew').classList.toggle('all', on);
+      try { localStorage.setItem('cm_form_all', on ? '1' : '0'); } catch (e) {}
+      ewSync();
+    }
+
+    function ewSay(text, ok) {
+      const el = document.getElementById('ew-say');
+      if (!el) return;
+      el.textContent = text || '';
+      el.hidden = !text;
+      el.classList.toggle('bad', !ok);
+    }
+
+    function ewStartNew() {
+      if (cmEditingId && !confirm('Stop editing this release? Anything you haven\'t saved will be lost.')) return;
+      if (document.getElementById('tabp-content').hidden) cmTab('content');
+      cmClearForm();
+      ewSay('', true);
+      ewOpen('basics');
+      setTimeout(() => { const t = document.getElementById('cm-title'); if (t) t.focus({ preventScroll: true }); }, 400);
+    }
+
+    (function ewInit() {
+      let all = false;
+      try { all = localStorage.getItem('cm_form_all') === '1'; } catch (e) {}
+      const box = document.getElementById('ew-all');
+      if (box) box.checked = all;
+      ewShowAll(all);
+    })();
+
+
     // ── Get started ─────────────────────────────────────────────────────────
     // A creator's first stop: accept the creator terms, then a checklist
     // that reads what is already filled in rather than anything ticked by
@@ -7977,6 +8444,7 @@
         let el = document.getElementById(id);
         if (!el) return;
         // A list inside a box is easier to spot by its box.
+        ewReveal(el);
         if (/^cm-(links-list|people-)/.test(id)) el = el.closest('.cm-full') || el;
         gsPulse(el);
         if (/^(INPUT|TEXTAREA)$/.test(el.tagName)) el.focus({ preventScroll: true });
