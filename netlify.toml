@@ -113,6 +113,21 @@
   status = 302
   force = true
 
+# Netlify serves a file whatever the case of its URL, sending other spellings
+# to the all-lowercase one, but these rules match case exactly. So the
+# lowercase spelling needs rules of its own or it still serves the page.
+[[redirects]]
+  from = "/profiles/misskittensk.html"
+  to = "/the-velvet-key.html"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profiles/misskittensk"
+  to = "/the-velvet-key.html"
+  status = 302
+  force = true
+
 [[redirects]]
   from = "/profiles/hisbadgirl77.html"
   to = "/the-velvet-key.html"
