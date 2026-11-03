@@ -161,6 +161,37 @@
     .feedback-cta h2 { margin-bottom: 0.4rem !important; }
     .feedback-cta p { color: var(--text-mid); max-width: 440px; margin: 0 auto 1.2rem; }
     #page > footer { margin: 3.5rem -1.2rem 0; }
+    /* Premium extras, drawn only on a premium profile (see the extras in
+       netlify/functions/profiles.js). The signature header sets the avatar
+       beside the name, over the banner's bottom edge, with the name in the
+       decorative face. */
+    .head.sig { text-align: left; padding-top: 0; }
+    .banner + .head.sig { margin-top: 0; }
+    .sig-who { display: flex; align-items: flex-end; gap: 1.2rem; padding: 0 1.2rem; }
+    .banner + .head.sig .sig-who { margin-top: -56px; }
+    .head.sig h1 {
+      font-family: "Cinzel", serif; letter-spacing: 0.04em; font-size: clamp(2rem, 6vw, 3rem);
+      margin: 0; padding-bottom: 0.3rem;
+      background-image: linear-gradient(120deg, #e9fbff 0%, var(--cyan) 30%, var(--violet) 65%, var(--pink) 100%);
+    }
+    body[data-theme="daylight"] .head.sig h1 { background-image: linear-gradient(120deg, var(--text) 0%, var(--accent) 60%, var(--accent-2) 100%); }
+    .head.sig .tagline { font-size: 1.2rem; color: var(--text); margin-top: 0.9rem; }
+    .roles { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; margin-top: 0.9rem; }
+    .head.sig .roles { justify-content: flex-start; margin-top: 1rem; }
+    .role { font-family: var(--display); font-weight: 500; font-size: 0.85rem; color: var(--text-mid); background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.8rem; }
+    @media (max-width: 560px) {
+      .head.sig { text-align: center; }
+      .sig-who { flex-direction: column; align-items: center; padding: 0; gap: 0.7rem; }
+      .banner + .head.sig .sig-who { margin-top: -36px; }
+      .head.sig .avatar { width: 96px; height: 96px; border-radius: 24px; }
+      .head.sig .roles { justify-content: center; }
+    }
+    .bio-outro { white-space: normal; margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px solid var(--line); color: var(--text); }
+    .bio-more { font-family: var(--display); font-weight: 600; color: var(--accent); text-decoration: none; white-space: nowrap; border-bottom: 1px solid currentColor; }
+    .bio-more:hover { color: var(--text); }
+    .link-text { display: flex; flex-direction: column; min-width: 0; }
+    .link-note { font-family: var(--body); font-weight: 400; font-size: 0.82rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .showcase-all { margin-top: 0.4rem; }
     .state { text-align: center; padding: 5rem 1rem; color: var(--text-mid); }
     .preview-bar {
       position: sticky; top: 0; z-index: 9500; text-align: center;
@@ -262,12 +293,20 @@
       }
 
       var sections = p.sections || {};
+      // Premium extras are kept on every profile but drawn only on a premium one.
+      var x = p.premium ? (p.extras || {}) : {};
       var html = '';
 
       if (p.banner) html += '<div class="banner" style="background-image:url(\'' + esc(p.banner) + '\')"></div>';
-      html += '<div class="head">';
-      if (p.avatar) html += '<img class="avatar" src="' + esc(p.avatar) + '" alt="">';
-      html += '<h1>' + esc(p.name) + '</h1>';
+      var avatar = p.avatar ? '<img class="avatar" src="' + esc(p.avatar) + '" alt="">' : '';
+      var roles = (x.roles || []).length
+        ? '<div class="roles">' + x.roles.map(function (r) { return '<span class="role">' + esc(r) + '</span>'; }).join('') + '</div>'
+        : '';
+      if (x.header === 'signature') {
+        html += '<div class="head sig"><div class="sig-who">' + avatar + '<h1>' + esc(p.name) + '</h1></div>' + roles;
+      } else {
+        html += '<div class="head">' + avatar + '<h1>' + esc(p.name) + '</h1>' + roles;
+      }
       if (p.tagline) html += '<div class="tagline">' + esc(p.tagline) + '</div>';
       html += '</div>';
 
@@ -290,10 +329,19 @@
       }
 
       if (sections.about !== false && p.bio) {
-        html += '<section><h2>About</h2><div class="bio glass">' + richText(p.bio) + '</div></section>';
+        var more = x.bioMore || {};
+        var outro = (more.lead || (more.label && more.url))
+          ? '<p class="bio-outro">' + esc(more.lead || '') +
+            (more.label && more.url ? ' <a class="bio-more" href="' + esc(more.url) + '">' + esc(more.label) + ' &#8594;</a>' : '') + '</p>'
+          : '';
+        html += '<section><h2>About</h2><div class="bio glass">' + richText(p.bio) + outro + '</div></section>';
       }
       if (sections.works !== false) {
-        html += '<section><h2>Works</h2><div id="audio-grid"></div></section>';
+        html += x.showcase
+          ? '<section><h2>Latest works</h2><div class="drops" id="showcase" aria-label="Latest works"></div>' +
+            '<button type="button" class="btn btn-glass showcase-all" id="showcase-all">See all works &darr;</button>' +
+            '<div id="audio-grid" hidden></div></section>'
+          : '<section><h2>Works</h2><div id="audio-grid"></div></section>';
       }
       if (sections.links !== false && (p.links || []).length) {
         html += '<section><h2>Find Me</h2><div class="links">' +
@@ -301,7 +349,10 @@
             var logo = window.LinkIcons ? LinkIcons.html(l.url) : '';
             return '<a class="link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
               '<span class="link-name">' + (logo ? '<span class="link-icon">' + logo + '</span>' : '') +
-              esc(l.label) + '</span><span>&#8599;</span></a>';
+              (p.premium && l.note
+                ? '<span class="link-text"><span>' + esc(l.label) + '</span><span class="link-note">' + esc(l.note) + '</span></span>'
+                : esc(l.label)) +
+              '</span><span>&#8599;</span></a>';
           }).join('') + '</div></section>';
       }
       if (sections.feedback !== false) {
@@ -318,13 +369,100 @@
         // under their display name, so teach the matcher that before asking.
         CFG.registerArtistName(p.slug, p.name);
         (p.aliases || []).forEach(function (a) { CFG.registerArtistName(p.slug, a); });
-        AudioGrid.init({ container: '#audio-grid', artist: p.slug, ownOnly: p.othersCredits === false });
+        var grid = function () { AudioGrid.init({ container: '#audio-grid', artist: p.slug, ownOnly: p.othersCredits === false }); };
+        if (x.showcase) {
+          Showcase.fill(document.getElementById('showcase'), p.slug);
+          // The full list waits until it is asked for.
+          document.getElementById('showcase-all').addEventListener('click', function () {
+            this.remove();
+            document.getElementById('audio-grid').hidden = false;
+            grid();
+          });
+        } else {
+          grid();
+        }
+      }
+
+      if (x.effect && x.effect !== 'none') {
+        var fx = document.createElement('script');
+        fx.src = '/js/effects.js';
+        fx.onload = function () { if (window.Effects) Effects.start(x.effect); };
+        document.body.appendChild(fx);
       }
 
       // Offered only to whoever may change this profile, and outside the works
       // section: a creator who has turned that section off still owns the page.
       if (window.AudioGrid) AudioGrid.profileEditor({ slug: p.slug });
     }
+
+    // A premium Works section opens on the newest few releases as cards, each
+    // with its own play button, rather than the full list.
+    var Showcase = {
+      fill: function (row, slug) {
+        var NEW_DAYS = 21;
+        var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+        var PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+        function safeUrl(u) {
+          u = String(u || '').trim();
+          if (!u) return '';
+          if (/^https?:\/\//i.test(u)) return u;
+          if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';
+          return u.replace(/"/g, '%22');
+        }
+        function when(d) {
+          var t = Date.parse(d || '');
+          if (isNaN(t)) return { label: esc(d || ''), fresh: false };
+          var dt = new Date(t);
+          return {
+            label: dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: dt.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' }),
+            fresh: (Date.now() - t) < NEW_DAYS * 864e5
+          };
+        }
+        function card(e) {
+          var w = when(e.date), img = safeUrl(e.image), track = safeUrl(e.track), type = CFG.typeOf(e);
+          var initial = esc(String(e.title || '?').replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase() || '?');
+          var tags = (e.tags || []).filter(CFG.isAudienceTag).concat((e.tags || []).filter(function (t) { return !CFG.isAudienceTag(t); })).slice(0, 5);
+          var meta = (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
+            [type !== 'audio' ? esc(CFG.typeLabels[type]) : '', w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
+          return '<a class="rel" href="/catalog.html?q=' + encodeURIComponent(e.title || '') + '">' +
+            '<div class="thumb t-' + esc(type) + '">' +
+              (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
+                   : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
+              (track ? '<button type="button" class="play" data-track="' + esc(track) + '" aria-label="Play ' + esc(e.title || '') + '">' + PLAY + '</button>' : '') +
+            '</div>' +
+            '<div class="rel-body">' +
+              '<div class="rel-title">' + esc(e.title || 'Untitled') + '</div>' +
+              (meta ? '<div class="rel-meta">' + meta + '</div>' : '') +
+              (tags.length ? '<div class="chips">' + tags.map(function (t) { return '<span class="chip' + (CFG.isAudienceTag(t) ? ' gender' : '') + '">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
+            '</div>' +
+          '</a>';
+        }
+        row.innerHTML = new Array(4).join('<div class="rel skeleton"><div class="thumb"></div><div class="rel-body"><div class="sk-line" style="width:80%"></div><div class="sk-line" style="width:50%"></div></div></div>');
+        fetch('/api/content').then(function (r) { return r.json(); }).then(function (d) {
+          var mine = (d.entries || []).filter(function (e) { return CFG.creditedIn(e, slug); })
+            .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); }).slice(0, 8);
+          row.innerHTML = mine.length ? mine.map(card).join('') : '<div class="drops-empty glass">New work will show up here.</div>';
+        }).catch(function () { row.innerHTML = '<div class="drops-empty glass">Could not load the latest works.</div>'; });
+        // One player for the row: starting a card stops the last one.
+        var audio = null, playing = null;
+        function stop() {
+          if (audio) audio.pause();
+          if (playing) { playing.innerHTML = PLAY; playing.closest('.rel').classList.remove('playing'); }
+          playing = null;
+        }
+        row.addEventListener('click', function (ev) {
+          var btn = ev.target.closest('.play');
+          if (!btn) return;
+          ev.preventDefault();
+          if (playing === btn) { stop(); return; }
+          stop();
+          audio = audio || new Audio();
+          audio.src = btn.getAttribute('data-track');
+          audio.onended = stop;
+          audio.play().then(function () { playing = btn; btn.innerHTML = PAUSE; btn.closest('.rel').classList.add('playing'); }).catch(stop);
+        });
+      }
+    };
 
     var slug = currentSlug();
     if (!slug) {

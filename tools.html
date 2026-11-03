@@ -1996,6 +1996,7 @@
                       <button type="button" onclick="pfJump('pf-sec-links')">Find me</button>
                       <button type="button" onclick="pfJump('pf-sec-feedback')">Feedback</button>
                       <button type="button" onclick="pfJump('pf-sec-look')">Look</button>
+                      <button type="button" onclick="pfJump('pf-sec-premium')">Premium</button>
                       <button type="button" onclick="pfJump('pf-sec-share')">Share card</button>
                     </nav>
 
@@ -2198,6 +2199,56 @@
 
                         <label class="cm-label" style="font-size:0.7rem">Background</label>
                         <div id="pf-bgs" class="pf-bg-grid" role="group" aria-label="Background"></div>
+                      </div>
+                    </section>
+
+                    <!-- Premium: the extras beyond the standard page. Anyone can
+                         fill them in; the page draws them only while the site
+                         owner has made this profile premium, and only the owner
+                         can do that (netlify/functions/profiles.js). -->
+                    <section class="pf-card" id="pf-sec-premium">
+                      <style>
+                        #pf-sec-premium.locked .pf-card-body { opacity:0.5; }
+                        .pf-prem-badge { font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#1a1400; background:#f5c542; border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+                        .pf-prem-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 14px; margin-bottom:12px; }
+                        .pf-link-note { display:none; }
+                        #pf-editor.prem-on .pf-link-note { display:block; }
+                      </style>
+                      <div class="pf-card-head"><h3>Premium<span class="pf-prem-badge">Premium</span></h3></div>
+                      <p class="pf-help">Extras beyond the standard page: a signature header, role chips under your name, a closing line under your bio, your newest work as playable cards, a short note under each link, and a page effect.</p>
+                      <div class="owner-only" style="display:none;margin-bottom:12px;">
+                        <label class="pf-switch"><input type="checkbox" id="pf-premium" onchange="pfPremiumChanged()"> Premium profile <span style="color:var(--text-dim);font-size:0.75rem">(only you can change this)</span></label>
+                      </div>
+                      <p id="pf-prem-note" class="im-hint" style="margin:0 0 12px;"></p>
+                      <div class="pf-card-body">
+                        <div class="pf-prem-grid">
+                          <div>
+                            <label class="cm-label" style="font-size:0.7rem">Header</label>
+                            <select id="pf-x-header" class="cm-input" style="width:100%">
+                              <option value="standard">Standard: centred</option>
+                              <option value="signature">Signature: avatar beside a decorative name</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label class="cm-label" style="font-size:0.7rem">Page effect</label>
+                            <select id="pf-x-effect" class="cm-input" style="width:100%">
+                              <option value="none">None</option>
+                              <option value="lightning">Lightning</option>
+                            </select>
+                          </div>
+                        </div>
+                        <label class="cm-label" style="font-size:0.7rem">Roles <span style="font-weight:normal;color:var(--text-mid)">(chips under your name, separated by commas)</span></label>
+                        <input id="pf-x-roles" class="cm-input" style="width:100%;margin-bottom:12px" placeholder="Producer, Editor, Musician, Sound designer">
+                        <label class="cm-label" style="font-size:0.7rem">Closing line under your bio</label>
+                        <div class="pf-prem-grid">
+                          <input id="pf-x-more-lead" class="cm-input" maxlength="140" placeholder="That's me.">
+                          <input id="pf-x-more-label" class="cm-input" maxlength="40" placeholder="Link text: Come find out the rest">
+                          <input id="pf-x-more-url" class="cm-input" placeholder="Link address: https://… or /a-page.html">
+                        </div>
+                        <label class="pf-switch" style="margin:4px 0;">
+                          <input type="checkbox" id="pf-x-showcase"> Open Works on my newest releases as playable cards, with the full list a click away
+                        </label>
+                        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;">Notes under your links are added in <a href="#" onclick="pfJump('pf-sec-links'); return false;">Find me</a>.</div>
                       </div>
                     </section>
 
@@ -7392,14 +7443,16 @@
            <input class="cm-input pf-link-label" style="flex:1 1 120px" placeholder="Label" value="${cmEsc(l.label || '')}" data-i="${i}">
            <input class="cm-input pf-link-url" style="flex:2 1 200px" placeholder="https://…" value="${cmEsc(l.url || '')}" data-i="${i}">
            <button type="button" class="cm-btn cm-btn-sm" onclick="pfRemoveLink(${i})">&times;</button>
+           <input class="cm-input pf-link-note" style="flex:1 1 100%" maxlength="80" placeholder="Short note under the label (premium), e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}">
          </div>`).join('');
     }
-    function pfAddLink() { pfCollectLinks(); pfLinks.push({ label: '', url: '' }); pfRenderLinks(); }
+    function pfAddLink() { pfCollectLinks(); pfLinks.push({ label: '', url: '', note: '' }); pfRenderLinks(); }
     function pfRemoveLink(i) { pfCollectLinks(); pfLinks.splice(i, 1); pfRenderLinks(); }
     function pfCollectLinks() {
       const labels = [...document.querySelectorAll('.pf-link-label')];
       const urls = [...document.querySelectorAll('.pf-link-url')];
-      pfLinks = labels.map((el, i) => ({ label: el.value, url: (urls[i] || {}).value || '' }));
+      const notes = [...document.querySelectorAll('.pf-link-note')];
+      pfLinks = labels.map((el, i) => ({ label: el.value, url: (urls[i] || {}).value || '', note: (notes[i] || {}).value || '' }));
     }
 
     let pfAliases = [];
@@ -7787,6 +7840,7 @@
       pfRenderThemes();
       pfRenderSections(p.sections || {});
       pfRenderLinks();
+      pfFillPremium(p);
       puRender();
       puClear();
       document.getElementById('pf-card-status').textContent = p.shareImage
@@ -7901,6 +7955,49 @@
       pfSaveNow(after);
     }
 
+    // ── Premium ─────────────────────────────────────────────────────────────
+    function pfFillPremium(p) {
+      const x = p.extras || {};
+      const more = x.bioMore || {};
+      document.getElementById('pf-premium').checked = !!p.premium;
+      document.getElementById('pf-x-header').value = x.header || 'standard';
+      document.getElementById('pf-x-effect').value = x.effect || 'none';
+      document.getElementById('pf-x-roles').value = (x.roles || []).join(', ');
+      document.getElementById('pf-x-more-lead').value = more.lead || '';
+      document.getElementById('pf-x-more-label').value = more.label || '';
+      document.getElementById('pf-x-more-url').value = more.url || '';
+      document.getElementById('pf-x-showcase').checked = !!x.showcase;
+      pfMarkPremium();
+    }
+    // The owner's switch only changes what is on screen; Save stores it.
+    function pfPremiumChanged() {
+      if (pfProfile) pfProfile.premium = document.getElementById('pf-premium').checked;
+      pfMarkPremium();
+    }
+    function pfMarkPremium() {
+      const on = !!(pfProfile && pfProfile.premium);
+      document.getElementById('pf-sec-premium').classList.toggle('locked', !on);
+      document.getElementById('pf-editor').classList.toggle('prem-on', on);
+      document.getElementById('pf-prem-note').textContent = on
+        ? 'Premium is on for this page. Everything below shows on it.'
+        : (cmWho.isOwner
+            ? 'Premium is off for this page. Tick the box above and save to turn it on.'
+            : 'These are premium features. You can set them up now, and they appear on your page once the site owner turns premium on for you.');
+    }
+    function pfDraftExtras() {
+      return {
+        header: document.getElementById('pf-x-header').value,
+        effect: document.getElementById('pf-x-effect').value,
+        roles: document.getElementById('pf-x-roles').value.split(',').map(r => r.trim()).filter(Boolean),
+        bioMore: {
+          lead: document.getElementById('pf-x-more-lead').value.trim(),
+          label: document.getElementById('pf-x-more-label').value.trim(),
+          url: document.getElementById('pf-x-more-url').value.trim(),
+        },
+        showcase: document.getElementById('pf-x-showcase').checked,
+      };
+    }
+
     // Says what the "work others added" switch does in its current position.
     function pfOthersCreditsNote() {
       const on = document.getElementById('pf-others-credits').checked;
@@ -7931,6 +8028,9 @@
         links: pfLinks,
         updates: pfUpdates,
         sections,
+        // Ignored by the server unless the site owner sends it.
+        premium: !!pfProfile.premium,
+        extras: pfDraftExtras(),
       };
     }
 
