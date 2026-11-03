@@ -82,6 +82,22 @@
   status = 301
   force = true
 
+# JOI Electric's About page is its profile now, /profile/joi-electric, made
+# premium for the extras the old hand-built page had. The old address and
+# anything linked to it go there for good; `force` because the file is still
+# in /profiles.
+[[redirects]]
+  from = "/profiles/joi-electric.html"
+  to = "/profile/joi-electric"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/profiles/joi-electric"
+  to = "/profile/joi-electric"
+  status = 301
+  force = true
+
 # Hand-built collaborator pages that have been taken down. The files stay in
 # /profiles so a page can come back by deleting its rules (and restoring its
 # `page` in js/site-config.js, its card in the-velvet-key.html and its line

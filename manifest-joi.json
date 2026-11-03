@@ -4,7 +4,7 @@
   "icons": [
     { "src": "/images/JOI_Favicon.png", "sizes": "512x512", "type": "image/png" }
   ],
-  "start_url": "/profiles/joi-electric.html",
+  "start_url": "/profile/joi-electric",
   "display": "standalone",
   "background_color": "#080b14",
   "theme_color": "#080b14"

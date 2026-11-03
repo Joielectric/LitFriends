@@ -102,7 +102,7 @@
     // stay for the names they are credited under, and js/artists.js lists
     // them by their published profile if they have one.
     artists: [
-      { slug: 'joi-electric',       name: 'JOI Electric',           icon: '/images/JOI_Icon.png',                        page: 'profiles/joi-electric.html',       tagline: 'Producer · Editor · Musician · Sound Designer' },
+      { slug: 'joi-electric',       name: 'JOI Electric',           icon: '/images/JOI_Icon.png',                        page: 'profile/joi-electric',               tagline: 'Producer · Editor · Musician · Sound Designer' },
       { slug: 'loona-licks',        name: 'Loona Licks',            icon: '/images/LL_Icon.png',                         tagline: 'Voice Artist · Collaborator · Currently on Hiatus' },
       { slug: 'misskittensk',       name: 'MissKittenSK',           icon: '/images/MissKittenSKClub.png',                tagline: 'A decade of debauched erotic audio · Retired', aliases: ['miss kitten sk'] },
       { slug: 'hisbadgirl77',       name: 'HisBadGirl77',           icon: '/images/HBG_WIngs.png',                       tagline: 'Voice Artist · Writer · Collaborator', aliases: ['his bad girl 77', 'Hisbadgirl24'] },
