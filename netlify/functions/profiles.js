@@ -27,7 +27,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 const MAX = {
   name: 80, tagline: 140, bio: 4000, url: 500, label: 40, links: 12, color: 20,
   updateTitle: 140, updateBody: 3000, updates: 20,
-  aliases: 12,
+  aliases: 12, note: 80, roles: 8, role: 30,
 };
 
 // Strips control characters but keeps newlines, so a bio can have paragraphs.
@@ -56,6 +56,26 @@ export const THEMES = [
 // across the whole background.
 export const BACKGROUNDS = ["glow", "plain", "banner"];
 export const SECTIONS = ["updates", "about", "works", "feedback", "links"];
+// Premium extras: the parts of a page beyond the standard profile. Anyone may
+// fill them in, but the page only draws them while the site owner has made
+// the profile premium.
+export const HEADERS = ["standard", "signature"];
+export const EFFECTS = ["none", "lightning"];
+
+function defaultExtras() {
+  return {
+    // "signature": the avatar beside the name over the banner's edge, the name
+    // in the decorative face.
+    header: "standard",
+    // Little chips under the name: Producer, Editor and so on.
+    roles: [],
+    // A closing line under the bio with a link onward, e.g. to a longer page.
+    bioMore: { lead: "", label: "", url: "" },
+    // Works opens on the newest few as cards, the full list a click away.
+    showcase: false,
+    effect: "none",
+  };
+}
 
 /** What a profile looks like before anyone has edited it. */
 export function defaultProfile(slug, name) {
@@ -100,6 +120,9 @@ export function defaultProfile(slug, name) {
     // landing page and stays the owner's.
     updates: [],
     sections: { updates: true, about: true, works: true, feedback: true, links: true },
+    // Set by the site owner only; see sanitize().
+    premium: false,
+    extras: defaultExtras(),
     published: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -125,7 +148,7 @@ function takenBy(slug, profiles) {
   return taken;
 }
 
-function sanitize(input, base, allProfiles) {
+function sanitize(input, base, allProfiles, isOwner) {
   const out = { ...base };
   if (input.name !== undefined) out.name = clean(input.name, MAX.name) || base.name;
   if (input.tagline !== undefined) out.tagline = clean(input.tagline, MAX.tagline);
@@ -150,7 +173,7 @@ function sanitize(input, base, allProfiles) {
   if (Array.isArray(input.links)) {
     out.links = input.links
       .slice(0, MAX.links)
-      .map((l) => ({ label: clean(l && l.label, MAX.label), url: safeUrl(l && l.url) }))
+      .map((l) => ({ label: clean(l && l.label, MAX.label), url: safeUrl(l && l.url), note: clean(l && l.note, MAX.note) }))
       .filter((l) => l.label && l.url);
   }
   if (input.postStyle && typeof input.postStyle === "object") {
@@ -212,6 +235,23 @@ function sanitize(input, base, allProfiles) {
   if (input.sections && typeof input.sections === "object") {
     out.sections = {};
     for (const s of SECTIONS) out.sections[s] = input.sections[s] !== false;
+  }
+  // Premium is the owner's to give. From anyone else it is ignored, so a
+  // creator's save can neither grant it nor take it away.
+  if (isOwner && input.premium !== undefined) out.premium = !!input.premium;
+  if (input.extras && typeof input.extras === "object") {
+    const x = input.extras;
+    const was = { ...defaultExtras(), ...(base.extras || {}) };
+    const more = (x.bioMore && typeof x.bioMore === "object") ? x.bioMore : was.bioMore;
+    out.extras = {
+      header: HEADERS.includes(x.header) ? x.header : was.header,
+      roles: Array.isArray(x.roles)
+        ? x.roles.map((r) => clean(r, MAX.role)).filter(Boolean).slice(0, MAX.roles)
+        : was.roles,
+      bioMore: { lead: clean(more.lead, MAX.updateTitle), label: clean(more.label, MAX.label), url: safeUrl(more.url) },
+      showcase: x.showcase !== undefined ? !!x.showcase : was.showcase,
+      effect: EFFECTS.includes(x.effect) ? x.effect : was.effect,
+    };
   }
   if (input.published !== undefined) out.published = !!input.published;
   out.updatedAt = new Date().toISOString();
@@ -323,7 +363,7 @@ export default async (req) => {
       const rec = findCreator(await readCreators(), auth.email);
       base = defaultProfile(slug, (rec && rec.name) || auth.name || slug);
     }
-    const profile = sanitize(body.profile || {}, base, all);
+    const profile = sanitize(body.profile || {}, base, all, !!auth.isOwner);
     profile.slug = slug; // never movable by a save
     const refused = profile.__refused;
     delete profile.__refused;
