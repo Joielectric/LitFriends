@@ -90,7 +90,188 @@
     setTimeout(function () { strike(1); startAmbient(); }, 250);
   }
 
-  var EFFECTS = { lightning: lightning };
+  // Drifting things: rose petals, cherry blossoms and rain share one loop.
+  // Each kind says how many to keep per screenful, how to start one, how it
+  // moves each frame and how to draw it. Pieces that leave the screen start
+  // again, and the loop rests while the tab is hidden.
+  function drift(kind) {
+    var c = document.createElement('canvas');
+    c.style.cssText = 'position:fixed;inset:0;z-index:55;pointer-events:none;opacity:0;transition:opacity 1.6s ease;';
+    c.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(c);
+    var ctx = c.getContext('2d');
+    if (!ctx) return;
+    var W = 0, H = 0, bits = [], last = 0, t0 = performance.now();
+
+    function size() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      c.width = W * dpr; c.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var want = Math.min(kind.max, Math.round(W * H / kind.per));
+      while (bits.length < want) bits.push(kind.spawn(W, H, true));
+      bits.length = want;
+    }
+    window.addEventListener('resize', size);
+    size();
+
+    function frame(now) {
+      // Steps are measured in 60fps frames, and a long pause (a hidden tab)
+      // counts as one step rather than a jump.
+      var dt = last ? Math.min(3, (now - last) / 16.67) : 1;
+      last = now;
+      ctx.clearRect(0, 0, W, H);
+      var env = { t: (now - t0) / 1000, W: W, H: H };
+      if (kind.env) kind.env(env);
+      for (var i = 0; i < bits.length; i++) {
+        var b = bits[i];
+        kind.move(b, dt, env);
+        if (b.y > H + 40 || b.x > W + 60 || b.x < -60) bits[i] = b = kind.spawn(W, H, false);
+        kind.draw(ctx, b);
+      }
+      if (kind.after) kind.after(ctx, dt);
+      requestAnimationFrame(frame);
+    }
+    // Fade in rather than open on a sudden screenful.
+    requestAnimationFrame(function () { c.style.opacity = '1'; });
+    requestAnimationFrame(frame);
+  }
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+  // A petal about (0,0): rounded at the top, narrowing to its base; with a
+  // notch, the little cleft of a cherry petal.
+  function petalPath(ctx, w, h, notch) {
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    ctx.bezierCurveTo(w * 0.9, h * 0.25, w * 0.75, -h / 2, notch ? w * 0.18 : 0, -h / 2);
+    if (notch) { ctx.lineTo(0, -h * 0.36); ctx.lineTo(-w * 0.18, -h / 2); }
+    ctx.bezierCurveTo(-w * 0.75, -h / 2, -w * 0.9, h * 0.25, 0, h / 2);
+    ctx.closePath();
+  }
+
+  // Rose petals: large and deep red, falling slowly and tumbling as they go.
+  var rose = {
+    per: 38000, max: 34,
+    colors: ['#8e0f24', '#a3122c', '#b81d36', '#c72c45', '#7a0c1f'],
+    spawn: function (W, H, first) {
+      return {
+        x: rand(-20, W + 20), y: first ? rand(-H * 0.2, H) : rand(-80, -20),
+        s: rand(0.7, 1.25), vy: rand(0.45, 0.9), sway: rand(0.6, 1.4), ph: rand(0, 6.28),
+        rot: rand(0, 6.28), vr: rand(-0.012, 0.012), flip: rand(0, 6.28), vf: rand(0.012, 0.03),
+        col: pick(rose.colors), a: rand(0.7, 0.95)
+      };
+    },
+    move: function (b, dt) {
+      b.ph += 0.012 * dt;
+      b.y += b.vy * dt;
+      b.x += Math.sin(b.ph) * b.sway * 0.6 * dt;
+      b.rot += b.vr * dt;
+      b.flip += b.vf * dt;
+    },
+    draw: function (ctx, b) {
+      // Tumbling: the petal narrows as it turns edge-on, and its underside
+      // is a shade darker.
+      var f = Math.cos(b.flip);
+      ctx.save();
+      ctx.translate(b.x, b.y); ctx.rotate(b.rot); ctx.scale(b.s * (0.25 + 0.75 * Math.abs(f)), b.s);
+      ctx.globalAlpha = b.a;
+      var g = ctx.createRadialGradient(0, -4, 1, 0, 0, 16);
+      g.addColorStop(0, f > 0 ? '#e0566c' : '#c23a52');
+      g.addColorStop(1, b.col);
+      ctx.fillStyle = g;
+      petalPath(ctx, 22, 24, false);
+      ctx.fill();
+      ctx.restore();
+    }
+  };
+
+  // Cherry blossoms: small pale petals carried sideways on a breeze that
+  // rises into the odd gust and settles again.
+  var blossom = {
+    per: 18000, max: 80,
+    colors: ['#ffd6e3', '#ffc4d6', '#fbb3c9', '#ffe6ee', '#f7a8c0'],
+    env: function (env) {
+      env.wind = 1.4 + Math.sin(env.t * 0.35) * 0.6 + Math.max(0, Math.sin(env.t * 0.13 - 1)) * 2.2;
+    },
+    spawn: function (W, H, first) {
+      // Most new petals blow in from the left; the rest drop from the top.
+      var side = !first && Math.random() < 0.55;
+      return {
+        x: side ? rand(-50, -10) : rand(-W * 0.3, W), y: side ? rand(-20, H * 0.8) : (first ? rand(-H * 0.2, H) : rand(-40, -10)),
+        s: rand(0.6, 1.05), vy: rand(0.35, 0.8), drag: rand(0.6, 1.1), ph: rand(0, 6.28),
+        rot: rand(0, 6.28), vr: rand(-0.04, 0.04), flip: rand(0, 6.28), vf: rand(0.03, 0.07),
+        col: pick(blossom.colors), a: rand(0.65, 0.95)
+      };
+    },
+    move: function (b, dt, env) {
+      b.ph += 0.03 * dt;
+      b.x += (env.wind * b.drag + Math.sin(b.ph) * 0.4) * dt;
+      b.y += (b.vy + Math.cos(b.ph * 0.7) * 0.35) * dt;
+      b.rot += (b.vr + env.wind * 0.006) * dt;
+      b.flip += b.vf * dt;
+    },
+    draw: function (ctx, b) {
+      var f = Math.cos(b.flip);
+      ctx.save();
+      ctx.translate(b.x, b.y); ctx.rotate(b.rot); ctx.scale(b.s * (0.3 + 0.7 * Math.abs(f)), b.s);
+      ctx.globalAlpha = b.a;
+      ctx.fillStyle = b.col;
+      petalPath(ctx, 18, 20, true);
+      ctx.fill();
+      // A blush of deeper pink at the base.
+      ctx.globalAlpha = b.a * 0.5;
+      ctx.fillStyle = '#ff8fb0';
+      ctx.beginPath(); ctx.ellipse(0, 6, 2.2, 3.2, 0, 0, 6.28); ctx.fill();
+      ctx.restore();
+    }
+  };
+
+  // Rain: fine, faint streaks at a slight slant. Some of the nearer drops
+  // end in a small ripple partway down the page.
+  var rain = {
+    per: 9000, max: 160,
+    rings: [],
+    spawn: function (W, H, first) {
+      var z = rand(0.4, 1);
+      return { x: rand(-40, W), y: first ? rand(-H * 0.2, H) : rand(-120, -20), z: z, len: 10 + z * 14, v: 7 + z * 7, land: rand(H * 0.55, H + 30) };
+    },
+    move: function (b, dt, env) {
+      b.y += b.v * dt;
+      b.x += b.v * 0.12 * dt;
+      if (b.z > 0.75 && b.y > b.land && rain.rings.length < 24) {
+        rain.rings.push({ x: b.x, y: b.land, r: 1, a: 0.35 * b.z });
+        b.y = env.H + 50;
+      }
+    },
+    draw: function (ctx, b) {
+      ctx.strokeStyle = 'rgba(190,215,255,' + (0.2 + b.z * 0.35) + ')';
+      ctx.lineWidth = 0.8 + b.z * 0.8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x - b.len * 0.12, b.y - b.len);
+      ctx.stroke();
+    },
+    after: function (ctx, dt) {
+      for (var i = rain.rings.length - 1; i >= 0; i--) {
+        var r = rain.rings[i];
+        r.r += 0.5 * dt; r.a -= 0.012 * dt;
+        if (r.a <= 0) { rain.rings.splice(i, 1); continue; }
+        ctx.strokeStyle = 'rgba(190,215,255,' + r.a + ')';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.ellipse(r.x, r.y, r.r * 2, r.r * 0.6, 0, 0, 6.28); ctx.stroke();
+      }
+    }
+  };
+
+  var EFFECTS = {
+    lightning: lightning,
+    petals: function () { drift(rose); },
+    blossoms: function () { drift(blossom); },
+    rain: function () { drift(rain); },
+  };
   window.Effects = {
     start: function (name) {
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
