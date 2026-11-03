@@ -9,7 +9,7 @@
     { label: 'About',   href: root + 'velvet-key-about.html' },
     { label: 'Explore', href: root + 'velvet-key-catalog.html' },
     { label: 'Artists', href: null, children: [
-      { label: 'JOI Electric',        href: root + 'profiles/joi-electric.html' },
+      { label: 'JOI Electric',        href: root + 'profile/joi-electric' },
     ]},
     { label: 'Log in',  href: root + 'tools.html', admin: true },
   ];
