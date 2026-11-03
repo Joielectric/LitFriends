@@ -60,7 +60,7 @@ export const SECTIONS = ["updates", "about", "works", "feedback", "links"];
 // fill them in, but the page only draws them while the site owner has made
 // the profile premium.
 export const HEADERS = ["standard", "signature"];
-export const EFFECTS = ["none", "lightning"];
+export const EFFECTS = ["none", "lightning", "petals", "blossoms", "rain"];
 
 function defaultExtras() {
   return {
