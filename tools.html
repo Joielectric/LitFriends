@@ -1616,15 +1616,18 @@
                       </div>
                 </section>
 
-                <section class="pf-card bk-card">
+                <!-- The backup holds the whole catalogue (every creator's releases,
+                     collaborators and platforms), so it is the site owner's alone.
+                     Creators keep a copy of their own work with "Download spreadsheet". -->
+                <section class="pf-card bk-card owner-only" style="display:none">
                     <div class="bk-head">
                         <div>
                             <h3>Backup</h3>
-                            <p class="pf-help">A copy of your releases as one file, to keep somewhere safe.</p>
+                            <p class="pf-help">A copy of the whole catalogue as one file, to keep somewhere safe.</p>
                         </div>
                         <div class="bk-btns">
                             <button type="button" class="cm-btn cm-btn-sm" onclick="cmBackup()">Download backup</button>
-                            <button type="button" class="cm-btn cm-btn-sm owner-only" style="display:none" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
                         </div>
                     </div>
                     <input type="file" id="cm-restore-file" accept=".json,application/json" style="display:none" onchange="cmRestore(this)">
@@ -5806,6 +5809,7 @@
     }
 
     function cmBackup() {
+      if (!cmWho.isOwner) return;
       const backup = {
         savedAt: new Date().toISOString(),
         site: location.host,
