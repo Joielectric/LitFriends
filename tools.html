@@ -2210,7 +2210,7 @@
                         .pf-prem-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 14px; margin-bottom:12px; }
                       </style>
                       <div class="pf-card-head"><h3>Optional features</h3></div>
-                      <p class="pf-help">Extras to make your page your own, all optional: a signature header, role chips under your name, a closing line under your bio, your newest work as playable cards, a short note under each link, and a page effect. Leave any of them unset and your page stays as it is.</p>
+                      <p class="pf-help">Extras to make your page your own, all optional: a signature header, role chips under your name, your newest work as playable cards, a short note under each link, and a page effect. Leave any of them unset and your page stays as it is.</p>
                       <div class="pf-card-body">
                         <div class="pf-prem-grid">
                           <div>
@@ -2233,11 +2233,15 @@
                         </div>
                         <label class="cm-label" style="font-size:0.7rem">Roles <span style="font-weight:normal;color:var(--text-mid)">(chips under your name, separated by commas)</span></label>
                         <input id="pf-x-roles" class="cm-input" style="width:100%;margin-bottom:12px" placeholder="Producer, Editor, Musician, Sound designer">
-                        <label class="cm-label" style="font-size:0.7rem">Closing line under your bio</label>
-                        <div class="pf-prem-grid">
-                          <input id="pf-x-more-lead" class="cm-input" maxlength="140" placeholder="That's me.">
-                          <input id="pf-x-more-label" class="cm-input" maxlength="40" placeholder="Link text: Come find out the rest">
-                          <input id="pf-x-more-url" class="cm-input" placeholder="Link address: https://… or /a-page.html">
+                        <!-- The site owner's alone: it links to a page of the site's own
+                             (A Word From Me), which creators don't have. -->
+                        <div class="owner-only" style="display:none">
+                          <label class="cm-label" style="font-size:0.7rem">Closing line under your bio <span style="font-weight:normal;color:var(--text-mid)">(only you see this option)</span></label>
+                          <div class="pf-prem-grid">
+                            <input id="pf-x-more-lead" class="cm-input" maxlength="140" placeholder="That's me.">
+                            <input id="pf-x-more-label" class="cm-input" maxlength="40" placeholder="Link text: Come find out the rest">
+                            <input id="pf-x-more-url" class="cm-input" placeholder="Link address: https://… or /a-page.html">
+                          </div>
                         </div>
                         <label class="pf-switch" style="margin:4px 0;">
                           <input type="checkbox" id="pf-x-showcase"> Open Works on my newest releases as playable cards, with the full list a click away

@@ -243,7 +243,9 @@ function sanitize(input, base, allProfiles, isOwner) {
   if (input.extras && typeof input.extras === "object") {
     const x = input.extras;
     const was = { ...defaultExtras(), ...(base.extras || {}) };
-    const more = (x.bioMore && typeof x.bioMore === "object") ? x.bioMore : was.bioMore;
+    // The closing line under the bio links to a page of the site's own, so it
+    // is the owner's alone; anyone else's save keeps what is stored.
+    const more = (isOwner && x.bioMore && typeof x.bioMore === "object") ? x.bioMore : was.bioMore;
     out.extras = {
       header: HEADERS.includes(x.header) ? x.header : was.header,
       roles: Array.isArray(x.roles)
