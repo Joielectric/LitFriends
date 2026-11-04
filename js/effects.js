@@ -1,4 +1,4 @@
-// Page effects for premium profiles (see the extras in
+// Page effects, an optional feature of any profile (see the extras in
 // netlify/functions/profiles.js). Effects.start(name) runs one; each draws on
 // its own fixed canvas that never takes a click, and none runs for someone
 // who has asked their system for reduced motion.

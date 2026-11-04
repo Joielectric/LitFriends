@@ -1996,7 +1996,7 @@
                       <button type="button" onclick="pfJump('pf-sec-links')">Find me</button>
                       <button type="button" onclick="pfJump('pf-sec-feedback')">Feedback</button>
                       <button type="button" onclick="pfJump('pf-sec-look')">Look</button>
-                      <button type="button" onclick="pfJump('pf-sec-premium')">Premium</button>
+                      <button type="button" onclick="pfJump('pf-sec-optional')">Optional</button>
                       <button type="button" onclick="pfJump('pf-sec-share')">Share card</button>
                     </nav>
 
@@ -2202,24 +2202,15 @@
                       </div>
                     </section>
 
-                    <!-- Premium: the extras beyond the standard page. Anyone can
-                         fill them in; the page draws them only while the site
-                         owner has made this profile premium, and only the owner
-                         can do that (netlify/functions/profiles.js). -->
-                    <section class="pf-card" id="pf-sec-premium">
+                    <!-- Optional features: extras beyond the basics. Every creator
+                         can use them, and the page draws whatever is set
+                         (netlify/functions/profiles.js). -->
+                    <section class="pf-card" id="pf-sec-optional">
                       <style>
-                        #pf-sec-premium.locked .pf-card-body { opacity:0.5; }
-                        .pf-prem-badge { font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#1a1400; background:#f5c542; border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
                         .pf-prem-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 14px; margin-bottom:12px; }
-                        .pf-link-note { display:none; }
-                        #pf-editor.prem-on .pf-link-note { display:block; }
                       </style>
-                      <div class="pf-card-head"><h3>Premium<span class="pf-prem-badge">Premium</span></h3></div>
-                      <p class="pf-help">Extras beyond the standard page: a signature header, role chips under your name, a closing line under your bio, your newest work as playable cards, a short note under each link, and a page effect.</p>
-                      <div class="owner-only" style="display:none;margin-bottom:12px;">
-                        <label class="pf-switch"><input type="checkbox" id="pf-premium" onchange="pfPremiumChanged()"> Premium profile <span style="color:var(--text-dim);font-size:0.75rem">(only you can change this)</span></label>
-                      </div>
-                      <p id="pf-prem-note" class="im-hint" style="margin:0 0 12px;"></p>
+                      <div class="pf-card-head"><h3>Optional features</h3></div>
+                      <p class="pf-help">Extras to make your page your own, all optional: a signature header, role chips under your name, a closing line under your bio, your newest work as playable cards, a short note under each link, and a page effect. Leave any of them unset and your page stays as it is.</p>
                       <div class="pf-card-body">
                         <div class="pf-prem-grid">
                           <div>
@@ -7446,7 +7437,7 @@
            <input class="cm-input pf-link-label" style="flex:1 1 120px" placeholder="Label" value="${cmEsc(l.label || '')}" data-i="${i}">
            <input class="cm-input pf-link-url" style="flex:2 1 200px" placeholder="https://…" value="${cmEsc(l.url || '')}" data-i="${i}">
            <button type="button" class="cm-btn cm-btn-sm" onclick="pfRemoveLink(${i})">&times;</button>
-           <input class="cm-input pf-link-note" style="flex:1 1 100%" maxlength="80" placeholder="Short note under the label (premium), e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}">
+           <input class="cm-input pf-link-note" style="flex:1 1 100%" maxlength="80" placeholder="Short note under the label (optional), e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}">
          </div>`).join('');
     }
     function pfAddLink() { pfCollectLinks(); pfLinks.push({ label: '', url: '', note: '' }); pfRenderLinks(); }
@@ -7958,11 +7949,10 @@
       pfSaveNow(after);
     }
 
-    // ── Premium ─────────────────────────────────────────────────────────────
+    // ── Optional features ───────────────────────────────────────────────────
     function pfFillPremium(p) {
       const x = p.extras || {};
       const more = x.bioMore || {};
-      document.getElementById('pf-premium').checked = !!p.premium;
       document.getElementById('pf-x-header').value = x.header || 'standard';
       document.getElementById('pf-x-effect').value = x.effect || 'none';
       document.getElementById('pf-x-roles').value = (x.roles || []).join(', ');
@@ -7970,22 +7960,6 @@
       document.getElementById('pf-x-more-label').value = more.label || '';
       document.getElementById('pf-x-more-url').value = more.url || '';
       document.getElementById('pf-x-showcase').checked = !!x.showcase;
-      pfMarkPremium();
-    }
-    // The owner's switch only changes what is on screen; Save stores it.
-    function pfPremiumChanged() {
-      if (pfProfile) pfProfile.premium = document.getElementById('pf-premium').checked;
-      pfMarkPremium();
-    }
-    function pfMarkPremium() {
-      const on = !!(pfProfile && pfProfile.premium);
-      document.getElementById('pf-sec-premium').classList.toggle('locked', !on);
-      document.getElementById('pf-editor').classList.toggle('prem-on', on);
-      document.getElementById('pf-prem-note').textContent = on
-        ? 'Premium is on for this page. Everything below shows on it.'
-        : (cmWho.isOwner
-            ? 'Premium is off for this page. Tick the box above and save to turn it on.'
-            : 'These are premium features. You can set them up now, and they appear on your page once the site owner turns premium on for you.');
     }
     function pfDraftExtras() {
       return {
@@ -8032,7 +8006,6 @@
         updates: pfUpdates,
         sections,
         // Ignored by the server unless the site owner sends it.
-        premium: !!pfProfile.premium,
         extras: pfDraftExtras(),
       };
     }

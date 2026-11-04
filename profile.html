@@ -161,8 +161,8 @@
     .feedback-cta h2 { margin-bottom: 0.4rem !important; }
     .feedback-cta p { color: var(--text-mid); max-width: 440px; margin: 0 auto 1.2rem; }
     #page > footer { margin: 3.5rem -1.2rem 0; }
-    /* Premium extras, drawn only on a premium profile (see the extras in
-       netlify/functions/profiles.js). The signature header sets the avatar
+    /* Optional features, drawn on any profile that sets them (see the
+       extras in netlify/functions/profiles.js). The signature header sets the avatar
        beside the name, over the banner's bottom edge, with the name in the
        decorative face. */
     .head.sig { text-align: left; padding-top: 0; }
@@ -293,8 +293,8 @@
       }
 
       var sections = p.sections || {};
-      // Premium extras are kept on every profile but drawn only on a premium one.
-      var x = p.premium ? (p.extras || {}) : {};
+      // Optional features: whatever the creator has chosen to set up.
+      var x = p.extras || {};
       var html = '';
 
       if (p.banner) html += '<div class="banner" style="background-image:url(\'' + esc(p.banner) + '\')"></div>';
@@ -349,7 +349,7 @@
             var logo = window.LinkIcons ? LinkIcons.html(l.url) : '';
             return '<a class="link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
               '<span class="link-name">' + (logo ? '<span class="link-icon">' + logo + '</span>' : '') +
-              (p.premium && l.note
+              (l.note
                 ? '<span class="link-text"><span>' + esc(l.label) + '</span><span class="link-note">' + esc(l.note) + '</span></span>'
                 : esc(l.label)) +
               '</span><span>&#8599;</span></a>';
@@ -395,7 +395,7 @@
       if (window.AudioGrid) AudioGrid.profileEditor({ slug: p.slug });
     }
 
-    // A premium Works section opens on the newest few releases as cards, each
+    // With the showcase option, Works opens on the newest few releases as cards, each
     // with its own play button, rather than the full list.
     var Showcase = {
       fill: function (row, slug) {

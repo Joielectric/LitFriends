@@ -56,9 +56,9 @@ export const THEMES = [
 // across the whole background.
 export const BACKGROUNDS = ["glow", "plain", "banner"];
 export const SECTIONS = ["updates", "about", "works", "feedback", "links"];
-// Premium extras: the parts of a page beyond the standard profile. Anyone may
-// fill them in, but the page only draws them while the site owner has made
-// the profile premium.
+// Optional features: the parts of a page beyond the basics (header style,
+// page effect, roles, a closing line, the works showcase, notes under links).
+// Every creator may use them; the page draws whatever is set.
 export const HEADERS = ["standard", "signature"];
 export const EFFECTS = ["none", "lightning", "petals", "blossoms", "rain"];
 
@@ -236,8 +236,9 @@ function sanitize(input, base, allProfiles, isOwner) {
     out.sections = {};
     for (const s of SECTIONS) out.sections[s] = input.sections[s] !== false;
   }
-  // Premium is the owner's to give. From anyone else it is ignored, so a
-  // creator's save can neither grant it nor take it away.
+  // `premium` once gated the optional features. They are now everyone's, so
+  // the flag no longer does anything; it is kept on profiles that have it
+  // and still only the owner may set it.
   if (isOwner && input.premium !== undefined) out.premium = !!input.premium;
   if (input.extras && typeof input.extras === "object") {
     const x = input.extras;
