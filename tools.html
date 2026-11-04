@@ -845,6 +845,25 @@
       .cmt-info { max-width: none; white-space: normal; }
     }
 
+
+    /* ── Find me: one card per link ── */
+    .pf-link-guide { margin: 0 0 8px 1.1rem; color: var(--text-mid); font-size: 0.85rem; line-height: 1.6; }
+    .pf-link-guide i { color: var(--text); font-style: normal; }
+    .pf-link-card { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; background: rgba(255,255,255,0.025); }
+    .pf-link-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pf-link-top b { font-family: var(--display); font-size: 0.9rem; flex: 1; }
+    .pf-link-icon { width: 26px; height: 26px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: rgba(255,255,255,0.06); overflow: hidden; }
+    .pf-link-icon img { width: 100%; height: 100%; object-fit: contain; }
+    .pf-link-generic { color: var(--text-dim); font-size: 0.9rem; }
+    .pf-link-fields { display: grid; grid-template-columns: 1fr 2fr; gap: 8px 10px; }
+    .pf-link-fields label { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .pf-link-fields label > span { font-family: var(--display); font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
+    .pf-link-fields em { font-style: normal; font-weight: 400; color: var(--text-dim); }
+    .pf-link-fields .pf-link-wide:last-child { grid-column: 1 / -1; }
+    .pf-link-warn { color: #ffc56b; font-size: 0.8rem; margin-top: 6px; }
+    .pf-link-warn:empty { display: none; }
+    @media (max-width: 560px) { .pf-link-fields { grid-template-columns: 1fr; } }
+
     /* ── Sign in ─────────────────────────────────────────────────────── */
     .gate-wrap { position: fixed; inset: 0; z-index: 100000; background: #0a0c18; display: flex; align-items: center; justify-content: center; padding: 1rem;
       background-image: radial-gradient(50% 40% at 30% 20%, rgba(57,213,255,0.12), transparent 70%), radial-gradient(50% 40% at 75% 80%, rgba(139,92,255,0.16), transparent 70%); }
@@ -876,6 +895,7 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
+<script src="/js/link-icons.js"></script>
 <script src="/js/themes.js"></script>
 <script src="/js/reddit-import.js"></script>
 <!-- The share-card renderer is shared with anything else that needs to draw
@@ -2131,11 +2151,17 @@
                         <h3><span class="pf-step">5</span>Find me</h3>
                         <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="links" onchange="pfApplySection(this)"> Show on my page</label>
                       </div>
-                      <p class="pf-help">Buttons to your other places &mdash; Literotica, Reddit, Bluesky, Patreon and so on. Give each a label and paste the full address; the site picks the right icon from the address.</p>
+                      <p class="pf-help">Buttons on your page that take listeners to your other places: Reddit, Literotica, Bluesky, Patreon, your own website, and so on. Add one for each place.</p>
+                      <ul class="pf-link-guide">
+                        <li><b>Button text</b> is what the button says, usually the site&rsquo;s name: <i>Reddit</i>, <i>My Patreon</i>.</li>
+                        <li><b>Web address</b> is the full link to your page there. Open your page on that site and copy the address from the browser bar, e.g. <i>https://www.reddit.com/user/yourname</i>.</li>
+                        <li><b>Note</b> is optional: a few words under the button, like <i>Stories &amp; audio works</i>.</li>
+                      </ul>
+                      <p class="pf-help" style="margin-top:0">The icon is picked for you from the address; the preview beside each link shows which one.</p>
                       <div class="pf-off-note">Hidden from your page. Your links are kept.</div>
                       <div class="pf-card-body">
                         <div id="pf-links"></div>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">Add link</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">+ Add a link</button>
                       </div>
                     </section>
 
@@ -7430,19 +7456,47 @@
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    // Each link is a small card with its three fields named, and the icon the
+    // page will show for its address (js/link-icons.js), so a mistyped or
+    // half-pasted address is easy to spot.
+    function pfLinkIcon(url) {
+      const u = String(url || '').trim();
+      if (!/^https?:\/\/[^\s.]+\.[^\s]+/i.test(u)) return { html: '', note: u ? 'This doesn&rsquo;t look like a full web address yet. It should start with https://' : '' };
+      const icon = window.LinkIcons ? LinkIcons.html(u) : '';
+      return { html: icon || '<span class="pf-link-generic" aria-hidden="true">&#8599;</span>', note: '' };
+    }
     function pfRenderLinks() {
       const host = document.getElementById('pf-links');
       if (!pfLinks.length) {
-        host.innerHTML = '<div class="cm-collab-empty">No links yet.</div>';
+        host.innerHTML = '<div class="cm-collab-empty">No links yet. Press <b>Add a link</b> for each place listeners can find you.</div>';
         return;
       }
-      host.innerHTML = pfLinks.map((l, i) =>
-        `<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-           <input class="cm-input pf-link-label" style="flex:1 1 120px" placeholder="Label" value="${cmEsc(l.label || '')}" data-i="${i}">
-           <input class="cm-input pf-link-url" style="flex:2 1 200px" placeholder="https://…" value="${cmEsc(l.url || '')}" data-i="${i}">
-           <button type="button" class="cm-btn cm-btn-sm" onclick="pfRemoveLink(${i})">&times;</button>
-           <input class="cm-input pf-link-note" style="flex:1 1 100%" maxlength="80" placeholder="Short note under the label (optional), e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}">
-         </div>`).join('');
+      host.innerHTML = pfLinks.map((l, i) => {
+        const ic = pfLinkIcon(l.url);
+        return `<div class="pf-link-card">
+           <div class="pf-link-top">
+             <span class="pf-link-icon" id="pf-link-icon-${i}">${ic.html}</span>
+             <b>Link ${i + 1}</b>
+             <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="pfRemoveLink(${i})" aria-label="Remove link ${i + 1}">Remove</button>
+           </div>
+           <div class="pf-link-fields">
+             <label><span>Button text</span>
+               <input class="cm-input pf-link-label" placeholder="e.g. Reddit" value="${cmEsc(l.label || '')}" data-i="${i}"></label>
+             <label class="pf-link-wide"><span>Web address</span>
+               <input class="cm-input pf-link-url" type="url" inputmode="url" placeholder="https://www.reddit.com/user/yourname" value="${cmEsc(l.url || '')}" data-i="${i}" oninput="pfLinkUrlChanged(${i}, this.value)"></label>
+             <label class="pf-link-wide"><span>Note under the button <em>(optional)</em></span>
+               <input class="cm-input pf-link-note" maxlength="80" placeholder="e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}"></label>
+           </div>
+           <div class="pf-link-warn" id="pf-link-warn-${i}">${ic.note}</div>
+         </div>`;
+      }).join('');
+    }
+    function pfLinkUrlChanged(i, url) {
+      const ic = pfLinkIcon(url);
+      const icon = document.getElementById('pf-link-icon-' + i);
+      const warn = document.getElementById('pf-link-warn-' + i);
+      if (icon) icon.innerHTML = ic.html;
+      if (warn) warn.innerHTML = ic.note;
     }
     function pfAddLink() { pfCollectLinks(); pfLinks.push({ label: '', url: '', note: '' }); pfRenderLinks(); }
     function pfRemoveLink(i) { pfCollectLinks(); pfLinks.splice(i, 1); pfRenderLinks(); }
