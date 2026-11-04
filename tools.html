@@ -845,6 +845,25 @@
       .cmt-info { max-width: none; white-space: normal; }
     }
 
+
+    /* ── Find me: one card per link ── */
+    .pf-link-guide { margin: 0 0 8px 1.1rem; color: var(--text-mid); font-size: 0.85rem; line-height: 1.6; }
+    .pf-link-guide i { color: var(--text); font-style: normal; }
+    .pf-link-card { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; background: rgba(255,255,255,0.025); }
+    .pf-link-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pf-link-top b { font-family: var(--display); font-size: 0.9rem; flex: 1; }
+    .pf-link-icon { width: 26px; height: 26px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: rgba(255,255,255,0.06); overflow: hidden; }
+    .pf-link-icon img { width: 100%; height: 100%; object-fit: contain; }
+    .pf-link-generic { color: var(--text-dim); font-size: 0.9rem; }
+    .pf-link-fields { display: grid; grid-template-columns: 1fr 2fr; gap: 8px 10px; }
+    .pf-link-fields label { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .pf-link-fields label > span { font-family: var(--display); font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
+    .pf-link-fields em { font-style: normal; font-weight: 400; color: var(--text-dim); }
+    .pf-link-fields .pf-link-wide:last-child { grid-column: 1 / -1; }
+    .pf-link-warn { color: #ffc56b; font-size: 0.8rem; margin-top: 6px; }
+    .pf-link-warn:empty { display: none; }
+    @media (max-width: 560px) { .pf-link-fields { grid-template-columns: 1fr; } }
+
     /* ── Sign in ─────────────────────────────────────────────────────── */
     .gate-wrap { position: fixed; inset: 0; z-index: 100000; background: #0a0c18; display: flex; align-items: center; justify-content: center; padding: 1rem;
       background-image: radial-gradient(50% 40% at 30% 20%, rgba(57,213,255,0.12), transparent 70%), radial-gradient(50% 40% at 75% 80%, rgba(139,92,255,0.16), transparent 70%); }
@@ -876,6 +895,7 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="/js/site-config.js"></script>
+<script src="/js/link-icons.js"></script>
 <script src="/js/themes.js"></script>
 <script src="/js/reddit-import.js"></script>
 <!-- The share-card renderer is shared with anything else that needs to draw
@@ -1596,15 +1616,18 @@
                       </div>
                 </section>
 
-                <section class="pf-card bk-card">
+                <!-- The backup holds the whole catalogue (every creator's releases,
+                     collaborators and platforms), so it is the site owner's alone.
+                     Creators keep a copy of their own work with "Download spreadsheet". -->
+                <section class="pf-card bk-card owner-only" style="display:none">
                     <div class="bk-head">
                         <div>
                             <h3>Backup</h3>
-                            <p class="pf-help">A copy of your releases as one file, to keep somewhere safe.</p>
+                            <p class="pf-help">A copy of the whole catalogue as one file, to keep somewhere safe.</p>
                         </div>
                         <div class="bk-btns">
                             <button type="button" class="cm-btn cm-btn-sm" onclick="cmBackup()">Download backup</button>
-                            <button type="button" class="cm-btn cm-btn-sm owner-only" style="display:none" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
+                            <button type="button" class="cm-btn cm-btn-sm" onclick="document.getElementById('cm-restore-file').click()">Restore</button>
                         </div>
                     </div>
                     <input type="file" id="cm-restore-file" accept=".json,application/json" style="display:none" onchange="cmRestore(this)">
@@ -1996,7 +2019,7 @@
                       <button type="button" onclick="pfJump('pf-sec-links')">Find me</button>
                       <button type="button" onclick="pfJump('pf-sec-feedback')">Feedback</button>
                       <button type="button" onclick="pfJump('pf-sec-look')">Look</button>
-                      <button type="button" onclick="pfJump('pf-sec-premium')">Premium</button>
+                      <button type="button" onclick="pfJump('pf-sec-optional')">Optional</button>
                       <button type="button" onclick="pfJump('pf-sec-share')">Share card</button>
                     </nav>
 
@@ -2131,11 +2154,17 @@
                         <h3><span class="pf-step">5</span>Find me</h3>
                         <label class="pf-switch"><input type="checkbox" class="pf-section" data-key="links" onchange="pfApplySection(this)"> Show on my page</label>
                       </div>
-                      <p class="pf-help">Buttons to your other places &mdash; Literotica, Reddit, Bluesky, Patreon and so on. Give each a label and paste the full address; the site picks the right icon from the address.</p>
+                      <p class="pf-help">Buttons on your page that take listeners to your other places: Reddit, Literotica, Bluesky, Patreon, your own website, and so on. Add one for each place.</p>
+                      <ul class="pf-link-guide">
+                        <li><b>Button text</b> is what the button says, usually the site&rsquo;s name: <i>Reddit</i>, <i>My Patreon</i>.</li>
+                        <li><b>Web address</b> is the full link to your page there. Open your page on that site and copy the address from the browser bar, e.g. <i>https://www.reddit.com/user/yourname</i>.</li>
+                        <li><b>Note</b> is optional: a few words under the button, like <i>Stories &amp; audio works</i>.</li>
+                      </ul>
+                      <p class="pf-help" style="margin-top:0">The icon is picked for you from the address; the preview beside each link shows which one.</p>
                       <div class="pf-off-note">Hidden from your page. Your links are kept.</div>
                       <div class="pf-card-body">
                         <div id="pf-links"></div>
-                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">Add link</button>
+                        <button type="button" class="cm-btn cm-btn-sm" onclick="pfAddLink()">+ Add a link</button>
                       </div>
                     </section>
 
@@ -2202,24 +2231,15 @@
                       </div>
                     </section>
 
-                    <!-- Premium: the extras beyond the standard page. Anyone can
-                         fill them in; the page draws them only while the site
-                         owner has made this profile premium, and only the owner
-                         can do that (netlify/functions/profiles.js). -->
-                    <section class="pf-card" id="pf-sec-premium">
+                    <!-- Optional features: extras beyond the basics. Every creator
+                         can use them, and the page draws whatever is set
+                         (netlify/functions/profiles.js). -->
+                    <section class="pf-card" id="pf-sec-optional">
                       <style>
-                        #pf-sec-premium.locked .pf-card-body { opacity:0.5; }
-                        .pf-prem-badge { font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#1a1400; background:#f5c542; border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
                         .pf-prem-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 14px; margin-bottom:12px; }
-                        .pf-link-note { display:none; }
-                        #pf-editor.prem-on .pf-link-note { display:block; }
                       </style>
-                      <div class="pf-card-head"><h3>Premium<span class="pf-prem-badge">Premium</span></h3></div>
-                      <p class="pf-help">Extras beyond the standard page: a signature header, role chips under your name, a closing line under your bio, your newest work as playable cards, a short note under each link, and a page effect.</p>
-                      <div class="owner-only" style="display:none;margin-bottom:12px;">
-                        <label class="pf-switch"><input type="checkbox" id="pf-premium" onchange="pfPremiumChanged()"> Premium profile <span style="color:var(--text-dim);font-size:0.75rem">(only you can change this)</span></label>
-                      </div>
-                      <p id="pf-prem-note" class="im-hint" style="margin:0 0 12px;"></p>
+                      <div class="pf-card-head"><h3>Optional features</h3></div>
+                      <p class="pf-help">Extras to make your page your own, all optional: a signature header, role chips under your name, your newest work as playable cards, a short note under each link, and a page effect. Leave any of them unset and your page stays as it is.</p>
                       <div class="pf-card-body">
                         <div class="pf-prem-grid">
                           <div>
@@ -2242,11 +2262,15 @@
                         </div>
                         <label class="cm-label" style="font-size:0.7rem">Roles <span style="font-weight:normal;color:var(--text-mid)">(chips under your name, separated by commas)</span></label>
                         <input id="pf-x-roles" class="cm-input" style="width:100%;margin-bottom:12px" placeholder="Producer, Editor, Musician, Sound designer">
-                        <label class="cm-label" style="font-size:0.7rem">Closing line under your bio</label>
-                        <div class="pf-prem-grid">
-                          <input id="pf-x-more-lead" class="cm-input" maxlength="140" placeholder="That's me.">
-                          <input id="pf-x-more-label" class="cm-input" maxlength="40" placeholder="Link text: Come find out the rest">
-                          <input id="pf-x-more-url" class="cm-input" placeholder="Link address: https://… or /a-page.html">
+                        <!-- The site owner's alone: it links to a page of the site's own
+                             (A Word From Me), which creators don't have. -->
+                        <div class="owner-only" style="display:none">
+                          <label class="cm-label" style="font-size:0.7rem">Closing line under your bio <span style="font-weight:normal;color:var(--text-mid)">(only you see this option)</span></label>
+                          <div class="pf-prem-grid">
+                            <input id="pf-x-more-lead" class="cm-input" maxlength="140" placeholder="That's me.">
+                            <input id="pf-x-more-label" class="cm-input" maxlength="40" placeholder="Link text: Come find out the rest">
+                            <input id="pf-x-more-url" class="cm-input" placeholder="Link address: https://… or /a-page.html">
+                          </div>
                         </div>
                         <label class="pf-switch" style="margin:4px 0;">
                           <input type="checkbox" id="pf-x-showcase"> Open Works on my newest releases as playable cards, with the full list a click away
@@ -5785,6 +5809,7 @@
     }
 
     function cmBackup() {
+      if (!cmWho.isOwner) return;
       const backup = {
         savedAt: new Date().toISOString(),
         site: location.host,
@@ -7435,19 +7460,47 @@
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    // Each link is a small card with its three fields named, and the icon the
+    // page will show for its address (js/link-icons.js), so a mistyped or
+    // half-pasted address is easy to spot.
+    function pfLinkIcon(url) {
+      const u = String(url || '').trim();
+      if (!/^https?:\/\/[^\s.]+\.[^\s]+/i.test(u)) return { html: '', note: u ? 'This doesn&rsquo;t look like a full web address yet. It should start with https://' : '' };
+      const icon = window.LinkIcons ? LinkIcons.html(u) : '';
+      return { html: icon || '<span class="pf-link-generic" aria-hidden="true">&#8599;</span>', note: '' };
+    }
     function pfRenderLinks() {
       const host = document.getElementById('pf-links');
       if (!pfLinks.length) {
-        host.innerHTML = '<div class="cm-collab-empty">No links yet.</div>';
+        host.innerHTML = '<div class="cm-collab-empty">No links yet. Press <b>Add a link</b> for each place listeners can find you.</div>';
         return;
       }
-      host.innerHTML = pfLinks.map((l, i) =>
-        `<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-           <input class="cm-input pf-link-label" style="flex:1 1 120px" placeholder="Label" value="${cmEsc(l.label || '')}" data-i="${i}">
-           <input class="cm-input pf-link-url" style="flex:2 1 200px" placeholder="https://…" value="${cmEsc(l.url || '')}" data-i="${i}">
-           <button type="button" class="cm-btn cm-btn-sm" onclick="pfRemoveLink(${i})">&times;</button>
-           <input class="cm-input pf-link-note" style="flex:1 1 100%" maxlength="80" placeholder="Short note under the label (premium), e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}">
-         </div>`).join('');
+      host.innerHTML = pfLinks.map((l, i) => {
+        const ic = pfLinkIcon(l.url);
+        return `<div class="pf-link-card">
+           <div class="pf-link-top">
+             <span class="pf-link-icon" id="pf-link-icon-${i}">${ic.html}</span>
+             <b>Link ${i + 1}</b>
+             <button type="button" class="cm-btn cm-btn-sm cm-btn-danger" onclick="pfRemoveLink(${i})" aria-label="Remove link ${i + 1}">Remove</button>
+           </div>
+           <div class="pf-link-fields">
+             <label><span>Button text</span>
+               <input class="cm-input pf-link-label" placeholder="e.g. Reddit" value="${cmEsc(l.label || '')}" data-i="${i}"></label>
+             <label class="pf-link-wide"><span>Web address</span>
+               <input class="cm-input pf-link-url" type="url" inputmode="url" placeholder="https://www.reddit.com/user/yourname" value="${cmEsc(l.url || '')}" data-i="${i}" oninput="pfLinkUrlChanged(${i}, this.value)"></label>
+             <label class="pf-link-wide"><span>Note under the button <em>(optional)</em></span>
+               <input class="cm-input pf-link-note" maxlength="80" placeholder="e.g. Stories &amp; audio works" value="${cmEsc(l.note || '')}" data-i="${i}"></label>
+           </div>
+           <div class="pf-link-warn" id="pf-link-warn-${i}">${ic.note}</div>
+         </div>`;
+      }).join('');
+    }
+    function pfLinkUrlChanged(i, url) {
+      const ic = pfLinkIcon(url);
+      const icon = document.getElementById('pf-link-icon-' + i);
+      const warn = document.getElementById('pf-link-warn-' + i);
+      if (icon) icon.innerHTML = ic.html;
+      if (warn) warn.innerHTML = ic.note;
     }
     function pfAddLink() { pfCollectLinks(); pfLinks.push({ label: '', url: '', note: '' }); pfRenderLinks(); }
     function pfRemoveLink(i) { pfCollectLinks(); pfLinks.splice(i, 1); pfRenderLinks(); }
@@ -7958,11 +8011,10 @@
       pfSaveNow(after);
     }
 
-    // ── Premium ─────────────────────────────────────────────────────────────
+    // ── Optional features ───────────────────────────────────────────────────
     function pfFillPremium(p) {
       const x = p.extras || {};
       const more = x.bioMore || {};
-      document.getElementById('pf-premium').checked = !!p.premium;
       document.getElementById('pf-x-header').value = x.header || 'standard';
       document.getElementById('pf-x-effect').value = x.effect || 'none';
       document.getElementById('pf-x-roles').value = (x.roles || []).join(', ');
@@ -7970,22 +8022,6 @@
       document.getElementById('pf-x-more-label').value = more.label || '';
       document.getElementById('pf-x-more-url').value = more.url || '';
       document.getElementById('pf-x-showcase').checked = !!x.showcase;
-      pfMarkPremium();
-    }
-    // The owner's switch only changes what is on screen; Save stores it.
-    function pfPremiumChanged() {
-      if (pfProfile) pfProfile.premium = document.getElementById('pf-premium').checked;
-      pfMarkPremium();
-    }
-    function pfMarkPremium() {
-      const on = !!(pfProfile && pfProfile.premium);
-      document.getElementById('pf-sec-premium').classList.toggle('locked', !on);
-      document.getElementById('pf-editor').classList.toggle('prem-on', on);
-      document.getElementById('pf-prem-note').textContent = on
-        ? 'Premium is on for this page. Everything below shows on it.'
-        : (cmWho.isOwner
-            ? 'Premium is off for this page. Tick the box above and save to turn it on.'
-            : 'These are premium features. You can set them up now, and they appear on your page once the site owner turns premium on for you.');
     }
     function pfDraftExtras() {
       return {
@@ -8032,7 +8068,6 @@
         updates: pfUpdates,
         sections,
         // Ignored by the server unless the site owner sends it.
-        premium: !!pfProfile.premium,
         extras: pfDraftExtras(),
       };
     }
