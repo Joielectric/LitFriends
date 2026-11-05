@@ -171,8 +171,6 @@ body .ag-modal { background: var(--bg-2); border: 1px solid var(--line-hi); bord
 body .ag-modal-header { border-bottom-color: var(--line); }
 body .ag-modal-title { font-family: var(--display); font-weight: 700; font-size: 1.35rem; color: #fff; }
 body .ag-modal-close { width: 36px; height: 36px; border-radius: 50%; background: var(--glass-hi); padding: 0; }
-body .ag-platform-tab { font-family: var(--display); letter-spacing: 0; text-transform: none; font-size: 0.9rem; }
-body .ag-platform-tab.active { border-bottom-color: var(--accent); }
 body .ag-modal-open-btn {
   font-family: var(--display); font-weight: 600; font-size: 0.95rem; letter-spacing: 0; text-transform: none;
   border: 0; border-radius: 999px; background: var(--volt); color: #0a0c18; padding: 0.8rem 1.2rem;
