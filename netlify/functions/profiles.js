@@ -60,7 +60,7 @@ export const SECTIONS = ["updates", "about", "works", "feedback", "links"];
 // page effect, roles, a closing line, the works showcase, notes under links).
 // Every creator may use them; the page draws whatever is set.
 export const HEADERS = ["standard", "signature"];
-export const EFFECTS = ["none", "lightning", "petals", "blossoms", "rain"];
+export const EFFECTS = ["none", "lightning", "petals", "blossoms", "rain", "blood"];
 
 function defaultExtras() {
   return {

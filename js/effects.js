@@ -266,11 +266,148 @@
     }
   };
 
+  // Dripping blood: a dark, uneven line of it along the top of the screen,
+  // with drips that creep down, each swelling to a drop at its tip. Now and
+  // then a drip grows too heavy, lets its drop fall, and draws back up to
+  // gather again. Slow on purpose: it should feel like it is seeping.
+  function blood() {
+    var c = document.createElement('canvas');
+    c.style.cssText = 'position:fixed;inset:0;z-index:55;pointer-events:none;opacity:0;transition:opacity 2s ease;';
+    c.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(c);
+    var ctx = c.getContext('2d');
+    if (!ctx) return;
+    var W = 0, H = 0, drips = [], drops = [], edge = [], last = 0, off = 0;
+    var DARK = '#4a000b', MID = '#7d0716', LIT = '#a8152a';
+
+    function newDrip(x, first) {
+      var w = rand(2.6, 6.5), max = rand(H * 0.06, H * 0.38) * (0.6 + w / 10);
+      return {
+        x: x, w: w,
+        // Already part-way down when the page opens, so a drop falls soon.
+        len: first ? rand(0, max * 0.85) : 0,
+        max: max,
+        v: rand(0.05, 0.16),          // creeping speed, px per frame
+        surge: 0,                      // a short quickening now and then
+        wob: rand(0, 6.28)
+      };
+    }
+    function size() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      c.width = W * dpr; c.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // It seeps from under the page's top bar, if it has one, so the bar's
+      // links are never drawn over.
+      var bar = document.querySelector('.topbar');
+      off = bar ? Math.max(0, Math.min(120, Math.round(bar.getBoundingClientRect().bottom))) : 0;
+      // The band along the top: a few slow bumps, thicker over each drip.
+      edge = [];
+      for (var x = 0; x <= W + 12; x += 12) edge.push(5 + Math.sin(x * 0.021) * 2.2 + Math.sin(x * 0.067 + 1.3) * 1.4 + rand(0, 1.2));
+      var want = Math.max(5, Math.min(22, Math.round(W / 85)));
+      drips = [];
+      for (var i = 0; i < want; i++) drips.push(newDrip((i + rand(0.15, 0.85)) * W / want, true));
+    }
+    window.addEventListener('resize', size);
+    size();
+
+    function edgeAt(x) {
+      var i = Math.max(0, Math.min(edge.length - 1, Math.round(x / 12)));
+      return edge[i];
+    }
+
+    // The band, with a soft wet sheen along its lower lip.
+    function drawEdge() {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      for (var i = 0; i < edge.length; i++) ctx.lineTo(i * 12, edge[i]);
+      ctx.lineTo(W, 0);
+      ctx.closePath();
+      var g = ctx.createLinearGradient(0, 0, 0, 12);
+      g.addColorStop(0, DARK); g.addColorStop(1, MID);
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
+
+    // One drip: wide where it leaves the band, a thin neck, a round drop.
+    function drawDrip(d) {
+      var top = edgeAt(d.x) - 1, L = d.len;
+      if (L < 1) return;
+      var bulb = d.w * (0.55 + Math.min(1, L / 40) * 0.45);
+      var neck = d.w * 0.42, base = d.w * 1.6;
+      var tip = top + L;
+      ctx.beginPath();
+      ctx.moveTo(d.x - base, top);
+      ctx.bezierCurveTo(d.x - neck, top + Math.min(L, 10), d.x - neck, tip - bulb * 2, d.x - bulb, tip - bulb * 0.2);
+      ctx.arc(d.x, tip, bulb, Math.PI, 0, true);
+      ctx.bezierCurveTo(d.x + neck, tip - bulb * 2, d.x + neck, top + Math.min(L, 10), d.x + base, top);
+      ctx.closePath();
+      var g = ctx.createLinearGradient(d.x - bulb, 0, d.x + bulb, 0);
+      g.addColorStop(0, DARK); g.addColorStop(0.45, LIT); g.addColorStop(1, DARK);
+      ctx.fillStyle = g;
+      ctx.fill();
+      // A glint on the drop.
+      ctx.fillStyle = 'rgba(255,140,150,0.28)';
+      ctx.beginPath(); ctx.ellipse(d.x - bulb * 0.35, tip - bulb * 0.3, bulb * 0.22, bulb * 0.38, -0.4, 0, 6.28); ctx.fill();
+    }
+
+    function drawDrop(p) {
+      var r = p.r, stretch = 1 + Math.min(1.6, p.vy * 0.12);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.scale(1, stretch);
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 2.2);
+      ctx.bezierCurveTo(r * 0.9, -r * 0.9, r, 0, 0, r);
+      ctx.bezierCurveTo(-r, 0, -r * 0.9, -r * 0.9, 0, -r * 2.2);
+      ctx.fillStyle = MID;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function frame(now) {
+      var dt = last ? Math.min(3, (now - last) / 16.67) : 1;
+      last = now;
+      ctx.clearRect(0, 0, W, H);
+      ctx.save();
+      ctx.translate(0, off);
+      ctx.globalAlpha = 0.93;
+      for (var i = 0; i < drips.length; i++) {
+        var d = drips[i];
+        d.wob += 0.02 * dt;
+        if (!d.surge && Math.random() < 0.002 * dt) d.surge = rand(40, 110);
+        var speed = d.v * (d.surge ? 4 : 1) * (0.75 + Math.sin(d.wob) * 0.25);
+        if (d.surge) d.surge = Math.max(0, d.surge - dt);
+        d.len += speed * dt;
+        if (d.len >= d.max) {
+          // Too heavy: the drop lets go and the drip draws back.
+          drops.push({ x: d.x, y: edgeAt(d.x) + d.len, vy: 0.6, r: d.w * 0.8 });
+          d.len *= rand(0.25, 0.45);
+          d.max = rand(H * 0.06, H * 0.38) * (0.6 + d.w / 10);
+        }
+        drawDrip(d);
+      }
+      drawEdge();
+      for (var j = drops.length - 1; j >= 0; j--) {
+        var p = drops[j];
+        p.vy += 0.22 * dt;
+        p.y += p.vy * dt;
+        if (p.y + off > H + 40) { drops.splice(j, 1); continue; }
+        drawDrop(p);
+      }
+      ctx.restore();
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(function () { c.style.opacity = '1'; });
+    requestAnimationFrame(frame);
+  }
+
   var EFFECTS = {
     lightning: lightning,
     petals: function () { drift(rose); },
     blossoms: function () { drift(blossom); },
     rain: function () { drift(rain); },
+    blood: blood,
   };
   window.Effects = {
     start: function (name) {
