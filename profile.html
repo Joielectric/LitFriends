@@ -124,7 +124,21 @@
     .tagline { font-family: var(--display); font-weight: 500; font-size: 1.1rem; color: var(--text-mid); }
     #page > section { margin-top: 2.8rem; margin-bottom: 0; }
     #page h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.35rem, 3.4vw, 1.7rem); letter-spacing: -0.01em; margin-bottom: 1rem; }
-    .bio { white-space: pre-wrap; }
+    /* The About text: Markdown and simple HTML, rendered by js/markdown.js. */
+    .bio { color: var(--text-mid); line-height: 1.75; }
+    .bio > :first-child { margin-top: 0; }
+    .bio p, .bio ul, .bio ol, .bio blockquote { margin: 0 0 0.9em; }
+    .bio > p:last-of-type { margin-bottom: 0; }
+    .bio ul, .bio ol { padding-left: 1.4em; }
+    .bio li + li { margin-top: 0.25em; }
+    .bio h3, .bio h4, .bio h5 { font-family: var(--display); color: var(--text); font-weight: 700; margin: 1.1em 0 0.45em; line-height: 1.3; }
+    .bio h3 { font-size: 1.15rem; } .bio h4 { font-size: 1.04rem; } .bio h5 { font-size: 0.96rem; }
+    .bio strong { color: var(--text); }
+    .bio a:not(.bio-more) { color: var(--accent); }
+    .bio blockquote { border-left: 2px solid var(--accent); padding-left: 0.9em; color: var(--text-dim); }
+    .bio hr { border: 0; border-top: 1px solid var(--line); margin: 1.2em 0; }
+    .bio mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); padding: 0 0.15em; border-radius: 3px; }
+    .bio code { font-size: 0.9em; background: rgba(255,255,255,0.07); padding: 0.05em 0.35em; border-radius: 4px; }
     .updates { display: grid; gap: 1rem; }
     .update { background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.2rem 1.3rem; position: relative; overflow: hidden; }
     .update::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--volt); }
@@ -236,15 +250,9 @@
         return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
       });
     }
-    // Profile text is written by creators, so it is escaped and only then given
-    // line breaks and links. Nothing they type is ever treated as markup.
-    function richText(s) {
-      return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
-        var trail = '', m = u.match(/[.,;:!?)\]]+$/);
-        if (m) { trail = m[0]; u = u.slice(0, -trail.length); }
-        return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
-      }).replace(/\r?\n/g, '<br>');
-    }
+    // Profile text is written by creators, so it is escaped everywhere. The one
+    // exception is the About text, which takes Markdown and a short list of
+    // HTML tags through js/markdown.js; that rebuilds it keeping only those.
 
     // /profile/<slug>, or ?u=<slug> if the rewrite is not in play.
     function currentSlug() {
@@ -334,7 +342,7 @@
           ? '<p class="bio-outro">' + esc(more.lead || '') +
             (more.label && more.url ? ' <a class="bio-more" href="' + esc(more.url) + '">' + esc(more.label) + ' &#8594;</a>' : '') + '</p>'
           : '';
-        html += '<section><h2>About</h2><div class="bio glass">' + richText(p.bio) + outro + '</div></section>';
+        html += '<section><h2>About</h2><div class="bio glass">' + Markdown.render(p.bio, { html: true }) + outro + '</div></section>';
       }
       if (sections.works !== false) {
         html += x.showcase
