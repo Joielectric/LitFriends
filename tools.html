@@ -846,6 +846,8 @@
     }
 
 
+    .pf-fmt-hint { display: block; font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+
     /* ── Find me: one card per link ── */
     .pf-link-guide { margin: 0 0 8px 1.1rem; color: var(--text-mid); font-size: 0.85rem; line-height: 1.6; }
     .pf-link-guide i { color: var(--text); font-style: normal; }
@@ -2116,6 +2118,8 @@
                       <div class="pf-card-body">
                         <textarea id="pf-bio" class="cm-input" style="width:100%;min-height:130px" maxlength="4000"
                                   placeholder="Line breaks are kept. Pasted links become links."></textarea>
+                        <span class="pf-fmt-hint">Markdown works: **bold**, *italic*, [link text](https://…), # heading, - list, &gt; quote.
+                          So does simple HTML, e.g. pasted from another site: &lt;b&gt;, &lt;i&gt;, &lt;u&gt;, &lt;a href&gt;, &lt;p&gt;, &lt;br&gt;, &lt;ul&gt;/&lt;li&gt;, &lt;h3&gt;. Anything else (styles, scripts, images) is left out.</span>
                       </div>
                     </section>
 
