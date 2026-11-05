@@ -3,9 +3,9 @@
  *
  *     <script src="/js/track.js" defer></script>
  *
- * It notices, on its own, a page being viewed, an <audio> starting and
- * finishing, a link out to another site, a download and a search box being
- * used. The one thing it cannot see is which work a pop-up is showing, so the
+ * It notices, on its own, a page being viewed, a link out to another site, a
+ * download and a search box being used. (The site has no player of its own,
+ * so plays are not counted.) The one thing it cannot see is which work a pop-up is showing, so the
  * pages that open one say so:
  *
  *     joiTrack.open(entry);     // when a work's modal opens
@@ -111,23 +111,6 @@
     art: profile ? [profile[1].toLowerCase()] : null,
   });
   flush(false);
-
-  // ── Listening ─────────────────────────────────────────────────────────────
-  // Media events do not bubble, but they can be caught on the way down.
-  var started = typeof WeakSet === 'function' ? new WeakSet() : null;
-  document.addEventListener('play', function (ev) {
-    var el = ev.target;
-    if (!el || !/^(AUDIO|VIDEO)$/.test(el.tagName)) return;
-    if (started) { if (started.has(el)) return; started.add(el); }
-    var w = about();
-    push('play', { title: w ? w.title : (el.getAttribute('title') || ''), art: w ? w.art : null });
-  }, true);
-  document.addEventListener('ended', function (ev) {
-    var el = ev.target;
-    if (!el || !/^(AUDIO|VIDEO)$/.test(el.tagName)) return;
-    var w = about();
-    push('complete', { title: w ? w.title : '', art: w ? w.art : null });
-  }, true);
 
   // ── Links out and downloads ───────────────────────────────────────────────
   document.addEventListener('click', function (ev) {

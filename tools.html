@@ -515,6 +515,30 @@
     .vs-steps { margin: 6px 0 0; padding: 0; list-style: none; font-size: 0.82rem; color: var(--text-mid); }
     .vs-steps li { padding: 1px 0; display: grid; grid-template-columns: 82px 1fr; gap: 6px; word-break: break-word; }
     .vs-steps .k { color: var(--text-dim); }
+    .vs-fold > summary { list-style: none; cursor: pointer; }
+    .vs-fold > summary::-webkit-details-marker { display: none; }
+    .vs-fold > summary h4 { margin: 0; display: flex; align-items: center; gap: 6px; }
+    .vs-fold > summary h4::before { content: "\25B8"; font-size: 0.8rem; transition: transform .15s; }
+    .vs-fold[open] > summary h4::before { transform: rotate(90deg); }
+    .vs-fold[open] > summary { margin-bottom: 8px; }
+    .vs-fold summary span { text-transform: none; }
+    .vs-x { background: none; border: 0; color: var(--text-dim); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 3px; vertical-align: baseline; }
+    .vs-x:hover { color: var(--rose); }
+    .vs-note { font-size: 0.78rem; color: var(--text-dim); margin: -2px 0 8px; }
+    .vs-visit-r { display: inline-flex; align-items: center; gap: 8px; }
+    .vs-rm { background: none; border: 1px solid var(--border-mid); border-radius: 999px; color: var(--text-mid); cursor: pointer; font-size: 0.72rem; padding: 1px 9px; }
+    .vs-rm:hover { color: var(--rose); border-color: var(--rose); }
+    .vs-link { background: none; border: 0; padding: 0; color: var(--text-dim); text-decoration: underline; cursor: pointer; font: inherit; }
+    .vs-link:hover { color: var(--rose); }
+    .vs-group { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 6px; }
+    .vs-group > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; padding: 9px 12px; cursor: pointer; list-style: none; }
+    .vs-group > summary::-webkit-details-marker { display: none; }
+    .vs-group > summary::before { content: "\25B8"; color: var(--text-dim); font-size: 0.8rem; transition: transform .15s; }
+    .vs-group[open] > summary::before { transform: rotate(90deg); }
+    .vs-group-name { font-family: var(--display); font-weight: 600; color: var(--silver-hi); font-size: 0.88rem; }
+    .vs-group-meta { flex: 1 1 200px; font-size: 0.78rem; color: var(--text-dim); min-width: 0; }
+    .vs-group[open] { padding-bottom: 6px; }
+    .vs-group .vs-visit { margin: 0 8px 6px; }
     .vs-tag { font-size: 0.68rem; border: 1px solid var(--border-mid); border-radius: 2px; padding: 0 5px; color: var(--text-mid); margin-left: 6px; }
     /* People pickers + collaborators */
     .cm-people { display: flex; flex-wrap: wrap; gap: 6px; min-height: 10px; }
@@ -1924,12 +1948,19 @@
                     <div id="vs-stats" class="fb-stats"></div>
                     <div id="vs-chart" class="vs-chart"></div>
                     <div id="vs-tables" class="vs-grid"></div>
-                    <label class="cm-label" style="margin:18px 0 8px;display:block">Recent visits</label>
+                    <div class="vs-bar" style="margin:18px 0 8px">
+                      <label class="cm-label" style="margin:0">Recent visits</label>
+                      <select id="vs-group" class="cm-input" style="font-size:0.85rem;width:auto;flex:0 0 auto" onchange="vsRenderRecent()" title="How to list recent visits">
+                        <option value="visit">Each visit</option>
+                        <option value="visitor">Grouped by visitor</option>
+                      </select>
+                    </div>
+                    <p class="vs-note owner-only" style="display:none">Remove a visit, or everything one visitor did, with the buttons on each. Removing is permanent and covers every day stored, not just this range.</p>
                     <div id="vs-recent"><div class="cm-collab-empty">Open this tab to load visits.</div></div>
                     <p style="font-size:0.78rem;color:var(--text-dim);margin-top:12px">
                       Visitors are counted by an anonymous id their browser keeps; no names, emails or IP addresses are stored.
                       Visits while you are signed in, and from browsers that ask not to be tracked, are left out.
-                      Plays inside embedded players from other sites (Soundgasm and the like) cannot be seen, only the click to open them.
+                      Listening happens on other sites (Soundgasm and the like), so plays cannot be seen, only the click out to them.
                       Days are counted in UTC.
                     </p>
                   </div>
@@ -3159,7 +3190,7 @@
 
     // ── Visitors: who came, and what they did (netlify/functions/visits.js) ──
     let vsData = null;
-    const VS_STEP = { view: 'Viewed', open: 'Opened', play: 'Played', complete: 'Finished', outbound: 'Went to', download: 'Downloaded', search: 'Searched' };
+    const VS_STEP = { view: 'Viewed', open: 'Opened', outbound: 'Went to', download: 'Downloaded', search: 'Searched' };
 
     function vsNum(n) { return Number(n || 0).toLocaleString(); }
     function vsDur(sec) {
@@ -3219,40 +3250,108 @@
         tile('Visitors', vsNum(t.visitors)) +
         tile('Visits', vsNum(t.visits) + (t.returningVisits ? ' <span style="font-size:0.75rem;font-weight:normal;color:var(--text-dim)">' + vsNum(t.returningVisits) + ' return</span>' : '')) +
         tile('Page views', vsNum(t.views)) +
-        tile('Plays', vsNum(t.plays)) +
-        tile('Listened to the end', vsNum(t.completes)) +
         tile('Avg time per visit', vsDur(t.avgDur));
       vsChart(d.daily);
 
-      const table = (title, rows, head) => {
+      const rowsHtml = (rows, head) => {
         const max = rows.reduce((m, r) => Math.max(m, r.c), 0) || 1;
-        return '<div class="vs-box"><h4>' + title + '</h4>' + (rows.length
+        return rows.length
           ? '<table class="vs-table"><tr><th></th><th>' + head + '</th></tr>' + rows.map(r =>
               '<tr><td>' + fbEsc(r.k) + '<span class="vs-meter" style="width:' + Math.max(2, Math.round(r.c / max * 100)) + '%"></span></td><td class="n">' + vsNum(r.c) + '</td></tr>').join('') + '</table>'
-          : '<div class="cm-collab-empty">Nothing yet.</div>') + '</div>';
+          : '<div class="cm-collab-empty">Nothing yet.</div>';
       };
+      const table = (title, rows, head) => '<div class="vs-box"><h4>' + title + '</h4>' + rowsHtml(rows, head) + '</div>';
+      // Searches can run long, so they start folded away.
+      const folded = (title, rows, head) =>
+        '<details class="vs-box vs-fold"><summary><h4>' + title + ' <span>(' + rows.length + ')</span></h4></summary>' + rowsHtml(rows, head) + '</details>';
+      // A work is listed under the title it had when it was opened, so a title
+      // since fixed (or typed by mistake) lingers; the owner can remove it.
       const works = '<div class="vs-box"><h4>Works</h4>' + (d.works.length
-        ? '<table class="vs-table"><tr><th></th><th>Opened</th><th>Played</th><th>Finished</th></tr>' + d.works.map(w =>
-            '<tr><td>' + fbEsc(w.title) + '</td><td class="n">' + vsNum(w.opens) + '</td><td class="n">' + vsNum(w.plays) + '</td><td class="n">' + vsNum(w.completes) + '</td></tr>').join('') + '</table>'
+        ? '<table class="vs-table"><tr><th></th><th>Opened</th></tr>' + d.works.map((w, i) =>
+            '<tr><td>' + fbEsc(w.title) +
+              (cmWho.isOwner ? ' <button type="button" class="vs-x" onclick="vsRemoveTitle(' + i + ')" title="Remove this title from the stats" aria-label="Remove ' + cmEsc(w.title) + ' from the stats">&times;</button>' : '') +
+            '</td><td class="n">' + vsNum(w.opens) + '</td></tr>').join('') + '</table>'
         : '<div class="cm-collab-empty">Nothing opened yet.</div>') + '</div>';
       document.getElementById('vs-tables').innerHTML =
         works +
         table('Pages', d.pages, 'Views') +
         table('Came from', d.referrers, 'Visits') +
         table('Clicked out to', d.outbound, 'Clicks') +
-        table('Searched for', d.searches, 'Times') +
+        folded('Searched for', d.searches, 'Times') +
         table('Countries', d.countries, 'Visits') +
         table('Devices', d.devices, 'Visits') +
         table('Browsers', d.browsers, 'Visits');
 
+      vsRenderRecent();
+    }
+
+    // A visitor is a random id; the last few characters tell them apart.
+    function vsWho(v) { return 'Visitor ' + String(v || '').slice(-5).toUpperCase(); }
+
+    function vsVisitHtml(v, inGroup) {
+      const own = cmWho.isOwner;
+      return '<div class="vs-visit">' +
+        '<div class="vs-visit-head"><span>' + fbEsc(new Date(v.start).toLocaleString()) + (v.returning ? '<span class="vs-tag">returning</span>' : '') + '</span>' +
+          '<span class="vs-visit-r">' + vsDur(v.dur) +
+            (own ? ' <button type="button" class="vs-rm" onclick="vsRemove(\'session\', \'' + cmEsc(v.s) + '\')">Remove visit</button>' : '') + '</span></div>' +
+        '<div class="vs-visit-meta">' + (inGroup ? [] : [vsWho(v.v)]).concat([v.where || 'Unknown location', v.device, v.ref ? 'from ' + v.ref : 'direct']).map(fbEsc).join(' &middot; ') +
+          (own && !inGroup ? ' &middot; <button type="button" class="vs-link" onclick="vsRemove(\'visitor\', \'' + cmEsc(v.v) + '\')">remove all from this visitor</button>' : '') + '</div>' +
+        '<ul class="vs-steps">' + v.steps.filter(s => VS_STEP[s.t]).map(s => '<li><span class="k">' + VS_STEP[s.t] + '</span>' + fbEsc(s.x) + '</li>').join('') + '</ul>' +
+      '</div>';
+    }
+
+    function vsRenderRecent() {
       const recent = document.getElementById('vs-recent');
+      const d = vsData;
+      if (!d) return;
       if (!d.recent.length) { recent.innerHTML = '<div class="cm-collab-empty">No visits in this range yet.</div>'; return; }
-      recent.innerHTML = d.recent.map(v =>
-        '<div class="vs-visit">' +
-          '<div class="vs-visit-head"><span>' + fbEsc(new Date(v.start).toLocaleString()) + (v.returning ? '<span class="vs-tag">returning</span>' : '') + '</span><span>' + vsDur(v.dur) + '</span></div>' +
-          '<div class="vs-visit-meta">' + [v.where || 'Unknown location', v.device, v.ref ? 'from ' + v.ref : 'direct'].map(fbEsc).join(' &middot; ') + '</div>' +
-          '<ul class="vs-steps">' + v.steps.map(s => '<li><span class="k">' + (VS_STEP[s.t] || fbEsc(s.t)) + '</span>' + fbEsc(s.x) + '</li>').join('') + '</ul>' +
-        '</div>').join('');
+      if (document.getElementById('vs-group').value !== 'visitor') {
+        recent.innerHTML = d.recent.map(v => vsVisitHtml(v, false)).join('');
+        return;
+      }
+      // One group per visitor, the most recently seen first; visits stay newest first.
+      const groups = new Map();
+      d.recent.forEach(v => { if (!groups.has(v.v)) groups.set(v.v, []); groups.get(v.v).push(v); });
+      recent.innerHTML = [...groups.entries()].map(([id, visits]) => {
+        const last = visits[0], total = visits.reduce((n, v) => n + (v.dur || 0), 0);
+        return '<details class="vs-group">' +
+          '<summary><span class="vs-group-name">' + fbEsc(vsWho(id)) + '</span>' +
+            '<span class="vs-group-meta">' + vsNum(visits.length) + ' visit' + (visits.length === 1 ? '' : 's') + ' &middot; ' + vsDur(total) +
+              ' &middot; last ' + fbEsc(new Date(last.start).toLocaleDateString()) + ' &middot; ' + fbEsc([last.where || 'Unknown location', last.device].filter(Boolean).join(' · ')) + '</span>' +
+            (cmWho.isOwner ? '<button type="button" class="vs-rm" onclick="event.preventDefault(); vsRemove(\'visitor\', \'' + cmEsc(id) + '\')">Remove all</button>' : '') +
+          '</summary>' +
+          visits.map(v => vsVisitHtml(v, true)).join('') +
+        '</details>';
+      }).join('');
+    }
+
+    // Owner only, and permanent: the server goes through every stored day.
+    function vsRemove(kind, id) {
+      if (!cmWho.isOwner || !id) return;
+      const ask = kind === 'visitor'
+        ? 'Remove every visit from ' + vsWho(id) + '?\n\nThis covers every day stored, not just the range shown, and cannot be undone.'
+        : 'Remove this visit?\n\nThis cannot be undone.';
+      if (!confirm(ask)) return;
+      vsSendRemove({ [kind]: id });
+    }
+    function vsRemoveTitle(i) {
+      const w = vsData && vsData.works[i];
+      if (!cmWho.isOwner || !w) return;
+      if (!confirm('Remove "' + w.title + '" from the visitor stats?\n\nEvery record of it being opened goes, on every day stored. Visits themselves stay. This cannot be undone.')) return;
+      vsSendRemove({ title: w.title });
+    }
+    function vsSendRemove(what) {
+      fetch('/api/visits', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ action: 'remove' }, what))
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) { cmShowMsg(d.error || 'Could not remove that.', false); return; }
+          cmShowMsg(d.removed ? 'Removed ' + vsNum(d.removed) + ' record' + (d.removed === 1 ? '' : 's') + '.' : 'Nothing matched; it may already be gone.', true);
+          vsLoad();
+        })
+        .catch(() => cmShowMsg('Network error; nothing was removed.', false));
     }
 
     // Visitors per day. One series, so no legend; hovering a day gives its numbers.
@@ -3281,7 +3380,7 @@
       el.querySelectorAll('.vs-col').forEach(g => {
         g.addEventListener('mouseenter', () => {
           const x = daily[+g.dataset.i];
-          tip.innerHTML = '<b>' + fmt(x.day) + '</b><br>' + vsNum(x.visitors) + ' visitors · ' + vsNum(x.views) + ' views · ' + vsNum(x.plays) + ' plays';
+          tip.innerHTML = '<b>' + fmt(x.day) + '</b><br>' + vsNum(x.visitors) + ' visitors · ' + vsNum(x.views) + ' views';
           const box = svg.getBoundingClientRect(), cell = g.getBoundingClientRect();
           const left = Math.min(Math.max(cell.left - box.left + cell.width / 2, 90), box.width - 90);
           tip.style.left = left + 'px'; tip.style.top = '0px'; tip.style.display = 'block';

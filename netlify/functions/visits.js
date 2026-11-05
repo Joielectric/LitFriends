@@ -6,6 +6,8 @@ import { cookieFromRequest, readSession } from "./_session.js";
 //
 //   POST /api/visits { v, s, events: [...] }         -> record (from js/track.js)
 //   POST /api/visits { action: "stats", days, scope } -> the Visitors tab
+//   POST /api/visits { action: "remove", visitor | session | title }
+//                                                     -> the owner deletes records
 //
 // Nothing here identifies a person. A visitor is a random id their browser
 // made up and kept; there is no IP address, no full user agent and no cookie
@@ -34,7 +36,9 @@ const MAX_DAYS = 90;        // the longest range the tab offers
 const RECENT_SESSIONS = 60; // visits listed one by one
 const TOP = 15;             // rows per table
 
-const TYPES = new Set(["view", "open", "play", "complete", "outbound", "download", "search", "leave"]);
+// "play" and "complete" came from <audio>/<video> on the page. The site has no
+// player of its own, so they are no longer sent or shown; old ones are ignored.
+const TYPES = new Set(["view", "open", "outbound", "download", "search", "leave"]);
 
 // Crawlers, link previews and uptime checkers are not visitors.
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|embedly|quora link|whatsapp|telegram|discord|skype|headless|phantom|lighthouse|pingdom|uptime|monitor|curl|wget|python|go-http|node-fetch|axios|java\//i;
@@ -238,17 +242,18 @@ function summarise(batches, days, fromDay, scope, exact) {
 
   const visitors = new Set();
   const sessions = new Map();
-  const byDay = new Map(days.map((d) => [d, { day: d, visitors: new Set(), views: 0, plays: 0 }]));
+  const byDay = new Map(days.map((d) => [d, { day: d, visitors: new Set(), views: 0 }]));
   const pages = new Map(), refs = new Map(), countries = new Map(), devices = new Map(),
     browsers = new Map(), outbound = new Map(), searches = new Map();
-  const works = new Map(); // title -> { opens, plays, completes }
-  let views = 0, plays = 0, completes = 0;
+  const works = new Map(); // title -> times opened
+  let views = 0;
 
   // A visitor is "returning" if their first event in range came after an
   // earlier visit (a different session id) also in range.
   const firstSession = new Map();
 
   for (const e of events) {
+    if (!TYPES.has(e.t)) continue;
     visitors.add(e.v);
     if (!firstSession.has(e.v)) firstSession.set(e.v, e.s);
 
@@ -267,8 +272,6 @@ function summarise(batches, days, fromDay, scope, exact) {
     const d = byDay.get(dayOf(e.ts));
     if (d) d.visitors.add(e.v);
 
-    const work = e.title && (works.get(e.title) || works.set(e.title, { opens: 0, plays: 0, completes: 0 }).get(e.title));
-
     switch (e.t) {
       case "view":
         views++;
@@ -278,19 +281,10 @@ function summarise(batches, days, fromDay, scope, exact) {
         sess.steps.push({ t: "view", x: pageLabel(e.p) });
         break;
       case "open":
-        if (work) work.opens++;
+        // Only an opened work makes a row: a page view carries the page's
+        // title too, and that is not a work.
+        if (e.title) tally(works, e.title);
         sess.steps.push({ t: "open", x: e.title });
-        break;
-      case "play":
-        plays++;
-        if (d) d.plays++;
-        if (work) work.plays++;
-        sess.steps.push({ t: "play", x: e.title || pageLabel(e.p) });
-        break;
-      case "complete":
-        completes++;
-        if (work) work.completes++;
-        sess.steps.push({ t: "complete", x: e.title || pageLabel(e.p) });
         break;
       case "outbound":
         tally(outbound, e.host);
@@ -327,8 +321,8 @@ function summarise(batches, days, fromDay, scope, exact) {
   const avgDur = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
 
   const workRows = [...works.entries()]
-    .map(([title, w]) => ({ title, ...w }))
-    .sort((a, b) => (b.plays - a.plays) || (b.opens - a.opens))
+    .map(([title, opens]) => ({ title, opens }))
+    .sort((a, b) => b.opens - a.opens)
     .slice(0, TOP);
 
   const recent = [...sessions.values()]
@@ -342,11 +336,11 @@ function summarise(batches, days, fromDay, scope, exact) {
       visitors: visitors.size,
       visits: sessions.size,
       returningVisits: returning,
-      views, plays, completes, avgDur,
+      views, avgDur,
     },
     daily: days.map((day) => {
       const x = byDay.get(day);
-      return { day, visitors: x.visitors.size, views: x.views, plays: x.plays };
+      return { day, visitors: x.visitors.size, views: x.views };
     }),
     pages: top(pages), referrers: top(refs), countries: top(countries),
     devices: top(devices), browsers: top(browsers), outbound: top(outbound),
@@ -382,6 +376,57 @@ async function stats(req, body) {
   return json({ ok: true, scope: scope ? scope.slug : "site", ...result });
 }
 
+// ── Removing records (owner only) ──────────────────────────────────────────
+// One visit (its session id), everything one visitor ever did (their visitor
+// id), or every event carrying one title, e.g. a work's old name. Every stored
+// day is gone through, folded or not.
+const ID = (v) => str(v, 40).replace(/[^a-z0-9]/gi, "");
+
+async function remove(req, body) {
+  const auth = await authorize(req, body);
+  if (!auth.ok) return json(unauthorized(auth), 401);
+  if (!auth.isOwner) return json({ error: "Only the site owner can remove visitor records." }, 403);
+
+  const visitor = ID(body.visitor), session = ID(body.session), title = str(body.title, 200);
+  if (!visitor && !session && !title) return json({ error: "Nothing to remove." }, 400);
+
+  let removed = 0;
+  // A batch with what should go taken out; null when nothing is left of it.
+  function prune(b) {
+    if (!b) return b;
+    if ((visitor && b.v === visitor) || (session && b.s === session)) { removed += (b.events || []).length; return null; }
+    if (!title) return b;
+    const keep = (b.events || []).filter((e) => e.title !== title);
+    if (keep.length === (b.events || []).length) return b;
+    removed += (b.events || []).length - keep.length;
+    return keep.length ? { ...b, events: keep } : null;
+  }
+
+  const store = siteStore("visits");
+  const [folded, loose] = await Promise.all([listKeys(store, "d/"), listKeys(store, "r/")]);
+
+  await pool(folded, 6, async (k) => {
+    const day = await store.get(k, { type: "json" }).catch(() => null);
+    if (!day || !Array.isArray(day.batches)) return;
+    const before = removed;
+    const batches = day.batches.map(prune).filter(Boolean);
+    if (removed === before) return;
+    if (batches.length) await store.setJSON(k, { ...day, batches });
+    else await store.delete(k);
+  });
+  await pool(loose, 12, async (k) => {
+    const b = await store.get(k, { type: "json" }).catch(() => null);
+    if (!b) return;
+    const before = removed;
+    const kept = prune(b);
+    if (removed === before) return;
+    if (kept) await store.setJSON(k, kept);
+    else await store.delete(k);
+  });
+
+  return json({ ok: true, removed });
+}
+
 export default async (req, context) => {
   if (req.method === "OPTIONS") {
     return new Response("", {
@@ -398,6 +443,7 @@ export default async (req, context) => {
   try { body = JSON.parse(text); } catch { /* record() answers it */ }
 
   if (body && body.action === "stats") return stats(req, body);
+  if (body && body.action === "remove") return remove(req, body);
   if (body && body.action) return json({ error: "Unknown action" }, 400);
   return record(req, context);
 };
