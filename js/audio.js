@@ -554,23 +554,10 @@ body {
 }
 .ag-modal-close:hover { color: var(--text, #eee); }
 
-/* Platform tabs */
-.ag-platform-tabs {
-  display: flex; border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
-}
-.ag-platform-tab {
-  padding: 0.7rem 1.2rem;
-  background: none; border: none; border-bottom: 2px solid transparent;
-  color: var(--text-dim, #666);
-  cursor: pointer; font-size: 0.75rem; letter-spacing: .1em; text-transform: uppercase;
-  transition: color .15s, border-color .15s;
-  margin-bottom: -1px;
-}
-.ag-platform-tab:hover { color: var(--text-mid, #999); }
-.ag-platform-tab.active {
-  color: var(--silver-hi, #f5f0ea);
-  border-bottom-color: var(--coral, #e8634f);
-}
+/* Where to find it: one button per link, side by side, wrapping as needed.
+   (These used to be tabs, one platform showing at a time.) */
+.ag-modal-links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+.ag-modal-links .ag-modal-open-btn { width: auto; flex: 0 1 auto; margin-top: 0; }
 
 .ag-modal-body { padding: 1.4rem; }
 .ag-modal-iframe {
@@ -685,18 +672,20 @@ body {
     return (PROVIDERS[link.provider] || {}).kind === 'script' ? 'Read on' : 'Open on';
   }
 
-  function platformBodyHtml(link, entry) {
-    const embed = canEmbed(link.provider);
-    const label = providerLabel(link.provider);
-    return `
-      ${embed
-        ? `<iframe class="ag-modal-iframe" src="${link.url}" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`
-        : ``
-      }
-      <a class="ag-modal-open-btn" href="${link.url}" target="_blank" rel="noopener noreferrer">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        ${linkVerb(link, entry)} ${label}
-      </a>`;
+  // A button for each place the work is posted. A platform that can be played
+  // in the page gets its player above the buttons, the first such one only.
+  function linksHtml(links, entry) {
+    links = links.filter(lk => lk && safeUrl(lk.url)).map(lk => Object.assign({}, lk, { url: safeUrl(lk.url) }));
+    if (!links.length) return '';
+    const first = links.find(lk => canEmbed(lk.provider));
+    const player = first
+      ? `<iframe class="ag-modal-iframe" src="${escHtml(first.url)}" allow="autoplay" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`
+      : '';
+    return player + `<div class="ag-modal-links">${links.map(lk =>
+      `<a class="ag-modal-open-btn" href="${escHtml(lk.url)}" target="_blank" rel="noopener noreferrer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        ${linkVerb(lk, entry)} ${escHtml(providerLabel(lk.provider))}
+      </a>`).join('')}</div>`;
   }
 
   function openModal(entry) {
@@ -704,27 +693,20 @@ body {
     document.body.style.overflow = 'hidden';
 
     const links = getLinks(entry);
-    const tagsHtml = (entry.tags || []).map(t => `<span class="ag-tag">${t}</span>`).join('');
+    const tagsHtml = (entry.tags || []).map(t => `<span class="ag-tag">${escHtml(t)}</span>`).join('');
 
     const overlay = document.createElement('div');
     overlay.className = 'ag-overlay';
     overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 
-    const tabsHtml = links.length > 1
-      ? `<div class="ag-platform-tabs">${links.map((lk, i) =>
-          `<button class="ag-platform-tab${i === 0 ? ' active' : ''}" data-idx="${i}">${providerLabel(lk.provider)}</button>`
-        ).join('')}</div>`
-      : '';
-
     overlay.innerHTML = `
       <div class="ag-modal" role="dialog" aria-modal="true">
         <div class="ag-modal-header">
-          <div class="ag-modal-title">${typeBadge(entry)}${entry.title}</div>
+          <div class="ag-modal-title">${typeBadge(entry)}${escHtml(entry.title || 'Untitled')}</div>
           ${entry.date ? `<div class="ag-modal-date">${entry.date}</div>` : ''}
           ${editLinkHtml(entry, 'ag-modal-edit')}
           <button class="ag-modal-close" aria-label="Close">&times;</button>
         </div>
-        ${tabsHtml}
         <div class="ag-modal-body">
           ${safeUrl(entry.track) ? `<div class="ag-track-player"><audio controls preload="none" src="${safeUrl(entry.track)}"></audio></div>` : ''}
           ${(entry.tempo || entry.useCase) ? `<div class="ag-track-meta">${entry.tempo ? `<span><b>Tempo:</b> ${escHtml(entry.tempo)}</span>` : ''}${entry.useCase ? `<span><b>Use:</b> ${escHtml(entry.useCase)}</span>` : ''}</div>` : ''}
@@ -732,20 +714,11 @@ body {
           ${entry.license ? `<div class="ag-track-license">${escHtml(entry.license)}</div>` : ''}
           ${safeUrl(entry.image) ? `<div class="ag-modal-frame"><img src="${safeUrl(entry.image)}" alt="${escHtml(entry.title || '')}" loading="lazy"></div>` : ''}
           ${entry.desc ? `<div class="ag-modal-desc">${richText(entry.desc)}</div>` : ''}
-          <div id="ag-platform-content">${links.length ? platformBodyHtml(links[0], entry) : ''}</div>
+          ${linksHtml(links, entry)}
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
           ${creditsHtml(entry)}
         </div>
       </div>`;
-
-    // Tab switching
-    overlay.querySelectorAll('.ag-platform-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        overlay.querySelectorAll('.ag-platform-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        overlay.querySelector('#ag-platform-content').innerHTML = platformBodyHtml(links[+tab.dataset.idx], entry);
-      });
-    });
 
     overlay.querySelector('.ag-modal-close').addEventListener('click', closeModal);
     document.addEventListener('keydown', function esc(e) {
