@@ -197,20 +197,34 @@ export async function drawShareCard(canvas, opts = {}) {
   }
 
   // ── Name ──
-  // A long name steps down a size rather than wrapping into three cramped
-  // lines. Two is the most the card has room for under the eyebrow.
+  // A long name steps down a size until it fits: at most two lines (all the
+  // card has room for under the eyebrow), and no line wider than the space.
+  // A name that is one long word ("WELLNOBODYSPERFECT") cannot wrap at all,
+  // so the width has to be checked as well as the line count.
   const nameText = String(name || '').toUpperCase();
+  const MIN_NAME = 30;
   let nameSize = 76;
   let nameLines = [];
+  const widest = (lines, size) => Math.max(0, ...lines.map((l) => trackedWidth(ctx, l, size * 0.09)));
   for (;;) {
     ctx.font = `600 ${nameSize}px Cinzel, serif`;
-    nameLines = wrapLines(ctx, nameText, textW, nameSize * 0.09);
-    if (nameLines.length <= 2 || nameSize <= 38) break;
-    nameSize -= 4;
+    nameLines = wrapLines(ctx, nameText, textW, nameSize * 0.09).slice(0, 2);
+    const fits = widest(nameLines, nameSize) <= textW &&
+      wrapLines(ctx, nameText, textW, nameSize * 0.09).length <= 2;
+    if (fits || nameSize <= MIN_NAME) break;
+    nameSize -= 2;
   }
   ctx.fillStyle = '#eef4ff';
-  for (const line of nameLines.slice(0, 2)) {
-    tracked(ctx, line, textX, y + nameSize * 0.78, nameSize * 0.09);
+  for (const line of nameLines) {
+    // Still too wide at the smallest size: squeeze that line sideways to fit
+    // rather than let it run off the card.
+    const w = trackedWidth(ctx, line, nameSize * 0.09);
+    const squeeze = w > textW ? textW / w : 1;
+    ctx.save();
+    ctx.translate(textX, 0);
+    ctx.scale(squeeze, 1);
+    tracked(ctx, line, 0, y + nameSize * 0.78, nameSize * 0.09);
+    ctx.restore();
     y += nameSize + 12;
   }
 
