@@ -269,7 +269,7 @@
   // Dripping blood: a dark, uneven line of it along the top of the screen,
   // with drips that creep down, each swelling to a drop at its tip. Now and
   // then a drip grows too heavy, lets its drop fall, and draws back up to
-  // gather again. Slow on purpose: it should feel like it is seeping.
+  // gather again. The whole layer is see-through, so the page shows behind.
   function blood() {
     var c = document.createElement('canvas');
     c.style.cssText = 'position:fixed;inset:0;z-index:55;pointer-events:none;opacity:0;transition:opacity 2s ease;';
@@ -277,7 +277,8 @@
     document.body.appendChild(c);
     var ctx = c.getContext('2d');
     if (!ctx) return;
-    var W = 0, H = 0, drips = [], drops = [], edge = [], last = 0, off = 0;
+    var W = 0, H = 0, drips = [], drops = [], edge = [], spots = [], last = 0;
+    var STEP = 8, SHOW = 0.72;   // band resolution; how solid the layer is
     var DARK = '#4a000b', MID = '#7d0716', LIT = '#a8152a';
 
     function newDrip(x, first) {
@@ -287,7 +288,7 @@
         // Already part-way down when the page opens, so a drop falls soon.
         len: first ? rand(0, max * 0.85) : 0,
         max: max,
-        v: rand(0.05, 0.16),          // creeping speed, px per frame
+        v: rand(0.14, 0.38),          // creeping speed, px per frame
         surge: 0,                      // a short quickening now and then
         wob: rand(0, 6.28)
       };
@@ -297,13 +298,20 @@
       W = window.innerWidth; H = window.innerHeight;
       c.width = W * dpr; c.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // It seeps from under the page's top bar, if it has one, so the bar's
-      // links are never drawn over.
-      var bar = document.querySelector('.topbar');
-      off = bar ? Math.max(0, Math.min(120, Math.round(bar.getBoundingClientRect().bottom))) : 0;
-      // The band along the top: a few slow bumps, thicker over each drip.
+      // A deep, uneven band across the very top of the screen: broad slow
+      // swells with smaller lobes on them.
       edge = [];
-      for (var x = 0; x <= W + 12; x += 12) edge.push(5 + Math.sin(x * 0.021) * 2.2 + Math.sin(x * 0.067 + 1.3) * 1.4 + rand(0, 1.2));
+      var ph1 = rand(0, 6.28), ph2 = rand(0, 6.28), base = Math.max(34, Math.min(66, H * 0.065));
+      for (var x = 0; x <= W + STEP; x += STEP) {
+        edge.push(base + Math.sin(x * 0.012 + ph1) * base * 0.35 + Math.sin(x * 0.043 + ph2) * base * 0.18 + rand(-1.5, 1.5));
+      }
+      // Spatter flung just below it: specks, and the odd larger splash.
+      spots = [];
+      var n = Math.round(W / 14);
+      for (var k = 0; k < n; k++) {
+        var sx = rand(0, W), big = Math.random() < 0.12;
+        spots.push({ x: sx, y: edgeAt(sx) + rand(2, big ? 40 : 90), r: big ? rand(2.5, 5) : rand(0.6, 2), rx: rand(0.7, 1.3) });
+      }
       var want = Math.max(5, Math.min(22, Math.round(W / 85)));
       drips = [];
       for (var i = 0; i < want; i++) drips.push(newDrip((i + rand(0.15, 0.85)) * W / want, true));
@@ -312,21 +320,31 @@
     size();
 
     function edgeAt(x) {
-      var i = Math.max(0, Math.min(edge.length - 1, Math.round(x / 12)));
+      if (!edge.length) return 0;
+      var i = Math.max(0, Math.min(edge.length - 1, Math.round(x / STEP)));
       return edge[i];
     }
 
-    // The band, with a soft wet sheen along its lower lip.
+    // The band, darkest at the top edge, and the spatter under it.
     function drawEdge() {
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      for (var i = 0; i < edge.length; i++) ctx.lineTo(i * 12, edge[i]);
+      ctx.lineTo(0, edge[0]);
+      for (var i = 1; i < edge.length; i++) {
+        var mx = (i - 0.5) * STEP, my = (edge[i - 1] + edge[i]) / 2;
+        ctx.quadraticCurveTo((i - 1) * STEP, edge[i - 1], mx, my);
+      }
       ctx.lineTo(W, 0);
       ctx.closePath();
-      var g = ctx.createLinearGradient(0, 0, 0, 12);
-      g.addColorStop(0, DARK); g.addColorStop(1, MID);
+      var g = ctx.createLinearGradient(0, 0, 0, 80);
+      g.addColorStop(0, '#3a0009'); g.addColorStop(0.5, MID); g.addColorStop(1, LIT);
       ctx.fillStyle = g;
       ctx.fill();
+      ctx.fillStyle = MID;
+      for (var k = 0; k < spots.length; k++) {
+        var p = spots[k];
+        ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * p.rx, p.r, 0, 0, 6.28); ctx.fill();
+      }
     }
 
     // One drip: wide where it leaves the band, a thin neck, a round drop.
@@ -369,9 +387,6 @@
       var dt = last ? Math.min(3, (now - last) / 16.67) : 1;
       last = now;
       ctx.clearRect(0, 0, W, H);
-      ctx.save();
-      ctx.translate(0, off);
-      ctx.globalAlpha = 0.93;
       for (var i = 0; i < drips.length; i++) {
         var d = drips[i];
         d.wob += 0.02 * dt;
@@ -392,13 +407,13 @@
         var p = drops[j];
         p.vy += 0.22 * dt;
         p.y += p.vy * dt;
-        if (p.y + off > H + 40) { drops.splice(j, 1); continue; }
+        if (p.y > H + 40) { drops.splice(j, 1); continue; }
         drawDrop(p);
       }
-      ctx.restore();
       requestAnimationFrame(frame);
     }
-    requestAnimationFrame(function () { c.style.opacity = '1'; });
+    // Drawn solid and faded as one layer, so overlapping drips do not darken.
+    requestAnimationFrame(function () { c.style.opacity = String(SHOW); });
     requestAnimationFrame(frame);
   }
 
