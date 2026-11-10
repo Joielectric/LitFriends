@@ -68,7 +68,15 @@
   status = 200
   force = true
 
-# A first look at the player, at cyoaudio.com/demo.
+# A first look at the player, at cyoaudio.com/demo, and at /cyoaudio/demo
+# on any of the site's domains (e.g. joielectric.com) while cyoaudio.com
+# itself is still coming soon.
+[[redirects]]
+  from = "/cyoaudio/demo"
+  to = "/cyoaudio-demo.html"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "https://cyoaudio.com/demo"
   to = "/cyoaudio-demo.html"
