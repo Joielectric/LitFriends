@@ -68,6 +68,19 @@
   status = 200
   force = true
 
+# A first look at the player, at cyoaudio.com/demo.
+[[redirects]]
+  from = "https://cyoaudio.com/demo"
+  to = "/cyoaudio-demo.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "https://www.cyoaudio.com/demo"
+  to = "/cyoaudio-demo.html"
+  status = 200
+  force = true
+
 # The Velvet Key's home was consenting-adults.html, the collective's old name.
 # Links to it are out there, so both spellings land on the page it became.
 [[redirects]]
