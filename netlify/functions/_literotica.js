@@ -161,8 +161,13 @@ async function getPage(url) {
 
 /**
  * Every work of the asked for kinds, or null when Literotica has no such
- * author. A long list may run over more than one page; pages are read until
- * the count on the tab is reached, a page adds nothing new, or ten pages.
+ * author.
+ *
+ * Each kind's works page shows only the newest 50 entries (a series counts as
+ * one), and "?page=2" just redirects back to it. Its "/all" page lists every
+ * work at once, so that is read first; the plain page is the fallback for an
+ * author it does not answer for. Pages beyond the first are still tried in
+ * case Literotica starts paging, stopping when one adds nothing new.
  */
 export async function fromLiterotica(handle, kinds) {
   const works = [];
@@ -171,10 +176,12 @@ export async function fromLiterotica(handle, kinds) {
   let exists = false;
 
   for (const kind of kinds) {
-    const base = `${BASE}/authors/${encodeURIComponent(handle)}/works/${kind}`;
+    const plain = `${BASE}/authors/${encodeURIComponent(handle)}/works/${kind}`;
+    let base = `${plain}/all`;
     let read = 0;
     for (let page = 1; page <= 10; page++) {
-      const html = await getPage(page === 1 ? base : `${base}?page=${page}`);
+      let html = await getPage(page === 1 ? base : `${base}?page=${page}`);
+      if (html === null && page === 1 && base !== plain) { base = plain; html = await getPage(base); }
       if (html === null) break;
       exists = true;
       if (page === 1) {
