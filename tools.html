@@ -3877,10 +3877,14 @@
           cmRenderNews();
           if (cmWho.isOwner) { fbLoad(); inboxLoad(); }
           cmRestoreTab();
-          cmOpenFromHash();
+          // A blank form first, then whatever the address asks to open: the
+          // other way round, an entry opened from the catalogue's Edit link
+          // lost its links and date to the blanking, and saving it then
+          // overwrote them.
           cmSetLinks([]);
           document.getElementById('cm-date').value = new Date().toISOString().split('T')[0];
           ewSync();
+          cmOpenFromHash();
         })
         .catch(() => {
           // Show the box rather than leave the page waiting on nothing.
