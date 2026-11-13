@@ -889,15 +889,18 @@
               if (!seen[k]) { seen[k] = true; contribs.push(name); }
             });
           });
+          // A card shows plain words: formatting is for the full description.
           var desc = e.shortDesc || e.desc || '';
+          if (window.Markdown) desc = Markdown.plain(desc);
           if(desc.length > 100) desc = desc.slice(0,97) + '…';
+          desc = escHtml(desc);
           var iconBarHtml = contribs.length
             ? '<div class="recent-card-icon-bar">' + contribs.map(contributorIcon).join('') + '</div>'
             : '';
           return '<div class="recent-card" data-idx="'+idx+'" role="button" tabindex="0">'
             + iconBarHtml
             + '<div class="recent-card-top"><span class="recent-badge">New</span></div>'
-            + '<div class="recent-title">' + (title||'Untitled') + '</div>'
+            + '<div class="recent-title">' + escHtml(title||'Untitled') + '</div>'
             + (desc ? '<div class="recent-desc">'+desc+'</div>' : '')
             + (tagsHtml ? '<div class="recent-tags">'+tagsHtml+'</div>' : '')
             + (e.date ? '<div class="recent-date">'+e.date+'</div>' : '')
@@ -949,6 +952,9 @@
         return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
       }).replace(/\r?\n/g, '<br>');
     }
+    // A release's description: Markdown and simple HTML (js/markdown.js), or
+    // the plain rendering if that has not loaded.
+    function descHtml(s){ return window.Markdown ? Markdown.render(s, { html: true }) : richText(s); }
     function niceDate(d){
       var t = Date.parse(d || '');
       if (isNaN(t)) return escHtml(d || '');
@@ -1008,7 +1014,7 @@
         + (meta ? '<div class="vk-meta">' + meta + '</div>' : '')
         + (track ? '<div class="vk-player"><audio controls preload="none" src="' + escHtml(track) + '"></audio></div>' : '')
         + (img ? '<div class="vk-frame"><img src="' + escHtml(img) + '" alt="' + escHtml(entry.title || '') + '" loading="lazy"></div>' : '')
-        + (entry.desc ? '<div class="vk-desc">' + richText(entry.desc) + '</div>' : '')
+        + (entry.desc ? '<div class="vk-desc">' + descHtml(entry.desc) + '</div>' : '')
         + ((track || linkBtns) ? '<div class="vk-links">' + (track ? '<a class="vk-dl" href="' + escHtml(track) + '" download>' + DL_ICON + 'Download track</a>' : '') + linkBtns + '</div>'
                                : '<div class="vk-note">No links yet.</div>')
         + (entry.license ? '<div class="vk-license">' + escHtml(entry.license) + '</div>' : '')
@@ -1024,6 +1030,7 @@
   })();
 </script>
 <script src="/js/site-config.js"></script>
+<script src="/js/markdown.js"></script>
 <script src="/js/artists.js"></script>
 <script>
   // The cards above are the artists with hand-built pages. Anyone who has
