@@ -76,6 +76,17 @@
       return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>' + trail;
     }).replace(/\r?\n/g, '<br>');
   }
+  // A release's description takes Markdown and simple HTML through
+  // js/markdown.js, which this loads for itself on pages that do not have it
+  // (the hand-built profiles); until it arrives, the plain rendering is used.
+  if (!window.Markdown && !document.querySelector('script[src="/js/markdown.js"]')) {
+    const md = document.createElement('script');
+    md.src = '/js/markdown.js';
+    document.head.appendChild(md);
+  }
+  // A one-line summary shows plain words, with any formatting taken out.
+  function plainText(str) { return window.Markdown ? Markdown.plain(str) : String(str || ''); }
+  function descHtml(str) { return window.Markdown ? Markdown.render(str, { html: true }) : richText(str); }
   function safeUrl(u) {
     u = String(u || '').trim();
     if (!u) return '';
@@ -591,6 +602,18 @@ body {
   color: var(--text-mid, #888); font-size: 0.82rem;
   line-height: 1.6; margin-bottom: 1rem;
 }
+/* Release descriptions take Markdown and simple HTML (js/markdown.js). */
+.ag-modal-desc > :first-child { margin-top: 0; }
+.ag-modal-desc > :last-child { margin-bottom: 0; }
+.ag-modal-desc p, .ag-modal-desc ul, .ag-modal-desc ol, .ag-modal-desc blockquote { margin: 0 0 0.8em; }
+.ag-modal-desc ul, .ag-modal-desc ol { padding-left: 1.4em; }
+.ag-modal-desc h3, .ag-modal-desc h4, .ag-modal-desc h5 { font-weight: 700; color: var(--text, #eee); margin: 1em 0 0.4em; line-height: 1.3; }
+.ag-modal-desc h3 { font-size: 1.08em; } .ag-modal-desc h4 { font-size: 1em; } .ag-modal-desc h5 { font-size: 0.95em; }
+.ag-modal-desc strong { color: var(--text, #eee); }
+.ag-modal-desc blockquote { border-left: 2px solid currentColor; padding-left: 0.9em; opacity: 0.85; }
+.ag-modal-desc hr { border: 0; border-top: 1px solid rgba(255,255,255,0.12); margin: 1em 0; }
+.ag-modal-desc code { font-size: 0.9em; background: rgba(255,255,255,0.07); padding: 0.05em 0.35em; border-radius: 4px; }
+
 .ag-modal-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 1rem; }
 .ag-modal-credits {
   margin-top: 1.2rem; padding-top: 1rem;
@@ -713,7 +736,7 @@ body {
           ${safeUrl(entry.track) ? `<a class="ag-track-dl" href="${safeUrl(entry.track)}" download><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download track</a>` : ''}
           ${entry.license ? `<div class="ag-track-license">${escHtml(entry.license)}</div>` : ''}
           ${safeUrl(entry.image) ? `<div class="ag-modal-frame"><img src="${safeUrl(entry.image)}" alt="${escHtml(entry.title || '')}" loading="lazy"></div>` : ''}
-          ${entry.desc ? `<div class="ag-modal-desc">${richText(entry.desc)}</div>` : ''}
+          ${entry.desc ? `<div class="ag-modal-desc">${descHtml(entry.desc)}</div>` : ''}
           ${linksHtml(links, entry)}
           ${tagsHtml ? `<div class="ag-modal-tags">${tagsHtml}</div>` : ''}
           ${creditsHtml(entry)}
@@ -750,8 +773,8 @@ body {
       <div class="ag-row">
         <div class="ag-row-date">${entry.date || ''}${entry.trt ? `<div class="ag-row-trt">&#9201; ${escHtml(entry.trt)}</div>` : ''}</div>
         <div class="ag-row-main">
-          <div class="ag-row-title">${typeBadge(entry)}${entry.title}</div>
-          ${entry.shortDesc ? `<div class="ag-row-desc">${entry.shortDesc}</div>` : ''}
+          <div class="ag-row-title">${typeBadge(entry)}${escHtml(entry.title || 'Untitled')}</div>
+          ${entry.shortDesc ? `<div class="ag-row-desc">${escHtml(plainText(entry.shortDesc))}</div>` : ''}
           ${tagsHtml ? `<div class="ag-tags">${tagsHtml}</div>` : ''}
         </div>
         <div class="ag-row-artist">${artists}</div>
