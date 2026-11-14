@@ -374,7 +374,48 @@
     </div>
 
     <script src="/js/site-config.js"></script>
+    <script src="/js/markdown.js"></script>
     <script>
+        // Old links (the collective's first Netlify address) in the contributor
+        // sheet or the catalogue become The Velvet Key's own domain.
+        function litAddress(u) {
+            return window.SITE_CONFIG && SITE_CONFIG.currentAddress ? SITE_CONFIG.currentAddress(u) : (u || '');
+        }
+
+        // A description written in Markdown (or mixing in HTML) becomes the
+        // plain HTML a Literotica description takes: <b>, <i>, <u>, <s>, links
+        // and line breaks, with lists as bullet lines and headings in bold.
+        // Lines are kept as newlines; the formatted preview turns them into
+        // <br>, as it always has. Without js/markdown.js the text is used as is.
+        function litDescription(text) {
+            if (!window.Markdown || !String(text || '').trim()) return text || '';
+            const box = document.createElement('div');
+            box.innerHTML = Markdown.render(litAddress(text), { html: true });
+            const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const inner = el => Array.from(el.childNodes).map(walk).join('');
+            function walk(n) {
+                if (n.nodeType === 3) return esc(n.nodeValue);
+                if (n.nodeType !== 1) return '';
+                const tag = n.nodeName.toLowerCase();
+                switch (tag) {
+                    case 'p': return inner(n).trim() + '\n\n';
+                    case 'br': return '\n';
+                    case 'strong': return '<b>' + inner(n) + '</b>';
+                    case 'em': return '<i>' + inner(n) + '</i>';
+                    case 'u': return '<u>' + inner(n) + '</u>';
+                    case 'del': return '<s>' + inner(n) + '</s>';
+                    case 'a': return "<a href='" + String(n.getAttribute('href') || '').replace(/'/g, '%27') + "' target='_blank'>" + inner(n) + '</a>';
+                    case 'h3': case 'h4': case 'h5': return '<b>' + inner(n).trim() + '</b>\n\n';
+                    case 'ul': return Array.from(n.children).map(li => '• ' + inner(li).trim()).join('\n') + '\n\n';
+                    case 'ol': return Array.from(n.children).map((li, i) => (i + 1) + '. ' + inner(li).trim()).join('\n') + '\n\n';
+                    case 'blockquote': return '<i>' + inner(n).trim() + '</i>\n\n';
+                    case 'hr': return '\n';
+                    default: return inner(n);
+                }
+            }
+            return inner(box).replace(/\n{3,}/g, '\n\n').trim();
+        }
+
         // Copyright year follows the clock, so a post made in January is not
         // stamped with last year.
         const CURRENT_YEAR = new Date().getFullYear();
@@ -408,7 +449,7 @@
                     if (values.length >= 3 && values[0]) {
                         contributorsData.push({
                             username: values[0],      // User Name (Column A)
-                            profileUrl: values[1],    // Profile URL (Column B) 
+                            profileUrl: litAddress(values[1]),    // Profile URL (Column B) 
                             bannerUrl: values[2]      // Banner URL (Column C)
                         });
                     }
@@ -463,7 +504,7 @@
                         if (values.length >= 3 && values[0]) {
                             contributorsData.push({
                                 username: values[0],
-                                profileUrl: values[1] || '',
+                                profileUrl: litAddress(values[1] || ''),
                                 bannerUrl: values[2] || ''
                             });
                         }
@@ -601,7 +642,7 @@
             const audioTitle = document.getElementById('audioTitle').value || '[Audio Title]';
             const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
             const fullTags = document.getElementById('fullTags').value.trim();
-            const longDesc = document.getElementById('longDescription').value || '[Long description]';
+            const longDesc = litDescription(document.getElementById('longDescription').value) || '[Long description]';
             const copyrightYear = document.getElementById('copyrightYear').value || CURRENT_YEAR;
             const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
             
@@ -615,7 +656,7 @@
                 if (reason && nameSelect && nameSelect.value !== '') {
                     const contributorIndex = nameSelect.value;
                     const contributor = contributorsData[contributorIndex];
-                    const url = urlInput ? urlInput.value : contributor.profileUrl;
+                    const url = litAddress(urlInput ? urlInput.value : contributor.profileUrl);
                     
                     if (url) {
                         attributesHTML += `${reason}: <a href='${url}' target='_blank'>${contributor.username}</a><br>`;
@@ -667,7 +708,7 @@
             const audioTitle = document.getElementById('audioTitle').value || '[Audio Title]';
             const shortDesc = document.getElementById('shortDescription').value || '[Short Description]';
             const fullTags = document.getElementById('fullTags').value.trim();
-            const longDesc = document.getElementById('longDescription').value || '[Long description]';
+            const longDesc = litDescription(document.getElementById('longDescription').value) || '[Long description]';
             const copyrightYear = document.getElementById('copyrightYear').value || CURRENT_YEAR;
             const copyrightHolders = document.getElementById('copyrightHolders').value || '[Copyright Holders]';
             
@@ -681,7 +722,7 @@
                 if (reason && nameSelect && nameSelect.value !== '') {
                     const contributorIndex = nameSelect.value;
                     const contributor = contributorsData[contributorIndex];
-                    const url = urlInput ? urlInput.value : contributor.profileUrl;
+                    const url = litAddress(urlInput ? urlInput.value : contributor.profileUrl);
                     
                     if (url) {
                         attributesText += `${reason}: <a href='${url}' target='_blank'>${contributor.username}</a>\n`;
@@ -803,7 +844,7 @@
                 );
                 const rec = {
                     username: c.name.trim(),
-                    profileUrl: c.url || '',
+                    profileUrl: litAddress(c.url || ''),
                     bannerUrl: c.banner || '',
                 };
                 if (at === -1) contributorsData.push(rec);
@@ -840,7 +881,7 @@
             const collab = CAT_COLLABS[key];
             contributorsData.push({
                 username: String(name).trim(),
-                profileUrl: (collab && collab.url) || '',
+                profileUrl: litAddress((collab && collab.url) || ''),
                 bannerUrl: '',
             });
             return contributorsData.length - 1;
@@ -857,7 +898,7 @@
             // SFX credit a pack rather than a person, so the whole credit line
             // stands in for the name and carries its own link.
             if (window.SITE_CONFIG) SITE_CONFIG.sfxOf(e).forEach(s => {
-                rows.push({ reason: 'SFX', name: SITE_CONFIG.sfxText(s), url: s.url || '' });
+                rows.push({ reason: 'SFX', name: SITE_CONFIG.sfxText(s), url: litAddress(s.url || '') });
             });
             // An entry with no credits leaves whatever is already filled in
             // alone, rather than wiping a block that was typed by hand.

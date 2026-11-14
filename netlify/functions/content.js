@@ -99,6 +99,19 @@ async function shownTest() {
   };
 }
 
+// The collective's first address. Links saved while it lived there (a
+// collaborator's profile link, an image, a link in a description) are
+// rewritten to The Velvet Key's own domain whenever the catalogue is read or
+// saved, so nothing keeps sending people to the old Netlify address.
+// js/site-config.js (SITE_CONFIG.currentAddress) does the same in the browser.
+const OLD_ADDRESS = /https?:\/\/(?:www\.)?consentingadults\.netlify\.app(?:\/(?:consenting-adults|the-velvet-key)\.html)?/gi;
+const OLD_ADDRESS_SEEN = new RegExp(OLD_ADDRESS.source, "i");
+function currentAddresses(data) {
+  if (!data) return data;
+  const text = JSON.stringify(data);
+  return OLD_ADDRESS_SEEN.test(text) ? JSON.parse(text.replace(OLD_ADDRESS, "https://thevelvetkeysociety.com")) : data;
+}
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Content-Type": "application/json",
@@ -113,7 +126,8 @@ export default async (req) => {
 
   // Public read: everything but the work of a creator whose profile is gone.
   if (req.method === "GET") {
-    const { data } = await readJsonWithLegacy("content", "audio");
+    const { data: raw } = await readJsonWithLegacy("content", "audio");
+    const data = currentAddresses(raw);
     const isShown = await shownTest();
     const out = data ? { ...data, entries: (data.entries || []).filter(isShown) } : { entries: [] };
     return new Response(JSON.stringify(out), { status: 200, headers: CORS });
@@ -137,7 +151,8 @@ export default async (req) => {
 
     // Verify-only — confirms password and returns current entries
     if (action === "verify") {
-      const { data } = await readJsonWithLegacy("content", "audio");
+      const { data: raw } = await readJsonWithLegacy("content", "audio");
+      const data = currentAddresses(raw);
       // who is asking, so the client can show owner-only controls
       const who = {
         email: auth.email, isOwner: !!auth.isOwner, via: auth.via,
@@ -184,9 +199,10 @@ export default async (req) => {
       collaborators = collaborators.concat(storedCollabs.filter((c) =>
         c && c.profile && !sent.has(c.profile) && !removed.has(c.profile)));
     }
-    const news = keepOwn(body.news, existing && existing.news);
-    const providers = keepOwn(body.providers, existing && existing.providers);
+    let news = keepOwn(body.news, existing && existing.news);
+    let providers = keepOwn(body.providers, existing && existing.providers);
 
+    ({ entries: merged, collaborators, news, providers } = currentAddresses({ entries: merged, collaborators, news, providers }));
     await store.setJSON("audio", { entries: merged, collaborators, news, providers });
     return new Response(JSON.stringify({ ok: true, entries: merged, collaborators, skipped }), { status: 200, headers: CORS });
   }
