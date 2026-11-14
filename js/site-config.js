@@ -269,5 +269,16 @@
     return handle ? 'u/' + handle : String(name == null ? '' : name).trim();
   };
 
+  // The collective began at consentingadults.netlify.app. Links saved back
+  // then (collaborator profile links, the contributor sheet) still point
+  // there; this rewrites any such address, or text holding one, to The
+  // Velvet Key's own domain. Its old home page is the new domain's root.
+  // netlify/functions/content.js does the same to what it serves.
+  SITE.currentAddress = function (text) {
+    return String(text == null ? '' : text).replace(
+      /https?:\/\/(?:www\.)?consentingadults\.netlify\.app(?:\/(?:consenting-adults|the-velvet-key)\.html)?/gi,
+      'https://thevelvetkeysociety.com');
+  };
+
   window.SITE_CONFIG = SITE;
 })();
