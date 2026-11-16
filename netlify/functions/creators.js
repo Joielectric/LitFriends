@@ -1,5 +1,6 @@
 import { authorize, unauthorized, ownerEmail } from "./_auth.js";
 import { readCreators, writeCreators, findCreator, slugTaken, slugify } from "./_creators.js";
+import { renameCreator, RenameError } from "./_rename.js";
 
 // Managing who may sign in.
 //
@@ -7,6 +8,9 @@ import { readCreators, writeCreators, findCreator, slugTaken, slugify } from "./
 //   POST /api/creators { action: "invite", email, slug, name }  -> add or update
 //   POST /api/creators { action: "update", email, slug, name, status }
 //   POST /api/creators { action: "remove", email }              -> revoke
+//   POST /api/creators { action: "rename", from, to, name }     -> move a page
+//        to a new page name (and display name), everywhere it is filed;
+//        see _rename.js
 //
 // Owner-only, all of it. Being an admin is not enough: handing out access is
 // the one power that must not spread on its own, or an invited creator could
@@ -82,6 +86,16 @@ export default async (req) => {
     creators.push(rec);
     await writeCreators(creators);
     return json({ ok: true, creators, creator: rec });
+  }
+
+  if (body.action === "rename") {
+    try {
+      const done = await renameCreator({ from: body.from, to: body.to, name: body.name });
+      return json({ ok: true, creators: await readCreators(), renamed: done });
+    } catch (err) {
+      if (err instanceof RenameError) return json({ error: err.message }, err.status);
+      throw err;
+    }
   }
 
   if (body.action === "remove") {

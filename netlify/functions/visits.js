@@ -185,17 +185,21 @@ async function readDay(store, day, today) {
 }
 
 // The names a creator's work is credited under, for scoping their view.
+// Also the page names a renamed profile used to have, whose visits are still
+// theirs (see _rename.js).
 async function namesFor(slug) {
   const names = new Set([norm(slug)]);
+  const slugs = new Set([String(slug).toLowerCase()]);
   try {
     const data = await siteStore("profiles").get("profiles", { type: "json" });
     const p = data && data.profiles && data.profiles[slug];
     if (p) {
       if (p.name) names.add(norm(p.name));
       (p.aliases || []).forEach((a) => names.add(norm(a)));
+      (p.formerSlugs || []).forEach((s) => { names.add(norm(s)); slugs.add(String(s).toLowerCase()); });
     }
   } catch { /* the slug alone still matches */ }
-  return names;
+  return { names, slugs };
 }
 
 // The owner's own pages, beyond their profile. The catalogue lists only work
@@ -203,15 +207,16 @@ async function namesFor(slug) {
 const OWNER_PAGES = new Set(["/catalog", "/a-word-from-me"]);
 
 // Whose is this event? A creator's page, or a work they are credited on.
-function belongsTo(e, slug, names, pages) {
+function belongsTo(e, slug, names, pages, slugs) {
   if (pages && pages.has(e.p)) return true;
   const m = /^\/profiles?\/([^/]+)/.exec(e.p || "");
-  if (m && m[1].toLowerCase() === slug) return true;
+  if (m && (m[1].toLowerCase() === slug || (slugs && slugs.has(m[1].toLowerCase())))) return true;
   return (e.art || []).some((a) => names.has(a));
 }
 
 async function scopeFor(slug) {
-  return { slug, names: await namesFor(slug), pages: slug === OWNER_SLUG ? OWNER_PAGES : null };
+  const { names, slugs } = await namesFor(slug);
+  return { slug, names, slugs, pages: slug === OWNER_SLUG ? OWNER_PAGES : null };
 }
 
 function tally(map, key, n = 1) {
@@ -234,7 +239,7 @@ function summarise(batches, days, fromDay, scope, exact) {
   const events = [];
   for (const b of batches) {
     for (const e of b.events || []) {
-      if (scope && !belongsTo(e, scope.slug, scope.names, scope.pages)) continue;
+      if (scope && !belongsTo(e, scope.slug, scope.names, scope.pages, scope.slugs)) continue;
       events.push({ ...e, ts: e.ts || b.ts, v: b.v, s: b.s, c: b.c, cc: b.cc, r: b.r, city: b.city, dev: b.dev, br: b.br, os: b.os });
     }
   }

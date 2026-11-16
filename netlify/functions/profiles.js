@@ -1,6 +1,7 @@
 import { siteStore, readJsonWithLegacy } from "./_site.js";
 import { authorize, unauthorized } from "./_auth.js";
 import { readCreators, findCreator } from "./_creators.js";
+import { findByFormerSlug } from "./_rename.js";
 
 // Creator profiles: the content behind /profile/<slug>.
 //
@@ -308,10 +309,12 @@ export default async (req) => {
     const one = decodeURIComponent(url.pathname.replace(/^\/api\/profile\//, ""));
 
     if (url.pathname.startsWith("/api/profile/")) {
-      const p = all[one];
+      // A page that has been renamed still answers to its old name, and says
+      // where it lives now (see _rename.js).
+      const p = all[one] || findByFormerSlug(all, one);
       // An unpublished profile is invisible until its owner says otherwise.
       if (!p || !p.published) return json({ error: "Not found" }, 404);
-      return json({ ok: true, profile: p });
+      return json({ ok: true, profile: p, ...(p.slug !== one ? { movedTo: p.slug } : {}) });
     }
     const published = Object.values(all).filter((p) => p && p.published);
     return json({ ok: true, profiles: published });
@@ -368,6 +371,8 @@ export default async (req) => {
     }
     const profile = sanitize(body.profile || {}, base, all, !!auth.isOwner);
     profile.slug = slug; // never movable by a save
+    // Nor are the names it used to have (a rename's to give, not a save's).
+    if (base.formerSlugs) profile.formerSlugs = base.formerSlugs; else delete profile.formerSlugs;
     const refused = profile.__refused;
     delete profile.__refused;
     all[slug] = profile;
