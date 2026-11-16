@@ -220,6 +220,8 @@
     .modal-desc { color: var(--text-mid); font-size: 0.95rem; line-height: 1.7; margin: 0 0 1.2rem; }
     .modal-desc a { color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(208,96,122,0.4); word-break: break-word; }
     .modal-desc a:hover { color: #fff; }
+    .pick-note { margin: 0 0 1rem; padding: 0.7rem 1rem; border: 1px solid var(--line-hi); border-radius: 12px; background: var(--glass); color: var(--text-mid); font-size: 0.9rem; }
+    .pick-note a { color: var(--text); }
 
     /* Release descriptions take Markdown and simple HTML (js/markdown.js). */
     .modal-desc > :first-child { margin-top: 0; }
@@ -596,6 +598,18 @@
       var all = (data.entries || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
       ALL = all;
       ENTRIES = SHOW_ALL ? all : all.filter(function(e){ return CFG.isOwnWork(e); });
+      // ?ids=a,b,c shows just those releases, whoever's they are: how the
+      // Content Manager's duplicate finder lets you look a set over before
+      // merging it.
+      var PICK = (new URLSearchParams(location.search).get('ids') || '').split(',').filter(Boolean);
+      if (PICK.length) {
+        ENTRIES = all.filter(function(e){ return PICK.indexOf(String(e.id)) !== -1; });
+        var note = document.createElement('div');
+        note.className = 'pick-note';
+        note.innerHTML = 'Showing ' + ENTRIES.length + ' release' + (ENTRIES.length === 1 ? '' : 's') +
+          ' picked in the Content Manager. <a href="' + location.pathname + '">Show the whole catalogue</a>';
+        els.rows.parentNode.insertBefore(note, els.rows);
+      }
       COLLAB = {};
       (data.collaborators || []).forEach(function(c){ if (c && c.name) COLLAB[normName(c.name)] = c; });
       buildFilters();
