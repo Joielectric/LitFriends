@@ -520,6 +520,8 @@
     .dup-title { font-weight: 600; color: var(--text); font-size: 0.92rem; }
     .dup-row { font-size: 0.8rem; color: var(--text-mid); margin-top: 3px; word-break: break-word; }
     .dup-row b { color: var(--text-dim); font-weight: 500; }
+    .dup-row a { color: var(--text); }
+    .dup-btns { display: inline-flex; gap: 6px; flex-wrap: wrap; }
     .cm-tab[hidden], .cm-tab-group[hidden] { display: none !important; }
     .vs-fold > summary { list-style: none; cursor: pointer; }
     .vs-fold > summary::-webkit-details-marker { display: none; }
@@ -1611,6 +1613,7 @@
                             <p class="pf-help">The same release listed more than once, usually because it was imported from two places. Merging keeps one release with every link, tag and credit from both; the earliest date wins, and anything you wrote yourself is kept.</p>
                         </div>
                         <div class="bk-btns">
+                            <button type="button" id="dup-view-all" class="cm-btn cm-btn-sm" onclick="dupView()" hidden>View all in catalogue &#8599;</button>
                             <button type="button" id="dup-all" class="cm-btn cm-btn-sm cm-btn-primary" onclick="dupMergeAll()" hidden>Merge all</button>
                         </div>
                     </div>
@@ -6912,17 +6915,33 @@
       dupLast = groups;
       document.getElementById('dup-count').textContent = groups.length ? groups.length + ' found' : '';
       document.getElementById('dup-all').hidden = groups.filter(g => !dupSameSource(g)).length < 2;
+      document.getElementById('dup-view-all').hidden = !groups.length;
       if (!groups.length) { host.innerHTML = '<div class="cm-collab-empty">Nothing listed twice.</div>'; return; }
       host.innerHTML = groups.map((g, gi) => {
         const keep = dupKeeper(g);
         return `<div class="dup-group">
           <div class="dup-head"><span class="dup-title">${cmEsc(keep.title || 'Untitled')}</span>${dupSameSource(g) ? '<span class="dup-row" style="margin:0;color:#ffc56b">same source twice: check these really are one release</span>' : ''}
-            <button type="button" class="cm-btn cm-btn-sm" onclick="dupMergeOne(${gi})">Merge into one</button></div>
-          ${g.map(e => `<div class="dup-row"><b>${e === keep ? 'Keeps' : 'Folds in'}:</b> ${cmEsc(e.date || 'no date')} &middot; ${cmEsc((e.links || []).map(l => cmProviderLabel(l.provider)).join(', ') || 'no links')}${e.desc ? ' &middot; has a description' : ''}${e.fills ? ' &middot; linked to a script' : ''}</div>`).join('')}
+            <span class="dup-btns">
+              <button type="button" class="cm-btn cm-btn-sm" onclick="dupView(${gi})">View &#8599;</button>
+              <button type="button" class="cm-btn cm-btn-sm" onclick="dupMergeOne(${gi})">Merge into one</button>
+            </span></div>
+          ${g.map(e => `<div class="dup-row"><b>${e === keep ? 'Keeps' : 'Folds in'}:</b> ${cmEsc(e.date || 'no date')} &middot; ${(e.links || []).map(l => l && l.url
+              ? `<a href="${cmEsc(l.url)}" target="_blank" rel="noopener">${cmEsc(cmProviderLabel(l.provider))}</a>`
+              : cmEsc(cmProviderLabel(l && l.provider))).join(', ') || 'no links'}${e.desc ? ' &middot; has a description' : ''}${e.fills ? ' &middot; linked to a script' : ''}${(e.tags || []).length ? ' &middot; ' + cmEsc(e.tags.join(', ')) : ''}
+            <button type="button" class="vs-link" onclick="cmEditEntry(${cmEsc(JSON.stringify(e.id))})">edit</button></div>`).join('')}
         </div>`;
       }).join('');
     }
     let dupLast = [];
+
+    // Opens the catalogue showing just these releases (one set, or every set
+    // found), each with its full popup, to compare before merging.
+    function dupView(gi) {
+      const groups = gi === undefined ? dupLast : [dupLast[gi]].filter(Boolean);
+      const ids = groups.flat().map(e => e.id).filter(Boolean);
+      if (!ids.length) return;
+      window.open('/catalog.html?ids=' + ids.map(encodeURIComponent).join(','), '_blank', 'noopener');
+    }
 
     function dupMergeOne(gi) {
       const g = dupLast[gi];
