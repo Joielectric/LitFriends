@@ -515,6 +515,11 @@
     .vs-steps { margin: 6px 0 0; padding: 0; list-style: none; font-size: 0.82rem; color: var(--text-mid); }
     .vs-steps li { padding: 1px 0; display: grid; grid-template-columns: 82px 1fr; gap: 6px; word-break: break-word; }
     .vs-steps .k { color: var(--text-dim); }
+    .dup-group { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin-top: 8px; background: rgba(255,255,255,0.02); }
+    .dup-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .dup-title { font-weight: 600; color: var(--text); font-size: 0.92rem; }
+    .dup-row { font-size: 0.8rem; color: var(--text-mid); margin-top: 3px; word-break: break-word; }
+    .dup-row b { color: var(--text-dim); font-weight: 500; }
     .vs-fold > summary { list-style: none; cursor: pointer; }
     .vs-fold > summary::-webkit-details-marker { display: none; }
     .vs-fold > summary h4 { margin: 0; display: flex; align-items: center; gap: 6px; }
@@ -1592,6 +1597,22 @@
                             <button type="button" class="cm-btn cm-btn-sm" onclick="cmTab('import'); imSection('sheet');">Import a spreadsheet</button>
                         </div>
                     </div>
+                </section>
+
+                <!-- The same release imported twice, e.g. once from Reddit and once
+                     from Literotica: one card per pair, merged into a single release
+                     carrying every link. -->
+                <section class="pf-card bk-card" id="dup-card">
+                    <div class="bk-head">
+                        <div>
+                            <h3>Duplicate releases <span id="dup-count" class="gs-state"></span></h3>
+                            <p class="pf-help">The same release listed more than once, usually because it was imported from two places. Merging keeps one release with every link, tag and credit from both; the earliest date wins, and anything you wrote yourself is kept.</p>
+                        </div>
+                        <div class="bk-btns">
+                            <button type="button" id="dup-all" class="cm-btn cm-btn-sm cm-btn-primary" onclick="dupMergeAll()" hidden>Merge all</button>
+                        </div>
+                    </div>
+                    <div id="dup-list"></div>
                 </section>
 
                 <section class="pf-card bk-card owner-only" style="display:none">
@@ -6773,6 +6794,149 @@
       });
     }
 
+    // ── Duplicate releases ───────────────────────────────────────────────────
+    // The same work imported from two places (Reddit and Literotica, say)
+    // arrives as two releases. These are found by owner, kind and title, the
+    // title compared the way the Reddit import compares them (case, tags in
+    // brackets and punctuation aside), and folded into one.
+
+    // Square-bracket tags and audience codes ([F4M], (M4A)) are not part of a
+    // title, but other words in brackets are: "(Part 02)", "(Voice Only)" and
+    // "(Sir's Version)" are separate releases.
+    function dupTitle(t) {
+      return String(t || '').toLowerCase()
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/[([{]\s*[mfatnb]{1,3}4[mfatnb]{1,3}\s*[)\]}]/g, ' ')
+        .replace(/[’']/g, '').replace(/[^a-z0-9()]+/g, ' ').replace(/\(\s*\)/g, ' ')
+        .replace(/\s+/g, ' ').trim();
+    }
+    function dupKey(e) {
+      const t = dupTitle(e.title);
+      return t ? [e.owner || '', cmTypeOf(e), t].join('|') : '';
+    }
+    // Copies from two different places are the usual double import. Two from
+    // the same place (two ScriptBin scripts of one title) may really be two
+    // versions, so those are merged one at a time, after a look.
+    const dupSource = e => e.source || ((e.links && e.links[0] && e.links[0].provider) || '');
+    function dupSameSource(group) {
+      const seen = new Set();
+      return group.some(e => { const s = dupSource(e); if (!s) return false; if (seen.has(s)) return true; seen.add(s); return false; });
+    }
+
+    // Groups of two or more releases you may change that look like one work.
+    function dupGroups() {
+      const by = new Map();
+      cmEntries.forEach(e => {
+        if (!e || !cmCanEdit(e)) return;
+        const k = dupKey(e);
+        if (!k) return;
+        if (!by.has(k)) by.set(k, []);
+        by.get(k).push(e);
+      });
+      return [...by.values()].filter(g => g.length > 1)
+        .sort((a, b) => String(a[0].title || '').localeCompare(String(b[0].title || '')));
+    }
+
+    // Which release the others fold into: the one with the most written for
+    // it here (a longer description, a fill, art, a length), then the oldest.
+    function dupKeeper(group) {
+      const weight = e => String(e.desc || '').length + (e.fills ? 400 : 0) + (e.image ? 200 : 0) + (e.trt ? 50 : 0) + String(e.shortDesc || '').length;
+      return group.slice().sort((a, b) => (weight(b) - weight(a)) || String(a.date || '9').localeCompare(String(b.date || '9')))[0];
+    }
+
+    // One release out of several. The keeper's own words win; the others
+    // only fill what it left empty, and add links, tags and credits.
+    function dupMerge(group, keeper) {
+      const keep = keeper || dupKeeper(group);
+      const rest = group.filter(e => e !== keep);
+      const out = { ...keep };
+      const seenLink = new Set();
+      out.links = [];
+      [keep, ...rest].forEach(e => (e.links || (e.provider && e.url ? [{ provider: e.provider, url: e.url }] : [])).forEach(l => {
+        const k = l && l.url ? imUrlKey(l.url) : '';
+        if (!k || seenLink.has(k)) return;
+        seenLink.add(k);
+        out.links.push(l);
+      }));
+      delete out.provider; delete out.url;
+      const dates = group.map(e => e.date).filter(Boolean).sort();
+      if (dates.length) out.date = dates[0];
+      out.tags = imTags(group.flatMap(e => e.tags || []));
+      const credits = {};
+      group.forEach(e => Object.entries(e.credits || {}).forEach(([role, names]) => {
+        if (!Array.isArray(names)) return;
+        credits[role] = credits[role] || [];
+        names.forEach(n => { if (n && !credits[role].some(x => CFG.nameKey(x) === CFG.nameKey(n))) credits[role].push(n); });
+      }));
+      out.credits = credits;
+      ['shortDesc', 'desc', 'trt', 'image', 'fills', 'track', 'tempo', 'useCase', 'license', 'sourceLink'].forEach(f => {
+        if (!out[f]) { const from = rest.find(e => e[f]); if (from) out[f] = from[f]; }
+      });
+      if (!(out.sfx && out.sfx.length)) { const from = rest.find(e => e.sfx && e.sfx.length); if (from) out.sfx = from.sfx; }
+      return { merged: out, gone: rest.map(e => e.id) };
+    }
+
+    // Swaps each group for its merged release, pointing anything that named a
+    // removed one (an audio's script fill) at the release that stayed.
+    function dupApply(groups) {
+      const swap = new Map(), goneTo = new Map();
+      groups.forEach(g => {
+        const { merged, gone } = dupMerge(g);
+        swap.set(merged.id, merged);
+        gone.forEach(id => goneTo.set(id, merged.id));
+      });
+      cmEntries = cmEntries
+        .filter(e => !goneTo.has(e.id))
+        .map(e => {
+          const m = swap.get(e.id) || e;
+          return m.fills && goneTo.has(m.fills) ? { ...m, fills: goneTo.get(m.fills) } : m;
+        });
+      return goneTo.size;
+    }
+
+    function dupSave(groups, what) {
+      const before = cmEntries;
+      const removed = dupApply(groups);
+      cmPersist(() => {
+        cmRenderEntries(); cmTableRefresh(); dupRender();
+        cmShowMsg(`${what}: ${groups.length} ${groups.length === 1 ? 'release' : 'releases'} kept, ${removed} duplicate${removed === 1 ? '' : 's'} folded in.`, true);
+      }, () => { cmEntries = before; dupRender(); });
+    }
+
+    function dupRender() {
+      const host = document.getElementById('dup-list');
+      if (!host) return;
+      const groups = dupGroups();
+      dupLast = groups;
+      document.getElementById('dup-count').textContent = groups.length ? groups.length + ' found' : '';
+      document.getElementById('dup-all').hidden = groups.filter(g => !dupSameSource(g)).length < 2;
+      if (!groups.length) { host.innerHTML = '<div class="cm-collab-empty">Nothing listed twice.</div>'; return; }
+      host.innerHTML = groups.map((g, gi) => {
+        const keep = dupKeeper(g);
+        return `<div class="dup-group">
+          <div class="dup-head"><span class="dup-title">${cmEsc(keep.title || 'Untitled')}</span>${dupSameSource(g) ? '<span class="dup-row" style="margin:0;color:#ffc56b">same source twice: check these really are one release</span>' : ''}
+            <button type="button" class="cm-btn cm-btn-sm" onclick="dupMergeOne(${gi})">Merge into one</button></div>
+          ${g.map(e => `<div class="dup-row"><b>${e === keep ? 'Keeps' : 'Folds in'}:</b> ${cmEsc(e.date || 'no date')} &middot; ${cmEsc((e.links || []).map(l => cmProviderLabel(l.provider)).join(', ') || 'no links')}${e.desc ? ' &middot; has a description' : ''}${e.fills ? ' &middot; linked to a script' : ''}</div>`).join('')}
+        </div>`;
+      }).join('');
+    }
+    let dupLast = [];
+
+    function dupMergeOne(gi) {
+      const g = dupLast[gi];
+      if (!g) return;
+      dupSave([g], `Merged "${dupKeeper(g).title}"`);
+    }
+
+    function dupMergeAll() {
+      const groups = dupGroups().filter(g => !dupSameSource(g));
+      if (!groups.length) return;
+      const held = dupGroups().length - groups.length;
+      if (!confirm(`Merge ${groups.length} sets of duplicate releases? Each becomes one release with every link from its copies.` +
+        (held ? `\n\n${held} set${held === 1 ? '' : 's'} from the same source twice ${held === 1 ? 'is' : 'are'} left for you to merge one at a time.` : ''))) return;
+      dupSave(groups, 'Merged duplicates');
+    }
+
     // ── Import ────────────────────────────────────────────────────────────────
     // Bringing in work already published elsewhere, one source at a time: find
     // it by username, look it over and fill in what the source did not say,
@@ -7127,7 +7291,7 @@
           .filter(w => !known.has(imUrlKey(w.sourceLink)))
           .map(w => ({
             checked: false,
-            note: titles.has(RedditImport.titleKey(w.title)) ? 'a similar title is already in the catalogue' : '',
+            note: titles.has(RedditImport.titleKey(w.title)) ? 'already listed under this title: importing adds this link to that release' : '',
             info: w.info || '',
             entry: {
               title: w.title,
@@ -7361,7 +7525,7 @@
       const target = imTarget();
       st.busy = true;
       imStatus(key, 'Importing…');
-      const added = picked.map(d => {
+      const built = picked.map(d => {
         const e = d.entry;
         return {
           ...e,
@@ -7378,12 +7542,26 @@
           owner: target.slug || undefined,
         };
       });
+      // A work already listed under another source's import (the Literotica
+      // copy of an audio first imported from Reddit) gains this import's links
+      // instead of becoming a second release beside it.
+      const before = cmEntries.slice();
+      let joined = 0;
+      const added = built.filter(n => {
+        const k = dupKey({ ...n, owner: n.owner || cmWho.slug || '' });
+        const at = k ? cmEntries.findIndex(x => cmCanEdit(x) && dupKey(x) === k) : -1;
+        if (at === -1) return true;
+        cmEntries[at] = dupMerge([cmEntries[at], n], cmEntries[at]).merged;
+        joined++;
+        return false;
+      });
       cmEntries.unshift(...added);
 
       cmPersist(function (data) {
         st.busy = false;
         const skipped = (data && data.skipped) || [];
         const n = added.length - skipped.length;
+        if (joined) dupRender();
         st.drafts = st.drafts.filter(d => !picked.includes(d));
         st.open = -1;
         imRender(key);
@@ -7392,10 +7570,12 @@
         const noun = IM_SOURCES[key].noun;
         imStatus(key,
           (n ? `Imported ${n} ${noun}${n === 1 ? '' : 's'} for ${target.name}.` : '') +
+          (joined ? ` ${joined} matched ${joined === 1 ? 'a release' : 'releases'} already listed, so ${joined === 1 ? 'its links were' : 'their links were'} added to ${joined === 1 ? 'it' : 'them'}.` : '') +
           (skipped.length ? ` ${skipped.length} ${skipped.length === 1 ? 'was' : 'were'} already in the catalogue, so skipped.` : ''),
-          n ? 'good' : 'bad');
+          (n || joined) ? 'good' : 'bad');
       }, function () {
         st.busy = false;
+        if (joined) cmEntries = before.slice();
         // Take back what was added, so a later save does not send it anyway.
         const ids = new Set(added.map(e => e.id));
         cmEntries = cmEntries.filter(e => !ids.has(e.id));
@@ -8432,6 +8612,7 @@
       if (name === 'tags') cmRenderTags();
       if (name === 'names') cmRenderNames();
       if (name === 'visits' && !vsData) vsLoad();
+      if (name === 'bulk') dupRender();
       try { sessionStorage.setItem('cm_tab', name); } catch (e) {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
