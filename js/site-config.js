@@ -222,6 +222,21 @@
     return !SITE.identity.owner || SITE.creditedIn(entry, SITE.identity.owner);
   };
 
+  // Which catalogue a release opens in. JOI Electric's catalogue lists only
+  // the owner's own work; The Velvet Key's lists everyone's. So a card on the
+  // owner's own pages (pageSlug is the owner, or none) opens in JOI's, as long
+  // as the owner is credited on it, and every other card opens in The Velvet
+  // Key's. The link opens that release's popup straight away (?open=<id>),
+  // with the list searched for its title behind it.
+  SITE.catalogLink = function (entry, pageSlug) {
+    var own = (!pageSlug || pageSlug === SITE.identity.owner) && SITE.isOwnWork(entry || {});
+    var base = own ? '/catalog.html' : '/velvet-key-catalog.html';
+    var q = [];
+    if (entry && entry.title) q.push('q=' + encodeURIComponent(entry.title));
+    if (entry && entry.id) q.push('open=' + encodeURIComponent(entry.id));
+    return base + (q.length ? '?' + q.join('&') : '');
+  };
+
   // A credit points at the local page when there is one.
   SITE.profilePage = function (name, label) {
     return SITE.profilePages[norm(label)] || SITE.profilePages[norm(name)] || '';

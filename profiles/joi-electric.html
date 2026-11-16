@@ -258,7 +258,7 @@
       var tags = (e.tags || []).filter(CFG.isAudienceTag).concat((e.tags || []).filter(function (t) { return !CFG.isAudienceTag(t); })).slice(0, 5);
       var meta = (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
         [type !== 'audio' ? esc(CFG.typeLabels[type]) : '', w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
-      return '<a class="rel" href="../catalog.html?q=' + encodeURIComponent(e.title || '') + '">' +
+      return '<a class="rel" href="' + esc(CFG.catalogLink(e, CFG.identity.owner)) + '">' +
         '<div class="thumb t-' + esc(type) + '">' +
           (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
                : '<span class="gen" aria-hidden="true">' + initial + '</span>') +
