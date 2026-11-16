@@ -364,7 +364,7 @@
       var tags = (e.tags || []).filter(isAud).concat((e.tags || []).filter(function (t) { return !isAud(t); })).slice(0, 5);
       var meta = (w.fresh ? '<span class="badge-new">NEW</span>' : '') +
         [type !== 'audio' && CFG ? esc(CFG.typeLabels[type]) : '', w.label, e.trt ? esc(e.trt) : ''].filter(Boolean).join(' &middot; ');
-      return '<a class="rel" href="catalog.html?q=' + encodeURIComponent(e.title || '') + '" data-i="' + i + '">' +
+      return '<a class="rel" href="' + esc(CFG.catalogLink(e, CFG.identity.owner)) + '" data-i="' + i + '">' +
         '<div class="thumb t-' + esc(type) + '">' +
           (img ? '<img class="thumb-bg" src="' + img + '" alt="" loading="lazy"><img class="thumb-img" src="' + img + '" alt="" loading="lazy">'
                : '<span class="gen" aria-hidden="true">' + initial + '</span>') +

@@ -607,6 +607,12 @@
       var startQ = new URLSearchParams(location.search).get('q');
       if (startQ) { els.search.value = startQ; state.q = startQ.toLowerCase().trim(); }
       apply();
+      // ?open=<id> arrives from a card on a profile: open that release.
+      var openId = new URLSearchParams(location.search).get('open');
+      if (openId) {
+        var hit = ENTRIES.filter(function(e){ return String(e.id) === openId; })[0];
+        if (hit) openModal(hit);
+      }
     }).catch(function(){
       els.rows.innerHTML = '<div class="empty">Could not load the catalogue.</div>';
     });
