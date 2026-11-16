@@ -514,6 +514,10 @@
           show('<div class="state">There is no profile here yet.</div>');
           return;
         }
+        // Reached by a name the page used to have: show its current address.
+        if (data.movedTo && /\/profile\//.test(location.pathname)) {
+          try { history.replaceState(null, '', '/profile/' + encodeURIComponent(data.movedTo) + location.search + location.hash); } catch (e) {}
+        }
         render(data.profile);
       })
       .catch(function () { show('<div class="state">Could not load this profile.</div>'); });

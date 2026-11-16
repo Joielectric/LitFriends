@@ -8366,10 +8366,46 @@
           <div class="cr-actions">
             ${r.href ? `<a class="cm-btn cm-btn-sm" href="${cmEsc(r.href)}" target="_blank" rel="noopener">Open &#8599;</a>` : ''}
             ${r.profile ? `<button type="button" class="cm-btn cm-btn-sm" onclick="crEditProfile(${slugArg})">Edit profile</button>` : ''}
+            ${(r.profile || r.invite) && r.slug !== CFG.identity.owner ? `<button type="button" class="cm-btn cm-btn-sm" onclick="crRename(${slugArg}, ${cmEsc(JSON.stringify(r.name))})">Rename</button>` : ''}
             ${r.invite ? `<button type="button" class="cr-remove" onclick="crRemove(${cmEsc(JSON.stringify(email))})">Remove access</button>` : ''}
           </div>
         </div>`;
       }).join('');
+    }
+
+    // A misspelt name, fixed everywhere: the display name, the page's address
+    // (/profile/<name>), and the credits on their releases. The old address
+    // keeps working and sends people on to the new one.
+    function crRename(slug, name) {
+      const newName = prompt('Correct display name (how their name is shown and credited):', name);
+      if (newName === null) return;
+      const suggested = String(newName || name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const newSlug = prompt('Page name, the end of their link (/profile/…):', suggested || slug);
+      if (newSlug === null) return;
+      const cleanSlug = String(newSlug).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const nameChanged = newName.trim() && newName.trim() !== name;
+      if (!nameChanged && cleanSlug === slug) return crMsg('Nothing changed.');
+      const lines = [];
+      if (cleanSlug !== slug) lines.push(`Link: /profile/${slug}  →  /profile/${cleanSlug}\n(the old link will forward to the new one)`);
+      if (nameChanged) lines.push(`Name: "${name}"  →  "${newName.trim()}"\n(credits under the old spelling are corrected too)`);
+      if (!confirm('Rename this creator?\n\n' + lines.join('\n\n'))) return;
+      crApi({ action: 'rename', from: slug, to: cleanSlug, name: newName.trim() }, data => {
+        const d = data.renamed || {};
+        crMsg(`Renamed to "${d.name}" at /profile/${d.slug}. Moved ${d.releases || 0} release${d.releases === 1 ? '' : 's'}, ` +
+          `corrected ${d.credits || 0} credit${d.credits === 1 ? '' : 's'}, ${d.images || 0} upload${d.images === 1 ? '' : 's'} and ${d.feedback || 0} feedback.`, true);
+        // Everything filed under the old name moved; read it all back.
+        if (typeof plLoad === 'function') plLoad();
+        fetch('/api/content', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'verify' }) })
+          .then(r => r.json())
+          .then(c => {
+            if (!c.ok) return;
+            cmEntries = c.entries || [];
+            cmCollaborators = c.collaborators || [];
+            cmRenderEntries();
+            cmRenderCollabManager();
+          })
+          .catch(() => {});
+      });
     }
 
     // Opens My profile on this creator's page, as the owner's profile picker would.

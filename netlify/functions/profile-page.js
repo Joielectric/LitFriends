@@ -1,5 +1,6 @@
 import { siteStore } from "./_site.js";
 import { SITE, escapeHtml, shareTags } from "./_share.js";
+import { findByFormerSlug } from "./_rename.js";
 
 // Serves /profile/<slug> with its Open Graph tags already in the HTML.
 //
@@ -27,6 +28,15 @@ const CACHE = "public, max-age=0, s-maxage=300, stale-while-revalidate=3600";
 export default async (req) => {
   const url = new URL(req.url);
   const slug = decodeURIComponent(url.pathname.replace(/^\/profile\/?/, "")).replace(/\/+$/, "");
+
+  // A renamed page: send its old address on to the new one, for good.
+  const movedTo = await renamedTo(slug);
+  if (movedTo) {
+    return new Response(null, {
+      status: 301,
+      headers: { Location: `${url.origin}/profile/${encodeURIComponent(movedTo)}${url.search}`, "Cache-Control": "public, max-age=3600" },
+    });
+  }
 
   const shell = await fetch(new URL(SHELL, url.origin), {
     headers: { "x-shell-request": "1" },
@@ -89,6 +99,16 @@ export default async (req) => {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": CACHE },
   });
 };
+
+// The page name a renamed profile has now, when `slug` is one it used to have.
+async function renamedTo(slug) {
+  if (!slug) return "";
+  const data = await siteStore("profiles").get("profiles", { type: "json" }).catch(() => null);
+  const all = data && data.profiles && typeof data.profiles === "object" ? data.profiles : {};
+  if (all[slug]) return "";
+  const p = findByFormerSlug(all, slug);
+  return p && p.published ? p.slug : "";
+}
 
 async function readProfile(slug) {
   if (!slug) return null;
