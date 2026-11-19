@@ -56,17 +56,17 @@ export default async (req) => {
     if (!looksLikeEmail(email)) return json({ error: "That does not look like an email address." }, 400);
 
     const name = clean(body.name, 120);
-    // A missing slug is derived from the name, so inviting someone is one field
-    // in the common case.
-    const slug = slugify(body.slug || name || email.split("@")[0]);
-    if (!slug) return json({ error: "Could not work out a profile name from that." }, 400);
-    if (slugTaken(creators, slug, email)) {
+    // The page name is theirs to choose when they first sign in (session.js,
+    // "choose-page"). One given here hands them a page that already exists,
+    // such as a hand-built one; left blank, it stays unset until they pick.
+    const slug = slugify(body.slug || "");
+    if (slug && slugTaken(creators, slug, email)) {
       return json({ error: `The profile "${slug}" already belongs to someone else.` }, 409);
     }
 
     const existing = findCreator(creators, email);
     if (existing) {
-      existing.slug = slug;
+      if (slug) existing.slug = slug;
       if (name) existing.name = name;
       if (body.status) existing.status = clean(body.status, 20);
       await writeCreators(creators);

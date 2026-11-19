@@ -523,6 +523,12 @@
     .dup-row a { color: var(--text); }
     .dup-btns { display: inline-flex; gap: 6px; flex-wrap: wrap; }
     .cm-tab[hidden], .cm-tab-group[hidden] { display: none !important; }
+    .gs-page-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 8px; }
+    .gs-page-fields label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .gs-page-fields label > span { font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
+    .gs-page-url { font-size: 0.85rem; color: var(--text-mid); margin: 0 0 10px; word-break: break-all; }
+    .gs-page-url b { color: var(--text); }
+    @media (max-width: 560px) { .gs-page-fields { grid-template-columns: 1fr; } }
     .vs-fold > summary { list-style: none; cursor: pointer; }
     .vs-fold > summary::-webkit-details-marker { display: none; }
     .vs-fold > summary h4 { margin: 0; display: flex; align-items: center; gap: 6px; }
@@ -1019,6 +1025,24 @@
                         <label class="pf-switch" style="white-space:normal"><input type="checkbox" id="gs-terms-ok" onchange="document.getElementById('gs-terms-btn').disabled = !this.checked"> I've read the creator terms and agree to them</label>
                         <button type="button" id="gs-terms-btn" class="cm-btn cm-btn-primary cm-btn-sm" onclick="gsAcceptTerms()" disabled>Accept and continue</button>
                         <span id="gs-terms-msg" class="im-hint" role="status" style="margin:0"></span>
+                    </div>
+                </section>
+
+                <!-- A creator invited without a page name picks it here, once,
+                     before the rest of the Content Manager opens. -->
+                <section class="pf-card" id="gs-page" hidden>
+                    <div class="pf-card-head"><h3>Choose your page name</h3><span id="gs-page-state" class="gs-state"></span></div>
+                    <p class="pf-help">Your page's address on The Velvet Key. It's how people find and share your page, so pick something you'll be happy with: changing it later means asking the site owner.</p>
+                    <div class="gs-page-fields">
+                        <label><span>Your name, as shown on your page</span>
+                            <input id="gs-page-name" class="cm-input" maxlength="80" placeholder="e.g. Rosey Bleue" oninput="gsPageSuggest()"></label>
+                        <label><span>Page name</span>
+                            <input id="gs-page-slug" class="cm-input" maxlength="48" placeholder="e.g. rosey-bleue" oninput="this.dataset.touched='1'; gsPageCheck()"></label>
+                    </div>
+                    <p class="gs-page-url">Your page: <b id="gs-page-url">thevelvetkeysociety.com/profile/&hellip;</b> <span id="gs-page-ok"></span></p>
+                    <div class="gs-terms-act">
+                        <button type="button" id="gs-page-btn" class="cm-btn cm-btn-primary cm-btn-sm" onclick="gsPageChoose()" disabled>Choose this name</button>
+                        <span id="gs-page-msg" class="im-hint" role="status" style="margin:0"></span>
                     </div>
                 </section>
 
@@ -2392,9 +2416,9 @@
                   <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;">
                     <label class="cm-label">Invite a creator</label>
                     <p style="color:var(--text-mid);font-size:0.85rem;margin-bottom:12px;">
-                      They sign in with this Google address. The profile name decides their page
-                      (<code style="color:var(--coral)">/profile/&lt;name&gt;</code>) and which catalogue entries they see.
-                      Use an existing profile name to hand someone their current page.
+                      They sign in with this Google address and choose their own page name
+                      (<code style="color:var(--coral)">/profile/&lt;name&gt;</code>) the first time they do.
+                      Fill in a page name only to hand someone a page that already exists.
                     </p>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
                       <div style="flex:1 1 220px;">
@@ -2403,11 +2427,11 @@
                       </div>
                       <div style="flex:1 1 160px;">
                         <label class="cm-label" style="font-size:0.7rem">Display name</label>
-                        <input id="cr-name" class="cm-input" placeholder="Filthy Bunny" style="width:100%" oninput="crSuggestSlug()">
+                        <input id="cr-name" class="cm-input" placeholder="Filthy Bunny" style="width:100%">
                       </div>
                       <div style="flex:1 1 160px;">
-                        <label class="cm-label" style="font-size:0.7rem">Profile name</label>
-                        <input id="cr-slug" class="cm-input" placeholder="filthy-bunny" style="width:100%" list="cr-slug-options" oninput="this.dataset.touched='1'">
+                        <label class="cm-label" style="font-size:0.7rem">Existing page <span style="font-weight:normal;color:var(--text-mid)">(optional)</span></label>
+                        <input id="cr-slug" class="cm-input" placeholder="they choose" style="width:100%" list="cr-slug-options" oninput="this.dataset.touched='1'">
                         <datalist id="cr-slug-options"></datalist>
                       </div>
                       <button type="button" class="cm-btn" onclick="crInvite()">Invite</button>
@@ -8452,13 +8476,6 @@
         .map(a => `<option value="${a.slug}">${a.name}</option>`).join('');
     }
 
-    function crSuggestSlug() {
-      const slugEl = document.getElementById('cr-slug');
-      if (slugEl.dataset.touched) return;
-      slugEl.value = String(document.getElementById('cr-name').value || '')
-        .trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    }
-
     function crApi(payload, onOk) {
       crMsg('Working…', true);
       fetch('/api/creators', {
@@ -8488,7 +8505,9 @@
         name: document.getElementById('cr-name').value.trim(),
         slug: document.getElementById('cr-slug').value.trim(),
       }, data => {
-        crMsg(`Invited ${data.creator.email} as "${data.creator.slug}".`, true);
+        crMsg(data.creator.slug
+          ? `Invited ${data.creator.email} with the page "${data.creator.slug}".`
+          : `Invited ${data.creator.email}. They'll choose their page name when they first sign in.`, true);
         ['cr-email', 'cr-name', 'cr-slug'].forEach(id => (document.getElementById(id).value = ''));
         document.getElementById('cr-slug').dataset.touched = '';
       });
@@ -8505,7 +8524,11 @@
     function crRows() {
       const bySlug = {};
       const row = slug => (bySlug[slug] = bySlug[slug] || { slug });
-      (crCreators || []).forEach(c => { if (c.slug) Object.assign(row(c.slug), { invite: c }); });
+      (crCreators || []).forEach(c => {
+        if (c.slug) Object.assign(row(c.slug), { invite: c });
+        // Invited without a page name: listed by email until they choose one.
+        else if (c.email) Object.assign(row('@' + c.email), { invite: c, noSlug: true });
+      });
       Object.values(plProfilesById || {}).forEach(p => { if (p && p.slug) row(p.slug).profile = p; });
       // A hand-built page still up (today only the owner's) is their page too.
       (CFG.artists || []).forEach(a => { if (a.page && bySlug[a.slug]) bySlug[a.slug].staticPage = '/' + a.page; });
@@ -8514,6 +8537,7 @@
         r.page = r.profile ? (r.profile.published ? 'live' : 'draft') : (r.staticPage ? 'live' : 'none');
         r.signin = r.slug === CFG.identity.owner ? 'owner' : r.invite ? (r.invite.status === 'active' ? 'active' : 'invited') : 'none';
         r.href = r.profile ? '/profile/' + encodeURIComponent(r.slug) : (r.staticPage || '');
+        if (r.noSlug) { r.name = (r.invite && r.invite.name) || r.invite.email; r.href = ''; }
         return r;
       }).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     }
@@ -8557,7 +8581,7 @@
         const seen = r.invite
           ? (r.invite.lastSeenAt ? 'last signed in ' + new Date(r.invite.lastSeenAt).toLocaleDateString() : 'never signed in')
           : '';
-        const meta = [email, seen].filter(Boolean).map(cmEsc).join(' &middot; ') || '/profile/' + cmEsc(r.slug);
+        const meta = [email, seen, r.noSlug ? 'page name not chosen yet' : ''].filter(Boolean).map(cmEsc).join(' &middot; ') || '/profile/' + cmEsc(r.slug);
         const slugArg = cmEsc(JSON.stringify(r.slug));
         return `<div class="cr-row">
           <div class="cr-main">
@@ -8567,7 +8591,7 @@
           <div class="cr-actions">
             ${r.href ? `<a class="cm-btn cm-btn-sm" href="${cmEsc(r.href)}" target="_blank" rel="noopener">Open &#8599;</a>` : ''}
             ${r.profile ? `<button type="button" class="cm-btn cm-btn-sm" onclick="crEditProfile(${slugArg})">Edit profile</button>` : ''}
-            ${(r.profile || r.invite) && r.slug !== CFG.identity.owner ? `<button type="button" class="cm-btn cm-btn-sm" onclick="crRename(${slugArg}, ${cmEsc(JSON.stringify(r.name))})">Rename</button>` : ''}
+            ${(r.profile || r.invite) && !r.noSlug && r.slug !== CFG.identity.owner ? `<button type="button" class="cm-btn cm-btn-sm" onclick="crRename(${slugArg}, ${cmEsc(JSON.stringify(r.name))})">Rename</button>` : ''}
             ${r.invite ? `<button type="button" class="cr-remove" onclick="crRemove(${cmEsc(JSON.stringify(email))})">Remove access</button>` : ''}
           </div>
         </div>`;
@@ -8618,10 +8642,10 @@
     }
 
     function cmTab(name) {
-      if (name !== 'start' && cmWho && cmWho.email && !gsTermsOk()) {
+      if (name !== 'start' && cmWho && cmWho.email && (!gsTermsOk() || !gsPageOk())) {
         name = 'start';
-        const msg = document.getElementById('gs-terms-msg');
-        if (msg) msg.textContent = 'Accept the creator terms to open the rest.';
+        const msg = document.getElementById(gsTermsOk() ? 'gs-page-msg' : 'gs-terms-msg');
+        if (msg) msg.textContent = gsTermsOk() ? 'Choose your page name to open the rest.' : 'Accept the creator terms to open the rest.';
       }
       if (name === 'start') gsRender();
       document.querySelectorAll('.cm-tab').forEach(function (b) {
@@ -8831,6 +8855,67 @@
       return !!(cmWho.isOwner || cmWho.viewAs || cmWho.termsAt);
     }
 
+    // A page name: the owner and anyone viewing as a creator have one already.
+    function gsPageOk() { return !!(cmWho.isOwner || cmWho.viewAs || cmWho.slug); }
+
+    function gsPageRender() {
+      const card = document.getElementById('gs-page');
+      if (!card) return;
+      card.hidden = gsPageOk();
+      if (card.hidden) return;
+      const nameEl = document.getElementById('gs-page-name');
+      if (!nameEl.value && cmWho.name) { nameEl.value = cmWho.name; gsPageSuggest(); }
+    }
+    const gsSlugify = v => String(v || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+    function gsPageSuggest() {
+      const slugEl = document.getElementById('gs-page-slug');
+      if (slugEl.dataset.touched) return;
+      slugEl.value = gsSlugify(document.getElementById('gs-page-name').value);
+      gsPageCheck();
+    }
+    // Asks the server whether the name is free, a moment after typing stops.
+    let gsPageTimer = null, gsPageSeq = 0;
+    function gsPageCheck() {
+      const slug = gsSlugify(document.getElementById('gs-page-slug').value);
+      document.getElementById('gs-page-url').textContent = 'thevelvetkeysociety.com/profile/' + (slug || '\u2026');
+      const ok = document.getElementById('gs-page-ok'), btn = document.getElementById('gs-page-btn');
+      btn.disabled = true;
+      ok.textContent = '';
+      clearTimeout(gsPageTimer);
+      if (!slug) return;
+      const seq = ++gsPageSeq;
+      gsPageTimer = setTimeout(() => {
+        fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'choose-page', slug, check: true }) })
+          .then(r => r.json())
+          .then(d => {
+            if (seq !== gsPageSeq) return;
+            if (!d.ok) { ok.textContent = d.error || ''; ok.style.color = '#e87a88'; return; }
+            ok.textContent = d.available ? '\u2713 available' : d.problem;
+            ok.style.color = d.available ? '#6fe3c1' : '#e87a88';
+            btn.disabled = !d.available;
+          })
+          .catch(() => { if (seq === gsPageSeq) { ok.textContent = 'Could not check just now.'; ok.style.color = '#e87a88'; } });
+      }, 350);
+    }
+    function gsPageChoose() {
+      const slug = gsSlugify(document.getElementById('gs-page-slug').value);
+      const name = document.getElementById('gs-page-name').value.trim();
+      if (!slug) return;
+      if (!confirm('Your page will be thevelvetkeysociety.com/profile/' + slug + '\n\nChanging it later means asking the site owner. Choose it?')) return;
+      const btn = document.getElementById('gs-page-btn'), msg = document.getElementById('gs-page-msg');
+      btn.disabled = true;
+      msg.textContent = 'Saving\u2026';
+      fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'choose-page', slug, name }) })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) throw new Error(d.error || 'Could not save that.');
+          msg.textContent = 'Done. Opening your Content Manager\u2026';
+          // Everything in Tools is filed under the page name; start afresh with it.
+          setTimeout(() => location.reload(), 600);
+        })
+        .catch(err => { btn.disabled = false; msg.textContent = (err && err.message) || 'Could not reach the server. Try again.'; });
+    }
+
     function gsMine() {
       const slug = cmWho.slug || '';
       return slug ? cmEntries.filter(e => CFG.creditedIn(e, slug) || e.owner === slug).length : 0;
@@ -8845,6 +8930,7 @@
       const mine = gsMine();
       return [
         { done: gsTermsOk(), title: 'Accept the creator terms', note: 'Once, at the top of this page.', go: () => { document.getElementById('gs-terms').hidden = false; gsScroll('gs-terms'); } },
+        { done: gsPageOk(), title: 'Choose your page name', note: cmWho.slug ? 'Your page: /profile/' + cmWho.slug : 'The address of your page.', go: () => gsScroll(cmWho.slug ? 'gs-check' : 'gs-page') },
         { done: !!val('pf-avatar').trim(), title: 'Add your picture', note: 'In My profile, under Top of your page.', go: () => gsShow('profile', 'pf-avatar') },
         { done: !!val('pf-bio').trim(), title: 'Write a short bio', note: 'A few lines about you and your work.', go: () => gsShow('profile', 'pf-bio') },
         { done: mine > 0, title: 'Add your works to the catalogue', note: mine ? mine + ' in the catalogue so far.' : 'Import them or add them by hand. See below.', go: () => gsScroll('gs-guide') },
@@ -8870,6 +8956,7 @@
       document.getElementById('gs-terms-state').textContent = cmWho.termsAt
         ? 'Accepted ' + new Date(cmWho.termsAt).toLocaleDateString() : '';
 
+      gsPageRender();
       const steps = gsSteps();
       const done = steps.filter(s => s.done).length;
       document.getElementById('gs-progress').textContent = done + ' of ' + steps.length + ' done';
@@ -8899,7 +8986,7 @@
       // (unpublishing, say), and the page itself is still there, opened by
       // "How to add to the catalogue" at the top. The creator terms are the
       // one step that always keeps it in view until accepted.
-      const finished = gsTermsOk() && (!left || gsSetupDone());
+      const finished = gsTermsOk() && gsPageOk() && (!left || gsSetupDone());
       const tab = document.querySelector('.cm-tab[data-tab="start"]');
       const group = document.getElementById('gs-tab-group');
       if (tab) tab.hidden = finished;

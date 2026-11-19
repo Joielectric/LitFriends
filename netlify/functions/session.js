@@ -1,6 +1,7 @@
 import { verifyGoogleToken, identify, unauthorized } from "./_auth.js";
 import { createSession, sessionCookie, cookieFromRequest, readSession } from "./_session.js";
-import { readCreators, writeCreators, findCreator, TERMS_VERSION } from "./_creators.js";
+import { readCreators, writeCreators, findCreator, TERMS_VERSION, slugify, slugProblem } from "./_creators.js";
+import { siteStore } from "./_site.js";
 
 // Starting and ending a session.
 //
@@ -9,6 +10,10 @@ import { readCreators, writeCreators, findCreator, TERMS_VERSION } from "./_crea
 //   POST /api/session { action: "out" }  -> sign out
 //   POST /api/session { action: "accept-terms" } -> record that the signed-in
 //                                                   creator accepted the terms
+//   POST /api/session { action: "choose-page", slug, name, check }
+//        -> a creator invited without a page name picks theirs, once:
+//           /profile/<slug>. With check: true it only says whether the name
+//           is free. After that only the owner can change it (Rename).
 //
 // This is the only place a Google token needs to reach: it is exchanged once
 // for a session cookie that lasts a month, so the Content Manager stops asking
@@ -74,6 +79,29 @@ export default async (req) => {
     rec.termsVersion = TERMS_VERSION;
     await writeCreators(creators);
     return json({ ok: true, termsAt: rec.termsAt });
+  }
+
+  if (body.action === "choose-page") {
+    const email = await readSession(cookieFromRequest(req));
+    if (!email) return json({ ok: false, error: "No session" }, 401);
+    const who = await identify(email, "", "session");
+    if (!who.ok) return json({ ok: false, error: who.error }, 401);
+    const creators = await readCreators();
+    const rec = findCreator(creators, who.email);
+    if (!rec) return json({ ok: false, error: "Only an invited creator chooses a page name." }, 400);
+    if (rec.slug) return json({ ok: false, error: `Your page is already /profile/${rec.slug}. Ask the site owner to rename it.` }, 409);
+
+    const slug = slugify(body.slug);
+    const data = await siteStore("profiles").get("profiles", { type: "json" }).catch(() => null);
+    const problem = slugProblem(slug, creators, data && data.profiles, who.email);
+    if (body.check) return json({ ok: true, slug, available: !problem, problem });
+    if (problem) return json({ ok: false, error: problem, slug }, 409);
+
+    rec.slug = slug;
+    const name = String(body.name == null ? "" : body.name).trim().slice(0, 80);
+    if (name) rec.name = name;
+    await writeCreators(creators);
+    return json({ ok: true, slug, name: rec.name || "" });
   }
 
   // ── Signing in ───────────────────────────────────────────────────────────

@@ -59,6 +59,33 @@ export function findCreator(creators, email) {
   return creators.find((c) => norm(c.email) === e) || null;
 }
 
+// Page names nobody can pick for themselves: the site's own addresses, and
+// the artists whose pages were built by hand (js/site-config.js `artists`),
+// which the owner hands over by inviting them with that name.
+export const RESERVED_SLUGS = new Set([
+  "admin", "api", "about", "catalog", "catalogue", "contact", "creator", "creators", "feedback",
+  "help", "home", "images", "login", "logout", "me", "new", "owner", "privacy", "profile", "profiles",
+  "settings", "support", "terms", "the-velvet-key", "thevelvetkey", "tools", "velvet-key", "cyoaudio",
+  "joi-electric", "joielectric", "loona-licks", "misskittensk", "hisbadgirl77", "wellnobodysperfect",
+  "naughtiwolf", "lotus-kitty", "filthy-bunny", "la-sphynxxx",
+]);
+
+/**
+ * Whether a creator may choose this page name for themselves: why not, or "".
+ * `profiles` is the profiles store's map, so names in use or once used by a
+ * renamed page (formerSlugs) count as taken too.
+ */
+export function slugProblem(slug, creators, profiles, exceptEmail) {
+  if (!slug) return "Use some letters or numbers.";
+  if (slug.length < 3) return "Use at least 3 letters or numbers.";
+  if (RESERVED_SLUGS.has(slug)) return `"${slug}" is reserved. Pick another.`;
+  if (slugTaken(creators, slug, exceptEmail)) return `"${slug}" is already someone's page.`;
+  const all = profiles && typeof profiles === "object" ? profiles : {};
+  if (all[slug]) return `"${slug}" is already someone's page.`;
+  if (Object.values(all).some((p) => p && (p.formerSlugs || []).includes(slug))) return `"${slug}" was someone's page. Pick another.`;
+  return "";
+}
+
 /** Slugs already taken, so two creators cannot claim one profile. */
 export function slugTaken(creators, slug, exceptEmail) {
   const s = norm(slug);

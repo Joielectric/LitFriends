@@ -158,6 +158,7 @@ export default async (req) => {
         email: auth.email, isOwner: !!auth.isOwner, via: auth.via,
         role: auth.role || (auth.isOwner ? "owner" : "creator"),
         slug: auth.slug || "",
+        name: auth.name || "",
         termsAt: auth.termsAt || "",
         viewAs: auth.viewAs || "",
       };
